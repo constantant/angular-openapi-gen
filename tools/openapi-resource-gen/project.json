@@ -29,6 +29,11 @@
             "output": "."
           },
           {
+            "input": "tools/openapi-resource-gen",
+            "glob": "CHANGELOG.md",
+            "output": "."
+          },
+          {
             "input": "tools/openapi-resource-gen/src",
             "glob": "**/schema.json",
             "output": "./src"
