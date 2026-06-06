@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,22 +19,26 @@ export const PULLS_REMOVE_REQUESTED_REVIEWERS = new InjectionToken<
       | PullsRemoveRequestedReviewersBody
       | Signal<PullsRemoveRequestedReviewersBody>,
   ) => ReturnType<typeof httpResource<PullsRemoveRequestedReviewersResponse>>
->('PULLS_REMOVE_REQUESTED_REVIEWERS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      pullNumber: string,
-      body:
-        | PullsRemoveRequestedReviewersBody
-        | Signal<PullsRemoveRequestedReviewersBody>,
-    ) =>
-      httpResource<PullsRemoveRequestedReviewersResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/requested_reviewers`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('PULLS_REMOVE_REQUESTED_REVIEWERS');
+
+export function providePullsRemoveRequestedReviewers(): FactoryProvider {
+  return {
+    provide: PULLS_REMOVE_REQUESTED_REVIEWERS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        pullNumber: string,
+        body:
+          | PullsRemoveRequestedReviewersBody
+          | Signal<PullsRemoveRequestedReviewersBody>,
+      ) =>
+        httpResource<PullsRemoveRequestedReviewersResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/requested_reviewers`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

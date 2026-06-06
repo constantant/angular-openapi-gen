@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const ISSUES_GET_COMMENT = new InjectionToken<
     repo: string,
     commentId: string,
   ) => ReturnType<typeof httpResource<IssuesGetCommentResponse>>
->('ISSUES_GET_COMMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, commentId: string) =>
-      httpResource<IssuesGetCommentResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/comments/${commentId}`,
-      }));
-  },
-});
+>('ISSUES_GET_COMMENT');
+
+export function provideIssuesGetComment(): FactoryProvider {
+  return {
+    provide: ISSUES_GET_COMMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, commentId: string) =>
+        httpResource<IssuesGetCommentResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/comments/${commentId}`,
+        }));
+    },
+  };
+}

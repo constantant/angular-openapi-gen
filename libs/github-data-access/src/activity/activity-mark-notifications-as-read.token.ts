@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,19 +13,23 @@ export const ACTIVITY_MARK_NOTIFICATIONS_AS_READ = new InjectionToken<
       | ActivityMarkNotificationsAsReadBody
       | Signal<ActivityMarkNotificationsAsReadBody>,
   ) => ReturnType<typeof httpResource<unknown>>
->('ACTIVITY_MARK_NOTIFICATIONS_AS_READ', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      body:
-        | ActivityMarkNotificationsAsReadBody
-        | Signal<ActivityMarkNotificationsAsReadBody>,
-    ) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/notifications`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('ACTIVITY_MARK_NOTIFICATIONS_AS_READ');
+
+export function provideActivityMarkNotificationsAsRead(): FactoryProvider {
+  return {
+    provide: ACTIVITY_MARK_NOTIFICATIONS_AS_READ,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        body:
+          | ActivityMarkNotificationsAsReadBody
+          | Signal<ActivityMarkNotificationsAsReadBody>,
+      ) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/notifications`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

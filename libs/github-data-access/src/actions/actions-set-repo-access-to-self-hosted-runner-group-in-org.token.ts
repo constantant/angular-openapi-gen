@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,9 +16,12 @@ export const ACTIONS_SET_REPO_ACCESS_TO_SELF_HOSTED_RUNNER_GROUP_IN_ORG =
         | ActionsSetRepoAccessToSelfHostedRunnerGroupInOrgBody
         | Signal<ActionsSetRepoAccessToSelfHostedRunnerGroupInOrgBody>,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('ACTIONS_SET_REPO_ACCESS_TO_SELF_HOSTED_RUNNER_GROUP_IN_ORG', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_SET_REPO_ACCESS_TO_SELF_HOSTED_RUNNER_GROUP_IN_ORG');
+
+export function provideActionsSetRepoAccessToSelfHostedRunnerGroupInOrg(): FactoryProvider {
+  return {
+    provide: ACTIONS_SET_REPO_ACCESS_TO_SELF_HOSTED_RUNNER_GROUP_IN_ORG,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -33,4 +36,5 @@ export const ACTIONS_SET_REPO_ACCESS_TO_SELF_HOSTED_RUNNER_GROUP_IN_ORG =
           body,
         }));
     },
-  });
+  };
+}

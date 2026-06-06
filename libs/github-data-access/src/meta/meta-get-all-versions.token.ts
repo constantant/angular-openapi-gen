@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -8,13 +8,17 @@ export type MetaGetAllVersionsResponse =
 
 export const META_GET_ALL_VERSIONS = new InjectionToken<
   () => ReturnType<typeof httpResource<MetaGetAllVersionsResponse>>
->('META_GET_ALL_VERSIONS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return () =>
-      httpResource<MetaGetAllVersionsResponse>(() => ({
-        url: `${base}/versions`,
-      }));
-  },
-});
+>('META_GET_ALL_VERSIONS');
+
+export function provideMetaGetAllVersions(): FactoryProvider {
+  return {
+    provide: META_GET_ALL_VERSIONS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return () =>
+        httpResource<MetaGetAllVersionsResponse>(() => ({
+          url: `${base}/versions`,
+        }));
+    },
+  };
+}

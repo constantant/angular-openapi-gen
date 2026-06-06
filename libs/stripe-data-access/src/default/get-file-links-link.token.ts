@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const GET_FILE_LINKS_LINK = new InjectionToken<
       | GetFileLinksLinkParams
       | (() => GetFileLinksLinkParams | undefined),
   ) => ReturnType<typeof httpResource<GetFileLinksLinkResponse>>
->('GET_FILE_LINKS_LINK', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      link: string,
-      params?:
-        | GetFileLinksLinkParams
-        | (() => GetFileLinksLinkParams | undefined),
-    ) =>
-      httpResource<GetFileLinksLinkResponse>(() => ({
-        url: `${base}/v1/file_links/${link}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_FILE_LINKS_LINK');
+
+export function provideGetFileLinksLink(): FactoryProvider {
+  return {
+    provide: GET_FILE_LINKS_LINK,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        link: string,
+        params?:
+          | GetFileLinksLinkParams
+          | (() => GetFileLinksLinkParams | undefined),
+      ) =>
+        httpResource<GetFileLinksLinkResponse>(() => ({
+          url: `${base}/v1/file_links/${link}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

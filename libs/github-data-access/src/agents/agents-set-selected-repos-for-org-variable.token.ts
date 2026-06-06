@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,21 +15,25 @@ export const AGENTS_SET_SELECTED_REPOS_FOR_ORG_VARIABLE = new InjectionToken<
       | AgentsSetSelectedReposForOrgVariableBody
       | Signal<AgentsSetSelectedReposForOrgVariableBody>,
   ) => ReturnType<typeof httpResource<unknown>>
->('AGENTS_SET_SELECTED_REPOS_FOR_ORG_VARIABLE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      name: string,
-      body:
-        | AgentsSetSelectedReposForOrgVariableBody
-        | Signal<AgentsSetSelectedReposForOrgVariableBody>,
-    ) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/orgs/${org}/agents/variables/${name}/repositories`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('AGENTS_SET_SELECTED_REPOS_FOR_ORG_VARIABLE');
+
+export function provideAgentsSetSelectedReposForOrgVariable(): FactoryProvider {
+  return {
+    provide: AGENTS_SET_SELECTED_REPOS_FOR_ORG_VARIABLE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        name: string,
+        body:
+          | AgentsSetSelectedReposForOrgVariableBody
+          | Signal<AgentsSetSelectedReposForOrgVariableBody>,
+      ) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/orgs/${org}/agents/variables/${name}/repositories`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

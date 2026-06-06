@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,9 +16,13 @@ export const ACTIONS_SET_SELECTED_REPOSITORIES_ENABLED_GITHUB_ACTIONS_ORGANIZATI
         | ActionsSetSelectedRepositoriesEnabledGithubActionsOrganizationBody
         | Signal<ActionsSetSelectedRepositoriesEnabledGithubActionsOrganizationBody>,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('ACTIONS_SET_SELECTED_REPOSITORIES_ENABLED_GITHUB_ACTIONS_ORGANIZATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_SET_SELECTED_REPOSITORIES_ENABLED_GITHUB_ACTIONS_ORGANIZATION');
+
+export function provideActionsSetSelectedRepositoriesEnabledGithubActionsOrganization(): FactoryProvider {
+  return {
+    provide:
+      ACTIONS_SET_SELECTED_REPOSITORIES_ENABLED_GITHUB_ACTIONS_ORGANIZATION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -32,4 +36,5 @@ export const ACTIONS_SET_SELECTED_REPOSITORIES_ENABLED_GITHUB_ACTIONS_ORGANIZATI
           body,
         }));
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const POST_ACCOUNTS_ACCOUNT_LOGIN_LINKS = new InjectionToken<
       | PostAccountsAccountLoginLinksBody
       | Signal<PostAccountsAccountLoginLinksBody>,
   ) => ReturnType<typeof httpResource<PostAccountsAccountLoginLinksResponse>>
->('POST_ACCOUNTS_ACCOUNT_LOGIN_LINKS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      account: string,
-      body:
-        | PostAccountsAccountLoginLinksBody
-        | Signal<PostAccountsAccountLoginLinksBody>,
-    ) =>
-      httpResource<PostAccountsAccountLoginLinksResponse>(() => ({
-        url: `${base}/v1/accounts/${account}/login_links`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_ACCOUNTS_ACCOUNT_LOGIN_LINKS');
+
+export function providePostAccountsAccountLoginLinks(): FactoryProvider {
+  return {
+    provide: POST_ACCOUNTS_ACCOUNT_LOGIN_LINKS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        account: string,
+        body:
+          | PostAccountsAccountLoginLinksBody
+          | Signal<PostAccountsAccountLoginLinksBody>,
+      ) =>
+        httpResource<PostAccountsAccountLoginLinksResponse>(() => ({
+          url: `${base}/v1/accounts/${account}/login_links`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

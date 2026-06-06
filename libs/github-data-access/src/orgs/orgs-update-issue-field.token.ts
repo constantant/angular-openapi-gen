@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const ORGS_UPDATE_ISSUE_FIELD = new InjectionToken<
     issueFieldId: string,
     body: OrgsUpdateIssueFieldBody | Signal<OrgsUpdateIssueFieldBody>,
   ) => ReturnType<typeof httpResource<OrgsUpdateIssueFieldResponse>>
->('ORGS_UPDATE_ISSUE_FIELD', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      issueFieldId: string,
-      body: OrgsUpdateIssueFieldBody | Signal<OrgsUpdateIssueFieldBody>,
-    ) =>
-      httpResource<OrgsUpdateIssueFieldResponse>(() => ({
-        url: `${base}/orgs/${org}/issue-fields/${issueFieldId}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('ORGS_UPDATE_ISSUE_FIELD');
+
+export function provideOrgsUpdateIssueField(): FactoryProvider {
+  return {
+    provide: ORGS_UPDATE_ISSUE_FIELD,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        issueFieldId: string,
+        body: OrgsUpdateIssueFieldBody | Signal<OrgsUpdateIssueFieldBody>,
+      ) =>
+        httpResource<OrgsUpdateIssueFieldResponse>(() => ({
+          url: `${base}/orgs/${org}/issue-fields/${issueFieldId}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

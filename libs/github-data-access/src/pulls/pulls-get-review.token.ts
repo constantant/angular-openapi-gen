@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,18 +13,22 @@ export const PULLS_GET_REVIEW = new InjectionToken<
     pullNumber: string,
     reviewId: string,
   ) => ReturnType<typeof httpResource<PullsGetReviewResponse>>
->('PULLS_GET_REVIEW', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      pullNumber: string,
-      reviewId: string,
-    ) =>
-      httpResource<PullsGetReviewResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/reviews/${reviewId}`,
-      }));
-  },
-});
+>('PULLS_GET_REVIEW');
+
+export function providePullsGetReview(): FactoryProvider {
+  return {
+    provide: PULLS_GET_REVIEW,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        pullNumber: string,
+        reviewId: string,
+      ) =>
+        httpResource<PullsGetReviewResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/reviews/${reviewId}`,
+        }));
+    },
+  };
+}

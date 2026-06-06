@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const CODE_SCANNING_GET_VARIANT_ANALYSIS = new InjectionToken<
     repo: string,
     codeqlVariantAnalysisId: string,
   ) => ReturnType<typeof httpResource<CodeScanningGetVariantAnalysisResponse>>
->('CODE_SCANNING_GET_VARIANT_ANALYSIS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, codeqlVariantAnalysisId: string) =>
-      httpResource<CodeScanningGetVariantAnalysisResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/code-scanning/codeql/variant-analyses/${codeqlVariantAnalysisId}`,
-      }));
-  },
-});
+>('CODE_SCANNING_GET_VARIANT_ANALYSIS');
+
+export function provideCodeScanningGetVariantAnalysis(): FactoryProvider {
+  return {
+    provide: CODE_SCANNING_GET_VARIANT_ANALYSIS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, codeqlVariantAnalysisId: string) =>
+        httpResource<CodeScanningGetVariantAnalysisResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/code-scanning/codeql/variant-analyses/${codeqlVariantAnalysisId}`,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const POST_TERMINAL_READERS_READER_PROCESS_PAYMENT_INTENT =
     ) => ReturnType<
       typeof httpResource<PostTerminalReadersReaderProcessPaymentIntentResponse>
     >
-  >('POST_TERMINAL_READERS_READER_PROCESS_PAYMENT_INTENT', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_TERMINAL_READERS_READER_PROCESS_PAYMENT_INTENT');
+
+export function providePostTerminalReadersReaderProcessPaymentIntent(): FactoryProvider {
+  return {
+    provide: POST_TERMINAL_READERS_READER_PROCESS_PAYMENT_INTENT,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         reader: string,
@@ -38,4 +41,5 @@ export const POST_TERMINAL_READERS_READER_PROCESS_PAYMENT_INTENT =
           }),
         );
     },
-  });
+  };
+}

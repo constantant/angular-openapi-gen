@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const REPOS_COMPARE_COMMITS = new InjectionToken<
       | ReposCompareCommitsParams
       | (() => ReposCompareCommitsParams | undefined),
   ) => ReturnType<typeof httpResource<ReposCompareCommitsResponse>>
->('REPOS_COMPARE_COMMITS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      basehead: string,
-      params?:
-        | ReposCompareCommitsParams
-        | (() => ReposCompareCommitsParams | undefined),
-    ) =>
-      httpResource<ReposCompareCommitsResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/compare/${basehead}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('REPOS_COMPARE_COMMITS');
+
+export function provideReposCompareCommits(): FactoryProvider {
+  return {
+    provide: REPOS_COMPARE_COMMITS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        basehead: string,
+        params?:
+          | ReposCompareCommitsParams
+          | (() => ReposCompareCommitsParams | undefined),
+      ) =>
+        httpResource<ReposCompareCommitsResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/compare/${basehead}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -9,14 +9,18 @@ export const REPOS_DELETE_RELEASE = new InjectionToken<
     repo: string,
     releaseId: string,
   ) => ReturnType<typeof httpResource<unknown>>
->('REPOS_DELETE_RELEASE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, releaseId: string) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/repos/${owner}/${repo}/releases/${releaseId}`,
-        method: 'DELETE',
-      }));
-  },
-});
+>('REPOS_DELETE_RELEASE');
+
+export function provideReposDeleteRelease(): FactoryProvider {
+  return {
+    provide: REPOS_DELETE_RELEASE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, releaseId: string) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/repos/${owner}/${repo}/releases/${releaseId}`,
+          method: 'DELETE',
+        }));
+    },
+  };
+}

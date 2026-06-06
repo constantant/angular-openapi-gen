@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const HOSTED_COMPUTE_LIST_NETWORK_CONFIGURATIONS_FOR_ORG =
     ) => ReturnType<
       typeof httpResource<HostedComputeListNetworkConfigurationsForOrgResponse>
     >
-  >('HOSTED_COMPUTE_LIST_NETWORK_CONFIGURATIONS_FOR_ORG', {
-    providedIn: 'root',
-    factory: () => {
+  >('HOSTED_COMPUTE_LIST_NETWORK_CONFIGURATIONS_FOR_ORG');
+
+export function provideHostedComputeListNetworkConfigurationsForOrg(): FactoryProvider {
+  return {
+    provide: HOSTED_COMPUTE_LIST_NETWORK_CONFIGURATIONS_FOR_ORG,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -45,4 +48,5 @@ export const HOSTED_COMPUTE_LIST_NETWORK_CONFIGURATIONS_FOR_ORG =
           }),
         );
     },
-  });
+  };
+}

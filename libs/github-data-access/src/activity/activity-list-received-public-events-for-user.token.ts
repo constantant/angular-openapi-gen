@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,24 +18,28 @@ export const ACTIVITY_LIST_RECEIVED_PUBLIC_EVENTS_FOR_USER = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<ActivityListReceivedPublicEventsForUserResponse>
   >
->('ACTIVITY_LIST_RECEIVED_PUBLIC_EVENTS_FOR_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      username: string,
-      params?:
-        | ActivityListReceivedPublicEventsForUserParams
-        | (() => ActivityListReceivedPublicEventsForUserParams | undefined),
-    ) =>
-      httpResource<ActivityListReceivedPublicEventsForUserResponse>(() => ({
-        url: `${base}/users/${username}/received_events/public`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ACTIVITY_LIST_RECEIVED_PUBLIC_EVENTS_FOR_USER');
+
+export function provideActivityListReceivedPublicEventsForUser(): FactoryProvider {
+  return {
+    provide: ACTIVITY_LIST_RECEIVED_PUBLIC_EVENTS_FOR_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        username: string,
+        params?:
+          | ActivityListReceivedPublicEventsForUserParams
+          | (() => ActivityListReceivedPublicEventsForUserParams | undefined),
+      ) =>
+        httpResource<ActivityListReceivedPublicEventsForUserResponse>(() => ({
+          url: `${base}/users/${username}/received_events/public`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

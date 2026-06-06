@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,22 +19,26 @@ export const ACTIONS_CREATE_WORKFLOW_DISPATCH = new InjectionToken<
       | ActionsCreateWorkflowDispatchBody
       | Signal<ActionsCreateWorkflowDispatchBody>,
   ) => ReturnType<typeof httpResource<ActionsCreateWorkflowDispatchResponse>>
->('ACTIONS_CREATE_WORKFLOW_DISPATCH', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      workflowId: string,
-      body:
-        | ActionsCreateWorkflowDispatchBody
-        | Signal<ActionsCreateWorkflowDispatchBody>,
-    ) =>
-      httpResource<ActionsCreateWorkflowDispatchResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ACTIONS_CREATE_WORKFLOW_DISPATCH');
+
+export function provideActionsCreateWorkflowDispatch(): FactoryProvider {
+  return {
+    provide: ACTIONS_CREATE_WORKFLOW_DISPATCH,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        workflowId: string,
+        body:
+          | ActionsCreateWorkflowDispatchBody
+          | Signal<ActionsCreateWorkflowDispatchBody>,
+      ) =>
+        httpResource<ActionsCreateWorkflowDispatchResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/actions/workflows/${workflowId}/dispatches`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const POST_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN =
     ) => ReturnType<
       typeof httpResource<PostIssuingPersonalizationDesignsPersonalizationDesignResponse>
     >
-  >('POST_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN');
+
+export function providePostIssuingPersonalizationDesignsPersonalizationDesign(): FactoryProvider {
+  return {
+    provide: POST_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         personalizationDesign: string,
@@ -39,4 +42,5 @@ export const POST_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN =
           }),
         );
     },
-  });
+  };
+}

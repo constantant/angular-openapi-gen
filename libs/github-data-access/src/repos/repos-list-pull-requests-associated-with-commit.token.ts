@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT =
     ) => ReturnType<
       typeof httpResource<ReposListPullRequestsAssociatedWithCommitResponse>
     >
-  >('REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT', {
-    providedIn: 'root',
-    factory: () => {
+  >('REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT');
+
+export function provideReposListPullRequestsAssociatedWithCommit(): FactoryProvider {
+  return {
+    provide: REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         owner: string,
@@ -43,4 +46,5 @@ export const REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT =
           >,
         }));
     },
-  });
+  };
+}

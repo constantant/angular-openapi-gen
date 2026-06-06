@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,20 +15,24 @@ export const USERS_LIST_ATTESTATIONS_BULK = new InjectionToken<
     username: string,
     body: UsersListAttestationsBulkBody | Signal<UsersListAttestationsBulkBody>,
   ) => ReturnType<typeof httpResource<UsersListAttestationsBulkResponse>>
->('USERS_LIST_ATTESTATIONS_BULK', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      username: string,
-      body:
-        | UsersListAttestationsBulkBody
-        | Signal<UsersListAttestationsBulkBody>,
-    ) =>
-      httpResource<UsersListAttestationsBulkResponse>(() => ({
-        url: `${base}/users/${username}/attestations/bulk-list`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('USERS_LIST_ATTESTATIONS_BULK');
+
+export function provideUsersListAttestationsBulk(): FactoryProvider {
+  return {
+    provide: USERS_LIST_ATTESTATIONS_BULK,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        username: string,
+        body:
+          | UsersListAttestationsBulkBody
+          | Signal<UsersListAttestationsBulkBody>,
+      ) =>
+        httpResource<UsersListAttestationsBulkResponse>(() => ({
+          url: `${base}/users/${username}/attestations/bulk-list`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

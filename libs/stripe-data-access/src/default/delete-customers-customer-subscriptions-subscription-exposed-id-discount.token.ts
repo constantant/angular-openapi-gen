@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -22,26 +22,28 @@ export const DELETE_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DIS
     ) => ReturnType<
       typeof httpResource<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse>
     >
-  >(
-    'DELETE_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT',
-    {
-      providedIn: 'root',
-      factory: () => {
-        const base = inject(STRIPE_BASE_URL);
-        return (
-          customer: string,
-          subscriptionExposedId: string,
-          body:
-            | DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody
-            | Signal<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody>,
-        ) =>
-          httpResource<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse>(
-            () => ({
-              url: `${base}/v1/customers/${customer}/subscriptions/${subscriptionExposedId}/discount`,
-              method: 'DELETE',
-              body,
-            }),
-          );
-      },
+  >('DELETE_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT');
+
+export function provideDeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscount(): FactoryProvider {
+  return {
+    provide:
+      DELETE_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        customer: string,
+        subscriptionExposedId: string,
+        body:
+          | DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody
+          | Signal<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody>,
+      ) =>
+        httpResource<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse>(
+          () => ({
+            url: `${base}/v1/customers/${customer}/subscriptions/${subscriptionExposedId}/discount`,
+            method: 'DELETE',
+            body,
+          }),
+        );
     },
-  );
+  };
+}

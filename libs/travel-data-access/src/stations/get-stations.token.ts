@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { TRAVEL_BASE_URL } from '../api-base-url.token';
@@ -13,21 +13,25 @@ export const GET_STATIONS = new InjectionToken<
   (
     params?: GetStationsParams | (() => GetStationsParams | undefined),
   ) => ReturnType<typeof httpResource<GetStationsResponse>>
->('GET_STATIONS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(TRAVEL_BASE_URL);
-    return (
-      params?: GetStationsParams | (() => GetStationsParams | undefined),
-    ) =>
-      httpResource<GetStationsResponse>(() => ({
-        url: `${base}/stations`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_STATIONS');
+
+export function provideGetStations(): FactoryProvider {
+  return {
+    provide: GET_STATIONS,
+    useFactory: () => {
+      const base = inject(TRAVEL_BASE_URL);
+      return (
+        params?: GetStationsParams | (() => GetStationsParams | undefined),
+      ) =>
+        httpResource<GetStationsResponse>(() => ({
+          url: `${base}/stations`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

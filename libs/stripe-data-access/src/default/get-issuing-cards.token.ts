@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -13,23 +13,27 @@ export const GET_ISSUING_CARDS = new InjectionToken<
   (
     params?: GetIssuingCardsParams | (() => GetIssuingCardsParams | undefined),
   ) => ReturnType<typeof httpResource<GetIssuingCardsResponse>>
->('GET_ISSUING_CARDS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      params?:
-        | GetIssuingCardsParams
-        | (() => GetIssuingCardsParams | undefined),
-    ) =>
-      httpResource<GetIssuingCardsResponse>(() => ({
-        url: `${base}/v1/issuing/cards`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_ISSUING_CARDS');
+
+export function provideGetIssuingCards(): FactoryProvider {
+  return {
+    provide: GET_ISSUING_CARDS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        params?:
+          | GetIssuingCardsParams
+          | (() => GetIssuingCardsParams | undefined),
+      ) =>
+        httpResource<GetIssuingCardsResponse>(() => ({
+          url: `${base}/v1/issuing/cards`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

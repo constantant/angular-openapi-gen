@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const POST_QUOTES_QUOTE = new InjectionToken<
     quote: string,
     body: PostQuotesQuoteBody | Signal<PostQuotesQuoteBody>,
   ) => ReturnType<typeof httpResource<PostQuotesQuoteResponse>>
->('POST_QUOTES_QUOTE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      quote: string,
-      body: PostQuotesQuoteBody | Signal<PostQuotesQuoteBody>,
-    ) =>
-      httpResource<PostQuotesQuoteResponse>(() => ({
-        url: `${base}/v1/quotes/${quote}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_QUOTES_QUOTE');
+
+export function providePostQuotesQuote(): FactoryProvider {
+  return {
+    provide: POST_QUOTES_QUOTE,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        quote: string,
+        body: PostQuotesQuoteBody | Signal<PostQuotesQuoteBody>,
+      ) =>
+        httpResource<PostQuotesQuoteResponse>(() => ({
+          url: `${base}/v1/quotes/${quote}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

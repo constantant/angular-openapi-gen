@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,22 +19,26 @@ export const REPOS_ADD_USER_ACCESS_RESTRICTIONS = new InjectionToken<
       | ReposAddUserAccessRestrictionsBody
       | Signal<ReposAddUserAccessRestrictionsBody>,
   ) => ReturnType<typeof httpResource<ReposAddUserAccessRestrictionsResponse>>
->('REPOS_ADD_USER_ACCESS_RESTRICTIONS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      branch: string,
-      body:
-        | ReposAddUserAccessRestrictionsBody
-        | Signal<ReposAddUserAccessRestrictionsBody>,
-    ) =>
-      httpResource<ReposAddUserAccessRestrictionsResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('REPOS_ADD_USER_ACCESS_RESTRICTIONS');
+
+export function provideReposAddUserAccessRestrictions(): FactoryProvider {
+  return {
+    provide: REPOS_ADD_USER_ACCESS_RESTRICTIONS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        branch: string,
+        body:
+          | ReposAddUserAccessRestrictionsBody
+          | Signal<ReposAddUserAccessRestrictionsBody>,
+      ) =>
+        httpResource<ReposAddUserAccessRestrictionsResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

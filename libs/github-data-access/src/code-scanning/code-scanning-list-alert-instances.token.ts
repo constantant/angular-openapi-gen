@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const CODE_SCANNING_LIST_ALERT_INSTANCES = new InjectionToken<
       | CodeScanningListAlertInstancesParams
       | (() => CodeScanningListAlertInstancesParams | undefined),
   ) => ReturnType<typeof httpResource<CodeScanningListAlertInstancesResponse>>
->('CODE_SCANNING_LIST_ALERT_INSTANCES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      alertNumber: string,
-      params?:
-        | CodeScanningListAlertInstancesParams
-        | (() => CodeScanningListAlertInstancesParams | undefined),
-    ) =>
-      httpResource<CodeScanningListAlertInstancesResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/code-scanning/alerts/${alertNumber}/instances`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('CODE_SCANNING_LIST_ALERT_INSTANCES');
+
+export function provideCodeScanningListAlertInstances(): FactoryProvider {
+  return {
+    provide: CODE_SCANNING_LIST_ALERT_INSTANCES,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        alertNumber: string,
+        params?:
+          | CodeScanningListAlertInstancesParams
+          | (() => CodeScanningListAlertInstancesParams | undefined),
+      ) =>
+        httpResource<CodeScanningListAlertInstancesResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/code-scanning/alerts/${alertNumber}/instances`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

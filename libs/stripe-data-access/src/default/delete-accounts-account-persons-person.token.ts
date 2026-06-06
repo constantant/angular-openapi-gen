@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,21 +20,25 @@ export const DELETE_ACCOUNTS_ACCOUNT_PERSONS_PERSON = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<DeleteAccountsAccountPersonsPersonResponse>
   >
->('DELETE_ACCOUNTS_ACCOUNT_PERSONS_PERSON', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      account: string,
-      person: string,
-      body:
-        | DeleteAccountsAccountPersonsPersonBody
-        | Signal<DeleteAccountsAccountPersonsPersonBody>,
-    ) =>
-      httpResource<DeleteAccountsAccountPersonsPersonResponse>(() => ({
-        url: `${base}/v1/accounts/${account}/persons/${person}`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('DELETE_ACCOUNTS_ACCOUNT_PERSONS_PERSON');
+
+export function provideDeleteAccountsAccountPersonsPerson(): FactoryProvider {
+  return {
+    provide: DELETE_ACCOUNTS_ACCOUNT_PERSONS_PERSON,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        account: string,
+        person: string,
+        body:
+          | DeleteAccountsAccountPersonsPersonBody
+          | Signal<DeleteAccountsAccountPersonsPersonBody>,
+      ) =>
+        httpResource<DeleteAccountsAccountPersonsPersonResponse>(() => ({
+          url: `${base}/v1/accounts/${account}/persons/${person}`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const MIGRATIONS_LIST_FOR_ORG = new InjectionToken<
       | MigrationsListForOrgParams
       | (() => MigrationsListForOrgParams | undefined),
   ) => ReturnType<typeof httpResource<MigrationsListForOrgResponse>>
->('MIGRATIONS_LIST_FOR_ORG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      params?:
-        | MigrationsListForOrgParams
-        | (() => MigrationsListForOrgParams | undefined),
-    ) =>
-      httpResource<MigrationsListForOrgResponse>(() => ({
-        url: `${base}/orgs/${org}/migrations`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('MIGRATIONS_LIST_FOR_ORG');
+
+export function provideMigrationsListForOrg(): FactoryProvider {
+  return {
+    provide: MIGRATIONS_LIST_FOR_ORG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | MigrationsListForOrgParams
+          | (() => MigrationsListForOrgParams | undefined),
+      ) =>
+        httpResource<MigrationsListForOrgResponse>(() => ({
+          url: `${base}/orgs/${org}/migrations`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

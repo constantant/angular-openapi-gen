@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const CODE_QUALITY_UPDATE_SETUP = new InjectionToken<
     repo: string,
     body: CodeQualityUpdateSetupBody | Signal<CodeQualityUpdateSetupBody>,
   ) => ReturnType<typeof httpResource<CodeQualityUpdateSetupResponse>>
->('CODE_QUALITY_UPDATE_SETUP', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: CodeQualityUpdateSetupBody | Signal<CodeQualityUpdateSetupBody>,
-    ) =>
-      httpResource<CodeQualityUpdateSetupResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/code-quality/setup`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('CODE_QUALITY_UPDATE_SETUP');
+
+export function provideCodeQualityUpdateSetup(): FactoryProvider {
+  return {
+    provide: CODE_QUALITY_UPDATE_SETUP,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: CodeQualityUpdateSetupBody | Signal<CodeQualityUpdateSetupBody>,
+      ) =>
+        httpResource<CodeQualityUpdateSetupResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/code-quality/setup`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

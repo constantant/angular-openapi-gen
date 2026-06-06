@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const DELETE_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<DeleteTestHelpersTestClocksTestClockResponse>
   >
->('DELETE_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      testClock: string,
-      body:
-        | DeleteTestHelpersTestClocksTestClockBody
-        | Signal<DeleteTestHelpersTestClocksTestClockBody>,
-    ) =>
-      httpResource<DeleteTestHelpersTestClocksTestClockResponse>(() => ({
-        url: `${base}/v1/test_helpers/test_clocks/${testClock}`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('DELETE_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK');
+
+export function provideDeleteTestHelpersTestClocksTestClock(): FactoryProvider {
+  return {
+    provide: DELETE_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        testClock: string,
+        body:
+          | DeleteTestHelpersTestClocksTestClockBody
+          | Signal<DeleteTestHelpersTestClocksTestClockBody>,
+      ) =>
+        httpResource<DeleteTestHelpersTestClocksTestClockResponse>(() => ({
+          url: `${base}/v1/test_helpers/test_clocks/${testClock}`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

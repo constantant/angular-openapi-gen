@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -11,13 +11,17 @@ export const DEPENDENCY_GRAPH_EXPORT_SBOM = new InjectionToken<
     owner: string,
     repo: string,
   ) => ReturnType<typeof httpResource<DependencyGraphExportSbomResponse>>
->('DEPENDENCY_GRAPH_EXPORT_SBOM', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string) =>
-      httpResource<DependencyGraphExportSbomResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/dependency-graph/sbom`,
-      }));
-  },
-});
+>('DEPENDENCY_GRAPH_EXPORT_SBOM');
+
+export function provideDependencyGraphExportSbom(): FactoryProvider {
+  return {
+    provide: DEPENDENCY_GRAPH_EXPORT_SBOM,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string) =>
+        httpResource<DependencyGraphExportSbomResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/dependency-graph/sbom`,
+        }));
+    },
+  };
+}

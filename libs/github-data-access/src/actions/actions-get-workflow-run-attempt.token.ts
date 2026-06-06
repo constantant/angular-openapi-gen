@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,27 +19,31 @@ export const ACTIONS_GET_WORKFLOW_RUN_ATTEMPT = new InjectionToken<
       | ActionsGetWorkflowRunAttemptParams
       | (() => ActionsGetWorkflowRunAttemptParams | undefined),
   ) => ReturnType<typeof httpResource<ActionsGetWorkflowRunAttemptResponse>>
->('ACTIONS_GET_WORKFLOW_RUN_ATTEMPT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      runId: string,
-      attemptNumber: string,
-      params?:
-        | ActionsGetWorkflowRunAttemptParams
-        | (() => ActionsGetWorkflowRunAttemptParams | undefined),
-    ) =>
-      httpResource<ActionsGetWorkflowRunAttemptResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/attempts/${attemptNumber}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ACTIONS_GET_WORKFLOW_RUN_ATTEMPT');
+
+export function provideActionsGetWorkflowRunAttempt(): FactoryProvider {
+  return {
+    provide: ACTIONS_GET_WORKFLOW_RUN_ATTEMPT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        runId: string,
+        attemptNumber: string,
+        params?:
+          | ActionsGetWorkflowRunAttemptParams
+          | (() => ActionsGetWorkflowRunAttemptParams | undefined),
+      ) =>
+        httpResource<ActionsGetWorkflowRunAttemptResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/attempts/${attemptNumber}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

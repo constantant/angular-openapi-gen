@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,22 +17,26 @@ export const ISSUES_ADD_ISSUE_FIELD_VALUES = new InjectionToken<
     issueNumber: string,
     body: IssuesAddIssueFieldValuesBody | Signal<IssuesAddIssueFieldValuesBody>,
   ) => ReturnType<typeof httpResource<IssuesAddIssueFieldValuesResponse>>
->('ISSUES_ADD_ISSUE_FIELD_VALUES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      issueNumber: string,
-      body:
-        | IssuesAddIssueFieldValuesBody
-        | Signal<IssuesAddIssueFieldValuesBody>,
-    ) =>
-      httpResource<IssuesAddIssueFieldValuesResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/issue-field-values`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ISSUES_ADD_ISSUE_FIELD_VALUES');
+
+export function provideIssuesAddIssueFieldValues(): FactoryProvider {
+  return {
+    provide: ISSUES_ADD_ISSUE_FIELD_VALUES,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        issueNumber: string,
+        body:
+          | IssuesAddIssueFieldValuesBody
+          | Signal<IssuesAddIssueFieldValuesBody>,
+      ) =>
+        httpResource<IssuesAddIssueFieldValuesResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/issue-field-values`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

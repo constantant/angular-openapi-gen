@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const ACTIONS_GET_ARTIFACT = new InjectionToken<
     repo: string,
     artifactId: string,
   ) => ReturnType<typeof httpResource<ActionsGetArtifactResponse>>
->('ACTIONS_GET_ARTIFACT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, artifactId: string) =>
-      httpResource<ActionsGetArtifactResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/actions/artifacts/${artifactId}`,
-      }));
-  },
-});
+>('ACTIONS_GET_ARTIFACT');
+
+export function provideActionsGetArtifact(): FactoryProvider {
+  return {
+    provide: ACTIONS_GET_ARTIFACT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, artifactId: string) =>
+        httpResource<ActionsGetArtifactResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/actions/artifacts/${artifactId}`,
+        }));
+    },
+  };
+}

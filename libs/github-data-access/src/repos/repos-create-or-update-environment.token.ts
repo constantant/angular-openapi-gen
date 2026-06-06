@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,22 +19,26 @@ export const REPOS_CREATE_OR_UPDATE_ENVIRONMENT = new InjectionToken<
       | ReposCreateOrUpdateEnvironmentBody
       | Signal<ReposCreateOrUpdateEnvironmentBody>,
   ) => ReturnType<typeof httpResource<ReposCreateOrUpdateEnvironmentResponse>>
->('REPOS_CREATE_OR_UPDATE_ENVIRONMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      environmentName: string,
-      body:
-        | ReposCreateOrUpdateEnvironmentBody
-        | Signal<ReposCreateOrUpdateEnvironmentBody>,
-    ) =>
-      httpResource<ReposCreateOrUpdateEnvironmentResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('REPOS_CREATE_OR_UPDATE_ENVIRONMENT');
+
+export function provideReposCreateOrUpdateEnvironment(): FactoryProvider {
+  return {
+    provide: REPOS_CREATE_OR_UPDATE_ENVIRONMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        environmentName: string,
+        body:
+          | ReposCreateOrUpdateEnvironmentBody
+          | Signal<ReposCreateOrUpdateEnvironmentBody>,
+      ) =>
+        httpResource<ReposCreateOrUpdateEnvironmentResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

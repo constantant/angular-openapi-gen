@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const GET_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS = new InjectionToken<
       | GetCustomersCustomerBankAccountsParams
       | (() => GetCustomersCustomerBankAccountsParams | undefined),
   ) => ReturnType<typeof httpResource<GetCustomersCustomerBankAccountsResponse>>
->('GET_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      customer: string,
-      params?:
-        | GetCustomersCustomerBankAccountsParams
-        | (() => GetCustomersCustomerBankAccountsParams | undefined),
-    ) =>
-      httpResource<GetCustomersCustomerBankAccountsResponse>(() => ({
-        url: `${base}/v1/customers/${customer}/bank_accounts`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS');
+
+export function provideGetCustomersCustomerBankAccounts(): FactoryProvider {
+  return {
+    provide: GET_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        customer: string,
+        params?:
+          | GetCustomersCustomerBankAccountsParams
+          | (() => GetCustomersCustomerBankAccountsParams | undefined),
+      ) =>
+        httpResource<GetCustomersCustomerBankAccountsResponse>(() => ({
+          url: `${base}/v1/customers/${customer}/bank_accounts`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

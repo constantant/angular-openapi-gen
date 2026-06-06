@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,13 +13,17 @@ export const ACTIONS_LIST_CUSTOM_IMAGE_VERSIONS_FOR_ORG = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<ActionsListCustomImageVersionsForOrgResponse>
   >
->('ACTIONS_LIST_CUSTOM_IMAGE_VERSIONS_FOR_ORG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (imageDefinitionId: string, org: string) =>
-      httpResource<ActionsListCustomImageVersionsForOrgResponse>(() => ({
-        url: `${base}/orgs/${org}/actions/hosted-runners/images/custom/${imageDefinitionId}/versions`,
-      }));
-  },
-});
+>('ACTIONS_LIST_CUSTOM_IMAGE_VERSIONS_FOR_ORG');
+
+export function provideActionsListCustomImageVersionsForOrg(): FactoryProvider {
+  return {
+    provide: ACTIONS_LIST_CUSTOM_IMAGE_VERSIONS_FOR_ORG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (imageDefinitionId: string, org: string) =>
+        httpResource<ActionsListCustomImageVersionsForOrgResponse>(() => ({
+          url: `${base}/orgs/${org}/actions/hosted-runners/images/custom/${imageDefinitionId}/versions`,
+        }));
+    },
+  };
+}

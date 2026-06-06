@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,18 +13,22 @@ export const PACKAGES_GET_PACKAGE_VERSION_FOR_USER = new InjectionToken<
     packageVersionId: string,
     username: string,
   ) => ReturnType<typeof httpResource<PackagesGetPackageVersionForUserResponse>>
->('PACKAGES_GET_PACKAGE_VERSION_FOR_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      packageType: string,
-      packageName: string,
-      packageVersionId: string,
-      username: string,
-    ) =>
-      httpResource<PackagesGetPackageVersionForUserResponse>(() => ({
-        url: `${base}/users/${username}/packages/${packageType}/${packageName}/versions/${packageVersionId}`,
-      }));
-  },
-});
+>('PACKAGES_GET_PACKAGE_VERSION_FOR_USER');
+
+export function providePackagesGetPackageVersionForUser(): FactoryProvider {
+  return {
+    provide: PACKAGES_GET_PACKAGE_VERSION_FOR_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        packageType: string,
+        packageName: string,
+        packageVersionId: string,
+        username: string,
+      ) =>
+        httpResource<PackagesGetPackageVersionForUserResponse>(() => ({
+          url: `${base}/users/${username}/packages/${packageType}/${packageName}/versions/${packageVersionId}`,
+        }));
+    },
+  };
+}

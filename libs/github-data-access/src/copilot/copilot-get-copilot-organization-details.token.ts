@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const COPILOT_GET_COPILOT_ORGANIZATION_DETAILS = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<CopilotGetCopilotOrganizationDetailsResponse>
   >
->('COPILOT_GET_COPILOT_ORGANIZATION_DETAILS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (org: string) =>
-      httpResource<CopilotGetCopilotOrganizationDetailsResponse>(() => ({
-        url: `${base}/orgs/${org}/copilot/billing`,
-      }));
-  },
-});
+>('COPILOT_GET_COPILOT_ORGANIZATION_DETAILS');
+
+export function provideCopilotGetCopilotOrganizationDetails(): FactoryProvider {
+  return {
+    provide: COPILOT_GET_COPILOT_ORGANIZATION_DETAILS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (org: string) =>
+        httpResource<CopilotGetCopilotOrganizationDetailsResponse>(() => ({
+          url: `${base}/orgs/${org}/copilot/billing`,
+        }));
+    },
+  };
+}

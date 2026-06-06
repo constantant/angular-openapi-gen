@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const DELETE_EPHEMERAL_KEYS_KEY = new InjectionToken<
     key: string,
     body: DeleteEphemeralKeysKeyBody | Signal<DeleteEphemeralKeysKeyBody>,
   ) => ReturnType<typeof httpResource<DeleteEphemeralKeysKeyResponse>>
->('DELETE_EPHEMERAL_KEYS_KEY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      key: string,
-      body: DeleteEphemeralKeysKeyBody | Signal<DeleteEphemeralKeysKeyBody>,
-    ) =>
-      httpResource<DeleteEphemeralKeysKeyResponse>(() => ({
-        url: `${base}/v1/ephemeral_keys/${key}`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('DELETE_EPHEMERAL_KEYS_KEY');
+
+export function provideDeleteEphemeralKeysKey(): FactoryProvider {
+  return {
+    provide: DELETE_EPHEMERAL_KEYS_KEY,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        key: string,
+        body: DeleteEphemeralKeysKeyBody | Signal<DeleteEphemeralKeysKeyBody>,
+      ) =>
+        httpResource<DeleteEphemeralKeysKeyResponse>(() => ({
+          url: `${base}/v1/ephemeral_keys/${key}`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

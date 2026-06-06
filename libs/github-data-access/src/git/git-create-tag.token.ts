@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const GIT_CREATE_TAG = new InjectionToken<
     repo: string,
     body: GitCreateTagBody | Signal<GitCreateTagBody>,
   ) => ReturnType<typeof httpResource<GitCreateTagResponse>>
->('GIT_CREATE_TAG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: GitCreateTagBody | Signal<GitCreateTagBody>,
-    ) =>
-      httpResource<GitCreateTagResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/git/tags`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('GIT_CREATE_TAG');
+
+export function provideGitCreateTag(): FactoryProvider {
+  return {
+    provide: GIT_CREATE_TAG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: GitCreateTagBody | Signal<GitCreateTagBody>,
+      ) =>
+        httpResource<GitCreateTagResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/git/tags`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

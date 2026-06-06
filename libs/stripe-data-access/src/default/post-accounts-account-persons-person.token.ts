@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -18,21 +18,25 @@ export const POST_ACCOUNTS_ACCOUNT_PERSONS_PERSON = new InjectionToken<
       | PostAccountsAccountPersonsPersonBody
       | Signal<PostAccountsAccountPersonsPersonBody>,
   ) => ReturnType<typeof httpResource<PostAccountsAccountPersonsPersonResponse>>
->('POST_ACCOUNTS_ACCOUNT_PERSONS_PERSON', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      account: string,
-      person: string,
-      body:
-        | PostAccountsAccountPersonsPersonBody
-        | Signal<PostAccountsAccountPersonsPersonBody>,
-    ) =>
-      httpResource<PostAccountsAccountPersonsPersonResponse>(() => ({
-        url: `${base}/v1/accounts/${account}/persons/${person}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_ACCOUNTS_ACCOUNT_PERSONS_PERSON');
+
+export function providePostAccountsAccountPersonsPerson(): FactoryProvider {
+  return {
+    provide: POST_ACCOUNTS_ACCOUNT_PERSONS_PERSON,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        account: string,
+        person: string,
+        body:
+          | PostAccountsAccountPersonsPersonBody
+          | Signal<PostAccountsAccountPersonsPersonBody>,
+      ) =>
+        httpResource<PostAccountsAccountPersonsPersonResponse>(() => ({
+          url: `${base}/v1/accounts/${account}/persons/${person}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

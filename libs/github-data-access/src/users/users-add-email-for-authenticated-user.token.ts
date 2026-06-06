@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,19 +18,23 @@ export const USERS_ADD_EMAIL_FOR_AUTHENTICATED_USER = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<UsersAddEmailForAuthenticatedUserResponse>
   >
->('USERS_ADD_EMAIL_FOR_AUTHENTICATED_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      body:
-        | UsersAddEmailForAuthenticatedUserBody
-        | Signal<UsersAddEmailForAuthenticatedUserBody>,
-    ) =>
-      httpResource<UsersAddEmailForAuthenticatedUserResponse>(() => ({
-        url: `${base}/user/emails`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('USERS_ADD_EMAIL_FOR_AUTHENTICATED_USER');
+
+export function provideUsersAddEmailForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: USERS_ADD_EMAIL_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        body:
+          | UsersAddEmailForAuthenticatedUserBody
+          | Signal<UsersAddEmailForAuthenticatedUserBody>,
+      ) =>
+        httpResource<UsersAddEmailForAuthenticatedUserResponse>(() => ({
+          url: `${base}/user/emails`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

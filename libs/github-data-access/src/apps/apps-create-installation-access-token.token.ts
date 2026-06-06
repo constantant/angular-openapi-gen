@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const APPS_CREATE_INSTALLATION_ACCESS_TOKEN = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<AppsCreateInstallationAccessTokenResponse>
   >
->('APPS_CREATE_INSTALLATION_ACCESS_TOKEN', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      installationId: string,
-      body:
-        | AppsCreateInstallationAccessTokenBody
-        | Signal<AppsCreateInstallationAccessTokenBody>,
-    ) =>
-      httpResource<AppsCreateInstallationAccessTokenResponse>(() => ({
-        url: `${base}/app/installations/${installationId}/access_tokens`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('APPS_CREATE_INSTALLATION_ACCESS_TOKEN');
+
+export function provideAppsCreateInstallationAccessToken(): FactoryProvider {
+  return {
+    provide: APPS_CREATE_INSTALLATION_ACCESS_TOKEN,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        installationId: string,
+        body:
+          | AppsCreateInstallationAccessTokenBody
+          | Signal<AppsCreateInstallationAccessTokenBody>,
+      ) =>
+        httpResource<AppsCreateInstallationAccessTokenResponse>(() => ({
+          url: `${base}/app/installations/${installationId}/access_tokens`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

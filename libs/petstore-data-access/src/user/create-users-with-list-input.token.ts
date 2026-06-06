@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
@@ -14,17 +14,23 @@ export const CREATE_USERS_WITH_LIST_INPUT = new InjectionToken<
   (
     body: CreateUsersWithListInputBody | Signal<CreateUsersWithListInputBody>,
   ) => ReturnType<typeof httpResource<CreateUsersWithListInputResponse>>
->('CREATE_USERS_WITH_LIST_INPUT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(PETSTORE_BASE_URL);
-    return (
-      body: CreateUsersWithListInputBody | Signal<CreateUsersWithListInputBody>,
-    ) =>
-      httpResource<CreateUsersWithListInputResponse>(() => ({
-        url: `${base}/user/createWithList`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('CREATE_USERS_WITH_LIST_INPUT');
+
+export function provideCreateUsersWithListInput(): FactoryProvider {
+  return {
+    provide: CREATE_USERS_WITH_LIST_INPUT,
+    useFactory: () => {
+      const base = inject(PETSTORE_BASE_URL);
+      return (
+        body:
+          | CreateUsersWithListInputBody
+          | Signal<CreateUsersWithListInputBody>,
+      ) =>
+        httpResource<CreateUsersWithListInputResponse>(() => ({
+          url: `${base}/user/createWithList`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

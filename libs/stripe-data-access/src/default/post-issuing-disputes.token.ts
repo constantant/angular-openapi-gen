@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,15 +14,21 @@ export const POST_ISSUING_DISPUTES = new InjectionToken<
   (
     body: PostIssuingDisputesBody | Signal<PostIssuingDisputesBody>,
   ) => ReturnType<typeof httpResource<PostIssuingDisputesResponse>>
->('POST_ISSUING_DISPUTES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (body: PostIssuingDisputesBody | Signal<PostIssuingDisputesBody>) =>
-      httpResource<PostIssuingDisputesResponse>(() => ({
-        url: `${base}/v1/issuing/disputes`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_ISSUING_DISPUTES');
+
+export function providePostIssuingDisputes(): FactoryProvider {
+  return {
+    provide: POST_ISSUING_DISPUTES,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body: PostIssuingDisputesBody | Signal<PostIssuingDisputesBody>,
+      ) =>
+        httpResource<PostIssuingDisputesResponse>(() => ({
+          url: `${base}/v1/issuing/disputes`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

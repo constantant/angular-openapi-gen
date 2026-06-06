@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const REACTIONS_LIST_FOR_ISSUE = new InjectionToken<
       | ReactionsListForIssueParams
       | (() => ReactionsListForIssueParams | undefined),
   ) => ReturnType<typeof httpResource<ReactionsListForIssueResponse>>
->('REACTIONS_LIST_FOR_ISSUE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      issueNumber: string,
-      params?:
-        | ReactionsListForIssueParams
-        | (() => ReactionsListForIssueParams | undefined),
-    ) =>
-      httpResource<ReactionsListForIssueResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/reactions`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('REACTIONS_LIST_FOR_ISSUE');
+
+export function provideReactionsListForIssue(): FactoryProvider {
+  return {
+    provide: REACTIONS_LIST_FOR_ISSUE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        issueNumber: string,
+        params?:
+          | ReactionsListForIssueParams
+          | (() => ReactionsListForIssueParams | undefined),
+      ) =>
+        httpResource<ReactionsListForIssueResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/reactions`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

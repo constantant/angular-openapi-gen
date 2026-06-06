@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const ACTIONS_LIST_ENVIRONMENT_VARIABLES = new InjectionToken<
       | ActionsListEnvironmentVariablesParams
       | (() => ActionsListEnvironmentVariablesParams | undefined),
   ) => ReturnType<typeof httpResource<ActionsListEnvironmentVariablesResponse>>
->('ACTIONS_LIST_ENVIRONMENT_VARIABLES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      environmentName: string,
-      params?:
-        | ActionsListEnvironmentVariablesParams
-        | (() => ActionsListEnvironmentVariablesParams | undefined),
-    ) =>
-      httpResource<ActionsListEnvironmentVariablesResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/variables`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ACTIONS_LIST_ENVIRONMENT_VARIABLES');
+
+export function provideActionsListEnvironmentVariables(): FactoryProvider {
+  return {
+    provide: ACTIONS_LIST_ENVIRONMENT_VARIABLES,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        environmentName: string,
+        params?:
+          | ActionsListEnvironmentVariablesParams
+          | (() => ActionsListEnvironmentVariablesParams | undefined),
+      ) =>
+        httpResource<ActionsListEnvironmentVariablesResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/variables`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

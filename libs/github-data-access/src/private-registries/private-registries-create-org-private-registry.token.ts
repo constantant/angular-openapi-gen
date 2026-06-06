@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const PRIVATE_REGISTRIES_CREATE_ORG_PRIVATE_REGISTRY =
     ) => ReturnType<
       typeof httpResource<PrivateRegistriesCreateOrgPrivateRegistryResponse>
     >
-  >('PRIVATE_REGISTRIES_CREATE_ORG_PRIVATE_REGISTRY', {
-    providedIn: 'root',
-    factory: () => {
+  >('PRIVATE_REGISTRIES_CREATE_ORG_PRIVATE_REGISTRY');
+
+export function providePrivateRegistriesCreateOrgPrivateRegistry(): FactoryProvider {
+  return {
+    provide: PRIVATE_REGISTRIES_CREATE_ORG_PRIVATE_REGISTRY,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -36,4 +39,5 @@ export const PRIVATE_REGISTRIES_CREATE_ORG_PRIVATE_REGISTRY =
           body,
         }));
     },
-  });
+  };
+}

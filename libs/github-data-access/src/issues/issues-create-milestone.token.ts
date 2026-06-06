@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const ISSUES_CREATE_MILESTONE = new InjectionToken<
     repo: string,
     body: IssuesCreateMilestoneBody | Signal<IssuesCreateMilestoneBody>,
   ) => ReturnType<typeof httpResource<IssuesCreateMilestoneResponse>>
->('ISSUES_CREATE_MILESTONE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: IssuesCreateMilestoneBody | Signal<IssuesCreateMilestoneBody>,
-    ) =>
-      httpResource<IssuesCreateMilestoneResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/milestones`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ISSUES_CREATE_MILESTONE');
+
+export function provideIssuesCreateMilestone(): FactoryProvider {
+  return {
+    provide: ISSUES_CREATE_MILESTONE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: IssuesCreateMilestoneBody | Signal<IssuesCreateMilestoneBody>,
+      ) =>
+        httpResource<IssuesCreateMilestoneResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/milestones`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

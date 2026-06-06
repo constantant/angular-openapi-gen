@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,25 +17,29 @@ export const COPILOT_COPILOT_METRICS_FOR_TEAM = new InjectionToken<
       | CopilotCopilotMetricsForTeamParams
       | (() => CopilotCopilotMetricsForTeamParams | undefined),
   ) => ReturnType<typeof httpResource<CopilotCopilotMetricsForTeamResponse>>
->('COPILOT_COPILOT_METRICS_FOR_TEAM', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      teamSlug: string,
-      params?:
-        | CopilotCopilotMetricsForTeamParams
-        | (() => CopilotCopilotMetricsForTeamParams | undefined),
-    ) =>
-      httpResource<CopilotCopilotMetricsForTeamResponse>(() => ({
-        url: `${base}/orgs/${org}/team/${teamSlug}/copilot/metrics`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('COPILOT_COPILOT_METRICS_FOR_TEAM');
+
+export function provideCopilotCopilotMetricsForTeam(): FactoryProvider {
+  return {
+    provide: COPILOT_COPILOT_METRICS_FOR_TEAM,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        teamSlug: string,
+        params?:
+          | CopilotCopilotMetricsForTeamParams
+          | (() => CopilotCopilotMetricsForTeamParams | undefined),
+      ) =>
+        httpResource<CopilotCopilotMetricsForTeamResponse>(() => ({
+          url: `${base}/orgs/${org}/team/${teamSlug}/copilot/metrics`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

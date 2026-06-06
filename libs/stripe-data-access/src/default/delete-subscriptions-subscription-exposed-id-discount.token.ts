@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const DELETE_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT =
     ) => ReturnType<
       typeof httpResource<DeleteSubscriptionsSubscriptionExposedIdDiscountResponse>
     >
-  >('DELETE_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT', {
-    providedIn: 'root',
-    factory: () => {
+  >('DELETE_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT');
+
+export function provideDeleteSubscriptionsSubscriptionExposedIdDiscount(): FactoryProvider {
+  return {
+    provide: DELETE_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         subscriptionExposedId: string,
@@ -38,4 +41,5 @@ export const DELETE_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT =
           }),
         );
     },
-  });
+  };
+}

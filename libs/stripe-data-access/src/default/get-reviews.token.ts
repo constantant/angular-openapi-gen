@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -13,19 +13,25 @@ export const GET_REVIEWS = new InjectionToken<
   (
     params?: GetReviewsParams | (() => GetReviewsParams | undefined),
   ) => ReturnType<typeof httpResource<GetReviewsResponse>>
->('GET_REVIEWS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (params?: GetReviewsParams | (() => GetReviewsParams | undefined)) =>
-      httpResource<GetReviewsResponse>(() => ({
-        url: `${base}/v1/reviews`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_REVIEWS');
+
+export function provideGetReviews(): FactoryProvider {
+  return {
+    provide: GET_REVIEWS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        params?: GetReviewsParams | (() => GetReviewsParams | undefined),
+      ) =>
+        httpResource<GetReviewsResponse>(() => ({
+          url: `${base}/v1/reviews`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

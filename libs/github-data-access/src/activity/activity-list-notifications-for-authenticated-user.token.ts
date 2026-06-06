@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const ACTIVITY_LIST_NOTIFICATIONS_FOR_AUTHENTICATED_USER =
     ) => ReturnType<
       typeof httpResource<ActivityListNotificationsForAuthenticatedUserResponse>
     >
-  >('ACTIVITY_LIST_NOTIFICATIONS_FOR_AUTHENTICATED_USER', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIVITY_LIST_NOTIFICATIONS_FOR_AUTHENTICATED_USER');
+
+export function provideActivityListNotificationsForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: ACTIVITY_LIST_NOTIFICATIONS_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         params?:
@@ -43,4 +46,5 @@ export const ACTIVITY_LIST_NOTIFICATIONS_FOR_AUTHENTICATED_USER =
           }),
         );
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const POST_TREASURY_FINANCIAL_ACCOUNTS = new InjectionToken<
       | PostTreasuryFinancialAccountsBody
       | Signal<PostTreasuryFinancialAccountsBody>,
   ) => ReturnType<typeof httpResource<PostTreasuryFinancialAccountsResponse>>
->('POST_TREASURY_FINANCIAL_ACCOUNTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body:
-        | PostTreasuryFinancialAccountsBody
-        | Signal<PostTreasuryFinancialAccountsBody>,
-    ) =>
-      httpResource<PostTreasuryFinancialAccountsResponse>(() => ({
-        url: `${base}/v1/treasury/financial_accounts`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TREASURY_FINANCIAL_ACCOUNTS');
+
+export function providePostTreasuryFinancialAccounts(): FactoryProvider {
+  return {
+    provide: POST_TREASURY_FINANCIAL_ACCOUNTS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body:
+          | PostTreasuryFinancialAccountsBody
+          | Signal<PostTreasuryFinancialAccountsBody>,
+      ) =>
+        httpResource<PostTreasuryFinancialAccountsResponse>(() => ({
+          url: `${base}/v1/treasury/financial_accounts`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

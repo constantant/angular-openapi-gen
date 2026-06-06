@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const POST_CLIMATE_ORDERS_ORDER_CANCEL = new InjectionToken<
       | PostClimateOrdersOrderCancelBody
       | Signal<PostClimateOrdersOrderCancelBody>,
   ) => ReturnType<typeof httpResource<PostClimateOrdersOrderCancelResponse>>
->('POST_CLIMATE_ORDERS_ORDER_CANCEL', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      order: string,
-      body:
-        | PostClimateOrdersOrderCancelBody
-        | Signal<PostClimateOrdersOrderCancelBody>,
-    ) =>
-      httpResource<PostClimateOrdersOrderCancelResponse>(() => ({
-        url: `${base}/v1/climate/orders/${order}/cancel`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CLIMATE_ORDERS_ORDER_CANCEL');
+
+export function providePostClimateOrdersOrderCancel(): FactoryProvider {
+  return {
+    provide: POST_CLIMATE_ORDERS_ORDER_CANCEL,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        order: string,
+        body:
+          | PostClimateOrdersOrderCancelBody
+          | Signal<PostClimateOrdersOrderCancelBody>,
+      ) =>
+        httpResource<PostClimateOrdersOrderCancelResponse>(() => ({
+          url: `${base}/v1/climate/orders/${order}/cancel`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

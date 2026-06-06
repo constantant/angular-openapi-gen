@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,23 +15,29 @@ export const REPOS_LIST_FORKS = new InjectionToken<
     repo: string,
     params?: ReposListForksParams | (() => ReposListForksParams | undefined),
   ) => ReturnType<typeof httpResource<ReposListForksResponse>>
->('REPOS_LIST_FORKS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      params?: ReposListForksParams | (() => ReposListForksParams | undefined),
-    ) =>
-      httpResource<ReposListForksResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/forks`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('REPOS_LIST_FORKS');
+
+export function provideReposListForks(): FactoryProvider {
+  return {
+    provide: REPOS_LIST_FORKS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        params?:
+          | ReposListForksParams
+          | (() => ReposListForksParams | undefined),
+      ) =>
+        httpResource<ReposListForksResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/forks`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

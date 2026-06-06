@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const CODE_SCANNING_GET_ANALYSIS = new InjectionToken<
     repo: string,
     analysisId: string,
   ) => ReturnType<typeof httpResource<CodeScanningGetAnalysisResponse>>
->('CODE_SCANNING_GET_ANALYSIS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, analysisId: string) =>
-      httpResource<CodeScanningGetAnalysisResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/code-scanning/analyses/${analysisId}`,
-      }));
-  },
-});
+>('CODE_SCANNING_GET_ANALYSIS');
+
+export function provideCodeScanningGetAnalysis(): FactoryProvider {
+  return {
+    provide: CODE_SCANNING_GET_ANALYSIS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, analysisId: string) =>
+        httpResource<CodeScanningGetAnalysisResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/code-scanning/analyses/${analysisId}`,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -11,13 +11,17 @@ export const CAMPAIGNS_GET_CAMPAIGN_SUMMARY = new InjectionToken<
     org: string,
     campaignNumber: string,
   ) => ReturnType<typeof httpResource<CampaignsGetCampaignSummaryResponse>>
->('CAMPAIGNS_GET_CAMPAIGN_SUMMARY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (org: string, campaignNumber: string) =>
-      httpResource<CampaignsGetCampaignSummaryResponse>(() => ({
-        url: `${base}/orgs/${org}/campaigns/${campaignNumber}`,
-      }));
-  },
-});
+>('CAMPAIGNS_GET_CAMPAIGN_SUMMARY');
+
+export function provideCampaignsGetCampaignSummary(): FactoryProvider {
+  return {
+    provide: CAMPAIGNS_GET_CAMPAIGN_SUMMARY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (org: string, campaignNumber: string) =>
+        httpResource<CampaignsGetCampaignSummaryResponse>(() => ({
+          url: `${base}/orgs/${org}/campaigns/${campaignNumber}`,
+        }));
+    },
+  };
+}

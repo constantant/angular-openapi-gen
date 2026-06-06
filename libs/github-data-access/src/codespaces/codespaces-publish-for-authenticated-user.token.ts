@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const CODESPACES_PUBLISH_FOR_AUTHENTICATED_USER = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<CodespacesPublishForAuthenticatedUserResponse>
   >
->('CODESPACES_PUBLISH_FOR_AUTHENTICATED_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      codespaceName: string,
-      body:
-        | CodespacesPublishForAuthenticatedUserBody
-        | Signal<CodespacesPublishForAuthenticatedUserBody>,
-    ) =>
-      httpResource<CodespacesPublishForAuthenticatedUserResponse>(() => ({
-        url: `${base}/user/codespaces/${codespaceName}/publish`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('CODESPACES_PUBLISH_FOR_AUTHENTICATED_USER');
+
+export function provideCodespacesPublishForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: CODESPACES_PUBLISH_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        codespaceName: string,
+        body:
+          | CodespacesPublishForAuthenticatedUserBody
+          | Signal<CodespacesPublishForAuthenticatedUserBody>,
+      ) =>
+        httpResource<CodespacesPublishForAuthenticatedUserResponse>(() => ({
+          url: `${base}/user/codespaces/${codespaceName}/publish`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

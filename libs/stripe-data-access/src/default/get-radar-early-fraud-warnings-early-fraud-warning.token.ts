@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,9 +19,12 @@ export const GET_RADAR_EARLY_FRAUD_WARNINGS_EARLY_FRAUD_WARNING =
     ) => ReturnType<
       typeof httpResource<GetRadarEarlyFraudWarningsEarlyFraudWarningResponse>
     >
-  >('GET_RADAR_EARLY_FRAUD_WARNINGS_EARLY_FRAUD_WARNING', {
-    providedIn: 'root',
-    factory: () => {
+  >('GET_RADAR_EARLY_FRAUD_WARNINGS_EARLY_FRAUD_WARNING');
+
+export function provideGetRadarEarlyFraudWarningsEarlyFraudWarning(): FactoryProvider {
+  return {
+    provide: GET_RADAR_EARLY_FRAUD_WARNINGS_EARLY_FRAUD_WARNING,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         earlyFraudWarning: string,
@@ -43,4 +46,5 @@ export const GET_RADAR_EARLY_FRAUD_WARNINGS_EARLY_FRAUD_WARNING =
           }),
         );
     },
-  });
+  };
+}

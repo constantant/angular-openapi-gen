@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ENTERPRISE =
     ) => ReturnType<
       typeof httpResource<OidcCreateOidcCustomPropertyInclusionForEnterpriseResponse>
     >
-  >('OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ENTERPRISE', {
-    providedIn: 'root',
-    factory: () => {
+  >('OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ENTERPRISE');
+
+export function provideOidcCreateOidcCustomPropertyInclusionForEnterprise(): FactoryProvider {
+  return {
+    provide: OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ENTERPRISE,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         enterprise: string,
@@ -39,4 +42,5 @@ export const OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ENTERPRISE =
           }),
         );
     },
-  });
+  };
+}

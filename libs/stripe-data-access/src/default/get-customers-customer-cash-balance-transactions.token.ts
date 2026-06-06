@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,9 +19,12 @@ export const GET_CUSTOMERS_CUSTOMER_CASH_BALANCE_TRANSACTIONS =
     ) => ReturnType<
       typeof httpResource<GetCustomersCustomerCashBalanceTransactionsResponse>
     >
-  >('GET_CUSTOMERS_CUSTOMER_CASH_BALANCE_TRANSACTIONS', {
-    providedIn: 'root',
-    factory: () => {
+  >('GET_CUSTOMERS_CUSTOMER_CASH_BALANCE_TRANSACTIONS');
+
+export function provideGetCustomersCustomerCashBalanceTransactions(): FactoryProvider {
+  return {
+    provide: GET_CUSTOMERS_CUSTOMER_CASH_BALANCE_TRANSACTIONS,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         customer: string,
@@ -43,4 +46,5 @@ export const GET_CUSTOMERS_CUSTOMER_CASH_BALANCE_TRANSACTIONS =
           }),
         );
     },
-  });
+  };
+}

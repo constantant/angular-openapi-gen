@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,25 +17,29 @@ export const API_INSIGHTS_GET_TIME_STATS_BY_USER = new InjectionToken<
       | ApiInsightsGetTimeStatsByUserParams
       | (() => ApiInsightsGetTimeStatsByUserParams | undefined),
   ) => ReturnType<typeof httpResource<ApiInsightsGetTimeStatsByUserResponse>>
->('API_INSIGHTS_GET_TIME_STATS_BY_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      userId: string,
-      params?:
-        | ApiInsightsGetTimeStatsByUserParams
-        | (() => ApiInsightsGetTimeStatsByUserParams | undefined),
-    ) =>
-      httpResource<ApiInsightsGetTimeStatsByUserResponse>(() => ({
-        url: `${base}/orgs/${org}/insights/api/time-stats/users/${userId}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('API_INSIGHTS_GET_TIME_STATS_BY_USER');
+
+export function provideApiInsightsGetTimeStatsByUser(): FactoryProvider {
+  return {
+    provide: API_INSIGHTS_GET_TIME_STATS_BY_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        userId: string,
+        params?:
+          | ApiInsightsGetTimeStatsByUserParams
+          | (() => ApiInsightsGetTimeStatsByUserParams | undefined),
+      ) =>
+        httpResource<ApiInsightsGetTimeStatsByUserResponse>(() => ({
+          url: `${base}/orgs/${org}/insights/api/time-stats/users/${userId}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

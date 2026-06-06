@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -13,21 +13,27 @@ export const GET_CREDIT_NOTES = new InjectionToken<
   (
     params?: GetCreditNotesParams | (() => GetCreditNotesParams | undefined),
   ) => ReturnType<typeof httpResource<GetCreditNotesResponse>>
->('GET_CREDIT_NOTES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      params?: GetCreditNotesParams | (() => GetCreditNotesParams | undefined),
-    ) =>
-      httpResource<GetCreditNotesResponse>(() => ({
-        url: `${base}/v1/credit_notes`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_CREDIT_NOTES');
+
+export function provideGetCreditNotes(): FactoryProvider {
+  return {
+    provide: GET_CREDIT_NOTES,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        params?:
+          | GetCreditNotesParams
+          | (() => GetCreditNotesParams | undefined),
+      ) =>
+        httpResource<GetCreditNotesResponse>(() => ({
+          url: `${base}/v1/credit_notes`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

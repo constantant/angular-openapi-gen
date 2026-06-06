@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
@@ -15,15 +15,19 @@ export const UPLOAD_FILE = new InjectionToken<
     petId: string,
     body: UploadFileBody | Signal<UploadFileBody>,
   ) => ReturnType<typeof httpResource<UploadFileResponse>>
->('UPLOAD_FILE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(PETSTORE_BASE_URL);
-    return (petId: string, body: UploadFileBody | Signal<UploadFileBody>) =>
-      httpResource<UploadFileResponse>(() => ({
-        url: `${base}/pet/${petId}/uploadImage`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('UPLOAD_FILE');
+
+export function provideUploadFile(): FactoryProvider {
+  return {
+    provide: UPLOAD_FILE,
+    useFactory: () => {
+      const base = inject(PETSTORE_BASE_URL);
+      return (petId: string, body: UploadFileBody | Signal<UploadFileBody>) =>
+        httpResource<UploadFileResponse>(() => ({
+          url: `${base}/pet/${petId}/uploadImage`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,23 +20,27 @@ export const PULLS_CREATE_REPLY_FOR_REVIEW_COMMENT = new InjectionToken<
       | PullsCreateReplyForReviewCommentBody
       | Signal<PullsCreateReplyForReviewCommentBody>,
   ) => ReturnType<typeof httpResource<PullsCreateReplyForReviewCommentResponse>>
->('PULLS_CREATE_REPLY_FOR_REVIEW_COMMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      pullNumber: string,
-      commentId: string,
-      body:
-        | PullsCreateReplyForReviewCommentBody
-        | Signal<PullsCreateReplyForReviewCommentBody>,
-    ) =>
-      httpResource<PullsCreateReplyForReviewCommentResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/comments/${commentId}/replies`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('PULLS_CREATE_REPLY_FOR_REVIEW_COMMENT');
+
+export function providePullsCreateReplyForReviewComment(): FactoryProvider {
+  return {
+    provide: PULLS_CREATE_REPLY_FOR_REVIEW_COMMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        pullNumber: string,
+        commentId: string,
+        body:
+          | PullsCreateReplyForReviewCommentBody
+          | Signal<PullsCreateReplyForReviewCommentBody>,
+      ) =>
+        httpResource<PullsCreateReplyForReviewCommentResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/comments/${commentId}/replies`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

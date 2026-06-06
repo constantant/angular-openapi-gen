@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,13 +13,17 @@ export const PACKAGES_GET_PACKAGE_FOR_AUTHENTICATED_USER = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PackagesGetPackageForAuthenticatedUserResponse>
   >
->('PACKAGES_GET_PACKAGE_FOR_AUTHENTICATED_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (packageType: string, packageName: string) =>
-      httpResource<PackagesGetPackageForAuthenticatedUserResponse>(() => ({
-        url: `${base}/user/packages/${packageType}/${packageName}`,
-      }));
-  },
-});
+>('PACKAGES_GET_PACKAGE_FOR_AUTHENTICATED_USER');
+
+export function providePackagesGetPackageForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: PACKAGES_GET_PACKAGE_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (packageType: string, packageName: string) =>
+        httpResource<PackagesGetPackageForAuthenticatedUserResponse>(() => ({
+          url: `${base}/user/packages/${packageType}/${packageName}`,
+        }));
+    },
+  };
+}

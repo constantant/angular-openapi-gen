@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const ORGS_CREATE_INVITATION = new InjectionToken<
     org: string,
     body: OrgsCreateInvitationBody | Signal<OrgsCreateInvitationBody>,
   ) => ReturnType<typeof httpResource<OrgsCreateInvitationResponse>>
->('ORGS_CREATE_INVITATION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      body: OrgsCreateInvitationBody | Signal<OrgsCreateInvitationBody>,
-    ) =>
-      httpResource<OrgsCreateInvitationResponse>(() => ({
-        url: `${base}/orgs/${org}/invitations`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ORGS_CREATE_INVITATION');
+
+export function provideOrgsCreateInvitation(): FactoryProvider {
+  return {
+    provide: ORGS_CREATE_INVITATION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        body: OrgsCreateInvitationBody | Signal<OrgsCreateInvitationBody>,
+      ) =>
+        httpResource<OrgsCreateInvitationResponse>(() => ({
+          url: `${base}/orgs/${org}/invitations`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

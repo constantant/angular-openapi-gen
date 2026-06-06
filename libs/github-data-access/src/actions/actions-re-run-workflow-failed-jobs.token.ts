@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,22 +19,26 @@ export const ACTIONS_RE_RUN_WORKFLOW_FAILED_JOBS = new InjectionToken<
       | ActionsReRunWorkflowFailedJobsBody
       | Signal<ActionsReRunWorkflowFailedJobsBody>,
   ) => ReturnType<typeof httpResource<ActionsReRunWorkflowFailedJobsResponse>>
->('ACTIONS_RE_RUN_WORKFLOW_FAILED_JOBS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      runId: string,
-      body:
-        | ActionsReRunWorkflowFailedJobsBody
-        | Signal<ActionsReRunWorkflowFailedJobsBody>,
-    ) =>
-      httpResource<ActionsReRunWorkflowFailedJobsResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/rerun-failed-jobs`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ACTIONS_RE_RUN_WORKFLOW_FAILED_JOBS');
+
+export function provideActionsReRunWorkflowFailedJobs(): FactoryProvider {
+  return {
+    provide: ACTIONS_RE_RUN_WORKFLOW_FAILED_JOBS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        runId: string,
+        body:
+          | ActionsReRunWorkflowFailedJobsBody
+          | Signal<ActionsReRunWorkflowFailedJobsBody>,
+      ) =>
+        httpResource<ActionsReRunWorkflowFailedJobsResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/rerun-failed-jobs`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

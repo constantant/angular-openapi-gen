@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const POST_TEST_HELPERS_ISSUING_SETTLEMENTS_SETTLEMENT_COMPLETE =
     ) => ReturnType<
       typeof httpResource<PostTestHelpersIssuingSettlementsSettlementCompleteResponse>
     >
-  >('POST_TEST_HELPERS_ISSUING_SETTLEMENTS_SETTLEMENT_COMPLETE', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_TEST_HELPERS_ISSUING_SETTLEMENTS_SETTLEMENT_COMPLETE');
+
+export function providePostTestHelpersIssuingSettlementsSettlementComplete(): FactoryProvider {
+  return {
+    provide: POST_TEST_HELPERS_ISSUING_SETTLEMENTS_SETTLEMENT_COMPLETE,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         settlement: string,
@@ -39,4 +42,5 @@ export const POST_TEST_HELPERS_ISSUING_SETTLEMENTS_SETTLEMENT_COMPLETE =
           }),
         );
     },
-  });
+  };
+}

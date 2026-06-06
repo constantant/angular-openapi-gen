@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const POST_INVOICES_INVOICE_ATTACH_PAYMENT = new InjectionToken<
       | PostInvoicesInvoiceAttachPaymentBody
       | Signal<PostInvoicesInvoiceAttachPaymentBody>,
   ) => ReturnType<typeof httpResource<PostInvoicesInvoiceAttachPaymentResponse>>
->('POST_INVOICES_INVOICE_ATTACH_PAYMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      invoice: string,
-      body:
-        | PostInvoicesInvoiceAttachPaymentBody
-        | Signal<PostInvoicesInvoiceAttachPaymentBody>,
-    ) =>
-      httpResource<PostInvoicesInvoiceAttachPaymentResponse>(() => ({
-        url: `${base}/v1/invoices/${invoice}/attach_payment`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_INVOICES_INVOICE_ATTACH_PAYMENT');
+
+export function providePostInvoicesInvoiceAttachPayment(): FactoryProvider {
+  return {
+    provide: POST_INVOICES_INVOICE_ATTACH_PAYMENT,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        invoice: string,
+        body:
+          | PostInvoicesInvoiceAttachPaymentBody
+          | Signal<PostInvoicesInvoiceAttachPaymentBody>,
+      ) =>
+        httpResource<PostInvoicesInvoiceAttachPaymentResponse>(() => ({
+          url: `${base}/v1/invoices/${invoice}/attach_payment`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -18,21 +18,25 @@ export const POST_TRANSFERS_TRANSFER_REVERSALS_ID = new InjectionToken<
       | PostTransfersTransferReversalsIdBody
       | Signal<PostTransfersTransferReversalsIdBody>,
   ) => ReturnType<typeof httpResource<PostTransfersTransferReversalsIdResponse>>
->('POST_TRANSFERS_TRANSFER_REVERSALS_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      id: string,
-      transfer: string,
-      body:
-        | PostTransfersTransferReversalsIdBody
-        | Signal<PostTransfersTransferReversalsIdBody>,
-    ) =>
-      httpResource<PostTransfersTransferReversalsIdResponse>(() => ({
-        url: `${base}/v1/transfers/${transfer}/reversals/${id}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TRANSFERS_TRANSFER_REVERSALS_ID');
+
+export function providePostTransfersTransferReversalsId(): FactoryProvider {
+  return {
+    provide: POST_TRANSFERS_TRANSFER_REVERSALS_ID,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        id: string,
+        transfer: string,
+        body:
+          | PostTransfersTransferReversalsIdBody
+          | Signal<PostTransfersTransferReversalsIdBody>,
+      ) =>
+        httpResource<PostTransfersTransferReversalsIdResponse>(() => ({
+          url: `${base}/v1/transfers/${transfer}/reversals/${id}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

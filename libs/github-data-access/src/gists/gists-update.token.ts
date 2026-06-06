@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,15 +15,22 @@ export const GISTS_UPDATE = new InjectionToken<
     gistId: string,
     body: GistsUpdateBody | Signal<GistsUpdateBody>,
   ) => ReturnType<typeof httpResource<GistsUpdateResponse>>
->('GISTS_UPDATE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (gistId: string, body: GistsUpdateBody | Signal<GistsUpdateBody>) =>
-      httpResource<GistsUpdateResponse>(() => ({
-        url: `${base}/gists/${gistId}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('GISTS_UPDATE');
+
+export function provideGistsUpdate(): FactoryProvider {
+  return {
+    provide: GISTS_UPDATE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        gistId: string,
+        body: GistsUpdateBody | Signal<GistsUpdateBody>,
+      ) =>
+        httpResource<GistsUpdateResponse>(() => ({
+          url: `${base}/gists/${gistId}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

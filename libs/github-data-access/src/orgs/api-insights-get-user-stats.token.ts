@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,25 +17,29 @@ export const API_INSIGHTS_GET_USER_STATS = new InjectionToken<
       | ApiInsightsGetUserStatsParams
       | (() => ApiInsightsGetUserStatsParams | undefined),
   ) => ReturnType<typeof httpResource<ApiInsightsGetUserStatsResponse>>
->('API_INSIGHTS_GET_USER_STATS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      userId: string,
-      params?:
-        | ApiInsightsGetUserStatsParams
-        | (() => ApiInsightsGetUserStatsParams | undefined),
-    ) =>
-      httpResource<ApiInsightsGetUserStatsResponse>(() => ({
-        url: `${base}/orgs/${org}/insights/api/user-stats/${userId}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('API_INSIGHTS_GET_USER_STATS');
+
+export function provideApiInsightsGetUserStats(): FactoryProvider {
+  return {
+    provide: API_INSIGHTS_GET_USER_STATS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        userId: string,
+        params?:
+          | ApiInsightsGetUserStatsParams
+          | (() => ApiInsightsGetUserStatsParams | undefined),
+      ) =>
+        httpResource<ApiInsightsGetUserStatsResponse>(() => ({
+          url: `${base}/orgs/${org}/insights/api/user-stats/${userId}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

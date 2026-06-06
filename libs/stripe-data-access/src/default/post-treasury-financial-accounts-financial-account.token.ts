@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const POST_TREASURY_FINANCIAL_ACCOUNTS_FINANCIAL_ACCOUNT =
     ) => ReturnType<
       typeof httpResource<PostTreasuryFinancialAccountsFinancialAccountResponse>
     >
-  >('POST_TREASURY_FINANCIAL_ACCOUNTS_FINANCIAL_ACCOUNT', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_TREASURY_FINANCIAL_ACCOUNTS_FINANCIAL_ACCOUNT');
+
+export function providePostTreasuryFinancialAccountsFinancialAccount(): FactoryProvider {
+  return {
+    provide: POST_TREASURY_FINANCIAL_ACCOUNTS_FINANCIAL_ACCOUNT,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         financialAccount: string,
@@ -38,4 +41,5 @@ export const POST_TREASURY_FINANCIAL_ACCOUNTS_FINANCIAL_ACCOUNT =
           }),
         );
     },
-  });
+  };
+}

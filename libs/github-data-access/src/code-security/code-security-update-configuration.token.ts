@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,21 +18,25 @@ export const CODE_SECURITY_UPDATE_CONFIGURATION = new InjectionToken<
       | CodeSecurityUpdateConfigurationBody
       | Signal<CodeSecurityUpdateConfigurationBody>,
   ) => ReturnType<typeof httpResource<CodeSecurityUpdateConfigurationResponse>>
->('CODE_SECURITY_UPDATE_CONFIGURATION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      configurationId: string,
-      body:
-        | CodeSecurityUpdateConfigurationBody
-        | Signal<CodeSecurityUpdateConfigurationBody>,
-    ) =>
-      httpResource<CodeSecurityUpdateConfigurationResponse>(() => ({
-        url: `${base}/orgs/${org}/code-security/configurations/${configurationId}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('CODE_SECURITY_UPDATE_CONFIGURATION');
+
+export function provideCodeSecurityUpdateConfiguration(): FactoryProvider {
+  return {
+    provide: CODE_SECURITY_UPDATE_CONFIGURATION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        configurationId: string,
+        body:
+          | CodeSecurityUpdateConfigurationBody
+          | Signal<CodeSecurityUpdateConfigurationBody>,
+      ) =>
+        httpResource<CodeSecurityUpdateConfigurationResponse>(() => ({
+          url: `${base}/orgs/${org}/code-security/configurations/${configurationId}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,14 +12,18 @@ export const CODESPACES_STOP_FOR_AUTHENTICATED_USER = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<CodespacesStopForAuthenticatedUserResponse>
   >
->('CODESPACES_STOP_FOR_AUTHENTICATED_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (codespaceName: string) =>
-      httpResource<CodespacesStopForAuthenticatedUserResponse>(() => ({
-        url: `${base}/user/codespaces/${codespaceName}/stop`,
-        method: 'POST',
-      }));
-  },
-});
+>('CODESPACES_STOP_FOR_AUTHENTICATED_USER');
+
+export function provideCodespacesStopForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: CODESPACES_STOP_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (codespaceName: string) =>
+        httpResource<CodespacesStopForAuthenticatedUserResponse>(() => ({
+          url: `${base}/user/codespaces/${codespaceName}/stop`,
+          method: 'POST',
+        }));
+    },
+  };
+}

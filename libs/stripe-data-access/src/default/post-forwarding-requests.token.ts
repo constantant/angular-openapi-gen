@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,17 +14,21 @@ export const POST_FORWARDING_REQUESTS = new InjectionToken<
   (
     body: PostForwardingRequestsBody | Signal<PostForwardingRequestsBody>,
   ) => ReturnType<typeof httpResource<PostForwardingRequestsResponse>>
->('POST_FORWARDING_REQUESTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body: PostForwardingRequestsBody | Signal<PostForwardingRequestsBody>,
-    ) =>
-      httpResource<PostForwardingRequestsResponse>(() => ({
-        url: `${base}/v1/forwarding/requests`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_FORWARDING_REQUESTS');
+
+export function providePostForwardingRequests(): FactoryProvider {
+  return {
+    provide: POST_FORWARDING_REQUESTS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body: PostForwardingRequestsBody | Signal<PostForwardingRequestsBody>,
+      ) =>
+        httpResource<PostForwardingRequestsResponse>(() => ({
+          url: `${base}/v1/forwarding/requests`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

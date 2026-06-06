@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const POST_SETUP_INTENTS_INTENT_VERIFY_MICRODEPOSITS =
     ) => ReturnType<
       typeof httpResource<PostSetupIntentsIntentVerifyMicrodepositsResponse>
     >
-  >('POST_SETUP_INTENTS_INTENT_VERIFY_MICRODEPOSITS', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_SETUP_INTENTS_INTENT_VERIFY_MICRODEPOSITS');
+
+export function providePostSetupIntentsIntentVerifyMicrodeposits(): FactoryProvider {
+  return {
+    provide: POST_SETUP_INTENTS_INTENT_VERIFY_MICRODEPOSITS,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         intent: string,
@@ -36,4 +39,5 @@ export const POST_SETUP_INTENTS_INTENT_VERIFY_MICRODEPOSITS =
           body,
         }));
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const GIT_CREATE_REF = new InjectionToken<
     repo: string,
     body: GitCreateRefBody | Signal<GitCreateRefBody>,
   ) => ReturnType<typeof httpResource<GitCreateRefResponse>>
->('GIT_CREATE_REF', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: GitCreateRefBody | Signal<GitCreateRefBody>,
-    ) =>
-      httpResource<GitCreateRefResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/git/refs`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('GIT_CREATE_REF');
+
+export function provideGitCreateRef(): FactoryProvider {
+  return {
+    provide: GIT_CREATE_REF,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: GitCreateRefBody | Signal<GitCreateRefBody>,
+      ) =>
+        httpResource<GitCreateRefResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/git/refs`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

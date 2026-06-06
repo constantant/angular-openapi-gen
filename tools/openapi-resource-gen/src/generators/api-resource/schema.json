@@ -28,6 +28,12 @@
       "enum": ["camel", "kebab"],
       "default": "kebab",
       "description": "File naming convention: kebab-case filenames with SCREAMING_SNAKE token names"
+    },
+    "providedIn": {
+      "type": "string",
+      "enum": ["root", "none"],
+      "default": "none",
+      "description": "none: token has no factory; a provide{Name}() helper is exported for explicit scoped provision. root: token self-registers at root (tree-shakeable singleton, no multi-context support)"
     }
   },
   "required": ["specPath", "outputDir"]

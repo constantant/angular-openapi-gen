@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const ACTIONS_RE_RUN_WORKFLOW = new InjectionToken<
     runId: string,
     body: ActionsReRunWorkflowBody | Signal<ActionsReRunWorkflowBody>,
   ) => ReturnType<typeof httpResource<ActionsReRunWorkflowResponse>>
->('ACTIONS_RE_RUN_WORKFLOW', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      runId: string,
-      body: ActionsReRunWorkflowBody | Signal<ActionsReRunWorkflowBody>,
-    ) =>
-      httpResource<ActionsReRunWorkflowResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/rerun`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ACTIONS_RE_RUN_WORKFLOW');
+
+export function provideActionsReRunWorkflow(): FactoryProvider {
+  return {
+    provide: ACTIONS_RE_RUN_WORKFLOW,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        runId: string,
+        body: ActionsReRunWorkflowBody | Signal<ActionsReRunWorkflowBody>,
+      ) =>
+        httpResource<ActionsReRunWorkflowResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/rerun`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const REPOS_UPDATE_REPO_RULESET = new InjectionToken<
     rulesetId: string,
     body: ReposUpdateRepoRulesetBody | Signal<ReposUpdateRepoRulesetBody>,
   ) => ReturnType<typeof httpResource<ReposUpdateRepoRulesetResponse>>
->('REPOS_UPDATE_REPO_RULESET', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      rulesetId: string,
-      body: ReposUpdateRepoRulesetBody | Signal<ReposUpdateRepoRulesetBody>,
-    ) =>
-      httpResource<ReposUpdateRepoRulesetResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('REPOS_UPDATE_REPO_RULESET');
+
+export function provideReposUpdateRepoRuleset(): FactoryProvider {
+  return {
+    provide: REPOS_UPDATE_REPO_RULESET,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        rulesetId: string,
+        body: ReposUpdateRepoRulesetBody | Signal<ReposUpdateRepoRulesetBody>,
+      ) =>
+        httpResource<ReposUpdateRepoRulesetResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

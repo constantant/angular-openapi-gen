@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,24 @@ export const POST_DISPUTES_DISPUTE_CLOSE = new InjectionToken<
     dispute: string,
     body: PostDisputesDisputeCloseBody | Signal<PostDisputesDisputeCloseBody>,
   ) => ReturnType<typeof httpResource<PostDisputesDisputeCloseResponse>>
->('POST_DISPUTES_DISPUTE_CLOSE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      dispute: string,
-      body: PostDisputesDisputeCloseBody | Signal<PostDisputesDisputeCloseBody>,
-    ) =>
-      httpResource<PostDisputesDisputeCloseResponse>(() => ({
-        url: `${base}/v1/disputes/${dispute}/close`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_DISPUTES_DISPUTE_CLOSE');
+
+export function providePostDisputesDisputeClose(): FactoryProvider {
+  return {
+    provide: POST_DISPUTES_DISPUTE_CLOSE,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        dispute: string,
+        body:
+          | PostDisputesDisputeCloseBody
+          | Signal<PostDisputesDisputeCloseBody>,
+      ) =>
+        httpResource<PostDisputesDisputeCloseResponse>(() => ({
+          url: `${base}/v1/disputes/${dispute}/close`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

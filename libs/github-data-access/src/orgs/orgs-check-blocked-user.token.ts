@@ -1,17 +1,21 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export const ORGS_CHECK_BLOCKED_USER = new InjectionToken<
   (org: string, username: string) => ReturnType<typeof httpResource<unknown>>
->('ORGS_CHECK_BLOCKED_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (org: string, username: string) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/orgs/${org}/blocks/${username}`,
-      }));
-  },
-});
+>('ORGS_CHECK_BLOCKED_USER');
+
+export function provideOrgsCheckBlockedUser(): FactoryProvider {
+  return {
+    provide: ORGS_CHECK_BLOCKED_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (org: string, username: string) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/orgs/${org}/blocks/${username}`,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,13 +15,17 @@ export const TEAMS_CHECK_PERMISSIONS_FOR_REPO_IN_ORG = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<TeamsCheckPermissionsForRepoInOrgResponse>
   >
->('TEAMS_CHECK_PERMISSIONS_FOR_REPO_IN_ORG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (org: string, teamSlug: string, owner: string, repo: string) =>
-      httpResource<TeamsCheckPermissionsForRepoInOrgResponse>(() => ({
-        url: `${base}/orgs/${org}/teams/${teamSlug}/repos/${owner}/${repo}`,
-      }));
-  },
-});
+>('TEAMS_CHECK_PERMISSIONS_FOR_REPO_IN_ORG');
+
+export function provideTeamsCheckPermissionsForRepoInOrg(): FactoryProvider {
+  return {
+    provide: TEAMS_CHECK_PERMISSIONS_FOR_REPO_IN_ORG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (org: string, teamSlug: string, owner: string, repo: string) =>
+        httpResource<TeamsCheckPermissionsForRepoInOrgResponse>(() => ({
+          url: `${base}/orgs/${org}/teams/${teamSlug}/repos/${owner}/${repo}`,
+        }));
+    },
+  };
+}

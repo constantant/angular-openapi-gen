@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const PROJECTS_GET_USER_ITEM = new InjectionToken<
       | ProjectsGetUserItemParams
       | (() => ProjectsGetUserItemParams | undefined),
   ) => ReturnType<typeof httpResource<ProjectsGetUserItemResponse>>
->('PROJECTS_GET_USER_ITEM', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      projectNumber: string,
-      username: string,
-      itemId: string,
-      params?:
-        | ProjectsGetUserItemParams
-        | (() => ProjectsGetUserItemParams | undefined),
-    ) =>
-      httpResource<ProjectsGetUserItemResponse>(() => ({
-        url: `${base}/users/${username}/projectsV2/${projectNumber}/items/${itemId}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('PROJECTS_GET_USER_ITEM');
+
+export function provideProjectsGetUserItem(): FactoryProvider {
+  return {
+    provide: PROJECTS_GET_USER_ITEM,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        projectNumber: string,
+        username: string,
+        itemId: string,
+        params?:
+          | ProjectsGetUserItemParams
+          | (() => ProjectsGetUserItemParams | undefined),
+      ) =>
+        httpResource<ProjectsGetUserItemResponse>(() => ({
+          url: `${base}/users/${username}/projectsV2/${projectNumber}/items/${itemId}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

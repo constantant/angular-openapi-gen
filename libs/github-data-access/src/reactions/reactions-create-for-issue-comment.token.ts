@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,22 +19,26 @@ export const REACTIONS_CREATE_FOR_ISSUE_COMMENT = new InjectionToken<
       | ReactionsCreateForIssueCommentBody
       | Signal<ReactionsCreateForIssueCommentBody>,
   ) => ReturnType<typeof httpResource<ReactionsCreateForIssueCommentResponse>>
->('REACTIONS_CREATE_FOR_ISSUE_COMMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      commentId: string,
-      body:
-        | ReactionsCreateForIssueCommentBody
-        | Signal<ReactionsCreateForIssueCommentBody>,
-    ) =>
-      httpResource<ReactionsCreateForIssueCommentResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/comments/${commentId}/reactions`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('REACTIONS_CREATE_FOR_ISSUE_COMMENT');
+
+export function provideReactionsCreateForIssueComment(): FactoryProvider {
+  return {
+    provide: REACTIONS_CREATE_FOR_ISSUE_COMMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        commentId: string,
+        body:
+          | ReactionsCreateForIssueCommentBody
+          | Signal<ReactionsCreateForIssueCommentBody>,
+      ) =>
+        httpResource<ReactionsCreateForIssueCommentResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/comments/${commentId}/reactions`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

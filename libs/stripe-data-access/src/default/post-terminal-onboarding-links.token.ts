@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const POST_TERMINAL_ONBOARDING_LINKS = new InjectionToken<
       | PostTerminalOnboardingLinksBody
       | Signal<PostTerminalOnboardingLinksBody>,
   ) => ReturnType<typeof httpResource<PostTerminalOnboardingLinksResponse>>
->('POST_TERMINAL_ONBOARDING_LINKS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body:
-        | PostTerminalOnboardingLinksBody
-        | Signal<PostTerminalOnboardingLinksBody>,
-    ) =>
-      httpResource<PostTerminalOnboardingLinksResponse>(() => ({
-        url: `${base}/v1/terminal/onboarding_links`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TERMINAL_ONBOARDING_LINKS');
+
+export function providePostTerminalOnboardingLinks(): FactoryProvider {
+  return {
+    provide: POST_TERMINAL_ONBOARDING_LINKS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body:
+          | PostTerminalOnboardingLinksBody
+          | Signal<PostTerminalOnboardingLinksBody>,
+      ) =>
+        httpResource<PostTerminalOnboardingLinksResponse>(() => ({
+          url: `${base}/v1/terminal/onboarding_links`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

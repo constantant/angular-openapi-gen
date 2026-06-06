@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const GET_BILLING_METERS_ID = new InjectionToken<
       | GetBillingMetersIdParams
       | (() => GetBillingMetersIdParams | undefined),
   ) => ReturnType<typeof httpResource<GetBillingMetersIdResponse>>
->('GET_BILLING_METERS_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      id: string,
-      params?:
-        | GetBillingMetersIdParams
-        | (() => GetBillingMetersIdParams | undefined),
-    ) =>
-      httpResource<GetBillingMetersIdResponse>(() => ({
-        url: `${base}/v1/billing/meters/${id}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_BILLING_METERS_ID');
+
+export function provideGetBillingMetersId(): FactoryProvider {
+  return {
+    provide: GET_BILLING_METERS_ID,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        id: string,
+        params?:
+          | GetBillingMetersIdParams
+          | (() => GetBillingMetersIdParams | undefined),
+      ) =>
+        httpResource<GetBillingMetersIdResponse>(() => ({
+          url: `${base}/v1/billing/meters/${id}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

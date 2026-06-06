@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const CODE_SCANNING_GET_AUTOFIX = new InjectionToken<
     repo: string,
     alertNumber: string,
   ) => ReturnType<typeof httpResource<CodeScanningGetAutofixResponse>>
->('CODE_SCANNING_GET_AUTOFIX', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, alertNumber: string) =>
-      httpResource<CodeScanningGetAutofixResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/code-scanning/alerts/${alertNumber}/autofix`,
-      }));
-  },
-});
+>('CODE_SCANNING_GET_AUTOFIX');
+
+export function provideCodeScanningGetAutofix(): FactoryProvider {
+  return {
+    provide: CODE_SCANNING_GET_AUTOFIX,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, alertNumber: string) =>
+        httpResource<CodeScanningGetAutofixResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/code-scanning/alerts/${alertNumber}/autofix`,
+        }));
+    },
+  };
+}

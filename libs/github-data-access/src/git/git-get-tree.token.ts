@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const GIT_GET_TREE = new InjectionToken<
     treeSha: string,
     params?: GitGetTreeParams | (() => GitGetTreeParams | undefined),
   ) => ReturnType<typeof httpResource<GitGetTreeResponse>>
->('GIT_GET_TREE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      treeSha: string,
-      params?: GitGetTreeParams | (() => GitGetTreeParams | undefined),
-    ) =>
-      httpResource<GitGetTreeResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/git/trees/${treeSha}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GIT_GET_TREE');
+
+export function provideGitGetTree(): FactoryProvider {
+  return {
+    provide: GIT_GET_TREE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        treeSha: string,
+        params?: GitGetTreeParams | (() => GitGetTreeParams | undefined),
+      ) =>
+        httpResource<GitGetTreeResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/git/trees/${treeSha}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

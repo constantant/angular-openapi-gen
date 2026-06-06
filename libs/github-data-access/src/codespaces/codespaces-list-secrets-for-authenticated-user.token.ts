@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,9 +18,12 @@ export const CODESPACES_LIST_SECRETS_FOR_AUTHENTICATED_USER =
     ) => ReturnType<
       typeof httpResource<CodespacesListSecretsForAuthenticatedUserResponse>
     >
-  >('CODESPACES_LIST_SECRETS_FOR_AUTHENTICATED_USER', {
-    providedIn: 'root',
-    factory: () => {
+  >('CODESPACES_LIST_SECRETS_FOR_AUTHENTICATED_USER');
+
+export function provideCodespacesListSecretsForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: CODESPACES_LIST_SECRETS_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         params?:
@@ -37,4 +40,5 @@ export const CODESPACES_LIST_SECRETS_FOR_AUTHENTICATED_USER =
           >,
         }));
     },
-  });
+  };
+}

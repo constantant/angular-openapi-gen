@@ -19,6 +19,7 @@ export interface ApiResourceGeneratorSchema {
   baseUrlToken?: string;
   tagFilter?: string;
   namingConvention?: 'camel' | 'kebab';
+  providedIn?: 'root' | 'none';
 }
 
 /** Replace $ref values that point to non-YAML/JSON files with {} so
@@ -52,6 +53,7 @@ export async function apiResourceGenerator(
     baseUrlToken = 'API_BASE_URL',
     tagFilter,
     namingConvention = 'kebab',
+    providedIn = 'none',
   } = options;
 
   const allowedTags = tagFilter
@@ -111,7 +113,7 @@ export async function apiResourceGenerator(
       for (const ep of tagEndpoints) {
         tree.write(
           joinPathFragments(tagDir, `${ep.fileName}.token.ts`),
-          renderTokenFile(ep, baseUrlToken)
+          renderTokenFile(ep, baseUrlToken, providedIn)
         );
       }
 

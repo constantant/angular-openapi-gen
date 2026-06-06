@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const POST_TEST_HELPERS_TERMINAL_READERS_READER_TIMEOUT_INPUT_COLLECTION 
     ) => ReturnType<
       typeof httpResource<PostTestHelpersTerminalReadersReaderTimeoutInputCollectionResponse>
     >
-  >('POST_TEST_HELPERS_TERMINAL_READERS_READER_TIMEOUT_INPUT_COLLECTION', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_TEST_HELPERS_TERMINAL_READERS_READER_TIMEOUT_INPUT_COLLECTION');
+
+export function providePostTestHelpersTerminalReadersReaderTimeoutInputCollection(): FactoryProvider {
+  return {
+    provide: POST_TEST_HELPERS_TERMINAL_READERS_READER_TIMEOUT_INPUT_COLLECTION,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         reader: string,
@@ -39,4 +42,5 @@ export const POST_TEST_HELPERS_TERMINAL_READERS_READER_TIMEOUT_INPUT_COLLECTION 
           }),
         );
     },
-  });
+  };
+}

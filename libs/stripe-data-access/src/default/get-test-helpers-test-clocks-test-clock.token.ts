@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -18,24 +18,28 @@ export const GET_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<GetTestHelpersTestClocksTestClockResponse>
   >
->('GET_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      testClock: string,
-      params?:
-        | GetTestHelpersTestClocksTestClockParams
-        | (() => GetTestHelpersTestClocksTestClockParams | undefined),
-    ) =>
-      httpResource<GetTestHelpersTestClocksTestClockResponse>(() => ({
-        url: `${base}/v1/test_helpers/test_clocks/${testClock}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK');
+
+export function provideGetTestHelpersTestClocksTestClock(): FactoryProvider {
+  return {
+    provide: GET_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        testClock: string,
+        params?:
+          | GetTestHelpersTestClocksTestClockParams
+          | (() => GetTestHelpersTestClocksTestClockParams | undefined),
+      ) =>
+        httpResource<GetTestHelpersTestClocksTestClockResponse>(() => ({
+          url: `${base}/v1/test_helpers/test_clocks/${testClock}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

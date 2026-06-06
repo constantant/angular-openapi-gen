@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const API_INSIGHTS_GET_TIME_STATS_BY_ACTOR = new InjectionToken<
       | ApiInsightsGetTimeStatsByActorParams
       | (() => ApiInsightsGetTimeStatsByActorParams | undefined),
   ) => ReturnType<typeof httpResource<ApiInsightsGetTimeStatsByActorResponse>>
->('API_INSIGHTS_GET_TIME_STATS_BY_ACTOR', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      actorType: string,
-      actorId: string,
-      params?:
-        | ApiInsightsGetTimeStatsByActorParams
-        | (() => ApiInsightsGetTimeStatsByActorParams | undefined),
-    ) =>
-      httpResource<ApiInsightsGetTimeStatsByActorResponse>(() => ({
-        url: `${base}/orgs/${org}/insights/api/time-stats/${actorType}/${actorId}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('API_INSIGHTS_GET_TIME_STATS_BY_ACTOR');
+
+export function provideApiInsightsGetTimeStatsByActor(): FactoryProvider {
+  return {
+    provide: API_INSIGHTS_GET_TIME_STATS_BY_ACTOR,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        actorType: string,
+        actorId: string,
+        params?:
+          | ApiInsightsGetTimeStatsByActorParams
+          | (() => ApiInsightsGetTimeStatsByActorParams | undefined),
+      ) =>
+        httpResource<ApiInsightsGetTimeStatsByActorResponse>(() => ({
+          url: `${base}/orgs/${org}/insights/api/time-stats/${actorType}/${actorId}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

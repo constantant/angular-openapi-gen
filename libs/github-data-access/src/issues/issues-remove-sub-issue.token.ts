@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const ISSUES_REMOVE_SUB_ISSUE = new InjectionToken<
     issueNumber: string,
     body: IssuesRemoveSubIssueBody | Signal<IssuesRemoveSubIssueBody>,
   ) => ReturnType<typeof httpResource<IssuesRemoveSubIssueResponse>>
->('ISSUES_REMOVE_SUB_ISSUE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      issueNumber: string,
-      body: IssuesRemoveSubIssueBody | Signal<IssuesRemoveSubIssueBody>,
-    ) =>
-      httpResource<IssuesRemoveSubIssueResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/sub_issue`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('ISSUES_REMOVE_SUB_ISSUE');
+
+export function provideIssuesRemoveSubIssue(): FactoryProvider {
+  return {
+    provide: ISSUES_REMOVE_SUB_ISSUE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        issueNumber: string,
+        body: IssuesRemoveSubIssueBody | Signal<IssuesRemoveSubIssueBody>,
+      ) =>
+        httpResource<IssuesRemoveSubIssueResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/sub_issue`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

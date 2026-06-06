@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,15 +14,21 @@ export const POST_TAX_CALCULATIONS = new InjectionToken<
   (
     body: PostTaxCalculationsBody | Signal<PostTaxCalculationsBody>,
   ) => ReturnType<typeof httpResource<PostTaxCalculationsResponse>>
->('POST_TAX_CALCULATIONS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (body: PostTaxCalculationsBody | Signal<PostTaxCalculationsBody>) =>
-      httpResource<PostTaxCalculationsResponse>(() => ({
-        url: `${base}/v1/tax/calculations`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TAX_CALCULATIONS');
+
+export function providePostTaxCalculations(): FactoryProvider {
+  return {
+    provide: POST_TAX_CALCULATIONS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body: PostTaxCalculationsBody | Signal<PostTaxCalculationsBody>,
+      ) =>
+        httpResource<PostTaxCalculationsResponse>(() => ({
+          url: `${base}/v1/tax/calculations`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const POST_SUBSCRIPTION_SCHEDULES_SCHEDULE_RELEASE = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostSubscriptionSchedulesScheduleReleaseResponse>
   >
->('POST_SUBSCRIPTION_SCHEDULES_SCHEDULE_RELEASE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      schedule: string,
-      body:
-        | PostSubscriptionSchedulesScheduleReleaseBody
-        | Signal<PostSubscriptionSchedulesScheduleReleaseBody>,
-    ) =>
-      httpResource<PostSubscriptionSchedulesScheduleReleaseResponse>(() => ({
-        url: `${base}/v1/subscription_schedules/${schedule}/release`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_SUBSCRIPTION_SCHEDULES_SCHEDULE_RELEASE');
+
+export function providePostSubscriptionSchedulesScheduleRelease(): FactoryProvider {
+  return {
+    provide: POST_SUBSCRIPTION_SCHEDULES_SCHEDULE_RELEASE,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        schedule: string,
+        body:
+          | PostSubscriptionSchedulesScheduleReleaseBody
+          | Signal<PostSubscriptionSchedulesScheduleReleaseBody>,
+      ) =>
+        httpResource<PostSubscriptionSchedulesScheduleReleaseResponse>(() => ({
+          url: `${base}/v1/subscription_schedules/${schedule}/release`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

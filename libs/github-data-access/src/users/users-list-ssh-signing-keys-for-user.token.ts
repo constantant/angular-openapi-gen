@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const USERS_LIST_SSH_SIGNING_KEYS_FOR_USER = new InjectionToken<
       | UsersListSshSigningKeysForUserParams
       | (() => UsersListSshSigningKeysForUserParams | undefined),
   ) => ReturnType<typeof httpResource<UsersListSshSigningKeysForUserResponse>>
->('USERS_LIST_SSH_SIGNING_KEYS_FOR_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      username: string,
-      params?:
-        | UsersListSshSigningKeysForUserParams
-        | (() => UsersListSshSigningKeysForUserParams | undefined),
-    ) =>
-      httpResource<UsersListSshSigningKeysForUserResponse>(() => ({
-        url: `${base}/users/${username}/ssh_signing_keys`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('USERS_LIST_SSH_SIGNING_KEYS_FOR_USER');
+
+export function provideUsersListSshSigningKeysForUser(): FactoryProvider {
+  return {
+    provide: USERS_LIST_SSH_SIGNING_KEYS_FOR_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        username: string,
+        params?:
+          | UsersListSshSigningKeysForUserParams
+          | (() => UsersListSshSigningKeysForUserParams | undefined),
+      ) =>
+        httpResource<UsersListSshSigningKeysForUserResponse>(() => ({
+          url: `${base}/users/${username}/ssh_signing_keys`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const ACTIONS_LIST_SELF_HOSTED_RUNNERS_IN_GROUP_FOR_ORG =
     ) => ReturnType<
       typeof httpResource<ActionsListSelfHostedRunnersInGroupForOrgResponse>
     >
-  >('ACTIONS_LIST_SELF_HOSTED_RUNNERS_IN_GROUP_FOR_ORG', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_LIST_SELF_HOSTED_RUNNERS_IN_GROUP_FOR_ORG');
+
+export function provideActionsListSelfHostedRunnersInGroupForOrg(): FactoryProvider {
+  return {
+    provide: ACTIONS_LIST_SELF_HOSTED_RUNNERS_IN_GROUP_FOR_ORG,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -41,4 +44,5 @@ export const ACTIONS_LIST_SELF_HOSTED_RUNNERS_IN_GROUP_FOR_ORG =
           >,
         }));
     },
-  });
+  };
+}

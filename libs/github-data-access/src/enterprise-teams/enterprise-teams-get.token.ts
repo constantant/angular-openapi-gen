@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -11,13 +11,17 @@ export const ENTERPRISE_TEAMS_GET = new InjectionToken<
     enterprise: string,
     teamSlug: string,
   ) => ReturnType<typeof httpResource<EnterpriseTeamsGetResponse>>
->('ENTERPRISE_TEAMS_GET', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (enterprise: string, teamSlug: string) =>
-      httpResource<EnterpriseTeamsGetResponse>(() => ({
-        url: `${base}/enterprises/${enterprise}/teams/${teamSlug}`,
-      }));
-  },
-});
+>('ENTERPRISE_TEAMS_GET');
+
+export function provideEnterpriseTeamsGet(): FactoryProvider {
+  return {
+    provide: ENTERPRISE_TEAMS_GET,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (enterprise: string, teamSlug: string) =>
+        httpResource<EnterpriseTeamsGetResponse>(() => ({
+          url: `${base}/enterprises/${enterprise}/teams/${teamSlug}`,
+        }));
+    },
+  };
+}

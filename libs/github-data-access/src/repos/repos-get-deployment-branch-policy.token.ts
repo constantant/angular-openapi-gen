@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,18 +13,22 @@ export const REPOS_GET_DEPLOYMENT_BRANCH_POLICY = new InjectionToken<
     environmentName: string,
     branchPolicyId: string,
   ) => ReturnType<typeof httpResource<ReposGetDeploymentBranchPolicyResponse>>
->('REPOS_GET_DEPLOYMENT_BRANCH_POLICY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      environmentName: string,
-      branchPolicyId: string,
-    ) =>
-      httpResource<ReposGetDeploymentBranchPolicyResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
-      }));
-  },
-});
+>('REPOS_GET_DEPLOYMENT_BRANCH_POLICY');
+
+export function provideReposGetDeploymentBranchPolicy(): FactoryProvider {
+  return {
+    provide: REPOS_GET_DEPLOYMENT_BRANCH_POLICY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        environmentName: string,
+        branchPolicyId: string,
+      ) =>
+        httpResource<ReposGetDeploymentBranchPolicyResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
+        }));
+    },
+  };
+}

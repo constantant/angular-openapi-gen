@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,9 +13,12 @@ export const ACTIONS_GET_ACTIONS_CACHE_STORAGE_LIMIT_FOR_ENTERPRISE =
     ) => ReturnType<
       typeof httpResource<ActionsGetActionsCacheStorageLimitForEnterpriseResponse>
     >
-  >('ACTIONS_GET_ACTIONS_CACHE_STORAGE_LIMIT_FOR_ENTERPRISE', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_GET_ACTIONS_CACHE_STORAGE_LIMIT_FOR_ENTERPRISE');
+
+export function provideActionsGetActionsCacheStorageLimitForEnterprise(): FactoryProvider {
+  return {
+    provide: ACTIONS_GET_ACTIONS_CACHE_STORAGE_LIMIT_FOR_ENTERPRISE,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (enterprise: string) =>
         httpResource<ActionsGetActionsCacheStorageLimitForEnterpriseResponse>(
@@ -24,4 +27,5 @@ export const ACTIONS_GET_ACTIONS_CACHE_STORAGE_LIMIT_FOR_ENTERPRISE =
           }),
         );
     },
-  });
+  };
+}

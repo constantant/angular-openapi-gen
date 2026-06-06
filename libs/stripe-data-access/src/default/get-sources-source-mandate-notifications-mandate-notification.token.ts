@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const GET_SOURCES_SOURCE_MANDATE_NOTIFICATIONS_MANDATE_NOTIFICATION =
     ) => ReturnType<
       typeof httpResource<GetSourcesSourceMandateNotificationsMandateNotificationResponse>
     >
-  >('GET_SOURCES_SOURCE_MANDATE_NOTIFICATIONS_MANDATE_NOTIFICATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('GET_SOURCES_SOURCE_MANDATE_NOTIFICATIONS_MANDATE_NOTIFICATION');
+
+export function provideGetSourcesSourceMandateNotificationsMandateNotification(): FactoryProvider {
+  return {
+    provide: GET_SOURCES_SOURCE_MANDATE_NOTIFICATIONS_MANDATE_NOTIFICATION,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         mandateNotification: string,
@@ -47,4 +50,5 @@ export const GET_SOURCES_SOURCE_MANDATE_NOTIFICATIONS_MANDATE_NOTIFICATION =
           }),
         );
     },
-  });
+  };
+}

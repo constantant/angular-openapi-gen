@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const POST_TEST_HELPERS_ISSUING_CARDS_CARD_SHIPPING_SUBMIT =
     ) => ReturnType<
       typeof httpResource<PostTestHelpersIssuingCardsCardShippingSubmitResponse>
     >
-  >('POST_TEST_HELPERS_ISSUING_CARDS_CARD_SHIPPING_SUBMIT', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_TEST_HELPERS_ISSUING_CARDS_CARD_SHIPPING_SUBMIT');
+
+export function providePostTestHelpersIssuingCardsCardShippingSubmit(): FactoryProvider {
+  return {
+    provide: POST_TEST_HELPERS_ISSUING_CARDS_CARD_SHIPPING_SUBMIT,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         card: string,
@@ -38,4 +41,5 @@ export const POST_TEST_HELPERS_ISSUING_CARDS_CARD_SHIPPING_SUBMIT =
           }),
         );
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID =
     ) => ReturnType<
       typeof httpResource<GetCustomersCustomerSubscriptionsSubscriptionExposedIdResponse>
     >
-  >('GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID', {
-    providedIn: 'root',
-    factory: () => {
+  >('GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID');
+
+export function provideGetCustomersCustomerSubscriptionsSubscriptionExposedId(): FactoryProvider {
+  return {
+    provide: GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         customer: string,
@@ -47,4 +50,5 @@ export const GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID =
           }),
         );
     },
-  });
+  };
+}

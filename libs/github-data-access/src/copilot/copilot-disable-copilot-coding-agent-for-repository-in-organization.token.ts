@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -9,9 +9,13 @@ export const COPILOT_DISABLE_COPILOT_CODING_AGENT_FOR_REPOSITORY_IN_ORGANIZATION
       org: string,
       repositoryId: string,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('COPILOT_DISABLE_COPILOT_CODING_AGENT_FOR_REPOSITORY_IN_ORGANIZATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('COPILOT_DISABLE_COPILOT_CODING_AGENT_FOR_REPOSITORY_IN_ORGANIZATION');
+
+export function provideCopilotDisableCopilotCodingAgentForRepositoryInOrganization(): FactoryProvider {
+  return {
+    provide:
+      COPILOT_DISABLE_COPILOT_CODING_AGENT_FOR_REPOSITORY_IN_ORGANIZATION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string, repositoryId: string) =>
         httpResource<unknown>(() => ({
@@ -19,4 +23,5 @@ export const COPILOT_DISABLE_COPILOT_CODING_AGENT_FOR_REPOSITORY_IN_ORGANIZATION
           method: 'DELETE',
         }));
     },
-  });
+  };
+}

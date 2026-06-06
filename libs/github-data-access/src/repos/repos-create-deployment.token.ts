@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const REPOS_CREATE_DEPLOYMENT = new InjectionToken<
     repo: string,
     body: ReposCreateDeploymentBody | Signal<ReposCreateDeploymentBody>,
   ) => ReturnType<typeof httpResource<ReposCreateDeploymentResponse>>
->('REPOS_CREATE_DEPLOYMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: ReposCreateDeploymentBody | Signal<ReposCreateDeploymentBody>,
-    ) =>
-      httpResource<ReposCreateDeploymentResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/deployments`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('REPOS_CREATE_DEPLOYMENT');
+
+export function provideReposCreateDeployment(): FactoryProvider {
+  return {
+    provide: REPOS_CREATE_DEPLOYMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: ReposCreateDeploymentBody | Signal<ReposCreateDeploymentBody>,
+      ) =>
+        httpResource<ReposCreateDeploymentResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/deployments`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

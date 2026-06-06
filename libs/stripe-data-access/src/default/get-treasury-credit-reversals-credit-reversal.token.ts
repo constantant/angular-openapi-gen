@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -18,24 +18,28 @@ export const GET_TREASURY_CREDIT_REVERSALS_CREDIT_REVERSAL = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<GetTreasuryCreditReversalsCreditReversalResponse>
   >
->('GET_TREASURY_CREDIT_REVERSALS_CREDIT_REVERSAL', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      creditReversal: string,
-      params?:
-        | GetTreasuryCreditReversalsCreditReversalParams
-        | (() => GetTreasuryCreditReversalsCreditReversalParams | undefined),
-    ) =>
-      httpResource<GetTreasuryCreditReversalsCreditReversalResponse>(() => ({
-        url: `${base}/v1/treasury/credit_reversals/${creditReversal}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_TREASURY_CREDIT_REVERSALS_CREDIT_REVERSAL');
+
+export function provideGetTreasuryCreditReversalsCreditReversal(): FactoryProvider {
+  return {
+    provide: GET_TREASURY_CREDIT_REVERSALS_CREDIT_REVERSAL,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        creditReversal: string,
+        params?:
+          | GetTreasuryCreditReversalsCreditReversalParams
+          | (() => GetTreasuryCreditReversalsCreditReversalParams | undefined),
+      ) =>
+        httpResource<GetTreasuryCreditReversalsCreditReversalResponse>(() => ({
+          url: `${base}/v1/treasury/credit_reversals/${creditReversal}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

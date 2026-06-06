@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const INTERACTIONS_SET_RESTRICTIONS_FOR_ORG = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<InteractionsSetRestrictionsForOrgResponse>
   >
->('INTERACTIONS_SET_RESTRICTIONS_FOR_ORG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      body:
-        | InteractionsSetRestrictionsForOrgBody
-        | Signal<InteractionsSetRestrictionsForOrgBody>,
-    ) =>
-      httpResource<InteractionsSetRestrictionsForOrgResponse>(() => ({
-        url: `${base}/orgs/${org}/interaction-limits`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('INTERACTIONS_SET_RESTRICTIONS_FOR_ORG');
+
+export function provideInteractionsSetRestrictionsForOrg(): FactoryProvider {
+  return {
+    provide: INTERACTIONS_SET_RESTRICTIONS_FOR_ORG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        body:
+          | InteractionsSetRestrictionsForOrgBody
+          | Signal<InteractionsSetRestrictionsForOrgBody>,
+      ) =>
+        httpResource<InteractionsSetRestrictionsForOrgResponse>(() => ({
+          url: `${base}/orgs/${org}/interaction-limits`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

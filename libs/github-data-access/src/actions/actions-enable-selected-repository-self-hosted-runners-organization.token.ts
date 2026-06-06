@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -9,9 +9,13 @@ export const ACTIONS_ENABLE_SELECTED_REPOSITORY_SELF_HOSTED_RUNNERS_ORGANIZATION
       org: string,
       repositoryId: string,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('ACTIONS_ENABLE_SELECTED_REPOSITORY_SELF_HOSTED_RUNNERS_ORGANIZATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_ENABLE_SELECTED_REPOSITORY_SELF_HOSTED_RUNNERS_ORGANIZATION');
+
+export function provideActionsEnableSelectedRepositorySelfHostedRunnersOrganization(): FactoryProvider {
+  return {
+    provide:
+      ACTIONS_ENABLE_SELECTED_REPOSITORY_SELF_HOSTED_RUNNERS_ORGANIZATION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string, repositoryId: string) =>
         httpResource<unknown>(() => ({
@@ -19,4 +23,5 @@ export const ACTIONS_ENABLE_SELECTED_REPOSITORY_SELF_HOSTED_RUNNERS_ORGANIZATION
           method: 'PUT',
         }));
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_IN_ORG =
     ) => ReturnType<
       typeof httpResource<TeamsAddOrUpdateMembershipForUserInOrgResponse>
     >
-  >('TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_IN_ORG', {
-    providedIn: 'root',
-    factory: () => {
+  >('TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_IN_ORG');
+
+export function provideTeamsAddOrUpdateMembershipForUserInOrg(): FactoryProvider {
+  return {
+    provide: TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_IN_ORG,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -40,4 +43,5 @@ export const TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_IN_ORG =
           body,
         }));
     },
-  });
+  };
+}

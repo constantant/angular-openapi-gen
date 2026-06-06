@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,21 +20,25 @@ export const DEPENDENCY_GRAPH_CREATE_REPOSITORY_SNAPSHOT = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<DependencyGraphCreateRepositorySnapshotResponse>
   >
->('DEPENDENCY_GRAPH_CREATE_REPOSITORY_SNAPSHOT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body:
-        | DependencyGraphCreateRepositorySnapshotBody
-        | Signal<DependencyGraphCreateRepositorySnapshotBody>,
-    ) =>
-      httpResource<DependencyGraphCreateRepositorySnapshotResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/dependency-graph/snapshots`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('DEPENDENCY_GRAPH_CREATE_REPOSITORY_SNAPSHOT');
+
+export function provideDependencyGraphCreateRepositorySnapshot(): FactoryProvider {
+  return {
+    provide: DEPENDENCY_GRAPH_CREATE_REPOSITORY_SNAPSHOT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body:
+          | DependencyGraphCreateRepositorySnapshotBody
+          | Signal<DependencyGraphCreateRepositorySnapshotBody>,
+      ) =>
+        httpResource<DependencyGraphCreateRepositorySnapshotResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/dependency-graph/snapshots`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

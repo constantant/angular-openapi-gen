@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,19 +13,23 @@ export const AGENTS_UPDATE_ORG_VARIABLE = new InjectionToken<
     name: string,
     body: AgentsUpdateOrgVariableBody | Signal<AgentsUpdateOrgVariableBody>,
   ) => ReturnType<typeof httpResource<unknown>>
->('AGENTS_UPDATE_ORG_VARIABLE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      name: string,
-      body: AgentsUpdateOrgVariableBody | Signal<AgentsUpdateOrgVariableBody>,
-    ) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/orgs/${org}/agents/variables/${name}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('AGENTS_UPDATE_ORG_VARIABLE');
+
+export function provideAgentsUpdateOrgVariable(): FactoryProvider {
+  return {
+    provide: AGENTS_UPDATE_ORG_VARIABLE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        name: string,
+        body: AgentsUpdateOrgVariableBody | Signal<AgentsUpdateOrgVariableBody>,
+      ) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/orgs/${org}/agents/variables/${name}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const POST_PAYMENT_INTENTS_INTENT_CANCEL = new InjectionToken<
       | PostPaymentIntentsIntentCancelBody
       | Signal<PostPaymentIntentsIntentCancelBody>,
   ) => ReturnType<typeof httpResource<PostPaymentIntentsIntentCancelResponse>>
->('POST_PAYMENT_INTENTS_INTENT_CANCEL', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      intent: string,
-      body:
-        | PostPaymentIntentsIntentCancelBody
-        | Signal<PostPaymentIntentsIntentCancelBody>,
-    ) =>
-      httpResource<PostPaymentIntentsIntentCancelResponse>(() => ({
-        url: `${base}/v1/payment_intents/${intent}/cancel`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_PAYMENT_INTENTS_INTENT_CANCEL');
+
+export function providePostPaymentIntentsIntentCancel(): FactoryProvider {
+  return {
+    provide: POST_PAYMENT_INTENTS_INTENT_CANCEL,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        intent: string,
+        body:
+          | PostPaymentIntentsIntentCancelBody
+          | Signal<PostPaymentIntentsIntentCancelBody>,
+      ) =>
+        httpResource<PostPaymentIntentsIntentCancelResponse>(() => ({
+          url: `${base}/v1/payment_intents/${intent}/cancel`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

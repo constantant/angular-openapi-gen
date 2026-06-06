@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const REPOS_LIST_COMMENTS_FOR_COMMIT = new InjectionToken<
       | ReposListCommentsForCommitParams
       | (() => ReposListCommentsForCommitParams | undefined),
   ) => ReturnType<typeof httpResource<ReposListCommentsForCommitResponse>>
->('REPOS_LIST_COMMENTS_FOR_COMMIT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      commitSha: string,
-      params?:
-        | ReposListCommentsForCommitParams
-        | (() => ReposListCommentsForCommitParams | undefined),
-    ) =>
-      httpResource<ReposListCommentsForCommitResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/comments`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('REPOS_LIST_COMMENTS_FOR_COMMIT');
+
+export function provideReposListCommentsForCommit(): FactoryProvider {
+  return {
+    provide: REPOS_LIST_COMMENTS_FOR_COMMIT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        commitSha: string,
+        params?:
+          | ReposListCommentsForCommitParams
+          | (() => ReposListCommentsForCommitParams | undefined),
+      ) =>
+        httpResource<ReposListCommentsForCommitResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/comments`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -8,13 +8,17 @@ export type AppsGetBySlugResponse =
 
 export const APPS_GET_BY_SLUG = new InjectionToken<
   (appSlug: string) => ReturnType<typeof httpResource<AppsGetBySlugResponse>>
->('APPS_GET_BY_SLUG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (appSlug: string) =>
-      httpResource<AppsGetBySlugResponse>(() => ({
-        url: `${base}/apps/${appSlug}`,
-      }));
-  },
-});
+>('APPS_GET_BY_SLUG');
+
+export function provideAppsGetBySlug(): FactoryProvider {
+  return {
+    provide: APPS_GET_BY_SLUG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (appSlug: string) =>
+        httpResource<AppsGetBySlugResponse>(() => ({
+          url: `${base}/apps/${appSlug}`,
+        }));
+    },
+  };
+}

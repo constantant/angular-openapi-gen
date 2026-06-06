@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const ACTIVITY_LIST_PUBLIC_ORG_EVENTS = new InjectionToken<
       | ActivityListPublicOrgEventsParams
       | (() => ActivityListPublicOrgEventsParams | undefined),
   ) => ReturnType<typeof httpResource<ActivityListPublicOrgEventsResponse>>
->('ACTIVITY_LIST_PUBLIC_ORG_EVENTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      params?:
-        | ActivityListPublicOrgEventsParams
-        | (() => ActivityListPublicOrgEventsParams | undefined),
-    ) =>
-      httpResource<ActivityListPublicOrgEventsResponse>(() => ({
-        url: `${base}/orgs/${org}/events`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ACTIVITY_LIST_PUBLIC_ORG_EVENTS');
+
+export function provideActivityListPublicOrgEvents(): FactoryProvider {
+  return {
+    provide: ACTIVITY_LIST_PUBLIC_ORG_EVENTS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | ActivityListPublicOrgEventsParams
+          | (() => ActivityListPublicOrgEventsParams | undefined),
+      ) =>
+        httpResource<ActivityListPublicOrgEventsResponse>(() => ({
+          url: `${base}/orgs/${org}/events`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

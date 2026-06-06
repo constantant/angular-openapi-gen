@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,15 +14,19 @@ export const POST_CREDIT_NOTES = new InjectionToken<
   (
     body: PostCreditNotesBody | Signal<PostCreditNotesBody>,
   ) => ReturnType<typeof httpResource<PostCreditNotesResponse>>
->('POST_CREDIT_NOTES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (body: PostCreditNotesBody | Signal<PostCreditNotesBody>) =>
-      httpResource<PostCreditNotesResponse>(() => ({
-        url: `${base}/v1/credit_notes`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CREDIT_NOTES');
+
+export function providePostCreditNotes(): FactoryProvider {
+  return {
+    provide: POST_CREDIT_NOTES,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (body: PostCreditNotesBody | Signal<PostCreditNotesBody>) =>
+        httpResource<PostCreditNotesResponse>(() => ({
+          url: `${base}/v1/credit_notes`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

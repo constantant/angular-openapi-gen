@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,17 +14,21 @@ export const POST_RADAR_VALUE_LIST_ITEMS = new InjectionToken<
   (
     body: PostRadarValueListItemsBody | Signal<PostRadarValueListItemsBody>,
   ) => ReturnType<typeof httpResource<PostRadarValueListItemsResponse>>
->('POST_RADAR_VALUE_LIST_ITEMS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body: PostRadarValueListItemsBody | Signal<PostRadarValueListItemsBody>,
-    ) =>
-      httpResource<PostRadarValueListItemsResponse>(() => ({
-        url: `${base}/v1/radar/value_list_items`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_RADAR_VALUE_LIST_ITEMS');
+
+export function providePostRadarValueListItems(): FactoryProvider {
+  return {
+    provide: POST_RADAR_VALUE_LIST_ITEMS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body: PostRadarValueListItemsBody | Signal<PostRadarValueListItemsBody>,
+      ) =>
+        httpResource<PostRadarValueListItemsResponse>(() => ({
+          url: `${base}/v1/radar/value_list_items`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -11,13 +11,17 @@ export const MIGRATIONS_GET_IMPORT_STATUS = new InjectionToken<
     owner: string,
     repo: string,
   ) => ReturnType<typeof httpResource<MigrationsGetImportStatusResponse>>
->('MIGRATIONS_GET_IMPORT_STATUS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string) =>
-      httpResource<MigrationsGetImportStatusResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/import`,
-      }));
-  },
-});
+>('MIGRATIONS_GET_IMPORT_STATUS');
+
+export function provideMigrationsGetImportStatus(): FactoryProvider {
+  return {
+    provide: MIGRATIONS_GET_IMPORT_STATUS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string) =>
+        httpResource<MigrationsGetImportStatusResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/import`,
+        }));
+    },
+  };
+}

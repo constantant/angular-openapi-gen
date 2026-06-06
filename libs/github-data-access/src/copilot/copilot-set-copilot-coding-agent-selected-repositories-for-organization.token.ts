@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,9 +16,13 @@ export const COPILOT_SET_COPILOT_CODING_AGENT_SELECTED_REPOSITORIES_FOR_ORGANIZA
         | CopilotSetCopilotCodingAgentSelectedRepositoriesForOrganizationBody
         | Signal<CopilotSetCopilotCodingAgentSelectedRepositoriesForOrganizationBody>,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('COPILOT_SET_COPILOT_CODING_AGENT_SELECTED_REPOSITORIES_FOR_ORGANIZATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('COPILOT_SET_COPILOT_CODING_AGENT_SELECTED_REPOSITORIES_FOR_ORGANIZATION');
+
+export function provideCopilotSetCopilotCodingAgentSelectedRepositoriesForOrganization(): FactoryProvider {
+  return {
+    provide:
+      COPILOT_SET_COPILOT_CODING_AGENT_SELECTED_REPOSITORIES_FOR_ORGANIZATION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -32,4 +36,5 @@ export const COPILOT_SET_COPILOT_CODING_AGENT_SELECTED_REPOSITORIES_FOR_ORGANIZA
           body,
         }));
     },
-  });
+  };
+}

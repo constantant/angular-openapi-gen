@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -10,13 +10,17 @@ export const USERS_GET_BY_USERNAME = new InjectionToken<
   (
     username: string,
   ) => ReturnType<typeof httpResource<UsersGetByUsernameResponse>>
->('USERS_GET_BY_USERNAME', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (username: string) =>
-      httpResource<UsersGetByUsernameResponse>(() => ({
-        url: `${base}/users/${username}`,
-      }));
-  },
-});
+>('USERS_GET_BY_USERNAME');
+
+export function provideUsersGetByUsername(): FactoryProvider {
+  return {
+    provide: USERS_GET_BY_USERNAME,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (username: string) =>
+        httpResource<UsersGetByUsernameResponse>(() => ({
+          url: `${base}/users/${username}`,
+        }));
+    },
+  };
+}

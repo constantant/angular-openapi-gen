@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const PROJECTS_CREATE_DRAFT_ITEM_FOR_AUTHENTICATED_USER =
     ) => ReturnType<
       typeof httpResource<ProjectsCreateDraftItemForAuthenticatedUserResponse>
     >
-  >('PROJECTS_CREATE_DRAFT_ITEM_FOR_AUTHENTICATED_USER', {
-    providedIn: 'root',
-    factory: () => {
+  >('PROJECTS_CREATE_DRAFT_ITEM_FOR_AUTHENTICATED_USER');
+
+export function provideProjectsCreateDraftItemForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: PROJECTS_CREATE_DRAFT_ITEM_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         userId: string,
@@ -40,4 +43,5 @@ export const PROJECTS_CREATE_DRAFT_ITEM_FOR_AUTHENTICATED_USER =
           }),
         );
     },
-  });
+  };
+}

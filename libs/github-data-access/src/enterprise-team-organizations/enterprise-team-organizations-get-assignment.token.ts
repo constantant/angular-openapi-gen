@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -14,13 +14,17 @@ export const ENTERPRISE_TEAM_ORGANIZATIONS_GET_ASSIGNMENT = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<EnterpriseTeamOrganizationsGetAssignmentResponse>
   >
->('ENTERPRISE_TEAM_ORGANIZATIONS_GET_ASSIGNMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (enterprise: string, enterpriseTeam: string, org: string) =>
-      httpResource<EnterpriseTeamOrganizationsGetAssignmentResponse>(() => ({
-        url: `${base}/enterprises/${enterprise}/teams/${enterpriseTeam}/organizations/${org}`,
-      }));
-  },
-});
+>('ENTERPRISE_TEAM_ORGANIZATIONS_GET_ASSIGNMENT');
+
+export function provideEnterpriseTeamOrganizationsGetAssignment(): FactoryProvider {
+  return {
+    provide: ENTERPRISE_TEAM_ORGANIZATIONS_GET_ASSIGNMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (enterprise: string, enterpriseTeam: string, org: string) =>
+        httpResource<EnterpriseTeamOrganizationsGetAssignmentResponse>(() => ({
+          url: `${base}/enterprises/${enterprise}/teams/${enterpriseTeam}/organizations/${org}`,
+        }));
+    },
+  };
+}

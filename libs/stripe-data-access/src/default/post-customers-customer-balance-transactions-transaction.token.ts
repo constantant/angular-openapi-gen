@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const POST_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION =
     ) => ReturnType<
       typeof httpResource<PostCustomersCustomerBalanceTransactionsTransactionResponse>
     >
-  >('POST_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION');
+
+export function providePostCustomersCustomerBalanceTransactionsTransaction(): FactoryProvider {
+  return {
+    provide: POST_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         customer: string,
@@ -41,4 +44,5 @@ export const POST_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION =
           }),
         );
     },
-  });
+  };
+}

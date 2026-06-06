@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,9 +13,13 @@ export const ACTIONS_GET_GITHUB_ACTIONS_DEFAULT_WORKFLOW_PERMISSIONS_ORGANIZATIO
     ) => ReturnType<
       typeof httpResource<ActionsGetGithubActionsDefaultWorkflowPermissionsOrganizationResponse>
     >
-  >('ACTIONS_GET_GITHUB_ACTIONS_DEFAULT_WORKFLOW_PERMISSIONS_ORGANIZATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_GET_GITHUB_ACTIONS_DEFAULT_WORKFLOW_PERMISSIONS_ORGANIZATION');
+
+export function provideActionsGetGithubActionsDefaultWorkflowPermissionsOrganization(): FactoryProvider {
+  return {
+    provide:
+      ACTIONS_GET_GITHUB_ACTIONS_DEFAULT_WORKFLOW_PERMISSIONS_ORGANIZATION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string) =>
         httpResource<ActionsGetGithubActionsDefaultWorkflowPermissionsOrganizationResponse>(
@@ -24,4 +28,5 @@ export const ACTIONS_GET_GITHUB_ACTIONS_DEFAULT_WORKFLOW_PERMISSIONS_ORGANIZATIO
           }),
         );
     },
-  });
+  };
+}

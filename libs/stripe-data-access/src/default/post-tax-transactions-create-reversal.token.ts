@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -18,19 +18,23 @@ export const POST_TAX_TRANSACTIONS_CREATE_REVERSAL = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostTaxTransactionsCreateReversalResponse>
   >
->('POST_TAX_TRANSACTIONS_CREATE_REVERSAL', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body:
-        | PostTaxTransactionsCreateReversalBody
-        | Signal<PostTaxTransactionsCreateReversalBody>,
-    ) =>
-      httpResource<PostTaxTransactionsCreateReversalResponse>(() => ({
-        url: `${base}/v1/tax/transactions/create_reversal`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TAX_TRANSACTIONS_CREATE_REVERSAL');
+
+export function providePostTaxTransactionsCreateReversal(): FactoryProvider {
+  return {
+    provide: POST_TAX_TRANSACTIONS_CREATE_REVERSAL,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body:
+          | PostTaxTransactionsCreateReversalBody
+          | Signal<PostTaxTransactionsCreateReversalBody>,
+      ) =>
+        httpResource<PostTaxTransactionsCreateReversalResponse>(() => ({
+          url: `${base}/v1/tax/transactions/create_reversal`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

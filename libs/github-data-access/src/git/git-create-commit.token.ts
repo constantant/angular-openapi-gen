@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const GIT_CREATE_COMMIT = new InjectionToken<
     repo: string,
     body: GitCreateCommitBody | Signal<GitCreateCommitBody>,
   ) => ReturnType<typeof httpResource<GitCreateCommitResponse>>
->('GIT_CREATE_COMMIT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: GitCreateCommitBody | Signal<GitCreateCommitBody>,
-    ) =>
-      httpResource<GitCreateCommitResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/git/commits`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('GIT_CREATE_COMMIT');
+
+export function provideGitCreateCommit(): FactoryProvider {
+  return {
+    provide: GIT_CREATE_COMMIT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: GitCreateCommitBody | Signal<GitCreateCommitBody>,
+      ) =>
+        httpResource<GitCreateCommitResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/git/commits`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

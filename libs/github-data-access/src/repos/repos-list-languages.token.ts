@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -11,13 +11,17 @@ export const REPOS_LIST_LANGUAGES = new InjectionToken<
     owner: string,
     repo: string,
   ) => ReturnType<typeof httpResource<ReposListLanguagesResponse>>
->('REPOS_LIST_LANGUAGES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string) =>
-      httpResource<ReposListLanguagesResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/languages`,
-      }));
-  },
-});
+>('REPOS_LIST_LANGUAGES');
+
+export function provideReposListLanguages(): FactoryProvider {
+  return {
+    provide: REPOS_LIST_LANGUAGES,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string) =>
+        httpResource<ReposListLanguagesResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/languages`,
+        }));
+    },
+  };
+}

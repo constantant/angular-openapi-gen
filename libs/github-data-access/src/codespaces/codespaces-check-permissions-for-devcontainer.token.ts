@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,25 +19,29 @@ export const CODESPACES_CHECK_PERMISSIONS_FOR_DEVCONTAINER = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<CodespacesCheckPermissionsForDevcontainerResponse>
   >
->('CODESPACES_CHECK_PERMISSIONS_FOR_DEVCONTAINER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      params?:
-        | CodespacesCheckPermissionsForDevcontainerParams
-        | (() => CodespacesCheckPermissionsForDevcontainerParams | undefined),
-    ) =>
-      httpResource<CodespacesCheckPermissionsForDevcontainerResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/codespaces/permissions_check`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('CODESPACES_CHECK_PERMISSIONS_FOR_DEVCONTAINER');
+
+export function provideCodespacesCheckPermissionsForDevcontainer(): FactoryProvider {
+  return {
+    provide: CODESPACES_CHECK_PERMISSIONS_FOR_DEVCONTAINER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        params?:
+          | CodespacesCheckPermissionsForDevcontainerParams
+          | (() => CodespacesCheckPermissionsForDevcontainerParams | undefined),
+      ) =>
+        httpResource<CodespacesCheckPermissionsForDevcontainerResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/codespaces/permissions_check`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

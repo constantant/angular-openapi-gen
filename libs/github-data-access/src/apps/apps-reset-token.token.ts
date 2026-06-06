@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const APPS_RESET_TOKEN = new InjectionToken<
     clientId: string,
     body: AppsResetTokenBody | Signal<AppsResetTokenBody>,
   ) => ReturnType<typeof httpResource<AppsResetTokenResponse>>
->('APPS_RESET_TOKEN', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      clientId: string,
-      body: AppsResetTokenBody | Signal<AppsResetTokenBody>,
-    ) =>
-      httpResource<AppsResetTokenResponse>(() => ({
-        url: `${base}/applications/${clientId}/token`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('APPS_RESET_TOKEN');
+
+export function provideAppsResetToken(): FactoryProvider {
+  return {
+    provide: APPS_RESET_TOKEN,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        clientId: string,
+        body: AppsResetTokenBody | Signal<AppsResetTokenBody>,
+      ) =>
+        httpResource<AppsResetTokenResponse>(() => ({
+          url: `${base}/applications/${clientId}/token`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,20 +15,24 @@ export const POST_TERMINAL_READERS_READER = new InjectionToken<
     reader: string,
     body: PostTerminalReadersReaderBody | Signal<PostTerminalReadersReaderBody>,
   ) => ReturnType<typeof httpResource<PostTerminalReadersReaderResponse>>
->('POST_TERMINAL_READERS_READER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      reader: string,
-      body:
-        | PostTerminalReadersReaderBody
-        | Signal<PostTerminalReadersReaderBody>,
-    ) =>
-      httpResource<PostTerminalReadersReaderResponse>(() => ({
-        url: `${base}/v1/terminal/readers/${reader}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TERMINAL_READERS_READER');
+
+export function providePostTerminalReadersReader(): FactoryProvider {
+  return {
+    provide: POST_TERMINAL_READERS_READER,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        reader: string,
+        body:
+          | PostTerminalReadersReaderBody
+          | Signal<PostTerminalReadersReaderBody>,
+      ) =>
+        httpResource<PostTerminalReadersReaderResponse>(() => ({
+          url: `${base}/v1/terminal/readers/${reader}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

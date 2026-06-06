@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const GET_PAYMENT_INTENTS_INTENT_AMOUNT_DETAILS_LINE_ITEMS =
     ) => ReturnType<
       typeof httpResource<GetPaymentIntentsIntentAmountDetailsLineItemsResponse>
     >
-  >('GET_PAYMENT_INTENTS_INTENT_AMOUNT_DETAILS_LINE_ITEMS', {
-    providedIn: 'root',
-    factory: () => {
+  >('GET_PAYMENT_INTENTS_INTENT_AMOUNT_DETAILS_LINE_ITEMS');
+
+export function provideGetPaymentIntentsIntentAmountDetailsLineItems(): FactoryProvider {
+  return {
+    provide: GET_PAYMENT_INTENTS_INTENT_AMOUNT_DETAILS_LINE_ITEMS,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         intent: string,
@@ -45,4 +48,5 @@ export const GET_PAYMENT_INTENTS_INTENT_AMOUNT_DETAILS_LINE_ITEMS =
           }),
         );
     },
-  });
+  };
+}

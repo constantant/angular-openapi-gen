@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,9 +15,12 @@ export const ACTIONS_REMOVE_CUSTOM_LABEL_FROM_SELF_HOSTED_RUNNER_FOR_ORG =
     ) => ReturnType<
       typeof httpResource<ActionsRemoveCustomLabelFromSelfHostedRunnerForOrgResponse>
     >
-  >('ACTIONS_REMOVE_CUSTOM_LABEL_FROM_SELF_HOSTED_RUNNER_FOR_ORG', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_REMOVE_CUSTOM_LABEL_FROM_SELF_HOSTED_RUNNER_FOR_ORG');
+
+export function provideActionsRemoveCustomLabelFromSelfHostedRunnerForOrg(): FactoryProvider {
+  return {
+    provide: ACTIONS_REMOVE_CUSTOM_LABEL_FROM_SELF_HOSTED_RUNNER_FOR_ORG,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string, runnerId: string, name: string) =>
         httpResource<ActionsRemoveCustomLabelFromSelfHostedRunnerForOrgResponse>(
@@ -27,4 +30,5 @@ export const ACTIONS_REMOVE_CUSTOM_LABEL_FROM_SELF_HOSTED_RUNNER_FOR_ORG =
           }),
         );
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -14,13 +14,17 @@ export const SECURITY_ADVISORIES_GET_REPOSITORY_ADVISORY = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<SecurityAdvisoriesGetRepositoryAdvisoryResponse>
   >
->('SECURITY_ADVISORIES_GET_REPOSITORY_ADVISORY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, ghsaId: string) =>
-      httpResource<SecurityAdvisoriesGetRepositoryAdvisoryResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/security-advisories/${ghsaId}`,
-      }));
-  },
-});
+>('SECURITY_ADVISORIES_GET_REPOSITORY_ADVISORY');
+
+export function provideSecurityAdvisoriesGetRepositoryAdvisory(): FactoryProvider {
+  return {
+    provide: SECURITY_ADVISORIES_GET_REPOSITORY_ADVISORY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, ghsaId: string) =>
+        httpResource<SecurityAdvisoriesGetRepositoryAdvisoryResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/security-advisories/${ghsaId}`,
+        }));
+    },
+  };
+}

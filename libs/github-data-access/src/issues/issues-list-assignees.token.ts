@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,25 +17,29 @@ export const ISSUES_LIST_ASSIGNEES = new InjectionToken<
       | IssuesListAssigneesParams
       | (() => IssuesListAssigneesParams | undefined),
   ) => ReturnType<typeof httpResource<IssuesListAssigneesResponse>>
->('ISSUES_LIST_ASSIGNEES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      params?:
-        | IssuesListAssigneesParams
-        | (() => IssuesListAssigneesParams | undefined),
-    ) =>
-      httpResource<IssuesListAssigneesResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/assignees`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ISSUES_LIST_ASSIGNEES');
+
+export function provideIssuesListAssignees(): FactoryProvider {
+  return {
+    provide: ISSUES_LIST_ASSIGNEES,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        params?:
+          | IssuesListAssigneesParams
+          | (() => IssuesListAssigneesParams | undefined),
+      ) =>
+        httpResource<IssuesListAssigneesResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/assignees`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

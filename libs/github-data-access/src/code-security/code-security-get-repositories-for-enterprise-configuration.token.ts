@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const CODE_SECURITY_GET_REPOSITORIES_FOR_ENTERPRISE_CONFIGURATION =
     ) => ReturnType<
       typeof httpResource<CodeSecurityGetRepositoriesForEnterpriseConfigurationResponse>
     >
-  >('CODE_SECURITY_GET_REPOSITORIES_FOR_ENTERPRISE_CONFIGURATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('CODE_SECURITY_GET_REPOSITORIES_FOR_ENTERPRISE_CONFIGURATION');
+
+export function provideCodeSecurityGetRepositoriesForEnterpriseConfiguration(): FactoryProvider {
+  return {
+    provide: CODE_SECURITY_GET_REPOSITORIES_FOR_ENTERPRISE_CONFIGURATION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         enterprise: string,
@@ -47,4 +50,5 @@ export const CODE_SECURITY_GET_REPOSITORIES_FOR_ENTERPRISE_CONFIGURATION =
           }),
         );
     },
-  });
+  };
+}

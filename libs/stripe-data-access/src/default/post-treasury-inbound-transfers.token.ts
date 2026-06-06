@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const POST_TREASURY_INBOUND_TRANSFERS = new InjectionToken<
       | PostTreasuryInboundTransfersBody
       | Signal<PostTreasuryInboundTransfersBody>,
   ) => ReturnType<typeof httpResource<PostTreasuryInboundTransfersResponse>>
->('POST_TREASURY_INBOUND_TRANSFERS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body:
-        | PostTreasuryInboundTransfersBody
-        | Signal<PostTreasuryInboundTransfersBody>,
-    ) =>
-      httpResource<PostTreasuryInboundTransfersResponse>(() => ({
-        url: `${base}/v1/treasury/inbound_transfers`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TREASURY_INBOUND_TRANSFERS');
+
+export function providePostTreasuryInboundTransfers(): FactoryProvider {
+  return {
+    provide: POST_TREASURY_INBOUND_TRANSFERS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body:
+          | PostTreasuryInboundTransfersBody
+          | Signal<PostTreasuryInboundTransfersBody>,
+      ) =>
+        httpResource<PostTreasuryInboundTransfersResponse>(() => ({
+          url: `${base}/v1/treasury/inbound_transfers`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

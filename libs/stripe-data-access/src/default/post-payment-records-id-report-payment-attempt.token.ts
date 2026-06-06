@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const POST_PAYMENT_RECORDS_ID_REPORT_PAYMENT_ATTEMPT =
     ) => ReturnType<
       typeof httpResource<PostPaymentRecordsIdReportPaymentAttemptResponse>
     >
-  >('POST_PAYMENT_RECORDS_ID_REPORT_PAYMENT_ATTEMPT', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_PAYMENT_RECORDS_ID_REPORT_PAYMENT_ATTEMPT');
+
+export function providePostPaymentRecordsIdReportPaymentAttempt(): FactoryProvider {
+  return {
+    provide: POST_PAYMENT_RECORDS_ID_REPORT_PAYMENT_ATTEMPT,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         id: string,
@@ -36,4 +39,5 @@ export const POST_PAYMENT_RECORDS_ID_REPORT_PAYMENT_ATTEMPT =
           body,
         }));
     },
-  });
+  };
+}

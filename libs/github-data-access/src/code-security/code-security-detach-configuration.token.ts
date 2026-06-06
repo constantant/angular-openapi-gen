@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -14,20 +14,24 @@ export const CODE_SECURITY_DETACH_CONFIGURATION = new InjectionToken<
       | CodeSecurityDetachConfigurationBody
       | Signal<CodeSecurityDetachConfigurationBody>,
   ) => ReturnType<typeof httpResource<unknown>>
->('CODE_SECURITY_DETACH_CONFIGURATION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      body:
-        | CodeSecurityDetachConfigurationBody
-        | Signal<CodeSecurityDetachConfigurationBody>,
-    ) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/orgs/${org}/code-security/configurations/detach`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('CODE_SECURITY_DETACH_CONFIGURATION');
+
+export function provideCodeSecurityDetachConfiguration(): FactoryProvider {
+  return {
+    provide: CODE_SECURITY_DETACH_CONFIGURATION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        body:
+          | CodeSecurityDetachConfigurationBody
+          | Signal<CodeSecurityDetachConfigurationBody>,
+      ) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/orgs/${org}/code-security/configurations/detach`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

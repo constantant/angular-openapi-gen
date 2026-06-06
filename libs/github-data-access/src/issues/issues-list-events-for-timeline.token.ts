@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const ISSUES_LIST_EVENTS_FOR_TIMELINE = new InjectionToken<
       | IssuesListEventsForTimelineParams
       | (() => IssuesListEventsForTimelineParams | undefined),
   ) => ReturnType<typeof httpResource<IssuesListEventsForTimelineResponse>>
->('ISSUES_LIST_EVENTS_FOR_TIMELINE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      issueNumber: string,
-      params?:
-        | IssuesListEventsForTimelineParams
-        | (() => IssuesListEventsForTimelineParams | undefined),
-    ) =>
-      httpResource<IssuesListEventsForTimelineResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/timeline`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ISSUES_LIST_EVENTS_FOR_TIMELINE');
+
+export function provideIssuesListEventsForTimeline(): FactoryProvider {
+  return {
+    provide: ISSUES_LIST_EVENTS_FOR_TIMELINE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        issueNumber: string,
+        params?:
+          | IssuesListEventsForTimelineParams
+          | (() => IssuesListEventsForTimelineParams | undefined),
+      ) =>
+        httpResource<IssuesListEventsForTimelineResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/timeline`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

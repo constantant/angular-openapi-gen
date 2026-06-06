@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,22 +21,26 @@ export const REPOS_CREATE_DEPLOYMENT_BRANCH_POLICY = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<ReposCreateDeploymentBranchPolicyResponse>
   >
->('REPOS_CREATE_DEPLOYMENT_BRANCH_POLICY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      environmentName: string,
-      body:
-        | ReposCreateDeploymentBranchPolicyBody
-        | Signal<ReposCreateDeploymentBranchPolicyBody>,
-    ) =>
-      httpResource<ReposCreateDeploymentBranchPolicyResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('REPOS_CREATE_DEPLOYMENT_BRANCH_POLICY');
+
+export function provideReposCreateDeploymentBranchPolicy(): FactoryProvider {
+  return {
+    provide: REPOS_CREATE_DEPLOYMENT_BRANCH_POLICY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        environmentName: string,
+        body:
+          | ReposCreateDeploymentBranchPolicyBody
+          | Signal<ReposCreateDeploymentBranchPolicyBody>,
+      ) =>
+        httpResource<ReposCreateDeploymentBranchPolicyResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

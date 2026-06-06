@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,21 +20,25 @@ export const ENTERPRISE_TEAM_ORGANIZATIONS_BULK_ADD = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<EnterpriseTeamOrganizationsBulkAddResponse>
   >
->('ENTERPRISE_TEAM_ORGANIZATIONS_BULK_ADD', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      enterprise: string,
-      enterpriseTeam: string,
-      body:
-        | EnterpriseTeamOrganizationsBulkAddBody
-        | Signal<EnterpriseTeamOrganizationsBulkAddBody>,
-    ) =>
-      httpResource<EnterpriseTeamOrganizationsBulkAddResponse>(() => ({
-        url: `${base}/enterprises/${enterprise}/teams/${enterpriseTeam}/organizations/add`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ENTERPRISE_TEAM_ORGANIZATIONS_BULK_ADD');
+
+export function provideEnterpriseTeamOrganizationsBulkAdd(): FactoryProvider {
+  return {
+    provide: ENTERPRISE_TEAM_ORGANIZATIONS_BULK_ADD,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        enterprise: string,
+        enterpriseTeam: string,
+        body:
+          | EnterpriseTeamOrganizationsBulkAddBody
+          | Signal<EnterpriseTeamOrganizationsBulkAddBody>,
+      ) =>
+        httpResource<EnterpriseTeamOrganizationsBulkAddResponse>(() => ({
+          url: `${base}/enterprises/${enterprise}/teams/${enterpriseTeam}/organizations/add`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

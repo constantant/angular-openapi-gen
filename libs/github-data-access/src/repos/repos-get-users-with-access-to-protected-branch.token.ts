@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,13 +15,17 @@ export const REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH =
     ) => ReturnType<
       typeof httpResource<ReposGetUsersWithAccessToProtectedBranchResponse>
     >
-  >('REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH', {
-    providedIn: 'root',
-    factory: () => {
+  >('REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH');
+
+export function provideReposGetUsersWithAccessToProtectedBranch(): FactoryProvider {
+  return {
+    provide: REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, branch: string) =>
         httpResource<ReposGetUsersWithAccessToProtectedBranchResponse>(() => ({
           url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
         }));
     },
-  });
+  };
+}

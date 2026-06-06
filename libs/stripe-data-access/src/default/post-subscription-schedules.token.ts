@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,19 +14,23 @@ export const POST_SUBSCRIPTION_SCHEDULES = new InjectionToken<
   (
     body: PostSubscriptionSchedulesBody | Signal<PostSubscriptionSchedulesBody>,
   ) => ReturnType<typeof httpResource<PostSubscriptionSchedulesResponse>>
->('POST_SUBSCRIPTION_SCHEDULES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body:
-        | PostSubscriptionSchedulesBody
-        | Signal<PostSubscriptionSchedulesBody>,
-    ) =>
-      httpResource<PostSubscriptionSchedulesResponse>(() => ({
-        url: `${base}/v1/subscription_schedules`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_SUBSCRIPTION_SCHEDULES');
+
+export function providePostSubscriptionSchedules(): FactoryProvider {
+  return {
+    provide: POST_SUBSCRIPTION_SCHEDULES,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body:
+          | PostSubscriptionSchedulesBody
+          | Signal<PostSubscriptionSchedulesBody>,
+      ) =>
+        httpResource<PostSubscriptionSchedulesResponse>(() => ({
+          url: `${base}/v1/subscription_schedules`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

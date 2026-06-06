@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,15 +14,19 @@ export const POST_CHARGES = new InjectionToken<
   (
     body: PostChargesBody | Signal<PostChargesBody>,
   ) => ReturnType<typeof httpResource<PostChargesResponse>>
->('POST_CHARGES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (body: PostChargesBody | Signal<PostChargesBody>) =>
-      httpResource<PostChargesResponse>(() => ({
-        url: `${base}/v1/charges`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CHARGES');
+
+export function providePostCharges(): FactoryProvider {
+  return {
+    provide: POST_CHARGES,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (body: PostChargesBody | Signal<PostChargesBody>) =>
+        httpResource<PostChargesResponse>(() => ({
+          url: `${base}/v1/charges`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

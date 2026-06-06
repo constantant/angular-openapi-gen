@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const REPOS_GET_STATUS_CHECKS_PROTECTION = new InjectionToken<
     repo: string,
     branch: string,
   ) => ReturnType<typeof httpResource<ReposGetStatusChecksProtectionResponse>>
->('REPOS_GET_STATUS_CHECKS_PROTECTION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, branch: string) =>
-      httpResource<ReposGetStatusChecksProtectionResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks`,
-      }));
-  },
-});
+>('REPOS_GET_STATUS_CHECKS_PROTECTION');
+
+export function provideReposGetStatusChecksProtection(): FactoryProvider {
+  return {
+    provide: REPOS_GET_STATUS_CHECKS_PROTECTION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, branch: string) =>
+        httpResource<ReposGetStatusChecksProtectionResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks`,
+        }));
+    },
+  };
+}

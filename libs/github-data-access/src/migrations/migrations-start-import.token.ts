@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const MIGRATIONS_START_IMPORT = new InjectionToken<
     repo: string,
     body: MigrationsStartImportBody | Signal<MigrationsStartImportBody>,
   ) => ReturnType<typeof httpResource<MigrationsStartImportResponse>>
->('MIGRATIONS_START_IMPORT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: MigrationsStartImportBody | Signal<MigrationsStartImportBody>,
-    ) =>
-      httpResource<MigrationsStartImportResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/import`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('MIGRATIONS_START_IMPORT');
+
+export function provideMigrationsStartImport(): FactoryProvider {
+  return {
+    provide: MIGRATIONS_START_IMPORT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: MigrationsStartImportBody | Signal<MigrationsStartImportBody>,
+      ) =>
+        httpResource<MigrationsStartImportResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/import`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

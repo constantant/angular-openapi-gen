@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const POST_TOPUPS_TOPUP = new InjectionToken<
     topup: string,
     body: PostTopupsTopupBody | Signal<PostTopupsTopupBody>,
   ) => ReturnType<typeof httpResource<PostTopupsTopupResponse>>
->('POST_TOPUPS_TOPUP', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      topup: string,
-      body: PostTopupsTopupBody | Signal<PostTopupsTopupBody>,
-    ) =>
-      httpResource<PostTopupsTopupResponse>(() => ({
-        url: `${base}/v1/topups/${topup}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TOPUPS_TOPUP');
+
+export function providePostTopupsTopup(): FactoryProvider {
+  return {
+    provide: POST_TOPUPS_TOPUP,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        topup: string,
+        body: PostTopupsTopupBody | Signal<PostTopupsTopupBody>,
+      ) =>
+        httpResource<PostTopupsTopupResponse>(() => ({
+          url: `${base}/v1/topups/${topup}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,14 +12,18 @@ export const ACTIONS_APPROVE_WORKFLOW_RUN = new InjectionToken<
     repo: string,
     runId: string,
   ) => ReturnType<typeof httpResource<ActionsApproveWorkflowRunResponse>>
->('ACTIONS_APPROVE_WORKFLOW_RUN', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, runId: string) =>
-      httpResource<ActionsApproveWorkflowRunResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/approve`,
-        method: 'POST',
-      }));
-  },
-});
+>('ACTIONS_APPROVE_WORKFLOW_RUN');
+
+export function provideActionsApproveWorkflowRun(): FactoryProvider {
+  return {
+    provide: ACTIONS_APPROVE_WORKFLOW_RUN,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, runId: string) =>
+        httpResource<ActionsApproveWorkflowRunResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/approve`,
+          method: 'POST',
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,23 +17,27 @@ export const TEAMS_ADD_OR_UPDATE_REPO_PERMISSIONS_IN_ORG = new InjectionToken<
       | TeamsAddOrUpdateRepoPermissionsInOrgBody
       | Signal<TeamsAddOrUpdateRepoPermissionsInOrgBody>,
   ) => ReturnType<typeof httpResource<unknown>>
->('TEAMS_ADD_OR_UPDATE_REPO_PERMISSIONS_IN_ORG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      teamSlug: string,
-      owner: string,
-      repo: string,
-      body:
-        | TeamsAddOrUpdateRepoPermissionsInOrgBody
-        | Signal<TeamsAddOrUpdateRepoPermissionsInOrgBody>,
-    ) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/orgs/${org}/teams/${teamSlug}/repos/${owner}/${repo}`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('TEAMS_ADD_OR_UPDATE_REPO_PERMISSIONS_IN_ORG');
+
+export function provideTeamsAddOrUpdateRepoPermissionsInOrg(): FactoryProvider {
+  return {
+    provide: TEAMS_ADD_OR_UPDATE_REPO_PERMISSIONS_IN_ORG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        teamSlug: string,
+        owner: string,
+        repo: string,
+        body:
+          | TeamsAddOrUpdateRepoPermissionsInOrgBody
+          | Signal<TeamsAddOrUpdateRepoPermissionsInOrgBody>,
+      ) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/orgs/${org}/teams/${teamSlug}/repos/${owner}/${repo}`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

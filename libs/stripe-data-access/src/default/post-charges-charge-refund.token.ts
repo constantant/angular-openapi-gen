@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const POST_CHARGES_CHARGE_REFUND = new InjectionToken<
     charge: string,
     body: PostChargesChargeRefundBody | Signal<PostChargesChargeRefundBody>,
   ) => ReturnType<typeof httpResource<PostChargesChargeRefundResponse>>
->('POST_CHARGES_CHARGE_REFUND', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      charge: string,
-      body: PostChargesChargeRefundBody | Signal<PostChargesChargeRefundBody>,
-    ) =>
-      httpResource<PostChargesChargeRefundResponse>(() => ({
-        url: `${base}/v1/charges/${charge}/refund`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CHARGES_CHARGE_REFUND');
+
+export function providePostChargesChargeRefund(): FactoryProvider {
+  return {
+    provide: POST_CHARGES_CHARGE_REFUND,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        charge: string,
+        body: PostChargesChargeRefundBody | Signal<PostChargesChargeRefundBody>,
+      ) =>
+        httpResource<PostChargesChargeRefundResponse>(() => ({
+          url: `${base}/v1/charges/${charge}/refund`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

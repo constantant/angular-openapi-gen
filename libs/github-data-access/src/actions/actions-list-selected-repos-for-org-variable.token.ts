@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,25 +19,29 @@ export const ACTIONS_LIST_SELECTED_REPOS_FOR_ORG_VARIABLE = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<ActionsListSelectedReposForOrgVariableResponse>
   >
->('ACTIONS_LIST_SELECTED_REPOS_FOR_ORG_VARIABLE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      name: string,
-      params?:
-        | ActionsListSelectedReposForOrgVariableParams
-        | (() => ActionsListSelectedReposForOrgVariableParams | undefined),
-    ) =>
-      httpResource<ActionsListSelectedReposForOrgVariableResponse>(() => ({
-        url: `${base}/orgs/${org}/actions/variables/${name}/repositories`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ACTIONS_LIST_SELECTED_REPOS_FOR_ORG_VARIABLE');
+
+export function provideActionsListSelectedReposForOrgVariable(): FactoryProvider {
+  return {
+    provide: ACTIONS_LIST_SELECTED_REPOS_FOR_ORG_VARIABLE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        name: string,
+        params?:
+          | ActionsListSelectedReposForOrgVariableParams
+          | (() => ActionsListSelectedReposForOrgVariableParams | undefined),
+      ) =>
+        httpResource<ActionsListSelectedReposForOrgVariableResponse>(() => ({
+          url: `${base}/orgs/${org}/actions/variables/${name}/repositories`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

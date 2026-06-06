@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const COPILOT_SET_COPILOT_CONTENT_EXCLUSION_FOR_ORGANIZATION =
     ) => ReturnType<
       typeof httpResource<CopilotSetCopilotContentExclusionForOrganizationResponse>
     >
-  >('COPILOT_SET_COPILOT_CONTENT_EXCLUSION_FOR_ORGANIZATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('COPILOT_SET_COPILOT_CONTENT_EXCLUSION_FOR_ORGANIZATION');
+
+export function provideCopilotSetCopilotContentExclusionForOrganization(): FactoryProvider {
+  return {
+    provide: COPILOT_SET_COPILOT_CONTENT_EXCLUSION_FOR_ORGANIZATION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -38,4 +41,5 @@ export const COPILOT_SET_COPILOT_CONTENT_EXCLUSION_FOR_ORGANIZATION =
           }),
         );
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,17 +14,21 @@ export const POST_REPORTING_REPORT_RUNS = new InjectionToken<
   (
     body: PostReportingReportRunsBody | Signal<PostReportingReportRunsBody>,
   ) => ReturnType<typeof httpResource<PostReportingReportRunsResponse>>
->('POST_REPORTING_REPORT_RUNS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body: PostReportingReportRunsBody | Signal<PostReportingReportRunsBody>,
-    ) =>
-      httpResource<PostReportingReportRunsResponse>(() => ({
-        url: `${base}/v1/reporting/report_runs`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_REPORTING_REPORT_RUNS');
+
+export function providePostReportingReportRuns(): FactoryProvider {
+  return {
+    provide: POST_REPORTING_REPORT_RUNS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body: PostReportingReportRunsBody | Signal<PostReportingReportRunsBody>,
+      ) =>
+        httpResource<PostReportingReportRunsResponse>(() => ({
+          url: `${base}/v1/reporting/report_runs`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

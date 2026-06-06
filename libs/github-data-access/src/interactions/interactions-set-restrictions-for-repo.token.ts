@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,21 +20,25 @@ export const INTERACTIONS_SET_RESTRICTIONS_FOR_REPO = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<InteractionsSetRestrictionsForRepoResponse>
   >
->('INTERACTIONS_SET_RESTRICTIONS_FOR_REPO', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body:
-        | InteractionsSetRestrictionsForRepoBody
-        | Signal<InteractionsSetRestrictionsForRepoBody>,
-    ) =>
-      httpResource<InteractionsSetRestrictionsForRepoResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/interaction-limits`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('INTERACTIONS_SET_RESTRICTIONS_FOR_REPO');
+
+export function provideInteractionsSetRestrictionsForRepo(): FactoryProvider {
+  return {
+    provide: INTERACTIONS_SET_RESTRICTIONS_FOR_REPO,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body:
+          | InteractionsSetRestrictionsForRepoBody
+          | Signal<InteractionsSetRestrictionsForRepoBody>,
+      ) =>
+        httpResource<InteractionsSetRestrictionsForRepoResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/interaction-limits`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

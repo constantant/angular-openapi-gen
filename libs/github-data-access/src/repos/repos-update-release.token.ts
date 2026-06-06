@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const REPOS_UPDATE_RELEASE = new InjectionToken<
     releaseId: string,
     body: ReposUpdateReleaseBody | Signal<ReposUpdateReleaseBody>,
   ) => ReturnType<typeof httpResource<ReposUpdateReleaseResponse>>
->('REPOS_UPDATE_RELEASE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      releaseId: string,
-      body: ReposUpdateReleaseBody | Signal<ReposUpdateReleaseBody>,
-    ) =>
-      httpResource<ReposUpdateReleaseResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/releases/${releaseId}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('REPOS_UPDATE_RELEASE');
+
+export function provideReposUpdateRelease(): FactoryProvider {
+  return {
+    provide: REPOS_UPDATE_RELEASE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        releaseId: string,
+        body: ReposUpdateReleaseBody | Signal<ReposUpdateReleaseBody>,
+      ) =>
+        httpResource<ReposUpdateReleaseResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/releases/${releaseId}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

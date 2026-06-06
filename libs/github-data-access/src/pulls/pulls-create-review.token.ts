@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const PULLS_CREATE_REVIEW = new InjectionToken<
     pullNumber: string,
     body: PullsCreateReviewBody | Signal<PullsCreateReviewBody>,
   ) => ReturnType<typeof httpResource<PullsCreateReviewResponse>>
->('PULLS_CREATE_REVIEW', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      pullNumber: string,
-      body: PullsCreateReviewBody | Signal<PullsCreateReviewBody>,
-    ) =>
-      httpResource<PullsCreateReviewResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/reviews`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('PULLS_CREATE_REVIEW');
+
+export function providePullsCreateReview(): FactoryProvider {
+  return {
+    provide: PULLS_CREATE_REVIEW,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        pullNumber: string,
+        body: PullsCreateReviewBody | Signal<PullsCreateReviewBody>,
+      ) =>
+        httpResource<PullsCreateReviewResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/reviews`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

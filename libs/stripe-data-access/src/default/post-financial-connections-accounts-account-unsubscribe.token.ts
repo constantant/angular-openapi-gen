@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const POST_FINANCIAL_CONNECTIONS_ACCOUNTS_ACCOUNT_UNSUBSCRIBE =
     ) => ReturnType<
       typeof httpResource<PostFinancialConnectionsAccountsAccountUnsubscribeResponse>
     >
-  >('POST_FINANCIAL_CONNECTIONS_ACCOUNTS_ACCOUNT_UNSUBSCRIBE', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_FINANCIAL_CONNECTIONS_ACCOUNTS_ACCOUNT_UNSUBSCRIBE');
+
+export function providePostFinancialConnectionsAccountsAccountUnsubscribe(): FactoryProvider {
+  return {
+    provide: POST_FINANCIAL_CONNECTIONS_ACCOUNTS_ACCOUNT_UNSUBSCRIBE,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         account: string,
@@ -39,4 +42,5 @@ export const POST_FINANCIAL_CONNECTIONS_ACCOUNTS_ACCOUNT_UNSUBSCRIBE =
           }),
         );
     },
-  });
+  };
+}

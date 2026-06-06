@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const CHECKS_UPDATE = new InjectionToken<
     checkRunId: string,
     body: ChecksUpdateBody | Signal<ChecksUpdateBody>,
   ) => ReturnType<typeof httpResource<ChecksUpdateResponse>>
->('CHECKS_UPDATE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      checkRunId: string,
-      body: ChecksUpdateBody | Signal<ChecksUpdateBody>,
-    ) =>
-      httpResource<ChecksUpdateResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/check-runs/${checkRunId}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('CHECKS_UPDATE');
+
+export function provideChecksUpdate(): FactoryProvider {
+  return {
+    provide: CHECKS_UPDATE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        checkRunId: string,
+        body: ChecksUpdateBody | Signal<ChecksUpdateBody>,
+      ) =>
+        httpResource<ChecksUpdateResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/check-runs/${checkRunId}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

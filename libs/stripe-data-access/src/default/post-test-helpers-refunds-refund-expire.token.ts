@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const POST_TEST_HELPERS_REFUNDS_REFUND_EXPIRE = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostTestHelpersRefundsRefundExpireResponse>
   >
->('POST_TEST_HELPERS_REFUNDS_REFUND_EXPIRE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      refund: string,
-      body:
-        | PostTestHelpersRefundsRefundExpireBody
-        | Signal<PostTestHelpersRefundsRefundExpireBody>,
-    ) =>
-      httpResource<PostTestHelpersRefundsRefundExpireResponse>(() => ({
-        url: `${base}/v1/test_helpers/refunds/${refund}/expire`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TEST_HELPERS_REFUNDS_REFUND_EXPIRE');
+
+export function providePostTestHelpersRefundsRefundExpire(): FactoryProvider {
+  return {
+    provide: POST_TEST_HELPERS_REFUNDS_REFUND_EXPIRE,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        refund: string,
+        body:
+          | PostTestHelpersRefundsRefundExpireBody
+          | Signal<PostTestHelpersRefundsRefundExpireBody>,
+      ) =>
+        httpResource<PostTestHelpersRefundsRefundExpireResponse>(() => ({
+          url: `${base}/v1/test_helpers/refunds/${refund}/expire`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

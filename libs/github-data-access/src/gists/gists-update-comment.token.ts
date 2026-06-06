@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const GISTS_UPDATE_COMMENT = new InjectionToken<
     commentId: string,
     body: GistsUpdateCommentBody | Signal<GistsUpdateCommentBody>,
   ) => ReturnType<typeof httpResource<GistsUpdateCommentResponse>>
->('GISTS_UPDATE_COMMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      gistId: string,
-      commentId: string,
-      body: GistsUpdateCommentBody | Signal<GistsUpdateCommentBody>,
-    ) =>
-      httpResource<GistsUpdateCommentResponse>(() => ({
-        url: `${base}/gists/${gistId}/comments/${commentId}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('GISTS_UPDATE_COMMENT');
+
+export function provideGistsUpdateComment(): FactoryProvider {
+  return {
+    provide: GISTS_UPDATE_COMMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        gistId: string,
+        commentId: string,
+        body: GistsUpdateCommentBody | Signal<GistsUpdateCommentBody>,
+      ) =>
+        httpResource<GistsUpdateCommentResponse>(() => ({
+          url: `${base}/gists/${gistId}/comments/${commentId}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

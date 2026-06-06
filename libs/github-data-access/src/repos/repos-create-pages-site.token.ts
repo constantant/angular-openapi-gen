@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const REPOS_CREATE_PAGES_SITE = new InjectionToken<
     repo: string,
     body: ReposCreatePagesSiteBody | Signal<ReposCreatePagesSiteBody>,
   ) => ReturnType<typeof httpResource<ReposCreatePagesSiteResponse>>
->('REPOS_CREATE_PAGES_SITE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: ReposCreatePagesSiteBody | Signal<ReposCreatePagesSiteBody>,
-    ) =>
-      httpResource<ReposCreatePagesSiteResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/pages`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('REPOS_CREATE_PAGES_SITE');
+
+export function provideReposCreatePagesSite(): FactoryProvider {
+  return {
+    provide: REPOS_CREATE_PAGES_SITE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: ReposCreatePagesSiteBody | Signal<ReposCreatePagesSiteBody>,
+      ) =>
+        httpResource<ReposCreatePagesSiteResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/pages`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

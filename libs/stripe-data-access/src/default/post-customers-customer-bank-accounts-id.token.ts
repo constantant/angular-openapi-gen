@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,21 +20,25 @@ export const POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostCustomersCustomerBankAccountsIdResponse>
   >
->('POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      customer: string,
-      id: string,
-      body:
-        | PostCustomersCustomerBankAccountsIdBody
-        | Signal<PostCustomersCustomerBankAccountsIdBody>,
-    ) =>
-      httpResource<PostCustomersCustomerBankAccountsIdResponse>(() => ({
-        url: `${base}/v1/customers/${customer}/bank_accounts/${id}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID');
+
+export function providePostCustomersCustomerBankAccountsId(): FactoryProvider {
+  return {
+    provide: POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        customer: string,
+        id: string,
+        body:
+          | PostCustomersCustomerBankAccountsIdBody
+          | Signal<PostCustomersCustomerBankAccountsIdBody>,
+      ) =>
+        httpResource<PostCustomersCustomerBankAccountsIdResponse>(() => ({
+          url: `${base}/v1/customers/${customer}/bank_accounts/${id}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

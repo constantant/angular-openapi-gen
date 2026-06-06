@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const DELETE_INVOICES_INVOICE = new InjectionToken<
     invoice: string,
     body: DeleteInvoicesInvoiceBody | Signal<DeleteInvoicesInvoiceBody>,
   ) => ReturnType<typeof httpResource<DeleteInvoicesInvoiceResponse>>
->('DELETE_INVOICES_INVOICE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      invoice: string,
-      body: DeleteInvoicesInvoiceBody | Signal<DeleteInvoicesInvoiceBody>,
-    ) =>
-      httpResource<DeleteInvoicesInvoiceResponse>(() => ({
-        url: `${base}/v1/invoices/${invoice}`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('DELETE_INVOICES_INVOICE');
+
+export function provideDeleteInvoicesInvoice(): FactoryProvider {
+  return {
+    provide: DELETE_INVOICES_INVOICE,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        invoice: string,
+        body: DeleteInvoicesInvoiceBody | Signal<DeleteInvoicesInvoiceBody>,
+      ) =>
+        httpResource<DeleteInvoicesInvoiceResponse>(() => ({
+          url: `${base}/v1/invoices/${invoice}`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

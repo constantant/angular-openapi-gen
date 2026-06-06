@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,21 +15,25 @@ export const ACTIONS_SET_SELECTED_REPOS_FOR_ORG_SECRET = new InjectionToken<
       | ActionsSetSelectedReposForOrgSecretBody
       | Signal<ActionsSetSelectedReposForOrgSecretBody>,
   ) => ReturnType<typeof httpResource<unknown>>
->('ACTIONS_SET_SELECTED_REPOS_FOR_ORG_SECRET', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      secretName: string,
-      body:
-        | ActionsSetSelectedReposForOrgSecretBody
-        | Signal<ActionsSetSelectedReposForOrgSecretBody>,
-    ) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/orgs/${org}/actions/secrets/${secretName}/repositories`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('ACTIONS_SET_SELECTED_REPOS_FOR_ORG_SECRET');
+
+export function provideActionsSetSelectedReposForOrgSecret(): FactoryProvider {
+  return {
+    provide: ACTIONS_SET_SELECTED_REPOS_FOR_ORG_SECRET,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        secretName: string,
+        body:
+          | ActionsSetSelectedReposForOrgSecretBody
+          | Signal<ActionsSetSelectedReposForOrgSecretBody>,
+      ) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/orgs/${org}/actions/secrets/${secretName}/repositories`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

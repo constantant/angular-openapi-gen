@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,19 +13,23 @@ export const REPOS_TRANSFER = new InjectionToken<
     repo: string,
     body: ReposTransferBody | Signal<ReposTransferBody>,
   ) => ReturnType<typeof httpResource<unknown>>
->('REPOS_TRANSFER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: ReposTransferBody | Signal<ReposTransferBody>,
-    ) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/repos/${owner}/${repo}/transfer`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('REPOS_TRANSFER');
+
+export function provideReposTransfer(): FactoryProvider {
+  return {
+    provide: REPOS_TRANSFER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: ReposTransferBody | Signal<ReposTransferBody>,
+      ) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/repos/${owner}/${repo}/transfer`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,23 +15,27 @@ export const GET_INVOICES_SEARCH = new InjectionToken<
       | GetInvoicesSearchParams
       | (() => GetInvoicesSearchParams | undefined),
   ) => ReturnType<typeof httpResource<GetInvoicesSearchResponse>>
->('GET_INVOICES_SEARCH', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      params?:
-        | GetInvoicesSearchParams
-        | (() => GetInvoicesSearchParams | undefined),
-    ) =>
-      httpResource<GetInvoicesSearchResponse>(() => ({
-        url: `${base}/v1/invoices/search`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_INVOICES_SEARCH');
+
+export function provideGetInvoicesSearch(): FactoryProvider {
+  return {
+    provide: GET_INVOICES_SEARCH,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        params?:
+          | GetInvoicesSearchParams
+          | (() => GetInvoicesSearchParams | undefined),
+      ) =>
+        httpResource<GetInvoicesSearchResponse>(() => ({
+          url: `${base}/v1/invoices/search`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

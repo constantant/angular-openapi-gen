@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,15 +14,19 @@ export const POST_TOKENS = new InjectionToken<
   (
     body: PostTokensBody | Signal<PostTokensBody>,
   ) => ReturnType<typeof httpResource<PostTokensResponse>>
->('POST_TOKENS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (body: PostTokensBody | Signal<PostTokensBody>) =>
-      httpResource<PostTokensResponse>(() => ({
-        url: `${base}/v1/tokens`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TOKENS');
+
+export function providePostTokens(): FactoryProvider {
+  return {
+    provide: POST_TOKENS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (body: PostTokensBody | Signal<PostTokensBody>) =>
+        httpResource<PostTokensResponse>(() => ({
+          url: `${base}/v1/tokens`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

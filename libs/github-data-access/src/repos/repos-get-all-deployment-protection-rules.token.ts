@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -14,13 +14,17 @@ export const REPOS_GET_ALL_DEPLOYMENT_PROTECTION_RULES = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<ReposGetAllDeploymentProtectionRulesResponse>
   >
->('REPOS_GET_ALL_DEPLOYMENT_PROTECTION_RULES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (environmentName: string, repo: string, owner: string) =>
-      httpResource<ReposGetAllDeploymentProtectionRulesResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules`,
-      }));
-  },
-});
+>('REPOS_GET_ALL_DEPLOYMENT_PROTECTION_RULES');
+
+export function provideReposGetAllDeploymentProtectionRules(): FactoryProvider {
+  return {
+    provide: REPOS_GET_ALL_DEPLOYMENT_PROTECTION_RULES,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (environmentName: string, repo: string, owner: string) =>
+        httpResource<ReposGetAllDeploymentProtectionRulesResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules`,
+        }));
+    },
+  };
+}

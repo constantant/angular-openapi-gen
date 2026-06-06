@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const SECURITY_ADVISORIES_UPDATE_REPOSITORY_ADVISORY =
     ) => ReturnType<
       typeof httpResource<SecurityAdvisoriesUpdateRepositoryAdvisoryResponse>
     >
-  >('SECURITY_ADVISORIES_UPDATE_REPOSITORY_ADVISORY', {
-    providedIn: 'root',
-    factory: () => {
+  >('SECURITY_ADVISORIES_UPDATE_REPOSITORY_ADVISORY');
+
+export function provideSecurityAdvisoriesUpdateRepositoryAdvisory(): FactoryProvider {
+  return {
+    provide: SECURITY_ADVISORIES_UPDATE_REPOSITORY_ADVISORY,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         owner: string,
@@ -42,4 +45,5 @@ export const SECURITY_ADVISORIES_UPDATE_REPOSITORY_ADVISORY =
           }),
         );
     },
-  });
+  };
+}

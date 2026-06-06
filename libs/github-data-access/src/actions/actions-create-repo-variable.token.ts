@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,21 +16,25 @@ export const ACTIONS_CREATE_REPO_VARIABLE = new InjectionToken<
     repo: string,
     body: ActionsCreateRepoVariableBody | Signal<ActionsCreateRepoVariableBody>,
   ) => ReturnType<typeof httpResource<ActionsCreateRepoVariableResponse>>
->('ACTIONS_CREATE_REPO_VARIABLE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body:
-        | ActionsCreateRepoVariableBody
-        | Signal<ActionsCreateRepoVariableBody>,
-    ) =>
-      httpResource<ActionsCreateRepoVariableResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/actions/variables`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ACTIONS_CREATE_REPO_VARIABLE');
+
+export function provideActionsCreateRepoVariable(): FactoryProvider {
+  return {
+    provide: ACTIONS_CREATE_REPO_VARIABLE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body:
+          | ActionsCreateRepoVariableBody
+          | Signal<ActionsCreateRepoVariableBody>,
+      ) =>
+        httpResource<ActionsCreateRepoVariableResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/actions/variables`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

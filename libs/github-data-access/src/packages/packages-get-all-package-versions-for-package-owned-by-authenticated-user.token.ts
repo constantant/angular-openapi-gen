@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -24,33 +24,34 @@ export const PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_AUTHENTICATE
     >
   >(
     'PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_AUTHENTICATED_USER',
-    {
-      providedIn: 'root',
-      factory: () => {
-        const base = inject(GITHUB_BASE_URL);
-        return (
-          packageType: string,
-          packageName: string,
-          params?:
-            | PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserParams
-            | (() =>
-                | PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserParams
-                | undefined),
-        ) =>
-          httpResource<PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserResponse>(
-            () => ({
-              url: `${base}/user/packages/${packageType}/${packageName}/versions`,
-              params: (typeof params === 'function'
-                ? params()
-                : params) as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-            }),
-          );
-      },
-    },
   );
+
+export function providePackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUser(): FactoryProvider {
+  return {
+    provide:
+      PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_AUTHENTICATED_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        packageType: string,
+        packageName: string,
+        params?:
+          | PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserParams
+          | (() =>
+              | PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserParams
+              | undefined),
+      ) =>
+        httpResource<PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserResponse>(
+          () => ({
+            url: `${base}/user/packages/${packageType}/${packageName}/versions`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          }),
+        );
+    },
+  };
+}

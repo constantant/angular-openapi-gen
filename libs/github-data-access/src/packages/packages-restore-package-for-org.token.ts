@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -9,14 +9,18 @@ export const PACKAGES_RESTORE_PACKAGE_FOR_ORG = new InjectionToken<
     packageName: string,
     org: string,
   ) => ReturnType<typeof httpResource<unknown>>
->('PACKAGES_RESTORE_PACKAGE_FOR_ORG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (packageType: string, packageName: string, org: string) =>
-      httpResource<unknown>(() => ({
-        url: `${base}/orgs/${org}/packages/${packageType}/${packageName}/restore`,
-        method: 'POST',
-      }));
-  },
-});
+>('PACKAGES_RESTORE_PACKAGE_FOR_ORG');
+
+export function providePackagesRestorePackageForOrg(): FactoryProvider {
+  return {
+    provide: PACKAGES_RESTORE_PACKAGE_FOR_ORG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (packageType: string, packageName: string, org: string) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/orgs/${org}/packages/${packageType}/${packageName}/restore`,
+          method: 'POST',
+        }));
+    },
+  };
+}

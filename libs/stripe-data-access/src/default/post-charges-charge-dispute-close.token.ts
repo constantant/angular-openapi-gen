@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const POST_CHARGES_CHARGE_DISPUTE_CLOSE = new InjectionToken<
       | PostChargesChargeDisputeCloseBody
       | Signal<PostChargesChargeDisputeCloseBody>,
   ) => ReturnType<typeof httpResource<PostChargesChargeDisputeCloseResponse>>
->('POST_CHARGES_CHARGE_DISPUTE_CLOSE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      charge: string,
-      body:
-        | PostChargesChargeDisputeCloseBody
-        | Signal<PostChargesChargeDisputeCloseBody>,
-    ) =>
-      httpResource<PostChargesChargeDisputeCloseResponse>(() => ({
-        url: `${base}/v1/charges/${charge}/dispute/close`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CHARGES_CHARGE_DISPUTE_CLOSE');
+
+export function providePostChargesChargeDisputeClose(): FactoryProvider {
+  return {
+    provide: POST_CHARGES_CHARGE_DISPUTE_CLOSE,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        charge: string,
+        body:
+          | PostChargesChargeDisputeCloseBody
+          | Signal<PostChargesChargeDisputeCloseBody>,
+      ) =>
+        httpResource<PostChargesChargeDisputeCloseResponse>(() => ({
+          url: `${base}/v1/charges/${charge}/dispute/close`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const AGENTS_LIST_ORG_VARIABLES = new InjectionToken<
       | AgentsListOrgVariablesParams
       | (() => AgentsListOrgVariablesParams | undefined),
   ) => ReturnType<typeof httpResource<AgentsListOrgVariablesResponse>>
->('AGENTS_LIST_ORG_VARIABLES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      params?:
-        | AgentsListOrgVariablesParams
-        | (() => AgentsListOrgVariablesParams | undefined),
-    ) =>
-      httpResource<AgentsListOrgVariablesResponse>(() => ({
-        url: `${base}/orgs/${org}/agents/variables`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('AGENTS_LIST_ORG_VARIABLES');
+
+export function provideAgentsListOrgVariables(): FactoryProvider {
+  return {
+    provide: AGENTS_LIST_ORG_VARIABLES,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | AgentsListOrgVariablesParams
+          | (() => AgentsListOrgVariablesParams | undefined),
+      ) =>
+        httpResource<AgentsListOrgVariablesResponse>(() => ({
+          url: `${base}/orgs/${org}/agents/variables`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

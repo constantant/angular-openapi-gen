@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS =
     ) => ReturnType<
       typeof httpResource<ReposListCustomDeploymentRuleIntegrationsResponse>
     >
-  >('REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS', {
-    providedIn: 'root',
-    factory: () => {
+  >('REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS');
+
+export function provideReposListCustomDeploymentRuleIntegrations(): FactoryProvider {
+  return {
+    provide: REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         environmentName: string,
@@ -43,4 +46,5 @@ export const REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS =
           >,
         }));
     },
-  });
+  };
+}

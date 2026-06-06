@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const ACTIVITY_LIST_REPOS_WATCHED_BY_USER = new InjectionToken<
       | ActivityListReposWatchedByUserParams
       | (() => ActivityListReposWatchedByUserParams | undefined),
   ) => ReturnType<typeof httpResource<ActivityListReposWatchedByUserResponse>>
->('ACTIVITY_LIST_REPOS_WATCHED_BY_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      username: string,
-      params?:
-        | ActivityListReposWatchedByUserParams
-        | (() => ActivityListReposWatchedByUserParams | undefined),
-    ) =>
-      httpResource<ActivityListReposWatchedByUserResponse>(() => ({
-        url: `${base}/users/${username}/subscriptions`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ACTIVITY_LIST_REPOS_WATCHED_BY_USER');
+
+export function provideActivityListReposWatchedByUser(): FactoryProvider {
+  return {
+    provide: ACTIVITY_LIST_REPOS_WATCHED_BY_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        username: string,
+        params?:
+          | ActivityListReposWatchedByUserParams
+          | (() => ActivityListReposWatchedByUserParams | undefined),
+      ) =>
+        httpResource<ActivityListReposWatchedByUserResponse>(() => ({
+          url: `${base}/users/${username}/subscriptions`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -14,9 +14,12 @@ export const ORGS_CUSTOM_PROPERTIES_FOR_REPOS_GET_ORGANIZATION_DEFINITION =
     ) => ReturnType<
       typeof httpResource<OrgsCustomPropertiesForReposGetOrganizationDefinitionResponse>
     >
-  >('ORGS_CUSTOM_PROPERTIES_FOR_REPOS_GET_ORGANIZATION_DEFINITION', {
-    providedIn: 'root',
-    factory: () => {
+  >('ORGS_CUSTOM_PROPERTIES_FOR_REPOS_GET_ORGANIZATION_DEFINITION');
+
+export function provideOrgsCustomPropertiesForReposGetOrganizationDefinition(): FactoryProvider {
+  return {
+    provide: ORGS_CUSTOM_PROPERTIES_FOR_REPOS_GET_ORGANIZATION_DEFINITION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string, customPropertyName: string) =>
         httpResource<OrgsCustomPropertiesForReposGetOrganizationDefinitionResponse>(
@@ -25,4 +28,5 @@ export const ORGS_CUSTOM_PROPERTIES_FOR_REPOS_GET_ORGANIZATION_DEFINITION =
           }),
         );
     },
-  });
+  };
+}

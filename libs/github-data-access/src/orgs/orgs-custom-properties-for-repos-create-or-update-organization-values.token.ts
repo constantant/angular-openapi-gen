@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,9 +16,13 @@ export const ORGS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_ORGANIZATION_VALU
         | OrgsCustomPropertiesForReposCreateOrUpdateOrganizationValuesBody
         | Signal<OrgsCustomPropertiesForReposCreateOrUpdateOrganizationValuesBody>,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('ORGS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_ORGANIZATION_VALUES', {
-    providedIn: 'root',
-    factory: () => {
+  >('ORGS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_ORGANIZATION_VALUES');
+
+export function provideOrgsCustomPropertiesForReposCreateOrUpdateOrganizationValues(): FactoryProvider {
+  return {
+    provide:
+      ORGS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_ORGANIZATION_VALUES,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -32,4 +36,5 @@ export const ORGS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_ORGANIZATION_VALU
           body,
         }));
     },
-  });
+  };
+}

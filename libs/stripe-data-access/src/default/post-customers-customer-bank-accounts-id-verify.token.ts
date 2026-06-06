@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID_VERIFY =
     ) => ReturnType<
       typeof httpResource<PostCustomersCustomerBankAccountsIdVerifyResponse>
     >
-  >('POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID_VERIFY', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID_VERIFY');
+
+export function providePostCustomersCustomerBankAccountsIdVerify(): FactoryProvider {
+  return {
+    provide: POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID_VERIFY,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         customer: string,
@@ -38,4 +41,5 @@ export const POST_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID_VERIFY =
           body,
         }));
     },
-  });
+  };
+}

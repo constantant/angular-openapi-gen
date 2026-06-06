@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const ENTERPRISE_TEAMS_UPDATE = new InjectionToken<
     teamSlug: string,
     body: EnterpriseTeamsUpdateBody | Signal<EnterpriseTeamsUpdateBody>,
   ) => ReturnType<typeof httpResource<EnterpriseTeamsUpdateResponse>>
->('ENTERPRISE_TEAMS_UPDATE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      enterprise: string,
-      teamSlug: string,
-      body: EnterpriseTeamsUpdateBody | Signal<EnterpriseTeamsUpdateBody>,
-    ) =>
-      httpResource<EnterpriseTeamsUpdateResponse>(() => ({
-        url: `${base}/enterprises/${enterprise}/teams/${teamSlug}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('ENTERPRISE_TEAMS_UPDATE');
+
+export function provideEnterpriseTeamsUpdate(): FactoryProvider {
+  return {
+    provide: ENTERPRISE_TEAMS_UPDATE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        enterprise: string,
+        teamSlug: string,
+        body: EnterpriseTeamsUpdateBody | Signal<EnterpriseTeamsUpdateBody>,
+      ) =>
+        httpResource<EnterpriseTeamsUpdateResponse>(() => ({
+          url: `${base}/enterprises/${enterprise}/teams/${teamSlug}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

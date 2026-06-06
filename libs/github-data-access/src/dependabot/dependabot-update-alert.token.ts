@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const DEPENDABOT_UPDATE_ALERT = new InjectionToken<
     alertNumber: string,
     body: DependabotUpdateAlertBody | Signal<DependabotUpdateAlertBody>,
   ) => ReturnType<typeof httpResource<DependabotUpdateAlertResponse>>
->('DEPENDABOT_UPDATE_ALERT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      alertNumber: string,
-      body: DependabotUpdateAlertBody | Signal<DependabotUpdateAlertBody>,
-    ) =>
-      httpResource<DependabotUpdateAlertResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/dependabot/alerts/${alertNumber}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('DEPENDABOT_UPDATE_ALERT');
+
+export function provideDependabotUpdateAlert(): FactoryProvider {
+  return {
+    provide: DEPENDABOT_UPDATE_ALERT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        alertNumber: string,
+        body: DependabotUpdateAlertBody | Signal<DependabotUpdateAlertBody>,
+      ) =>
+        httpResource<DependabotUpdateAlertResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/dependabot/alerts/${alertNumber}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const POST_INVOICEITEMS_INVOICEITEM = new InjectionToken<
       | PostInvoiceitemsInvoiceitemBody
       | Signal<PostInvoiceitemsInvoiceitemBody>,
   ) => ReturnType<typeof httpResource<PostInvoiceitemsInvoiceitemResponse>>
->('POST_INVOICEITEMS_INVOICEITEM', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      invoiceitem: string,
-      body:
-        | PostInvoiceitemsInvoiceitemBody
-        | Signal<PostInvoiceitemsInvoiceitemBody>,
-    ) =>
-      httpResource<PostInvoiceitemsInvoiceitemResponse>(() => ({
-        url: `${base}/v1/invoiceitems/${invoiceitem}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_INVOICEITEMS_INVOICEITEM');
+
+export function providePostInvoiceitemsInvoiceitem(): FactoryProvider {
+  return {
+    provide: POST_INVOICEITEMS_INVOICEITEM,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        invoiceitem: string,
+        body:
+          | PostInvoiceitemsInvoiceitemBody
+          | Signal<PostInvoiceitemsInvoiceitemBody>,
+      ) =>
+        httpResource<PostInvoiceitemsInvoiceitemResponse>(() => ({
+          url: `${base}/v1/invoiceitems/${invoiceitem}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

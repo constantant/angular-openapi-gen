@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const GET_CHECKOUT_SESSIONS_SESSION = new InjectionToken<
       | GetCheckoutSessionsSessionParams
       | (() => GetCheckoutSessionsSessionParams | undefined),
   ) => ReturnType<typeof httpResource<GetCheckoutSessionsSessionResponse>>
->('GET_CHECKOUT_SESSIONS_SESSION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      session: string,
-      params?:
-        | GetCheckoutSessionsSessionParams
-        | (() => GetCheckoutSessionsSessionParams | undefined),
-    ) =>
-      httpResource<GetCheckoutSessionsSessionResponse>(() => ({
-        url: `${base}/v1/checkout/sessions/${session}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_CHECKOUT_SESSIONS_SESSION');
+
+export function provideGetCheckoutSessionsSession(): FactoryProvider {
+  return {
+    provide: GET_CHECKOUT_SESSIONS_SESSION,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        session: string,
+        params?:
+          | GetCheckoutSessionsSessionParams
+          | (() => GetCheckoutSessionsSessionParams | undefined),
+      ) =>
+        httpResource<GetCheckoutSessionsSessionResponse>(() => ({
+          url: `${base}/v1/checkout/sessions/${session}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

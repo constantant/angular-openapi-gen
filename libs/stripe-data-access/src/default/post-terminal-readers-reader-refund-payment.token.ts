@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const POST_TERMINAL_READERS_READER_REFUND_PAYMENT = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostTerminalReadersReaderRefundPaymentResponse>
   >
->('POST_TERMINAL_READERS_READER_REFUND_PAYMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      reader: string,
-      body:
-        | PostTerminalReadersReaderRefundPaymentBody
-        | Signal<PostTerminalReadersReaderRefundPaymentBody>,
-    ) =>
-      httpResource<PostTerminalReadersReaderRefundPaymentResponse>(() => ({
-        url: `${base}/v1/terminal/readers/${reader}/refund_payment`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TERMINAL_READERS_READER_REFUND_PAYMENT');
+
+export function providePostTerminalReadersReaderRefundPayment(): FactoryProvider {
+  return {
+    provide: POST_TERMINAL_READERS_READER_REFUND_PAYMENT,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        reader: string,
+        body:
+          | PostTerminalReadersReaderRefundPaymentBody
+          | Signal<PostTerminalReadersReaderRefundPaymentBody>,
+      ) =>
+        httpResource<PostTerminalReadersReaderRefundPaymentResponse>(() => ({
+          url: `${base}/v1/terminal/readers/${reader}/refund_payment`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

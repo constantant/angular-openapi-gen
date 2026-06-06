@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,9 +19,12 @@ export const GET_SIGMA_SCHEDULED_QUERY_RUNS_SCHEDULED_QUERY_RUN =
     ) => ReturnType<
       typeof httpResource<GetSigmaScheduledQueryRunsScheduledQueryRunResponse>
     >
-  >('GET_SIGMA_SCHEDULED_QUERY_RUNS_SCHEDULED_QUERY_RUN', {
-    providedIn: 'root',
-    factory: () => {
+  >('GET_SIGMA_SCHEDULED_QUERY_RUNS_SCHEDULED_QUERY_RUN');
+
+export function provideGetSigmaScheduledQueryRunsScheduledQueryRun(): FactoryProvider {
+  return {
+    provide: GET_SIGMA_SCHEDULED_QUERY_RUNS_SCHEDULED_QUERY_RUN,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         scheduledQueryRun: string,
@@ -43,4 +46,5 @@ export const GET_SIGMA_SCHEDULED_QUERY_RUNS_SCHEDULED_QUERY_RUN =
           }),
         );
     },
-  });
+  };
+}

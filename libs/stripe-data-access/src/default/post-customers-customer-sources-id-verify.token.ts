@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,21 +20,25 @@ export const POST_CUSTOMERS_CUSTOMER_SOURCES_ID_VERIFY = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostCustomersCustomerSourcesIdVerifyResponse>
   >
->('POST_CUSTOMERS_CUSTOMER_SOURCES_ID_VERIFY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      customer: string,
-      id: string,
-      body:
-        | PostCustomersCustomerSourcesIdVerifyBody
-        | Signal<PostCustomersCustomerSourcesIdVerifyBody>,
-    ) =>
-      httpResource<PostCustomersCustomerSourcesIdVerifyResponse>(() => ({
-        url: `${base}/v1/customers/${customer}/sources/${id}/verify`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CUSTOMERS_CUSTOMER_SOURCES_ID_VERIFY');
+
+export function providePostCustomersCustomerSourcesIdVerify(): FactoryProvider {
+  return {
+    provide: POST_CUSTOMERS_CUSTOMER_SOURCES_ID_VERIFY,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        customer: string,
+        id: string,
+        body:
+          | PostCustomersCustomerSourcesIdVerifyBody
+          | Signal<PostCustomersCustomerSourcesIdVerifyBody>,
+      ) =>
+        httpResource<PostCustomersCustomerSourcesIdVerifyResponse>(() => ({
+          url: `${base}/v1/customers/${customer}/sources/${id}/verify`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const GIT_GET_REF = new InjectionToken<
     repo: string,
     ref: string,
   ) => ReturnType<typeof httpResource<GitGetRefResponse>>
->('GIT_GET_REF', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, ref: string) =>
-      httpResource<GitGetRefResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/git/ref/${ref}`,
-      }));
-  },
-});
+>('GIT_GET_REF');
+
+export function provideGitGetRef(): FactoryProvider {
+  return {
+    provide: GIT_GET_REF,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, ref: string) =>
+        httpResource<GitGetRefResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/git/ref/${ref}`,
+        }));
+    },
+  };
+}

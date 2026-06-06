@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const POST_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN =
     ) => ReturnType<
       typeof httpResource<PostPaymentMethodDomainsPaymentMethodDomainResponse>
     >
-  >('POST_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN');
+
+export function providePostPaymentMethodDomainsPaymentMethodDomain(): FactoryProvider {
+  return {
+    provide: POST_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         paymentMethodDomain: string,
@@ -38,4 +41,5 @@ export const POST_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN =
           }),
         );
     },
-  });
+  };
+}

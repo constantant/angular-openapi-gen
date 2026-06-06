@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,15 +14,19 @@ export const POST_SETUP_INTENTS = new InjectionToken<
   (
     body: PostSetupIntentsBody | Signal<PostSetupIntentsBody>,
   ) => ReturnType<typeof httpResource<PostSetupIntentsResponse>>
->('POST_SETUP_INTENTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (body: PostSetupIntentsBody | Signal<PostSetupIntentsBody>) =>
-      httpResource<PostSetupIntentsResponse>(() => ({
-        url: `${base}/v1/setup_intents`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_SETUP_INTENTS');
+
+export function providePostSetupIntents(): FactoryProvider {
+  return {
+    provide: POST_SETUP_INTENTS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (body: PostSetupIntentsBody | Signal<PostSetupIntentsBody>) =>
+        httpResource<PostSetupIntentsResponse>(() => ({
+          url: `${base}/v1/setup_intents`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

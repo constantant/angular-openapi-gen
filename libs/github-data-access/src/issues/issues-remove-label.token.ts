@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,14 +13,18 @@ export const ISSUES_REMOVE_LABEL = new InjectionToken<
     issueNumber: string,
     name: string,
   ) => ReturnType<typeof httpResource<IssuesRemoveLabelResponse>>
->('ISSUES_REMOVE_LABEL', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, issueNumber: string, name: string) =>
-      httpResource<IssuesRemoveLabelResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/labels/${name}`,
-        method: 'DELETE',
-      }));
-  },
-});
+>('ISSUES_REMOVE_LABEL');
+
+export function provideIssuesRemoveLabel(): FactoryProvider {
+  return {
+    provide: ISSUES_REMOVE_LABEL,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, issueNumber: string, name: string) =>
+        httpResource<IssuesRemoveLabelResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/labels/${name}`,
+          method: 'DELETE',
+        }));
+    },
+  };
+}

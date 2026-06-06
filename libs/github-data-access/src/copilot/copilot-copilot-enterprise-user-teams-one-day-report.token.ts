@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const COPILOT_COPILOT_ENTERPRISE_USER_TEAMS_ONE_DAY_REPORT =
     ) => ReturnType<
       typeof httpResource<CopilotCopilotEnterpriseUserTeamsOneDayReportResponse>
     >
-  >('COPILOT_COPILOT_ENTERPRISE_USER_TEAMS_ONE_DAY_REPORT', {
-    providedIn: 'root',
-    factory: () => {
+  >('COPILOT_COPILOT_ENTERPRISE_USER_TEAMS_ONE_DAY_REPORT');
+
+export function provideCopilotCopilotEnterpriseUserTeamsOneDayReport(): FactoryProvider {
+  return {
+    provide: COPILOT_COPILOT_ENTERPRISE_USER_TEAMS_ONE_DAY_REPORT,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         enterprise: string,
@@ -45,4 +48,5 @@ export const COPILOT_COPILOT_ENTERPRISE_USER_TEAMS_ONE_DAY_REPORT =
           }),
         );
     },
-  });
+  };
+}

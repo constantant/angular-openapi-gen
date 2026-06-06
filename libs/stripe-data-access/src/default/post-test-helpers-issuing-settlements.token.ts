@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -18,19 +18,23 @@ export const POST_TEST_HELPERS_ISSUING_SETTLEMENTS = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostTestHelpersIssuingSettlementsResponse>
   >
->('POST_TEST_HELPERS_ISSUING_SETTLEMENTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body:
-        | PostTestHelpersIssuingSettlementsBody
-        | Signal<PostTestHelpersIssuingSettlementsBody>,
-    ) =>
-      httpResource<PostTestHelpersIssuingSettlementsResponse>(() => ({
-        url: `${base}/v1/test_helpers/issuing/settlements`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TEST_HELPERS_ISSUING_SETTLEMENTS');
+
+export function providePostTestHelpersIssuingSettlements(): FactoryProvider {
+  return {
+    provide: POST_TEST_HELPERS_ISSUING_SETTLEMENTS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body:
+          | PostTestHelpersIssuingSettlementsBody
+          | Signal<PostTestHelpersIssuingSettlementsBody>,
+      ) =>
+        httpResource<PostTestHelpersIssuingSettlementsResponse>(() => ({
+          url: `${base}/v1/test_helpers/issuing/settlements`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

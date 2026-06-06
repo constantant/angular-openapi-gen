@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -11,13 +11,17 @@ export const REPOS_GET_ORG_RULE_SUITE = new InjectionToken<
     org: string,
     ruleSuiteId: string,
   ) => ReturnType<typeof httpResource<ReposGetOrgRuleSuiteResponse>>
->('REPOS_GET_ORG_RULE_SUITE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (org: string, ruleSuiteId: string) =>
-      httpResource<ReposGetOrgRuleSuiteResponse>(() => ({
-        url: `${base}/orgs/${org}/rulesets/rule-suites/${ruleSuiteId}`,
-      }));
-  },
-});
+>('REPOS_GET_ORG_RULE_SUITE');
+
+export function provideReposGetOrgRuleSuite(): FactoryProvider {
+  return {
+    provide: REPOS_GET_ORG_RULE_SUITE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (org: string, ruleSuiteId: string) =>
+        httpResource<ReposGetOrgRuleSuiteResponse>(() => ({
+          url: `${base}/orgs/${org}/rulesets/rule-suites/${ruleSuiteId}`,
+        }));
+    },
+  };
+}

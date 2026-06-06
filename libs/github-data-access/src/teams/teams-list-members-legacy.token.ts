@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const TEAMS_LIST_MEMBERS_LEGACY = new InjectionToken<
       | TeamsListMembersLegacyParams
       | (() => TeamsListMembersLegacyParams | undefined),
   ) => ReturnType<typeof httpResource<TeamsListMembersLegacyResponse>>
->('TEAMS_LIST_MEMBERS_LEGACY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      teamId: string,
-      params?:
-        | TeamsListMembersLegacyParams
-        | (() => TeamsListMembersLegacyParams | undefined),
-    ) =>
-      httpResource<TeamsListMembersLegacyResponse>(() => ({
-        url: `${base}/teams/${teamId}/members`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('TEAMS_LIST_MEMBERS_LEGACY');
+
+export function provideTeamsListMembersLegacy(): FactoryProvider {
+  return {
+    provide: TEAMS_LIST_MEMBERS_LEGACY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        teamId: string,
+        params?:
+          | TeamsListMembersLegacyParams
+          | (() => TeamsListMembersLegacyParams | undefined),
+      ) =>
+        httpResource<TeamsListMembersLegacyResponse>(() => ({
+          url: `${base}/teams/${teamId}/members`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const ISSUES_GET_EVENT = new InjectionToken<
     repo: string,
     eventId: string,
   ) => ReturnType<typeof httpResource<IssuesGetEventResponse>>
->('ISSUES_GET_EVENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, eventId: string) =>
-      httpResource<IssuesGetEventResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/events/${eventId}`,
-      }));
-  },
-});
+>('ISSUES_GET_EVENT');
+
+export function provideIssuesGetEvent(): FactoryProvider {
+  return {
+    provide: ISSUES_GET_EVENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, eventId: string) =>
+        httpResource<IssuesGetEventResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/events/${eventId}`,
+        }));
+    },
+  };
+}

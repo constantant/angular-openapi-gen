@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -9,9 +9,12 @@ export const APPS_ADD_REPO_TO_INSTALLATION_FOR_AUTHENTICATED_USER =
       installationId: string,
       repositoryId: string,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('APPS_ADD_REPO_TO_INSTALLATION_FOR_AUTHENTICATED_USER', {
-    providedIn: 'root',
-    factory: () => {
+  >('APPS_ADD_REPO_TO_INSTALLATION_FOR_AUTHENTICATED_USER');
+
+export function provideAppsAddRepoToInstallationForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: APPS_ADD_REPO_TO_INSTALLATION_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (installationId: string, repositoryId: string) =>
         httpResource<unknown>(() => ({
@@ -19,4 +22,5 @@ export const APPS_ADD_REPO_TO_INSTALLATION_FOR_AUTHENTICATED_USER =
           method: 'PUT',
         }));
     },
-  });
+  };
+}

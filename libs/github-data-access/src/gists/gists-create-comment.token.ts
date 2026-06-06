@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const GISTS_CREATE_COMMENT = new InjectionToken<
     gistId: string,
     body: GistsCreateCommentBody | Signal<GistsCreateCommentBody>,
   ) => ReturnType<typeof httpResource<GistsCreateCommentResponse>>
->('GISTS_CREATE_COMMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      gistId: string,
-      body: GistsCreateCommentBody | Signal<GistsCreateCommentBody>,
-    ) =>
-      httpResource<GistsCreateCommentResponse>(() => ({
-        url: `${base}/gists/${gistId}/comments`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('GISTS_CREATE_COMMENT');
+
+export function provideGistsCreateComment(): FactoryProvider {
+  return {
+    provide: GISTS_CREATE_COMMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        gistId: string,
+        body: GistsCreateCommentBody | Signal<GistsCreateCommentBody>,
+      ) =>
+        httpResource<GistsCreateCommentResponse>(() => ({
+          url: `${base}/gists/${gistId}/comments`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

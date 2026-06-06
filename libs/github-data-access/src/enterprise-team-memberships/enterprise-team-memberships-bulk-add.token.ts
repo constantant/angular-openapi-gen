@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,21 +18,25 @@ export const ENTERPRISE_TEAM_MEMBERSHIPS_BULK_ADD = new InjectionToken<
       | EnterpriseTeamMembershipsBulkAddBody
       | Signal<EnterpriseTeamMembershipsBulkAddBody>,
   ) => ReturnType<typeof httpResource<EnterpriseTeamMembershipsBulkAddResponse>>
->('ENTERPRISE_TEAM_MEMBERSHIPS_BULK_ADD', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      enterprise: string,
-      enterpriseTeam: string,
-      body:
-        | EnterpriseTeamMembershipsBulkAddBody
-        | Signal<EnterpriseTeamMembershipsBulkAddBody>,
-    ) =>
-      httpResource<EnterpriseTeamMembershipsBulkAddResponse>(() => ({
-        url: `${base}/enterprises/${enterprise}/teams/${enterpriseTeam}/memberships/add`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('ENTERPRISE_TEAM_MEMBERSHIPS_BULK_ADD');
+
+export function provideEnterpriseTeamMembershipsBulkAdd(): FactoryProvider {
+  return {
+    provide: ENTERPRISE_TEAM_MEMBERSHIPS_BULK_ADD,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        enterprise: string,
+        enterpriseTeam: string,
+        body:
+          | EnterpriseTeamMembershipsBulkAddBody
+          | Signal<EnterpriseTeamMembershipsBulkAddBody>,
+      ) =>
+        httpResource<EnterpriseTeamMembershipsBulkAddResponse>(() => ({
+          url: `${base}/enterprises/${enterprise}/teams/${enterpriseTeam}/memberships/add`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

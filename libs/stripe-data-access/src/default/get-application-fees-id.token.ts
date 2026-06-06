@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const GET_APPLICATION_FEES_ID = new InjectionToken<
       | GetApplicationFeesIdParams
       | (() => GetApplicationFeesIdParams | undefined),
   ) => ReturnType<typeof httpResource<GetApplicationFeesIdResponse>>
->('GET_APPLICATION_FEES_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      id: string,
-      params?:
-        | GetApplicationFeesIdParams
-        | (() => GetApplicationFeesIdParams | undefined),
-    ) =>
-      httpResource<GetApplicationFeesIdResponse>(() => ({
-        url: `${base}/v1/application_fees/${id}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_APPLICATION_FEES_ID');
+
+export function provideGetApplicationFeesId(): FactoryProvider {
+  return {
+    provide: GET_APPLICATION_FEES_ID,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        id: string,
+        params?:
+          | GetApplicationFeesIdParams
+          | (() => GetApplicationFeesIdParams | undefined),
+      ) =>
+        httpResource<GetApplicationFeesIdResponse>(() => ({
+          url: `${base}/v1/application_fees/${id}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

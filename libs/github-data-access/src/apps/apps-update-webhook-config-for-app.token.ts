@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const APPS_UPDATE_WEBHOOK_CONFIG_FOR_APP = new InjectionToken<
       | AppsUpdateWebhookConfigForAppBody
       | Signal<AppsUpdateWebhookConfigForAppBody>,
   ) => ReturnType<typeof httpResource<AppsUpdateWebhookConfigForAppResponse>>
->('APPS_UPDATE_WEBHOOK_CONFIG_FOR_APP', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      body:
-        | AppsUpdateWebhookConfigForAppBody
-        | Signal<AppsUpdateWebhookConfigForAppBody>,
-    ) =>
-      httpResource<AppsUpdateWebhookConfigForAppResponse>(() => ({
-        url: `${base}/app/hook/config`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('APPS_UPDATE_WEBHOOK_CONFIG_FOR_APP');
+
+export function provideAppsUpdateWebhookConfigForApp(): FactoryProvider {
+  return {
+    provide: APPS_UPDATE_WEBHOOK_CONFIG_FOR_APP,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        body:
+          | AppsUpdateWebhookConfigForAppBody
+          | Signal<AppsUpdateWebhookConfigForAppBody>,
+      ) =>
+        httpResource<AppsUpdateWebhookConfigForAppResponse>(() => ({
+          url: `${base}/app/hook/config`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

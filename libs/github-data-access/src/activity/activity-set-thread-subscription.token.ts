@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const ACTIVITY_SET_THREAD_SUBSCRIPTION = new InjectionToken<
       | ActivitySetThreadSubscriptionBody
       | Signal<ActivitySetThreadSubscriptionBody>,
   ) => ReturnType<typeof httpResource<ActivitySetThreadSubscriptionResponse>>
->('ACTIVITY_SET_THREAD_SUBSCRIPTION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      threadId: string,
-      body:
-        | ActivitySetThreadSubscriptionBody
-        | Signal<ActivitySetThreadSubscriptionBody>,
-    ) =>
-      httpResource<ActivitySetThreadSubscriptionResponse>(() => ({
-        url: `${base}/notifications/threads/${threadId}/subscription`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('ACTIVITY_SET_THREAD_SUBSCRIPTION');
+
+export function provideActivitySetThreadSubscription(): FactoryProvider {
+  return {
+    provide: ACTIVITY_SET_THREAD_SUBSCRIPTION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        threadId: string,
+        body:
+          | ActivitySetThreadSubscriptionBody
+          | Signal<ActivitySetThreadSubscriptionBody>,
+      ) =>
+        httpResource<ActivitySetThreadSubscriptionResponse>(() => ({
+          url: `${base}/notifications/threads/${threadId}/subscription`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

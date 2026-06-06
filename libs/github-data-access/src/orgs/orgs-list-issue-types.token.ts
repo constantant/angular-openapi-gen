@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -8,13 +8,17 @@ export type OrgsListIssueTypesResponse =
 
 export const ORGS_LIST_ISSUE_TYPES = new InjectionToken<
   (org: string) => ReturnType<typeof httpResource<OrgsListIssueTypesResponse>>
->('ORGS_LIST_ISSUE_TYPES', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (org: string) =>
-      httpResource<OrgsListIssueTypesResponse>(() => ({
-        url: `${base}/orgs/${org}/issue-types`,
-      }));
-  },
-});
+>('ORGS_LIST_ISSUE_TYPES');
+
+export function provideOrgsListIssueTypes(): FactoryProvider {
+  return {
+    provide: ORGS_LIST_ISSUE_TYPES,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (org: string) =>
+        httpResource<OrgsListIssueTypesResponse>(() => ({
+          url: `${base}/orgs/${org}/issue-types`,
+        }));
+    },
+  };
+}

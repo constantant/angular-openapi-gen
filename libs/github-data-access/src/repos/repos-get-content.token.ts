@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,26 +16,30 @@ export const REPOS_GET_CONTENT = new InjectionToken<
     path: string,
     params?: ReposGetContentParams | (() => ReposGetContentParams | undefined),
   ) => ReturnType<typeof httpResource<ReposGetContentResponse>>
->('REPOS_GET_CONTENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      path: string,
-      params?:
-        | ReposGetContentParams
-        | (() => ReposGetContentParams | undefined),
-    ) =>
-      httpResource<ReposGetContentResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/contents/${path}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('REPOS_GET_CONTENT');
+
+export function provideReposGetContent(): FactoryProvider {
+  return {
+    provide: REPOS_GET_CONTENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        path: string,
+        params?:
+          | ReposGetContentParams
+          | (() => ReposGetContentParams | undefined),
+      ) =>
+        httpResource<ReposGetContentResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

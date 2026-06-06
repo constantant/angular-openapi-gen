@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,25 +17,29 @@ export const MIGRATIONS_GET_COMMIT_AUTHORS = new InjectionToken<
       | MigrationsGetCommitAuthorsParams
       | (() => MigrationsGetCommitAuthorsParams | undefined),
   ) => ReturnType<typeof httpResource<MigrationsGetCommitAuthorsResponse>>
->('MIGRATIONS_GET_COMMIT_AUTHORS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      params?:
-        | MigrationsGetCommitAuthorsParams
-        | (() => MigrationsGetCommitAuthorsParams | undefined),
-    ) =>
-      httpResource<MigrationsGetCommitAuthorsResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/import/authors`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('MIGRATIONS_GET_COMMIT_AUTHORS');
+
+export function provideMigrationsGetCommitAuthors(): FactoryProvider {
+  return {
+    provide: MIGRATIONS_GET_COMMIT_AUTHORS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        params?:
+          | MigrationsGetCommitAuthorsParams
+          | (() => MigrationsGetCommitAuthorsParams | undefined),
+      ) =>
+        httpResource<MigrationsGetCommitAuthorsResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/import/authors`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

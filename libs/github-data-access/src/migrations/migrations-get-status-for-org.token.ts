@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,25 +17,29 @@ export const MIGRATIONS_GET_STATUS_FOR_ORG = new InjectionToken<
       | MigrationsGetStatusForOrgParams
       | (() => MigrationsGetStatusForOrgParams | undefined),
   ) => ReturnType<typeof httpResource<MigrationsGetStatusForOrgResponse>>
->('MIGRATIONS_GET_STATUS_FOR_ORG', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      migrationId: string,
-      params?:
-        | MigrationsGetStatusForOrgParams
-        | (() => MigrationsGetStatusForOrgParams | undefined),
-    ) =>
-      httpResource<MigrationsGetStatusForOrgResponse>(() => ({
-        url: `${base}/orgs/${org}/migrations/${migrationId}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('MIGRATIONS_GET_STATUS_FOR_ORG');
+
+export function provideMigrationsGetStatusForOrg(): FactoryProvider {
+  return {
+    provide: MIGRATIONS_GET_STATUS_FOR_ORG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        migrationId: string,
+        params?:
+          | MigrationsGetStatusForOrgParams
+          | (() => MigrationsGetStatusForOrgParams | undefined),
+      ) =>
+        httpResource<MigrationsGetStatusForOrgResponse>(() => ({
+          url: `${base}/orgs/${org}/migrations/${migrationId}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

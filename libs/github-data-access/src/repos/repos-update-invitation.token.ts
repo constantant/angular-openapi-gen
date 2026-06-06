@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const REPOS_UPDATE_INVITATION = new InjectionToken<
     invitationId: string,
     body: ReposUpdateInvitationBody | Signal<ReposUpdateInvitationBody>,
   ) => ReturnType<typeof httpResource<ReposUpdateInvitationResponse>>
->('REPOS_UPDATE_INVITATION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      invitationId: string,
-      body: ReposUpdateInvitationBody | Signal<ReposUpdateInvitationBody>,
-    ) =>
-      httpResource<ReposUpdateInvitationResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
-        method: 'PATCH',
-        body,
-      }));
-  },
-});
+>('REPOS_UPDATE_INVITATION');
+
+export function provideReposUpdateInvitation(): FactoryProvider {
+  return {
+    provide: REPOS_UPDATE_INVITATION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        invitationId: string,
+        body: ReposUpdateInvitationBody | Signal<ReposUpdateInvitationBody>,
+      ) =>
+        httpResource<ReposUpdateInvitationResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
+          method: 'PATCH',
+          body,
+        }));
+    },
+  };
+}

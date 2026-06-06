@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,9 +16,12 @@ export const ACTIONS_SET_ARTIFACT_AND_LOG_RETENTION_SETTINGS_ORGANIZATION =
         | ActionsSetArtifactAndLogRetentionSettingsOrganizationBody
         | Signal<ActionsSetArtifactAndLogRetentionSettingsOrganizationBody>,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('ACTIONS_SET_ARTIFACT_AND_LOG_RETENTION_SETTINGS_ORGANIZATION', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_SET_ARTIFACT_AND_LOG_RETENTION_SETTINGS_ORGANIZATION');
+
+export function provideActionsSetArtifactAndLogRetentionSettingsOrganization(): FactoryProvider {
+  return {
+    provide: ACTIONS_SET_ARTIFACT_AND_LOG_RETENTION_SETTINGS_ORGANIZATION,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -32,4 +35,5 @@ export const ACTIONS_SET_ARTIFACT_AND_LOG_RETENTION_SETTINGS_ORGANIZATION =
           body,
         }));
     },
-  });
+  };
+}

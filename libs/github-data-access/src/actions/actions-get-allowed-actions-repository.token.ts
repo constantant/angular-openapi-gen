@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,13 +13,17 @@ export const ACTIONS_GET_ALLOWED_ACTIONS_REPOSITORY = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<ActionsGetAllowedActionsRepositoryResponse>
   >
->('ACTIONS_GET_ALLOWED_ACTIONS_REPOSITORY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string) =>
-      httpResource<ActionsGetAllowedActionsRepositoryResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/actions/permissions/selected-actions`,
-      }));
-  },
-});
+>('ACTIONS_GET_ALLOWED_ACTIONS_REPOSITORY');
+
+export function provideActionsGetAllowedActionsRepository(): FactoryProvider {
+  return {
+    provide: ACTIONS_GET_ALLOWED_ACTIONS_REPOSITORY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string) =>
+        httpResource<ActionsGetAllowedActionsRepositoryResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/actions/permissions/selected-actions`,
+        }));
+    },
+  };
+}

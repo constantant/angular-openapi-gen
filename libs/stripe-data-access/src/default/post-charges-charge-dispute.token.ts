@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,24 @@ export const POST_CHARGES_CHARGE_DISPUTE = new InjectionToken<
     charge: string,
     body: PostChargesChargeDisputeBody | Signal<PostChargesChargeDisputeBody>,
   ) => ReturnType<typeof httpResource<PostChargesChargeDisputeResponse>>
->('POST_CHARGES_CHARGE_DISPUTE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      charge: string,
-      body: PostChargesChargeDisputeBody | Signal<PostChargesChargeDisputeBody>,
-    ) =>
-      httpResource<PostChargesChargeDisputeResponse>(() => ({
-        url: `${base}/v1/charges/${charge}/dispute`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CHARGES_CHARGE_DISPUTE');
+
+export function providePostChargesChargeDispute(): FactoryProvider {
+  return {
+    provide: POST_CHARGES_CHARGE_DISPUTE,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        charge: string,
+        body:
+          | PostChargesChargeDisputeBody
+          | Signal<PostChargesChargeDisputeBody>,
+      ) =>
+        httpResource<PostChargesChargeDisputeResponse>(() => ({
+          url: `${base}/v1/charges/${charge}/dispute`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

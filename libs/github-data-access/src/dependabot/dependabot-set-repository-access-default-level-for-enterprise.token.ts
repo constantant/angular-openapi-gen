@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,9 +16,12 @@ export const DEPENDABOT_SET_REPOSITORY_ACCESS_DEFAULT_LEVEL_FOR_ENTERPRISE =
         | DependabotSetRepositoryAccessDefaultLevelForEnterpriseBody
         | Signal<DependabotSetRepositoryAccessDefaultLevelForEnterpriseBody>,
     ) => ReturnType<typeof httpResource<unknown>>
-  >('DEPENDABOT_SET_REPOSITORY_ACCESS_DEFAULT_LEVEL_FOR_ENTERPRISE', {
-    providedIn: 'root',
-    factory: () => {
+  >('DEPENDABOT_SET_REPOSITORY_ACCESS_DEFAULT_LEVEL_FOR_ENTERPRISE');
+
+export function provideDependabotSetRepositoryAccessDefaultLevelForEnterprise(): FactoryProvider {
+  return {
+    provide: DEPENDABOT_SET_REPOSITORY_ACCESS_DEFAULT_LEVEL_FOR_ENTERPRISE,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         enterprise: string,
@@ -32,4 +35,5 @@ export const DEPENDABOT_SET_REPOSITORY_ACCESS_DEFAULT_LEVEL_FOR_ENTERPRISE =
           body,
         }));
     },
-  });
+  };
+}

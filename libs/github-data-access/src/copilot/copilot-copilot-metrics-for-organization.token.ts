@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,24 +18,28 @@ export const COPILOT_COPILOT_METRICS_FOR_ORGANIZATION = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<CopilotCopilotMetricsForOrganizationResponse>
   >
->('COPILOT_COPILOT_METRICS_FOR_ORGANIZATION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      params?:
-        | CopilotCopilotMetricsForOrganizationParams
-        | (() => CopilotCopilotMetricsForOrganizationParams | undefined),
-    ) =>
-      httpResource<CopilotCopilotMetricsForOrganizationResponse>(() => ({
-        url: `${base}/orgs/${org}/copilot/metrics`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('COPILOT_COPILOT_METRICS_FOR_ORGANIZATION');
+
+export function provideCopilotCopilotMetricsForOrganization(): FactoryProvider {
+  return {
+    provide: COPILOT_COPILOT_METRICS_FOR_ORGANIZATION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | CopilotCopilotMetricsForOrganizationParams
+          | (() => CopilotCopilotMetricsForOrganizationParams | undefined),
+      ) =>
+        httpResource<CopilotCopilotMetricsForOrganizationResponse>(() => ({
+          url: `${base}/orgs/${org}/copilot/metrics`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_LEGACY =
     ) => ReturnType<
       typeof httpResource<TeamsAddOrUpdateMembershipForUserLegacyResponse>
     >
-  >('TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_LEGACY', {
-    providedIn: 'root',
-    factory: () => {
+  >('TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_LEGACY');
+
+export function provideTeamsAddOrUpdateMembershipForUserLegacy(): FactoryProvider {
+  return {
+    provide: TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_LEGACY,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         teamId: string,
@@ -38,4 +41,5 @@ export const TEAMS_ADD_OR_UPDATE_MEMBERSHIP_FOR_USER_LEGACY =
           body,
         }));
     },
-  });
+  };
+}

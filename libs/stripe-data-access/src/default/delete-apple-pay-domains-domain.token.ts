@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const DELETE_APPLE_PAY_DOMAINS_DOMAIN = new InjectionToken<
       | DeleteApplePayDomainsDomainBody
       | Signal<DeleteApplePayDomainsDomainBody>,
   ) => ReturnType<typeof httpResource<DeleteApplePayDomainsDomainResponse>>
->('DELETE_APPLE_PAY_DOMAINS_DOMAIN', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      domain: string,
-      body:
-        | DeleteApplePayDomainsDomainBody
-        | Signal<DeleteApplePayDomainsDomainBody>,
-    ) =>
-      httpResource<DeleteApplePayDomainsDomainResponse>(() => ({
-        url: `${base}/v1/apple_pay/domains/${domain}`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('DELETE_APPLE_PAY_DOMAINS_DOMAIN');
+
+export function provideDeleteApplePayDomainsDomain(): FactoryProvider {
+  return {
+    provide: DELETE_APPLE_PAY_DOMAINS_DOMAIN,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        domain: string,
+        body:
+          | DeleteApplePayDomainsDomainBody
+          | Signal<DeleteApplePayDomainsDomainBody>,
+      ) =>
+        httpResource<DeleteApplePayDomainsDomainResponse>(() => ({
+          url: `${base}/v1/apple_pay/domains/${domain}`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

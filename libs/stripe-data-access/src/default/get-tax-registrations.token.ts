@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,23 +15,27 @@ export const GET_TAX_REGISTRATIONS = new InjectionToken<
       | GetTaxRegistrationsParams
       | (() => GetTaxRegistrationsParams | undefined),
   ) => ReturnType<typeof httpResource<GetTaxRegistrationsResponse>>
->('GET_TAX_REGISTRATIONS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      params?:
-        | GetTaxRegistrationsParams
-        | (() => GetTaxRegistrationsParams | undefined),
-    ) =>
-      httpResource<GetTaxRegistrationsResponse>(() => ({
-        url: `${base}/v1/tax/registrations`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_TAX_REGISTRATIONS');
+
+export function provideGetTaxRegistrations(): FactoryProvider {
+  return {
+    provide: GET_TAX_REGISTRATIONS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        params?:
+          | GetTaxRegistrationsParams
+          | (() => GetTaxRegistrationsParams | undefined),
+      ) =>
+        httpResource<GetTaxRegistrationsResponse>(() => ({
+          url: `${base}/v1/tax/registrations`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

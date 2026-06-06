@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const GET_APPLICATION_FEES_ID_REFUNDS = new InjectionToken<
       | GetApplicationFeesIdRefundsParams
       | (() => GetApplicationFeesIdRefundsParams | undefined),
   ) => ReturnType<typeof httpResource<GetApplicationFeesIdRefundsResponse>>
->('GET_APPLICATION_FEES_ID_REFUNDS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      id: string,
-      params?:
-        | GetApplicationFeesIdRefundsParams
-        | (() => GetApplicationFeesIdRefundsParams | undefined),
-    ) =>
-      httpResource<GetApplicationFeesIdRefundsResponse>(() => ({
-        url: `${base}/v1/application_fees/${id}/refunds`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_APPLICATION_FEES_ID_REFUNDS');
+
+export function provideGetApplicationFeesIdRefunds(): FactoryProvider {
+  return {
+    provide: GET_APPLICATION_FEES_ID_REFUNDS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        id: string,
+        params?:
+          | GetApplicationFeesIdRefundsParams
+          | (() => GetApplicationFeesIdRefundsParams | undefined),
+      ) =>
+        httpResource<GetApplicationFeesIdRefundsResponse>(() => ({
+          url: `${base}/v1/application_fees/${id}/refunds`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

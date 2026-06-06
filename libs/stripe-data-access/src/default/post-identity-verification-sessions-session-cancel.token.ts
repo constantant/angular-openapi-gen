@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const POST_IDENTITY_VERIFICATION_SESSIONS_SESSION_CANCEL =
     ) => ReturnType<
       typeof httpResource<PostIdentityVerificationSessionsSessionCancelResponse>
     >
-  >('POST_IDENTITY_VERIFICATION_SESSIONS_SESSION_CANCEL', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_IDENTITY_VERIFICATION_SESSIONS_SESSION_CANCEL');
+
+export function providePostIdentityVerificationSessionsSessionCancel(): FactoryProvider {
+  return {
+    provide: POST_IDENTITY_VERIFICATION_SESSIONS_SESSION_CANCEL,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         session: string,
@@ -38,4 +41,5 @@ export const POST_IDENTITY_VERIFICATION_SESSIONS_SESSION_CANCEL =
           }),
         );
     },
-  });
+  };
+}

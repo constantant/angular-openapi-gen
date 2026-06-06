@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const REPOS_LIST_FOR_USER = new InjectionToken<
       | ReposListForUserParams
       | (() => ReposListForUserParams | undefined),
   ) => ReturnType<typeof httpResource<ReposListForUserResponse>>
->('REPOS_LIST_FOR_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      username: string,
-      params?:
-        | ReposListForUserParams
-        | (() => ReposListForUserParams | undefined),
-    ) =>
-      httpResource<ReposListForUserResponse>(() => ({
-        url: `${base}/users/${username}/repos`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('REPOS_LIST_FOR_USER');
+
+export function provideReposListForUser(): FactoryProvider {
+  return {
+    provide: REPOS_LIST_FOR_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        username: string,
+        params?:
+          | ReposListForUserParams
+          | (() => ReposListForUserParams | undefined),
+      ) =>
+        httpResource<ReposListForUserResponse>(() => ({
+          url: `${base}/users/${username}/repos`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

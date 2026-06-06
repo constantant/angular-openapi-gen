@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const ACTIONS_SET_CUSTOM_LABELS_FOR_SELF_HOSTED_RUNNER_FOR_REPO =
     ) => ReturnType<
       typeof httpResource<ActionsSetCustomLabelsForSelfHostedRunnerForRepoResponse>
     >
-  >('ACTIONS_SET_CUSTOM_LABELS_FOR_SELF_HOSTED_RUNNER_FOR_REPO', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_SET_CUSTOM_LABELS_FOR_SELF_HOSTED_RUNNER_FOR_REPO');
+
+export function provideActionsSetCustomLabelsForSelfHostedRunnerForRepo(): FactoryProvider {
+  return {
+    provide: ACTIONS_SET_CUSTOM_LABELS_FOR_SELF_HOSTED_RUNNER_FOR_REPO,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         owner: string,
@@ -42,4 +45,5 @@ export const ACTIONS_SET_CUSTOM_LABELS_FOR_SELF_HOSTED_RUNNER_FOR_REPO =
           }),
         );
     },
-  });
+  };
+}

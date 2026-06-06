@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,17 +14,21 @@ export const POST_ISSUING_CARDHOLDERS = new InjectionToken<
   (
     body: PostIssuingCardholdersBody | Signal<PostIssuingCardholdersBody>,
   ) => ReturnType<typeof httpResource<PostIssuingCardholdersResponse>>
->('POST_ISSUING_CARDHOLDERS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body: PostIssuingCardholdersBody | Signal<PostIssuingCardholdersBody>,
-    ) =>
-      httpResource<PostIssuingCardholdersResponse>(() => ({
-        url: `${base}/v1/issuing/cardholders`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_ISSUING_CARDHOLDERS');
+
+export function providePostIssuingCardholders(): FactoryProvider {
+  return {
+    provide: POST_ISSUING_CARDHOLDERS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body: PostIssuingCardholdersBody | Signal<PostIssuingCardholdersBody>,
+      ) =>
+        httpResource<PostIssuingCardholdersResponse>(() => ({
+          url: `${base}/v1/issuing/cardholders`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

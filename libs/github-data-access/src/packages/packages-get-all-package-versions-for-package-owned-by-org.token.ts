@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -23,9 +23,12 @@ export const PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_ORG =
     ) => ReturnType<
       typeof httpResource<PackagesGetAllPackageVersionsForPackageOwnedByOrgResponse>
     >
-  >('PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_ORG', {
-    providedIn: 'root',
-    factory: () => {
+  >('PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_ORG');
+
+export function providePackagesGetAllPackageVersionsForPackageOwnedByOrg(): FactoryProvider {
+  return {
+    provide: PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_ORG,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         packageType: string,
@@ -49,4 +52,5 @@ export const PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_ORG =
           }),
         );
     },
-  });
+  };
+}

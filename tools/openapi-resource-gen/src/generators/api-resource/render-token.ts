@@ -16,7 +16,8 @@ function toCamelCase(str: string): string {
 
 export function renderTokenFile(
   ep: EndpointModel,
-  baseUrlToken: string
+  baseUrlToken: string,
+  providedIn: 'root' | 'none' = 'none'
 ): string {
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
@@ -28,13 +29,14 @@ export function renderTokenFile(
   // Imports
   const coreImports = ['InjectionToken', 'inject'];
   if (!isGet && ep.hasBody) coreImports.push('Signal');
+  if (providedIn === 'none') coreImports.push('FactoryProvider');
   lines.push(`import { ${coreImports.join(', ')} } from '@angular/core';`);
   lines.push(`import { httpResource } from '@angular/common/http';`);
   lines.push(`import type { paths } from '../schema.d';`);
   lines.push(`import { ${baseUrlToken} } from '../api-base-url.token';`);
   lines.push('');
 
-  // Type aliases sourced directly from the generated paths type.
+  // Exported type aliases sourced directly from the generated paths type.
   // NonNullable<> guards optional requestBody fields that are typed as T | undefined.
   if (isGet && ep.hasQueryParams) {
     lines.push(
@@ -59,44 +61,68 @@ export function renderTokenFile(
   }
 
   const responseT = responseStatus ? `${pascal}Response` : 'unknown';
-
-  // Signature of the function the token vends
   const fnArgs = buildFnArgs(ep, pascal, isGet);
 
   lines.push(
     `export const ${ep.tokenName} = new InjectionToken<`,
     `  (${fnArgs}) => ReturnType<typeof httpResource<${responseT}>>`,
-    `>('${ep.tokenName}', {`,
-    `  providedIn: 'root',`,
-    `  factory: () => {`,
-    `    const base = inject(${baseUrlToken});`,
-    `    return (${fnArgs}) =>`,
-    `      httpResource<${responseT}>(() => ({`,
-    `        url: \`\${base}${urlTemplate}\`,`
+    `>('${ep.tokenName}'${providedIn === 'root' ? `, {` : ')'}`,
   );
 
-  if (!isGet) {
-    lines.push(`        method: '${ep.method.toUpperCase()}',`);
+  if (providedIn === 'root') {
+    lines.push(
+      `  providedIn: 'root',`,
+      `  factory: () => {`,
+      `    const base = inject(${baseUrlToken});`,
+      `    return (${fnArgs}) =>`,
+      `      httpResource<${responseT}>(() => ({`,
+      `        url: \`\${base}${urlTemplate}\`,`,
+    );
+    appendResourceOptions(lines, ep, isGet, '        ');
+    lines.push(`      }));`, `  },`, `});`, '');
+  } else {
+    // providedIn: 'none' — token has no factory; provide via the helper below
+    lines.push('');
+    lines.push(
+      `export function provide${pascal}(): FactoryProvider {`,
+      `  return {`,
+      `    provide: ${ep.tokenName},`,
+      `    useFactory: () => {`,
+      `      const base = inject(${baseUrlToken});`,
+      `      return (${fnArgs}) =>`,
+      `        httpResource<${responseT}>(() => ({`,
+      `          url: \`\${base}${urlTemplate}\`,`,
+    );
+    appendResourceOptions(lines, ep, isGet, '          ');
+    lines.push(`        }));`, `    },`, `  };`, `}`, '');
   }
-  if (isGet && ep.hasQueryParams) {
-    lines.push(`        params: (typeof params === 'function' ? params() : params) as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`);
-  }
-  if (!isGet && ep.hasBody) {
-    lines.push(`        body,`);
-  }
-
-  lines.push(`      }));`, `  },`, `});`, '');
 
   return lines.join('\n');
 }
 
-function buildFnArgs(
+function appendResourceOptions(
+  lines: string[],
   ep: EndpointModel,
-  pascal: string,
-  isGet: boolean
-): string {
+  isGet: boolean,
+  indent: string
+): void {
+  if (!isGet) {
+    lines.push(`${indent}method: '${ep.method.toUpperCase()}',`);
+  }
+  if (isGet && ep.hasQueryParams) {
+    lines.push(
+      `${indent}params: (typeof params === 'function' ? params() : params) as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`
+    );
+  }
+  if (!isGet && ep.hasBody) {
+    lines.push(`${indent}body,`);
+  }
+}
+
+function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean): string {
   const args: string[] = ep.pathParams.map((p) => `${toCamelCase(p)}: string`);
-  if (isGet && ep.hasQueryParams) args.push(`params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);
+  if (isGet && ep.hasQueryParams)
+    args.push(`params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);
   if (!isGet && ep.hasBody)
     args.push(`body: ${pascal}Body | Signal<${pascal}Body>`);
   return args.join(', ');

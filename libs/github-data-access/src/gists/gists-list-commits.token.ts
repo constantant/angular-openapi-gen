@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const GISTS_LIST_COMMITS = new InjectionToken<
       | GistsListCommitsParams
       | (() => GistsListCommitsParams | undefined),
   ) => ReturnType<typeof httpResource<GistsListCommitsResponse>>
->('GISTS_LIST_COMMITS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      gistId: string,
-      params?:
-        | GistsListCommitsParams
-        | (() => GistsListCommitsParams | undefined),
-    ) =>
-      httpResource<GistsListCommitsResponse>(() => ({
-        url: `${base}/gists/${gistId}/commits`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GISTS_LIST_COMMITS');
+
+export function provideGistsListCommits(): FactoryProvider {
+  return {
+    provide: GISTS_LIST_COMMITS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        gistId: string,
+        params?:
+          | GistsListCommitsParams
+          | (() => GistsListCommitsParams | undefined),
+      ) =>
+        httpResource<GistsListCommitsResponse>(() => ({
+          url: `${base}/gists/${gistId}/commits`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

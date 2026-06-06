@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const ISSUES_LIST_LABELS_FOR_MILESTONE = new InjectionToken<
       | IssuesListLabelsForMilestoneParams
       | (() => IssuesListLabelsForMilestoneParams | undefined),
   ) => ReturnType<typeof httpResource<IssuesListLabelsForMilestoneResponse>>
->('ISSUES_LIST_LABELS_FOR_MILESTONE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      milestoneNumber: string,
-      params?:
-        | IssuesListLabelsForMilestoneParams
-        | (() => IssuesListLabelsForMilestoneParams | undefined),
-    ) =>
-      httpResource<IssuesListLabelsForMilestoneResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/milestones/${milestoneNumber}/labels`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ISSUES_LIST_LABELS_FOR_MILESTONE');
+
+export function provideIssuesListLabelsForMilestone(): FactoryProvider {
+  return {
+    provide: ISSUES_LIST_LABELS_FOR_MILESTONE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        milestoneNumber: string,
+        params?:
+          | IssuesListLabelsForMilestoneParams
+          | (() => IssuesListLabelsForMilestoneParams | undefined),
+      ) =>
+        httpResource<IssuesListLabelsForMilestoneResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/milestones/${milestoneNumber}/labels`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

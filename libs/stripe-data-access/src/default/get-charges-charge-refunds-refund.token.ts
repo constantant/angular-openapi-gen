@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,25 +17,29 @@ export const GET_CHARGES_CHARGE_REFUNDS_REFUND = new InjectionToken<
       | GetChargesChargeRefundsRefundParams
       | (() => GetChargesChargeRefundsRefundParams | undefined),
   ) => ReturnType<typeof httpResource<GetChargesChargeRefundsRefundResponse>>
->('GET_CHARGES_CHARGE_REFUNDS_REFUND', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      charge: string,
-      refund: string,
-      params?:
-        | GetChargesChargeRefundsRefundParams
-        | (() => GetChargesChargeRefundsRefundParams | undefined),
-    ) =>
-      httpResource<GetChargesChargeRefundsRefundResponse>(() => ({
-        url: `${base}/v1/charges/${charge}/refunds/${refund}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_CHARGES_CHARGE_REFUNDS_REFUND');
+
+export function provideGetChargesChargeRefundsRefund(): FactoryProvider {
+  return {
+    provide: GET_CHARGES_CHARGE_REFUNDS_REFUND,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        charge: string,
+        refund: string,
+        params?:
+          | GetChargesChargeRefundsRefundParams
+          | (() => GetChargesChargeRefundsRefundParams | undefined),
+      ) =>
+        httpResource<GetChargesChargeRefundsRefundResponse>(() => ({
+          url: `${base}/v1/charges/${charge}/refunds/${refund}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

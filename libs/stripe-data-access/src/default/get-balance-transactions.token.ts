@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,23 +15,27 @@ export const GET_BALANCE_TRANSACTIONS = new InjectionToken<
       | GetBalanceTransactionsParams
       | (() => GetBalanceTransactionsParams | undefined),
   ) => ReturnType<typeof httpResource<GetBalanceTransactionsResponse>>
->('GET_BALANCE_TRANSACTIONS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      params?:
-        | GetBalanceTransactionsParams
-        | (() => GetBalanceTransactionsParams | undefined),
-    ) =>
-      httpResource<GetBalanceTransactionsResponse>(() => ({
-        url: `${base}/v1/balance_transactions`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_BALANCE_TRANSACTIONS');
+
+export function provideGetBalanceTransactions(): FactoryProvider {
+  return {
+    provide: GET_BALANCE_TRANSACTIONS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        params?:
+          | GetBalanceTransactionsParams
+          | (() => GetBalanceTransactionsParams | undefined),
+      ) =>
+        httpResource<GetBalanceTransactionsResponse>(() => ({
+          url: `${base}/v1/balance_transactions`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

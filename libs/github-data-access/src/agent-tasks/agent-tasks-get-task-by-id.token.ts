@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -10,13 +10,17 @@ export const AGENT_TASKS_GET_TASK_BY_ID = new InjectionToken<
   (
     taskId: string,
   ) => ReturnType<typeof httpResource<AgentTasksGetTaskByIdResponse>>
->('AGENT_TASKS_GET_TASK_BY_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (taskId: string) =>
-      httpResource<AgentTasksGetTaskByIdResponse>(() => ({
-        url: `${base}/agents/tasks/${taskId}`,
-      }));
-  },
-});
+>('AGENT_TASKS_GET_TASK_BY_ID');
+
+export function provideAgentTasksGetTaskById(): FactoryProvider {
+  return {
+    provide: AGENT_TASKS_GET_TASK_BY_ID,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (taskId: string) =>
+        httpResource<AgentTasksGetTaskByIdResponse>(() => ({
+          url: `${base}/agents/tasks/${taskId}`,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const REACTIONS_CREATE_FOR_PULL_REQUEST_REVIEW_COMMENT =
     ) => ReturnType<
       typeof httpResource<ReactionsCreateForPullRequestReviewCommentResponse>
     >
-  >('REACTIONS_CREATE_FOR_PULL_REQUEST_REVIEW_COMMENT', {
-    providedIn: 'root',
-    factory: () => {
+  >('REACTIONS_CREATE_FOR_PULL_REQUEST_REVIEW_COMMENT');
+
+export function provideReactionsCreateForPullRequestReviewComment(): FactoryProvider {
+  return {
+    provide: REACTIONS_CREATE_FOR_PULL_REQUEST_REVIEW_COMMENT,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         owner: string,
@@ -42,4 +45,5 @@ export const REACTIONS_CREATE_FOR_PULL_REQUEST_REVIEW_COMMENT =
           }),
         );
     },
-  });
+  };
+}

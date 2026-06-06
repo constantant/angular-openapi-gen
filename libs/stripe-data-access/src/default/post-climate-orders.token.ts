@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,15 +14,19 @@ export const POST_CLIMATE_ORDERS = new InjectionToken<
   (
     body: PostClimateOrdersBody | Signal<PostClimateOrdersBody>,
   ) => ReturnType<typeof httpResource<PostClimateOrdersResponse>>
->('POST_CLIMATE_ORDERS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (body: PostClimateOrdersBody | Signal<PostClimateOrdersBody>) =>
-      httpResource<PostClimateOrdersResponse>(() => ({
-        url: `${base}/v1/climate/orders`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_CLIMATE_ORDERS');
+
+export function providePostClimateOrders(): FactoryProvider {
+  return {
+    provide: POST_CLIMATE_ORDERS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (body: PostClimateOrdersBody | Signal<PostClimateOrdersBody>) =>
+        httpResource<PostClimateOrdersResponse>(() => ({
+          url: `${base}/v1/climate/orders`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

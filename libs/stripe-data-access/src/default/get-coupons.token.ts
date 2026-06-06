@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -13,19 +13,25 @@ export const GET_COUPONS = new InjectionToken<
   (
     params?: GetCouponsParams | (() => GetCouponsParams | undefined),
   ) => ReturnType<typeof httpResource<GetCouponsResponse>>
->('GET_COUPONS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (params?: GetCouponsParams | (() => GetCouponsParams | undefined)) =>
-      httpResource<GetCouponsResponse>(() => ({
-        url: `${base}/v1/coupons`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_COUPONS');
+
+export function provideGetCoupons(): FactoryProvider {
+  return {
+    provide: GET_COUPONS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        params?: GetCouponsParams | (() => GetCouponsParams | undefined),
+      ) =>
+        httpResource<GetCouponsResponse>(() => ({
+          url: `${base}/v1/coupons`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

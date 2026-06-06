@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const APPS_SCOPE_TOKEN = new InjectionToken<
     clientId: string,
     body: AppsScopeTokenBody | Signal<AppsScopeTokenBody>,
   ) => ReturnType<typeof httpResource<AppsScopeTokenResponse>>
->('APPS_SCOPE_TOKEN', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      clientId: string,
-      body: AppsScopeTokenBody | Signal<AppsScopeTokenBody>,
-    ) =>
-      httpResource<AppsScopeTokenResponse>(() => ({
-        url: `${base}/applications/${clientId}/token/scoped`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('APPS_SCOPE_TOKEN');
+
+export function provideAppsScopeToken(): FactoryProvider {
+  return {
+    provide: APPS_SCOPE_TOKEN,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        clientId: string,
+        body: AppsScopeTokenBody | Signal<AppsScopeTokenBody>,
+      ) =>
+        httpResource<AppsScopeTokenResponse>(() => ({
+          url: `${base}/applications/${clientId}/token/scoped`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

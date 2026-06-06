@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const POST_PROMOTION_CODES_PROMOTION_CODE = new InjectionToken<
       | PostPromotionCodesPromotionCodeBody
       | Signal<PostPromotionCodesPromotionCodeBody>,
   ) => ReturnType<typeof httpResource<PostPromotionCodesPromotionCodeResponse>>
->('POST_PROMOTION_CODES_PROMOTION_CODE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      promotionCode: string,
-      body:
-        | PostPromotionCodesPromotionCodeBody
-        | Signal<PostPromotionCodesPromotionCodeBody>,
-    ) =>
-      httpResource<PostPromotionCodesPromotionCodeResponse>(() => ({
-        url: `${base}/v1/promotion_codes/${promotionCode}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_PROMOTION_CODES_PROMOTION_CODE');
+
+export function providePostPromotionCodesPromotionCode(): FactoryProvider {
+  return {
+    provide: POST_PROMOTION_CODES_PROMOTION_CODE,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        promotionCode: string,
+        body:
+          | PostPromotionCodesPromotionCodeBody
+          | Signal<PostPromotionCodesPromotionCodeBody>,
+      ) =>
+        httpResource<PostPromotionCodesPromotionCodeResponse>(() => ({
+          url: `${base}/v1/promotion_codes/${promotionCode}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

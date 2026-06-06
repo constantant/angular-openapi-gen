@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,22 +21,26 @@ export const DEPENDABOT_CREATE_OR_UPDATE_REPO_SECRET = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<DependabotCreateOrUpdateRepoSecretResponse>
   >
->('DEPENDABOT_CREATE_OR_UPDATE_REPO_SECRET', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      secretName: string,
-      body:
-        | DependabotCreateOrUpdateRepoSecretBody
-        | Signal<DependabotCreateOrUpdateRepoSecretBody>,
-    ) =>
-      httpResource<DependabotCreateOrUpdateRepoSecretResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/dependabot/secrets/${secretName}`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('DEPENDABOT_CREATE_OR_UPDATE_REPO_SECRET');
+
+export function provideDependabotCreateOrUpdateRepoSecret(): FactoryProvider {
+  return {
+    provide: DEPENDABOT_CREATE_OR_UPDATE_REPO_SECRET,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        secretName: string,
+        body:
+          | DependabotCreateOrUpdateRepoSecretBody
+          | Signal<DependabotCreateOrUpdateRepoSecretBody>,
+      ) =>
+        httpResource<DependabotCreateOrUpdateRepoSecretResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/dependabot/secrets/${secretName}`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,9 +19,12 @@ export const PRIVATE_REGISTRIES_LIST_ORG_PRIVATE_REGISTRIES =
     ) => ReturnType<
       typeof httpResource<PrivateRegistriesListOrgPrivateRegistriesResponse>
     >
-  >('PRIVATE_REGISTRIES_LIST_ORG_PRIVATE_REGISTRIES', {
-    providedIn: 'root',
-    factory: () => {
+  >('PRIVATE_REGISTRIES_LIST_ORG_PRIVATE_REGISTRIES');
+
+export function providePrivateRegistriesListOrgPrivateRegistries(): FactoryProvider {
+  return {
+    provide: PRIVATE_REGISTRIES_LIST_ORG_PRIVATE_REGISTRIES,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         org: string,
@@ -39,4 +42,5 @@ export const PRIVATE_REGISTRIES_LIST_ORG_PRIVATE_REGISTRIES =
           >,
         }));
     },
-  });
+  };
+}

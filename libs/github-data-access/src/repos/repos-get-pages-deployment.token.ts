@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const REPOS_GET_PAGES_DEPLOYMENT = new InjectionToken<
     repo: string,
     pagesDeploymentId: string,
   ) => ReturnType<typeof httpResource<ReposGetPagesDeploymentResponse>>
->('REPOS_GET_PAGES_DEPLOYMENT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, pagesDeploymentId: string) =>
-      httpResource<ReposGetPagesDeploymentResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/pages/deployments/${pagesDeploymentId}`,
-      }));
-  },
-});
+>('REPOS_GET_PAGES_DEPLOYMENT');
+
+export function provideReposGetPagesDeployment(): FactoryProvider {
+  return {
+    provide: REPOS_GET_PAGES_DEPLOYMENT,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, pagesDeploymentId: string) =>
+        httpResource<ReposGetPagesDeploymentResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/pages/deployments/${pagesDeploymentId}`,
+        }));
+    },
+  };
+}

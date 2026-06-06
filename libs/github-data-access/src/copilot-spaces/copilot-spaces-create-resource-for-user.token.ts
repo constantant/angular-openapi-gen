@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,21 +20,25 @@ export const COPILOT_SPACES_CREATE_RESOURCE_FOR_USER = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<CopilotSpacesCreateResourceForUserResponse>
   >
->('COPILOT_SPACES_CREATE_RESOURCE_FOR_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      username: string,
-      spaceNumber: string,
-      body:
-        | CopilotSpacesCreateResourceForUserBody
-        | Signal<CopilotSpacesCreateResourceForUserBody>,
-    ) =>
-      httpResource<CopilotSpacesCreateResourceForUserResponse>(() => ({
-        url: `${base}/users/${username}/copilot-spaces/${spaceNumber}/resources`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('COPILOT_SPACES_CREATE_RESOURCE_FOR_USER');
+
+export function provideCopilotSpacesCreateResourceForUser(): FactoryProvider {
+  return {
+    provide: COPILOT_SPACES_CREATE_RESOURCE_FOR_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        username: string,
+        spaceNumber: string,
+        body:
+          | CopilotSpacesCreateResourceForUserBody
+          | Signal<CopilotSpacesCreateResourceForUserBody>,
+      ) =>
+        httpResource<CopilotSpacesCreateResourceForUserResponse>(() => ({
+          url: `${base}/users/${username}/copilot-spaces/${spaceNumber}/resources`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

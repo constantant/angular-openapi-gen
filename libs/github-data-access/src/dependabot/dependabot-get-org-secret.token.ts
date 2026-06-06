@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -11,13 +11,17 @@ export const DEPENDABOT_GET_ORG_SECRET = new InjectionToken<
     org: string,
     secretName: string,
   ) => ReturnType<typeof httpResource<DependabotGetOrgSecretResponse>>
->('DEPENDABOT_GET_ORG_SECRET', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (org: string, secretName: string) =>
-      httpResource<DependabotGetOrgSecretResponse>(() => ({
-        url: `${base}/orgs/${org}/dependabot/secrets/${secretName}`,
-      }));
-  },
-});
+>('DEPENDABOT_GET_ORG_SECRET');
+
+export function provideDependabotGetOrgSecret(): FactoryProvider {
+  return {
+    provide: DEPENDABOT_GET_ORG_SECRET,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (org: string, secretName: string) =>
+        httpResource<DependabotGetOrgSecretResponse>(() => ({
+          url: `${base}/orgs/${org}/dependabot/secrets/${secretName}`,
+        }));
+    },
+  };
+}

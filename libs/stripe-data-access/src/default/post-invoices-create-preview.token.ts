@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,19 +14,23 @@ export const POST_INVOICES_CREATE_PREVIEW = new InjectionToken<
   (
     body: PostInvoicesCreatePreviewBody | Signal<PostInvoicesCreatePreviewBody>,
   ) => ReturnType<typeof httpResource<PostInvoicesCreatePreviewResponse>>
->('POST_INVOICES_CREATE_PREVIEW', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body:
-        | PostInvoicesCreatePreviewBody
-        | Signal<PostInvoicesCreatePreviewBody>,
-    ) =>
-      httpResource<PostInvoicesCreatePreviewResponse>(() => ({
-        url: `${base}/v1/invoices/create_preview`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_INVOICES_CREATE_PREVIEW');
+
+export function providePostInvoicesCreatePreview(): FactoryProvider {
+  return {
+    provide: POST_INVOICES_CREATE_PREVIEW,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body:
+          | PostInvoicesCreatePreviewBody
+          | Signal<PostInvoicesCreatePreviewBody>,
+      ) =>
+        httpResource<PostInvoicesCreatePreviewResponse>(() => ({
+          url: `${base}/v1/invoices/create_preview`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

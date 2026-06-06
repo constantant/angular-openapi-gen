@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -22,9 +22,12 @@ export const CODE_SECURITY_SET_CONFIGURATION_AS_DEFAULT_FOR_ENTERPRISE =
     ) => ReturnType<
       typeof httpResource<CodeSecuritySetConfigurationAsDefaultForEnterpriseResponse>
     >
-  >('CODE_SECURITY_SET_CONFIGURATION_AS_DEFAULT_FOR_ENTERPRISE', {
-    providedIn: 'root',
-    factory: () => {
+  >('CODE_SECURITY_SET_CONFIGURATION_AS_DEFAULT_FOR_ENTERPRISE');
+
+export function provideCodeSecuritySetConfigurationAsDefaultForEnterprise(): FactoryProvider {
+  return {
+    provide: CODE_SECURITY_SET_CONFIGURATION_AS_DEFAULT_FOR_ENTERPRISE,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         enterprise: string,
@@ -41,4 +44,5 @@ export const CODE_SECURITY_SET_CONFIGURATION_AS_DEFAULT_FOR_ENTERPRISE =
           }),
         );
     },
-  });
+  };
+}

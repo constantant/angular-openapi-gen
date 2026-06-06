@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -14,9 +14,12 @@ export const ACTIONS_GET_FORK_PR_CONTRIBUTOR_APPROVAL_PERMISSIONS_REPOSITORY =
     ) => ReturnType<
       typeof httpResource<ActionsGetForkPrContributorApprovalPermissionsRepositoryResponse>
     >
-  >('ACTIONS_GET_FORK_PR_CONTRIBUTOR_APPROVAL_PERMISSIONS_REPOSITORY', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_GET_FORK_PR_CONTRIBUTOR_APPROVAL_PERMISSIONS_REPOSITORY');
+
+export function provideActionsGetForkPrContributorApprovalPermissionsRepository(): FactoryProvider {
+  return {
+    provide: ACTIONS_GET_FORK_PR_CONTRIBUTOR_APPROVAL_PERMISSIONS_REPOSITORY,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
         httpResource<ActionsGetForkPrContributorApprovalPermissionsRepositoryResponse>(
@@ -25,4 +28,5 @@ export const ACTIONS_GET_FORK_PR_CONTRIBUTOR_APPROVAL_PERMISSIONS_REPOSITORY =
           }),
         );
     },
-  });
+  };
+}

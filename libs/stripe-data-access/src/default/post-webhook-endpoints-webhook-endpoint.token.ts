@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const POST_WEBHOOK_ENDPOINTS_WEBHOOK_ENDPOINT = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostWebhookEndpointsWebhookEndpointResponse>
   >
->('POST_WEBHOOK_ENDPOINTS_WEBHOOK_ENDPOINT', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      webhookEndpoint: string,
-      body:
-        | PostWebhookEndpointsWebhookEndpointBody
-        | Signal<PostWebhookEndpointsWebhookEndpointBody>,
-    ) =>
-      httpResource<PostWebhookEndpointsWebhookEndpointResponse>(() => ({
-        url: `${base}/v1/webhook_endpoints/${webhookEndpoint}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_WEBHOOK_ENDPOINTS_WEBHOOK_ENDPOINT');
+
+export function providePostWebhookEndpointsWebhookEndpoint(): FactoryProvider {
+  return {
+    provide: POST_WEBHOOK_ENDPOINTS_WEBHOOK_ENDPOINT,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        webhookEndpoint: string,
+        body:
+          | PostWebhookEndpointsWebhookEndpointBody
+          | Signal<PostWebhookEndpointsWebhookEndpointBody>,
+      ) =>
+        httpResource<PostWebhookEndpointsWebhookEndpointResponse>(() => ({
+          url: `${base}/v1/webhook_endpoints/${webhookEndpoint}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

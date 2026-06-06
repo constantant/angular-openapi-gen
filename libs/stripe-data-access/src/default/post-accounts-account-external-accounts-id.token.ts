@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -20,21 +20,25 @@ export const POST_ACCOUNTS_ACCOUNT_EXTERNAL_ACCOUNTS_ID = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostAccountsAccountExternalAccountsIdResponse>
   >
->('POST_ACCOUNTS_ACCOUNT_EXTERNAL_ACCOUNTS_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      account: string,
-      id: string,
-      body:
-        | PostAccountsAccountExternalAccountsIdBody
-        | Signal<PostAccountsAccountExternalAccountsIdBody>,
-    ) =>
-      httpResource<PostAccountsAccountExternalAccountsIdResponse>(() => ({
-        url: `${base}/v1/accounts/${account}/external_accounts/${id}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_ACCOUNTS_ACCOUNT_EXTERNAL_ACCOUNTS_ID');
+
+export function providePostAccountsAccountExternalAccountsId(): FactoryProvider {
+  return {
+    provide: POST_ACCOUNTS_ACCOUNT_EXTERNAL_ACCOUNTS_ID,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        account: string,
+        id: string,
+        body:
+          | PostAccountsAccountExternalAccountsIdBody
+          | Signal<PostAccountsAccountExternalAccountsIdBody>,
+      ) =>
+        httpResource<PostAccountsAccountExternalAccountsIdResponse>(() => ({
+          url: `${base}/v1/accounts/${account}/external_accounts/${id}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

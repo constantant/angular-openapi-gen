@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const COPILOT_ADD_COPILOT_SEATS_FOR_TEAMS = new InjectionToken<
       | CopilotAddCopilotSeatsForTeamsBody
       | Signal<CopilotAddCopilotSeatsForTeamsBody>,
   ) => ReturnType<typeof httpResource<CopilotAddCopilotSeatsForTeamsResponse>>
->('COPILOT_ADD_COPILOT_SEATS_FOR_TEAMS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      body:
-        | CopilotAddCopilotSeatsForTeamsBody
-        | Signal<CopilotAddCopilotSeatsForTeamsBody>,
-    ) =>
-      httpResource<CopilotAddCopilotSeatsForTeamsResponse>(() => ({
-        url: `${base}/orgs/${org}/copilot/billing/selected_teams`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('COPILOT_ADD_COPILOT_SEATS_FOR_TEAMS');
+
+export function provideCopilotAddCopilotSeatsForTeams(): FactoryProvider {
+  return {
+    provide: COPILOT_ADD_COPILOT_SEATS_FOR_TEAMS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        body:
+          | CopilotAddCopilotSeatsForTeamsBody
+          | Signal<CopilotAddCopilotSeatsForTeamsBody>,
+      ) =>
+        httpResource<CopilotAddCopilotSeatsForTeamsResponse>(() => ({
+          url: `${base}/orgs/${org}/copilot/billing/selected_teams`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

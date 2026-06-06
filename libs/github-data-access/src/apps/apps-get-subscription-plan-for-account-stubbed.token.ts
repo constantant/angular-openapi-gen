@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,13 +13,17 @@ export const APPS_GET_SUBSCRIPTION_PLAN_FOR_ACCOUNT_STUBBED =
     ) => ReturnType<
       typeof httpResource<AppsGetSubscriptionPlanForAccountStubbedResponse>
     >
-  >('APPS_GET_SUBSCRIPTION_PLAN_FOR_ACCOUNT_STUBBED', {
-    providedIn: 'root',
-    factory: () => {
+  >('APPS_GET_SUBSCRIPTION_PLAN_FOR_ACCOUNT_STUBBED');
+
+export function provideAppsGetSubscriptionPlanForAccountStubbed(): FactoryProvider {
+  return {
+    provide: APPS_GET_SUBSCRIPTION_PLAN_FOR_ACCOUNT_STUBBED,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (accountId: string) =>
         httpResource<AppsGetSubscriptionPlanForAccountStubbedResponse>(() => ({
           url: `${base}/marketplace_listing/stubbed/accounts/${accountId}`,
         }));
     },
-  });
+  };
+}

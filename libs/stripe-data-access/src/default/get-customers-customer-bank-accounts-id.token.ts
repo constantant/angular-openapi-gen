@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,25 +19,29 @@ export const GET_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<GetCustomersCustomerBankAccountsIdResponse>
   >
->('GET_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      customer: string,
-      id: string,
-      params?:
-        | GetCustomersCustomerBankAccountsIdParams
-        | (() => GetCustomersCustomerBankAccountsIdParams | undefined),
-    ) =>
-      httpResource<GetCustomersCustomerBankAccountsIdResponse>(() => ({
-        url: `${base}/v1/customers/${customer}/bank_accounts/${id}`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('GET_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID');
+
+export function provideGetCustomersCustomerBankAccountsId(): FactoryProvider {
+  return {
+    provide: GET_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        customer: string,
+        id: string,
+        params?:
+          | GetCustomersCustomerBankAccountsIdParams
+          | (() => GetCustomersCustomerBankAccountsIdParams | undefined),
+      ) =>
+        httpResource<GetCustomersCustomerBankAccountsIdResponse>(() => ({
+          url: `${base}/v1/customers/${customer}/bank_accounts/${id}`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

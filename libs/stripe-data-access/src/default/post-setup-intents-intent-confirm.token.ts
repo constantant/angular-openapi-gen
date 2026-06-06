@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const POST_SETUP_INTENTS_INTENT_CONFIRM = new InjectionToken<
       | PostSetupIntentsIntentConfirmBody
       | Signal<PostSetupIntentsIntentConfirmBody>,
   ) => ReturnType<typeof httpResource<PostSetupIntentsIntentConfirmResponse>>
->('POST_SETUP_INTENTS_INTENT_CONFIRM', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      intent: string,
-      body:
-        | PostSetupIntentsIntentConfirmBody
-        | Signal<PostSetupIntentsIntentConfirmBody>,
-    ) =>
-      httpResource<PostSetupIntentsIntentConfirmResponse>(() => ({
-        url: `${base}/v1/setup_intents/${intent}/confirm`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_SETUP_INTENTS_INTENT_CONFIRM');
+
+export function providePostSetupIntentsIntentConfirm(): FactoryProvider {
+  return {
+    provide: POST_SETUP_INTENTS_INTENT_CONFIRM,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        intent: string,
+        body:
+          | PostSetupIntentsIntentConfirmBody
+          | Signal<PostSetupIntentsIntentConfirmBody>,
+      ) =>
+        httpResource<PostSetupIntentsIntentConfirmResponse>(() => ({
+          url: `${base}/v1/setup_intents/${intent}/confirm`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

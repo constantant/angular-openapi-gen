@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -14,15 +14,19 @@ export const POST_PAYMENT_LINKS = new InjectionToken<
   (
     body: PostPaymentLinksBody | Signal<PostPaymentLinksBody>,
   ) => ReturnType<typeof httpResource<PostPaymentLinksResponse>>
->('POST_PAYMENT_LINKS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (body: PostPaymentLinksBody | Signal<PostPaymentLinksBody>) =>
-      httpResource<PostPaymentLinksResponse>(() => ({
-        url: `${base}/v1/payment_links`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_PAYMENT_LINKS');
+
+export function providePostPaymentLinks(): FactoryProvider {
+  return {
+    provide: POST_PAYMENT_LINKS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (body: PostPaymentLinksBody | Signal<PostPaymentLinksBody>) =>
+        httpResource<PostPaymentLinksResponse>(() => ({
+          url: `${base}/v1/payment_links`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

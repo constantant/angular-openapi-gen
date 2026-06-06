@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const BILLING_GET_GITHUB_BILLING_PREMIUM_REQUEST_USAGE_REPORT_USER =
     ) => ReturnType<
       typeof httpResource<BillingGetGithubBillingPremiumRequestUsageReportUserResponse>
     >
-  >('BILLING_GET_GITHUB_BILLING_PREMIUM_REQUEST_USAGE_REPORT_USER', {
-    providedIn: 'root',
-    factory: () => {
+  >('BILLING_GET_GITHUB_BILLING_PREMIUM_REQUEST_USAGE_REPORT_USER');
+
+export function provideBillingGetGithubBillingPremiumRequestUsageReportUser(): FactoryProvider {
+  return {
+    provide: BILLING_GET_GITHUB_BILLING_PREMIUM_REQUEST_USAGE_REPORT_USER,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         username: string,
@@ -45,4 +48,5 @@ export const BILLING_GET_GITHUB_BILLING_PREMIUM_REQUEST_USAGE_REPORT_USER =
           }),
         );
     },
-  });
+  };
+}

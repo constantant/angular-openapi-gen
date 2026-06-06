@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,22 +19,26 @@ export const REPOS_ADD_STATUS_CHECK_CONTEXTS = new InjectionToken<
       | ReposAddStatusCheckContextsBody
       | Signal<ReposAddStatusCheckContextsBody>,
   ) => ReturnType<typeof httpResource<ReposAddStatusCheckContextsResponse>>
->('REPOS_ADD_STATUS_CHECK_CONTEXTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      branch: string,
-      body:
-        | ReposAddStatusCheckContextsBody
-        | Signal<ReposAddStatusCheckContextsBody>,
-    ) =>
-      httpResource<ReposAddStatusCheckContextsResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('REPOS_ADD_STATUS_CHECK_CONTEXTS');
+
+export function provideReposAddStatusCheckContexts(): FactoryProvider {
+  return {
+    provide: REPOS_ADD_STATUS_CHECK_CONTEXTS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        branch: string,
+        body:
+          | ReposAddStatusCheckContextsBody
+          | Signal<ReposAddStatusCheckContextsBody>,
+      ) =>
+        httpResource<ReposAddStatusCheckContextsResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

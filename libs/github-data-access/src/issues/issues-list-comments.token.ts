@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const ISSUES_LIST_COMMENTS = new InjectionToken<
       | IssuesListCommentsParams
       | (() => IssuesListCommentsParams | undefined),
   ) => ReturnType<typeof httpResource<IssuesListCommentsResponse>>
->('ISSUES_LIST_COMMENTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      issueNumber: string,
-      params?:
-        | IssuesListCommentsParams
-        | (() => IssuesListCommentsParams | undefined),
-    ) =>
-      httpResource<IssuesListCommentsResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/comments`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ISSUES_LIST_COMMENTS');
+
+export function provideIssuesListComments(): FactoryProvider {
+  return {
+    provide: ISSUES_LIST_COMMENTS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        issueNumber: string,
+        params?:
+          | IssuesListCommentsParams
+          | (() => IssuesListCommentsParams | undefined),
+      ) =>
+        httpResource<IssuesListCommentsResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/comments`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

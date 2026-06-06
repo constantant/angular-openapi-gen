@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -20,9 +20,12 @@ export const ACTIONS_LIST_CONCURRENCY_GROUPS_FOR_REPOSITORY =
     ) => ReturnType<
       typeof httpResource<ActionsListConcurrencyGroupsForRepositoryResponse>
     >
-  >('ACTIONS_LIST_CONCURRENCY_GROUPS_FOR_REPOSITORY', {
-    providedIn: 'root',
-    factory: () => {
+  >('ACTIONS_LIST_CONCURRENCY_GROUPS_FOR_REPOSITORY');
+
+export function provideActionsListConcurrencyGroupsForRepository(): FactoryProvider {
+  return {
+    provide: ACTIONS_LIST_CONCURRENCY_GROUPS_FOR_REPOSITORY,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         owner: string,
@@ -41,4 +44,5 @@ export const ACTIONS_LIST_CONCURRENCY_GROUPS_FOR_REPOSITORY =
           >,
         }));
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,23 @@ export const REPOS_MERGE_UPSTREAM = new InjectionToken<
     repo: string,
     body: ReposMergeUpstreamBody | Signal<ReposMergeUpstreamBody>,
   ) => ReturnType<typeof httpResource<ReposMergeUpstreamResponse>>
->('REPOS_MERGE_UPSTREAM', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      body: ReposMergeUpstreamBody | Signal<ReposMergeUpstreamBody>,
-    ) =>
-      httpResource<ReposMergeUpstreamResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/merge-upstream`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('REPOS_MERGE_UPSTREAM');
+
+export function provideReposMergeUpstream(): FactoryProvider {
+  return {
+    provide: REPOS_MERGE_UPSTREAM,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        body: ReposMergeUpstreamBody | Signal<ReposMergeUpstreamBody>,
+      ) =>
+        httpResource<ReposMergeUpstreamResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/merge-upstream`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

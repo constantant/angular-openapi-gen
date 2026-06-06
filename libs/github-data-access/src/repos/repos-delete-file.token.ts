@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -17,20 +17,24 @@ export const REPOS_DELETE_FILE = new InjectionToken<
     path: string,
     body: ReposDeleteFileBody | Signal<ReposDeleteFileBody>,
   ) => ReturnType<typeof httpResource<ReposDeleteFileResponse>>
->('REPOS_DELETE_FILE', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      path: string,
-      body: ReposDeleteFileBody | Signal<ReposDeleteFileBody>,
-    ) =>
-      httpResource<ReposDeleteFileResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/contents/${path}`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('REPOS_DELETE_FILE');
+
+export function provideReposDeleteFile(): FactoryProvider {
+  return {
+    provide: REPOS_DELETE_FILE,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        path: string,
+        body: ReposDeleteFileBody | Signal<ReposDeleteFileBody>,
+      ) =>
+        httpResource<ReposDeleteFileResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

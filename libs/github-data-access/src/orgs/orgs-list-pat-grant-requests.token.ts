@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const ORGS_LIST_PAT_GRANT_REQUESTS = new InjectionToken<
       | OrgsListPatGrantRequestsParams
       | (() => OrgsListPatGrantRequestsParams | undefined),
   ) => ReturnType<typeof httpResource<OrgsListPatGrantRequestsResponse>>
->('ORGS_LIST_PAT_GRANT_REQUESTS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      params?:
-        | OrgsListPatGrantRequestsParams
-        | (() => OrgsListPatGrantRequestsParams | undefined),
-    ) =>
-      httpResource<OrgsListPatGrantRequestsResponse>(() => ({
-        url: `${base}/orgs/${org}/personal-access-token-requests`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ORGS_LIST_PAT_GRANT_REQUESTS');
+
+export function provideOrgsListPatGrantRequests(): FactoryProvider {
+  return {
+    provide: ORGS_LIST_PAT_GRANT_REQUESTS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | OrgsListPatGrantRequestsParams
+          | (() => OrgsListPatGrantRequestsParams | undefined),
+      ) =>
+        httpResource<OrgsListPatGrantRequestsResponse>(() => ({
+          url: `${base}/orgs/${org}/personal-access-token-requests`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

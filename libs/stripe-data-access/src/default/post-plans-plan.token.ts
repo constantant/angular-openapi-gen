@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const POST_PLANS_PLAN = new InjectionToken<
     plan: string,
     body: PostPlansPlanBody | Signal<PostPlansPlanBody>,
   ) => ReturnType<typeof httpResource<PostPlansPlanResponse>>
->('POST_PLANS_PLAN', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      plan: string,
-      body: PostPlansPlanBody | Signal<PostPlansPlanBody>,
-    ) =>
-      httpResource<PostPlansPlanResponse>(() => ({
-        url: `${base}/v1/plans/${plan}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_PLANS_PLAN');
+
+export function providePostPlansPlan(): FactoryProvider {
+  return {
+    provide: POST_PLANS_PLAN,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        plan: string,
+        body: PostPlansPlanBody | Signal<PostPlansPlanBody>,
+      ) =>
+        httpResource<PostPlansPlanResponse>(() => ({
+          url: `${base}/v1/plans/${plan}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

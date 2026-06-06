@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -12,13 +12,17 @@ export const REPOS_GET_DEPLOY_KEY = new InjectionToken<
     repo: string,
     keyId: string,
   ) => ReturnType<typeof httpResource<ReposGetDeployKeyResponse>>
->('REPOS_GET_DEPLOY_KEY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, keyId: string) =>
-      httpResource<ReposGetDeployKeyResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/keys/${keyId}`,
-      }));
-  },
-});
+>('REPOS_GET_DEPLOY_KEY');
+
+export function provideReposGetDeployKey(): FactoryProvider {
+  return {
+    provide: REPOS_GET_DEPLOY_KEY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, keyId: string) =>
+        httpResource<ReposGetDeployKeyResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/keys/${keyId}`,
+        }));
+    },
+  };
+}

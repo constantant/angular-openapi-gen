@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -19,9 +19,12 @@ export const USERS_CREATE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER =
     ) => ReturnType<
       typeof httpResource<UsersCreatePublicSshKeyForAuthenticatedUserResponse>
     >
-  >('USERS_CREATE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER', {
-    providedIn: 'root',
-    factory: () => {
+  >('USERS_CREATE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER');
+
+export function provideUsersCreatePublicSshKeyForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: USERS_CREATE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (
         body:
@@ -36,4 +39,5 @@ export const USERS_CREATE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER =
           }),
         );
     },
-  });
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -21,9 +21,12 @@ export const POST_TEST_HELPERS_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER =
     ) => ReturnType<
       typeof httpResource<PostTestHelpersTreasuryOutboundTransfersOutboundTransferResponse>
     >
-  >('POST_TEST_HELPERS_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER', {
-    providedIn: 'root',
-    factory: () => {
+  >('POST_TEST_HELPERS_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER');
+
+export function providePostTestHelpersTreasuryOutboundTransfersOutboundTransfer(): FactoryProvider {
+  return {
+    provide: POST_TEST_HELPERS_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER,
+    useFactory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
         outboundTransfer: string,
@@ -39,4 +42,5 @@ export const POST_TEST_HELPERS_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER =
           }),
         );
     },
-  });
+  };
+}

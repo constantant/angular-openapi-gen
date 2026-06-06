@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -18,19 +18,23 @@ export const POST_TEST_HELPERS_ISSUING_AUTHORIZATIONS = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostTestHelpersIssuingAuthorizationsResponse>
   >
->('POST_TEST_HELPERS_ISSUING_AUTHORIZATIONS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      body:
-        | PostTestHelpersIssuingAuthorizationsBody
-        | Signal<PostTestHelpersIssuingAuthorizationsBody>,
-    ) =>
-      httpResource<PostTestHelpersIssuingAuthorizationsResponse>(() => ({
-        url: `${base}/v1/test_helpers/issuing/authorizations`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_TEST_HELPERS_ISSUING_AUTHORIZATIONS');
+
+export function providePostTestHelpersIssuingAuthorizations(): FactoryProvider {
+  return {
+    provide: POST_TEST_HELPERS_ISSUING_AUTHORIZATIONS,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        body:
+          | PostTestHelpersIssuingAuthorizationsBody
+          | Signal<PostTestHelpersIssuingAuthorizationsBody>,
+      ) =>
+        httpResource<PostTestHelpersIssuingAuthorizationsResponse>(() => ({
+          url: `${base}/v1/test_helpers/issuing/authorizations`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

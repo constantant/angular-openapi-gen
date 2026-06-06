@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,19 +18,23 @@ export const USERS_CREATE_GPG_KEY_FOR_AUTHENTICATED_USER = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<UsersCreateGpgKeyForAuthenticatedUserResponse>
   >
->('USERS_CREATE_GPG_KEY_FOR_AUTHENTICATED_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      body:
-        | UsersCreateGpgKeyForAuthenticatedUserBody
-        | Signal<UsersCreateGpgKeyForAuthenticatedUserBody>,
-    ) =>
-      httpResource<UsersCreateGpgKeyForAuthenticatedUserResponse>(() => ({
-        url: `${base}/user/gpg_keys`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('USERS_CREATE_GPG_KEY_FOR_AUTHENTICATED_USER');
+
+export function provideUsersCreateGpgKeyForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: USERS_CREATE_GPG_KEY_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        body:
+          | UsersCreateGpgKeyForAuthenticatedUserBody
+          | Signal<UsersCreateGpgKeyForAuthenticatedUserBody>,
+      ) =>
+        httpResource<UsersCreateGpgKeyForAuthenticatedUserResponse>(() => ({
+          url: `${base}/user/gpg_keys`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

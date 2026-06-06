@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,19 +16,25 @@ export const ORGS_SET_MEMBERSHIP_FOR_USER = new InjectionToken<
     username: string,
     body: OrgsSetMembershipForUserBody | Signal<OrgsSetMembershipForUserBody>,
   ) => ReturnType<typeof httpResource<OrgsSetMembershipForUserResponse>>
->('ORGS_SET_MEMBERSHIP_FOR_USER', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      username: string,
-      body: OrgsSetMembershipForUserBody | Signal<OrgsSetMembershipForUserBody>,
-    ) =>
-      httpResource<OrgsSetMembershipForUserResponse>(() => ({
-        url: `${base}/orgs/${org}/memberships/${username}`,
-        method: 'PUT',
-        body,
-      }));
-  },
-});
+>('ORGS_SET_MEMBERSHIP_FOR_USER');
+
+export function provideOrgsSetMembershipForUser(): FactoryProvider {
+  return {
+    provide: ORGS_SET_MEMBERSHIP_FOR_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        username: string,
+        body:
+          | OrgsSetMembershipForUserBody
+          | Signal<OrgsSetMembershipForUserBody>,
+      ) =>
+        httpResource<OrgsSetMembershipForUserResponse>(() => ({
+          url: `${base}/orgs/${org}/memberships/${username}`,
+          method: 'PUT',
+          body,
+        }));
+    },
+  };
+}

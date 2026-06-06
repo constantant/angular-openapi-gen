@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -18,26 +18,30 @@ export const ISSUES_LIST_DEPENDENCIES_BLOCKING = new InjectionToken<
       | IssuesListDependenciesBlockingParams
       | (() => IssuesListDependenciesBlockingParams | undefined),
   ) => ReturnType<typeof httpResource<IssuesListDependenciesBlockingResponse>>
->('ISSUES_LIST_DEPENDENCIES_BLOCKING', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      issueNumber: string,
-      params?:
-        | IssuesListDependenciesBlockingParams
-        | (() => IssuesListDependenciesBlockingParams | undefined),
-    ) =>
-      httpResource<IssuesListDependenciesBlockingResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/dependencies/blocking`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('ISSUES_LIST_DEPENDENCIES_BLOCKING');
+
+export function provideIssuesListDependenciesBlocking(): FactoryProvider {
+  return {
+    provide: ISSUES_LIST_DEPENDENCIES_BLOCKING,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        issueNumber: string,
+        params?:
+          | IssuesListDependenciesBlockingParams
+          | (() => IssuesListDependenciesBlockingParams | undefined),
+      ) =>
+        httpResource<IssuesListDependenciesBlockingResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/dependencies/blocking`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}

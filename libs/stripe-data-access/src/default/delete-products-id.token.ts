@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const DELETE_PRODUCTS_ID = new InjectionToken<
     id: string,
     body: DeleteProductsIdBody | Signal<DeleteProductsIdBody>,
   ) => ReturnType<typeof httpResource<DeleteProductsIdResponse>>
->('DELETE_PRODUCTS_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      id: string,
-      body: DeleteProductsIdBody | Signal<DeleteProductsIdBody>,
-    ) =>
-      httpResource<DeleteProductsIdResponse>(() => ({
-        url: `${base}/v1/products/${id}`,
-        method: 'DELETE',
-        body,
-      }));
-  },
-});
+>('DELETE_PRODUCTS_ID');
+
+export function provideDeleteProductsId(): FactoryProvider {
+  return {
+    provide: DELETE_PRODUCTS_ID,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        id: string,
+        body: DeleteProductsIdBody | Signal<DeleteProductsIdBody>,
+      ) =>
+        httpResource<DeleteProductsIdResponse>(() => ({
+          url: `${base}/v1/products/${id}`,
+          method: 'DELETE',
+          body,
+        }));
+    },
+  };
+}

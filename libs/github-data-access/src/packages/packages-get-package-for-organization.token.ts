@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -14,13 +14,17 @@ export const PACKAGES_GET_PACKAGE_FOR_ORGANIZATION = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PackagesGetPackageForOrganizationResponse>
   >
->('PACKAGES_GET_PACKAGE_FOR_ORGANIZATION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (packageType: string, packageName: string, org: string) =>
-      httpResource<PackagesGetPackageForOrganizationResponse>(() => ({
-        url: `${base}/orgs/${org}/packages/${packageType}/${packageName}`,
-      }));
-  },
-});
+>('PACKAGES_GET_PACKAGE_FOR_ORGANIZATION');
+
+export function providePackagesGetPackageForOrganization(): FactoryProvider {
+  return {
+    provide: PACKAGES_GET_PACKAGE_FOR_ORGANIZATION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (packageType: string, packageName: string, org: string) =>
+        httpResource<PackagesGetPackageForOrganizationResponse>(() => ({
+          url: `${base}/orgs/${org}/packages/${packageType}/${packageName}`,
+        }));
+    },
+  };
+}

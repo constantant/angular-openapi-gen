@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -13,19 +13,23 @@ export const ISSUES_REMOVE_DEPENDENCY_BLOCKED_BY = new InjectionToken<
     issueNumber: string,
     issueId: string,
   ) => ReturnType<typeof httpResource<IssuesRemoveDependencyBlockedByResponse>>
->('ISSUES_REMOVE_DEPENDENCY_BLOCKED_BY', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      issueNumber: string,
-      issueId: string,
-    ) =>
-      httpResource<IssuesRemoveDependencyBlockedByResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/dependencies/blocked_by/${issueId}`,
-        method: 'DELETE',
-      }));
-  },
-});
+>('ISSUES_REMOVE_DEPENDENCY_BLOCKED_BY');
+
+export function provideIssuesRemoveDependencyBlockedBy(): FactoryProvider {
+  return {
+    provide: ISSUES_REMOVE_DEPENDENCY_BLOCKED_BY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        owner: string,
+        repo: string,
+        issueNumber: string,
+        issueId: string,
+      ) =>
+        httpResource<IssuesRemoveDependencyBlockedByResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/dependencies/blocked_by/${issueId}`,
+          method: 'DELETE',
+        }));
+    },
+  };
+}

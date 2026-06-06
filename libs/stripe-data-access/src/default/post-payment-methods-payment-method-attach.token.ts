@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -19,20 +19,24 @@ export const POST_PAYMENT_METHODS_PAYMENT_METHOD_ATTACH = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<PostPaymentMethodsPaymentMethodAttachResponse>
   >
->('POST_PAYMENT_METHODS_PAYMENT_METHOD_ATTACH', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      paymentMethod: string,
-      body:
-        | PostPaymentMethodsPaymentMethodAttachBody
-        | Signal<PostPaymentMethodsPaymentMethodAttachBody>,
-    ) =>
-      httpResource<PostPaymentMethodsPaymentMethodAttachResponse>(() => ({
-        url: `${base}/v1/payment_methods/${paymentMethod}/attach`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_PAYMENT_METHODS_PAYMENT_METHOD_ATTACH');
+
+export function providePostPaymentMethodsPaymentMethodAttach(): FactoryProvider {
+  return {
+    provide: POST_PAYMENT_METHODS_PAYMENT_METHOD_ATTACH,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        paymentMethod: string,
+        body:
+          | PostPaymentMethodsPaymentMethodAttachBody
+          | Signal<PostPaymentMethodsPaymentMethodAttachBody>,
+      ) =>
+        httpResource<PostPaymentMethodsPaymentMethodAttachResponse>(() => ({
+          url: `${base}/v1/payment_methods/${paymentMethod}/attach`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

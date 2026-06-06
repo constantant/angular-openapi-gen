@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -18,21 +18,25 @@ export const POST_APPLICATION_FEES_FEE_REFUNDS_ID = new InjectionToken<
       | PostApplicationFeesFeeRefundsIdBody
       | Signal<PostApplicationFeesFeeRefundsIdBody>,
   ) => ReturnType<typeof httpResource<PostApplicationFeesFeeRefundsIdResponse>>
->('POST_APPLICATION_FEES_FEE_REFUNDS_ID', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      fee: string,
-      id: string,
-      body:
-        | PostApplicationFeesFeeRefundsIdBody
-        | Signal<PostApplicationFeesFeeRefundsIdBody>,
-    ) =>
-      httpResource<PostApplicationFeesFeeRefundsIdResponse>(() => ({
-        url: `${base}/v1/application_fees/${fee}/refunds/${id}`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_APPLICATION_FEES_FEE_REFUNDS_ID');
+
+export function providePostApplicationFeesFeeRefundsId(): FactoryProvider {
+  return {
+    provide: POST_APPLICATION_FEES_FEE_REFUNDS_ID,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        fee: string,
+        id: string,
+        body:
+          | PostApplicationFeesFeeRefundsIdBody
+          | Signal<PostApplicationFeesFeeRefundsIdBody>,
+      ) =>
+        httpResource<PostApplicationFeesFeeRefundsIdResponse>(() => ({
+          url: `${base}/v1/application_fees/${fee}/refunds/${id}`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

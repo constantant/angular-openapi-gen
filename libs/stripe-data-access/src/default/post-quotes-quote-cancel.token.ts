@@ -1,4 +1,4 @@
-import { InjectionToken, inject, Signal } from '@angular/core';
+import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
@@ -15,18 +15,22 @@ export const POST_QUOTES_QUOTE_CANCEL = new InjectionToken<
     quote: string,
     body: PostQuotesQuoteCancelBody | Signal<PostQuotesQuoteCancelBody>,
   ) => ReturnType<typeof httpResource<PostQuotesQuoteCancelResponse>>
->('POST_QUOTES_QUOTE_CANCEL', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(STRIPE_BASE_URL);
-    return (
-      quote: string,
-      body: PostQuotesQuoteCancelBody | Signal<PostQuotesQuoteCancelBody>,
-    ) =>
-      httpResource<PostQuotesQuoteCancelResponse>(() => ({
-        url: `${base}/v1/quotes/${quote}/cancel`,
-        method: 'POST',
-        body,
-      }));
-  },
-});
+>('POST_QUOTES_QUOTE_CANCEL');
+
+export function providePostQuotesQuoteCancel(): FactoryProvider {
+  return {
+    provide: POST_QUOTES_QUOTE_CANCEL,
+    useFactory: () => {
+      const base = inject(STRIPE_BASE_URL);
+      return (
+        quote: string,
+        body: PostQuotesQuoteCancelBody | Signal<PostQuotesQuoteCancelBody>,
+      ) =>
+        httpResource<PostQuotesQuoteCancelResponse>(() => ({
+          url: `${base}/v1/quotes/${quote}/cancel`,
+          method: 'POST',
+          body,
+        }));
+    },
+  };
+}

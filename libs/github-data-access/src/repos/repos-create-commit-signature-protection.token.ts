@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -14,14 +14,18 @@ export const REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION = new InjectionToken<
   ) => ReturnType<
     typeof httpResource<ReposCreateCommitSignatureProtectionResponse>
   >
->('REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, branch: string) =>
-      httpResource<ReposCreateCommitSignatureProtectionResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_signatures`,
-        method: 'POST',
-      }));
-  },
-});
+>('REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION');
+
+export function provideReposCreateCommitSignatureProtection(): FactoryProvider {
+  return {
+    provide: REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (owner: string, repo: string, branch: string) =>
+        httpResource<ReposCreateCommitSignatureProtectionResponse>(() => ({
+          url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_signatures`,
+          method: 'POST',
+        }));
+    },
+  };
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, inject } from '@angular/core';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -16,24 +16,28 @@ export const COPILOT_LIST_COPILOT_SEATS = new InjectionToken<
       | CopilotListCopilotSeatsParams
       | (() => CopilotListCopilotSeatsParams | undefined),
   ) => ReturnType<typeof httpResource<CopilotListCopilotSeatsResponse>>
->('COPILOT_LIST_COPILOT_SEATS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(GITHUB_BASE_URL);
-    return (
-      org: string,
-      params?:
-        | CopilotListCopilotSeatsParams
-        | (() => CopilotListCopilotSeatsParams | undefined),
-    ) =>
-      httpResource<CopilotListCopilotSeatsResponse>(() => ({
-        url: `${base}/orgs/${org}/copilot/billing/seats`,
-        params: (typeof params === 'function'
-          ? params()
-          : params) as unknown as Record<
-          string,
-          string | number | boolean | readonly (string | number | boolean)[]
-        >,
-      }));
-  },
-});
+>('COPILOT_LIST_COPILOT_SEATS');
+
+export function provideCopilotListCopilotSeats(): FactoryProvider {
+  return {
+    provide: COPILOT_LIST_COPILOT_SEATS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | CopilotListCopilotSeatsParams
+          | (() => CopilotListCopilotSeatsParams | undefined),
+      ) =>
+        httpResource<CopilotListCopilotSeatsResponse>(() => ({
+          url: `${base}/orgs/${org}/copilot/billing/seats`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  };
+}
