@@ -6,10 +6,9 @@ vi.mock('@apidevtools/swagger-parser', () => ({
   default: { dereference: vi.fn() },
 }));
 
-vi.mock('openapi-typescript', () => ({
-  default: vi.fn().mockResolvedValue('export type paths = {};\n'),
-  COMMENT_HEADER: '',
-}));
+vi.mock('openapi-typescript/dist/index.cjs', () =>
+  vi.fn().mockResolvedValue('export type paths = {};\n')
+);
 
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { apiResourceGenerator } from './generator';
