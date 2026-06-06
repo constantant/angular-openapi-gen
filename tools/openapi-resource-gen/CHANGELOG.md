@@ -1,3 +1,14 @@
+## 1.1.1 (2026-06-06)
+
+### 🩹 Fixes
+
+- deduplicate path params when defined at both path-item and operation level ([0bbd737](https://github.com/constantant/angular-openapi-gen/commit/0bbd737))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.1.0 (2026-06-06)
 
 ### 🚀 Features
