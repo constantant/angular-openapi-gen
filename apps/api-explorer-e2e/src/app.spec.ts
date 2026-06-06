@@ -16,8 +16,8 @@ test.describe('Navigation', () => {
   test('active link updates on navigation', async ({ page }) => {
     const nav = page.locator('mat-sidenav');
     await nav.getByRole('link', { name: 'Repos' }).click();
-    await expect(nav.getByRole('link', { name: 'Repos' })).toHaveClass('active');
-    await expect(nav.getByRole('link', { name: 'Dashboard' })).not.toHaveClass('active');
+    await expect(nav.getByRole('link', { name: 'Repos' })).toHaveClass(/\bactive\b/);
+    await expect(nav.getByRole('link', { name: 'Dashboard' })).not.toHaveClass(/\bactive\b/);
   });
 });
 
