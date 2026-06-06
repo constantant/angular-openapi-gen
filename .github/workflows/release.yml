@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Dry run — skip git push and npm publish'
+        type: boolean
+        default: false
+      firstRelease:
+        description: 'First release — no previous tag to diff against'
+        type: boolean
+        default: false
+
+# contents: write  → create GitHub releases, push version commit + tag
+# id-token: write  → npm provenance attestation (links package to this run)
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0         # full history so nx release can read all commits
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: https://registry.npmjs.org   # writes .npmrc with NODE_AUTH_TOKEN
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Determines version bump from conventional commits since the last tag,
+      # updates tools/openapi-resource-gen/package.json, writes CHANGELOG.md,
+      # creates a git commit + tag, and opens a GitHub Release (draft: false).
+      - name: Bump version and generate changelog
+        run: |
+          FLAGS="--skip-publish --yes"
+          [[ "${{ inputs.firstRelease }}" == "true" ]] && FLAGS="$FLAGS --first-release"
+          npx nx release $FLAGS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Dry-run stops here — all subsequent steps touch the remote or npm registry.
+      - name: Push version commit and tag
+        if: ${{ !inputs.dryRun }}
+        run: git push --follow-tags origin master
+
+      # Build after version bump so the correct version lands in dist/package.json.
+      - name: Build
+        run: npx nx build openapi-resource-gen
+
+      - name: Publish to npm
+        if: ${{ !inputs.dryRun }}
+        working-directory: dist/tools/openapi-resource-gen
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
