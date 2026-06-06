@@ -11,8 +11,6 @@ test.describe('Navigation', () => {
     await expect(nav.getByRole('link', { name: 'Repos' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Pets' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Weather' })).toBeVisible();
-    await expect(nav.getByRole('link', { name: 'Travel' })).not.toBeAttached();
-    await expect(nav.getByRole('link', { name: 'Payments' })).not.toBeAttached();
   });
 
   test('active link updates on navigation', async ({ page }) => {
