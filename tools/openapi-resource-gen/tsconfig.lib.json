@@ -3,5 +3,16 @@
   "compilerOptions": {
     "outDir": "../../dist/tools/openapi-resource-gen"
   },
-  "exclude": ["**/*.spec.ts"]
+  "exclude": [
+    "**/*.spec.ts"
+  ],
+  "angularCompilerOptions": {
+    "extendedDiagnostics": {
+      "checks": {
+        "nullishCoalescingNotNullable": "suppress",
+        "optionalChainNotNullable": "suppress"
+      }
+    },
+    "strictTemplates": false
+  }
 }

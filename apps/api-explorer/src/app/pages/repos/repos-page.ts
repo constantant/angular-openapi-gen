@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   USERS_GET_BY_USERNAME,
   REPOS_LIST_FOR_USER,
@@ -7,6 +7,7 @@ import {
 @Component({
   selector: 'app-repos-page',
   imports: [],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './repos-page.html',
 })
 export class ReposPageComponent {

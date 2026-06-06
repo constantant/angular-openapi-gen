@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FIND_PETS_BY_STATUS, FindPetsByStatusParams } from '@angular-openapi-gen/petstore-data-access';
 
 type PetStatus = FindPetsByStatusParams['status'];
@@ -6,6 +6,7 @@ type PetStatus = FindPetsByStatusParams['status'];
 @Component({
   selector: 'app-pets-page',
   imports: [],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pets-page.html',
 })
 export class PetsPageComponent {

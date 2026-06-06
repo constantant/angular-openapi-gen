@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   USERS_GET_BY_USERNAME,
   REPOS_LIST_FOR_USER,
@@ -9,6 +9,7 @@ import { GET_V1_FORECAST } from '@angular-openapi-gen/weather-data-access';
 @Component({
   selector: 'app-dashboard',
   imports: [],
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './dashboard.html',
 })
 export class DashboardComponent {
