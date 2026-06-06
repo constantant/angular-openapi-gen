@@ -76,13 +76,8 @@ jobs:
             fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
           "
 
-      # Trusted publishing: manually exchange the GitHub OIDC token for a
-      # temporary npm token via npmjs.com's OIDC endpoint, then publish.
-      # npm 10.x does not auto-trigger the OIDC flow; the exchange must be
-      # done explicitly. Requires a Trusted Publisher configured on npmjs.com.
       # Publish using a granular npm token stored as a GitHub secret.
-      # --provenance adds a Sigstore attestation (supply-chain transparency)
-      # without changing the auth flow.
+      # --provenance adds a Sigstore attestation (supply-chain transparency).
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
         working-directory: dist/tools/openapi-resource-gen
