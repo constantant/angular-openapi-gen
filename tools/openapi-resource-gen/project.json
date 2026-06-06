@@ -19,6 +19,16 @@
             "output": "."
           },
           {
+            "input": "tools/openapi-resource-gen",
+            "glob": "package.json",
+            "output": "."
+          },
+          {
+            "input": "tools/openapi-resource-gen",
+            "glob": "README.md",
+            "output": "."
+          },
+          {
             "input": "tools/openapi-resource-gen/src",
             "glob": "**/schema.json",
             "output": "./src"

@@ -3,7 +3,11 @@ import { OpenAPIV3 } from 'openapi-types';
 import type { EndpointModel } from './endpoint-model';
 
 const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
-  'get', 'post', 'put', 'patch', 'delete',
+  OpenAPIV3.HttpMethods.GET,
+  OpenAPIV3.HttpMethods.POST,
+  OpenAPIV3.HttpMethods.PUT,
+  OpenAPIV3.HttpMethods.PATCH,
+  OpenAPIV3.HttpMethods.DELETE,
 ];
 
 export function toScreamingSnake(str: string): string {

@@ -45,5 +45,14 @@
       "unitTestRunner": "vitest-angular"
     }
   },
+  "release": {
+    "projects": ["openapi-resource-gen"],
+    "version": {
+      "conventionalCommits": true
+    },
+    "changelog": {
+      "projectChangelogs": true
+    }
+  },
   "nxCloudId": "6a234f6234710a227b86fb90"
 }

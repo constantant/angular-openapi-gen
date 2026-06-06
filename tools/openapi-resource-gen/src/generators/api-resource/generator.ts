@@ -4,9 +4,9 @@ import {
   generateFiles,
   joinPathFragments,
 } from '@nx/devkit';
-import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as jsYaml from 'js-yaml';
+import openapiTS from 'openapi-typescript';
 import * as path from 'path';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
@@ -77,13 +77,10 @@ export async function apiResourceGenerator(
   try {
     fs.writeFileSync(tmpClean, JSON.stringify(cleanedParsed));
 
-    // 2. Emit schema.d.ts via openapi-typescript, using the cleaned spec
-    //    (not the dereferenced result — dereferenced Stripe has circular refs
-    //    that can't be JSON-serialised; openapi-typescript resolves $refs itself).
-    const schemaDts = execSync(`npx openapi-typescript "${tmpClean}"`, {
-      encoding: 'utf-8',
-      maxBuffer: 50 * 1024 * 1024,
-    });
+    // 2. Emit schema.d.ts via openapi-typescript programmatic API, using the
+    //    cleaned spec (not the dereferenced result — dereferenced Stripe has
+    //    circular refs; openapi-typescript resolves $refs itself).
+    const schemaDts = await openapiTS(tmpClean);
     tree.write(joinPathFragments(outputDir, 'schema.d.ts'), schemaDts);
 
     // 3. Dereference for endpoint extraction (may produce circular objects —
