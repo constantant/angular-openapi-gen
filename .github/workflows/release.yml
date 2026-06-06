@@ -81,6 +81,19 @@ jobs:
       # --provenance triggers npm's OIDC token exchange with the trusted publisher.
       # NODE_AUTH_TOKEN must be absent: setup-node sets it to GITHUB_TOKEN, and
       # both the .npmrc _authToken entry and the env var block OIDC detection.
+      - name: Debug npm trusted publishing environment
+        if: ${{ !inputs.dryRun }}
+        run: |
+          echo "npm version: $(npm --version)"
+          echo "node version: $(node --version)"
+          echo "OIDC URL set: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && echo YES || echo NO)"
+          echo "npmrc content:"
+          cat "${NPM_CONFIG_USERCONFIG}" || echo "(empty)"
+          echo "npm config registry:"
+          npm config get registry
+        env:
+          NODE_AUTH_TOKEN: ""
+
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
         working-directory: dist/tools/openapi-resource-gen
@@ -89,3 +102,7 @@ jobs:
           npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ""
+
+      - name: Show npm debug log on failure
+        if: failure()
+        run: cat ~/.npm/_logs/*.log 2>/dev/null | tail -100 || echo "no npm debug log"
