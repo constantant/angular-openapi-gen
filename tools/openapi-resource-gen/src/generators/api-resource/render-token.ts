@@ -16,15 +16,16 @@ function toCamelCase(str: string): string {
 }
 
 function headerEntryForScheme(s: SecuritySchemeModel, varName: string): string {
+  const val = `${varName}!()`;
   switch (s.kind) {
     case 'bearer':
     case 'oauth2':
     case 'openIdConnect':
-      return `{ Authorization: \`Bearer \${${varName}}\` }`;
+      return `{ Authorization: \`Bearer \${${val}}\` }`;
     case 'basic':
-      return `{ Authorization: \`Basic \${${varName}}\` }`;
+      return `{ Authorization: \`Basic \${${val}}\` }`;
     case 'apiKey-header':
-      return `{ ${JSON.stringify(s.apiKeyParamName ?? 'X-Api-Key')}: ${varName} }`;
+      return `{ ${JSON.stringify(s.apiKeyParamName ?? 'X-Api-Key')}: ${val} }`;
     default:
       return '{}';
   }
@@ -32,9 +33,9 @@ function headerEntryForScheme(s: SecuritySchemeModel, varName: string): string {
 
 export function renderSecurityTokenFile(scheme: SecuritySchemeModel): string {
   return [
-    `import { InjectionToken } from '@angular/core';`,
+    `import { InjectionToken, Signal } from '@angular/core';`,
     ``,
-    `export const ${scheme.tokenName} = new InjectionToken<string>('${scheme.tokenName}');`,
+    `export const ${scheme.tokenName} = new InjectionToken<Signal<string | null>>('${scheme.tokenName}');`,
     ``,
   ].join('\n');
 }
@@ -167,7 +168,7 @@ function appendResourceOptions(
     const authQueryParts = querySchemes
       .map(
         (s) =>
-          `...(${toCamelCase(s.schemeName)} != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: ${toCamelCase(s.schemeName)} } : {})`
+          `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: ${toCamelCase(s.schemeName)}!() } : {})`
       )
       .join(', ');
 
@@ -194,7 +195,7 @@ function appendResourceOptions(
     lines.push(`${indent}headers: {`);
     for (const s of headerSchemes) {
       const varName = toCamelCase(s.schemeName);
-      lines.push(`${indent}  ...(${varName} != null ? ${headerEntryForScheme(s, varName)} : {}),`);
+      lines.push(`${indent}  ...(${varName}?.() != null ? ${headerEntryForScheme(s, varName)} : {}),`);
     }
     lines.push(`${indent}},`);
   }

@@ -2,6 +2,7 @@ import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type UploadFileBody = NonNullable<
   paths['/pet/{petId}/uploadImage']['post']['requestBody']
@@ -22,11 +23,17 @@ export function provideUploadFile(): FactoryProvider {
     provide: UPLOAD_FILE,
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
+      const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
       return (petId: string, body: UploadFileBody | Signal<UploadFileBody>) =>
         httpResource<UploadFileResponse>(() => ({
           url: `${base}/pet/${petId}/uploadImage`,
           method: 'POST',
           body,
+          headers: {
+            ...(petstoreAuth?.() != null
+              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              : {}),
+          },
         }));
     },
   };

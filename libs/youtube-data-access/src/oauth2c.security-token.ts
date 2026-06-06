@@ -1,3 +1,3 @@
-import { InjectionToken } from '@angular/core';
+import { InjectionToken, Signal } from '@angular/core';
 
-export const OAUTH2C = new InjectionToken<string>('OAUTH2C');
+export const OAUTH2C = new InjectionToken<Signal<string | null>>('OAUTH2C');

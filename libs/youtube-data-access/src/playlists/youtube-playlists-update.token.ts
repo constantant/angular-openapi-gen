@@ -33,8 +33,12 @@ export function provideYoutubePlaylistsUpdate(): FactoryProvider {
           method: 'PUT',
           body,
           headers: {
-            ...(oauth2 != null ? { Authorization: `Bearer ${oauth2}` } : {}),
-            ...(oauth2c != null ? { Authorization: `Bearer ${oauth2c}` } : {}),
+            ...(oauth2?.() != null
+              ? { Authorization: `Bearer ${oauth2!()}` }
+              : {}),
+            ...(oauth2c?.() != null
+              ? { Authorization: `Bearer ${oauth2c!()}` }
+              : {}),
           },
         }));
     },

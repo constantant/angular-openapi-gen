@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type UpdatePetWithFormResponse =
   paths['/pet/{petId}']['post']['responses']['200']['content']['application/json'];
@@ -15,10 +16,16 @@ export function provideUpdatePetWithForm(): FactoryProvider {
     provide: UPDATE_PET_WITH_FORM,
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
+      const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
       return (petId: string) =>
         httpResource<UpdatePetWithFormResponse>(() => ({
           url: `${base}/pet/${petId}`,
           method: 'POST',
+          headers: {
+            ...(petstoreAuth?.() != null
+              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              : {}),
+          },
         }));
     },
   };

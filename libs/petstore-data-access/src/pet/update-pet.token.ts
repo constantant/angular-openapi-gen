@@ -2,6 +2,7 @@ import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type UpdatePetBody = NonNullable<
   paths['/pet']['put']['requestBody']
@@ -21,11 +22,17 @@ export function provideUpdatePet(): FactoryProvider {
     provide: UPDATE_PET,
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
+      const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
       return (body: UpdatePetBody | Signal<UpdatePetBody>) =>
         httpResource<UpdatePetResponse>(() => ({
           url: `${base}/pet`,
           method: 'PUT',
           body,
+          headers: {
+            ...(petstoreAuth?.() != null
+              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              : {}),
+          },
         }));
     },
   };

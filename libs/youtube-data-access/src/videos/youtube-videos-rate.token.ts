@@ -21,8 +21,12 @@ export function provideYoutubeVideosRate(): FactoryProvider {
           url: `${base}/youtube/v3/videos/rate`,
           method: 'POST',
           headers: {
-            ...(oauth2 != null ? { Authorization: `Bearer ${oauth2}` } : {}),
-            ...(oauth2c != null ? { Authorization: `Bearer ${oauth2c}` } : {}),
+            ...(oauth2?.() != null
+              ? { Authorization: `Bearer ${oauth2!()}` }
+              : {}),
+            ...(oauth2c?.() != null
+              ? { Authorization: `Bearer ${oauth2c!()}` }
+              : {}),
           },
         }));
     },

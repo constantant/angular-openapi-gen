@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type FindPetsByStatusParams =
   paths['/pet/findByStatus']['get']['parameters']['query'];
@@ -22,6 +23,7 @@ export function provideFindPetsByStatus(): FactoryProvider {
     provide: FIND_PETS_BY_STATUS,
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
+      const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
       return (
         params?:
           | FindPetsByStatusParams
@@ -35,6 +37,11 @@ export function provideFindPetsByStatus(): FactoryProvider {
             string,
             string | number | boolean | readonly (string | number | boolean)[]
           >,
+          headers: {
+            ...(petstoreAuth?.() != null
+              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              : {}),
+          },
         }));
     },
   };
