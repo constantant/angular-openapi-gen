@@ -55,10 +55,16 @@ export function buildEndpoints(
         namingConvention === 'kebab' ? toKebabCase(rawId) : rawId;
       const tokenName = toScreamingSnake(rawId);
 
-      const allParams = [
+      // Operation-level parameters override path-level ones with the same name+in.
+      // Merge operation params last so they win, then deduplicate by name.
+      const paramMap = new Map<string, OpenAPIV3.ParameterObject>();
+      for (const p of [
         ...((pathItem.parameters ?? []) as OpenAPIV3.ParameterObject[]),
         ...((operation.parameters ?? []) as OpenAPIV3.ParameterObject[]),
-      ];
+      ]) {
+        paramMap.set(`${p.in}:${p.name}`, p);
+      }
+      const allParams = [...paramMap.values()];
 
       const pathParams = allParams
         .filter((p) => p.in === 'path')
