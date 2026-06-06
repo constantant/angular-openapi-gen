@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI specs via `httpResource`.
 
-> **Implementation status**: The workspace is currently a scaffold. `apps/api-explorer` is a bare Angular 22 app. The `libs/`, `tools/`, specs, routes, and Angular Material UI described below are **planned** — build them using this file as the spec.
+> **Implementation status**: Core generator is built and published to npm as `@constantant/openapi-resource-gen` (v1.1.2). All five data-access libs (`github`, `petstore`, `travel`, `stripe`, `weather`) are generated. `apps/api-explorer` is wired up with routes and Angular Material UI. The demo app, bundle inspector, and full Angular Material polish described below may still be in progress.
 
 ---
 

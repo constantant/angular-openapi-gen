@@ -1,8 +1,22 @@
 # openapi-resource-gen
 
+[![npm](https://img.shields.io/npm/v/@constantant/openapi-resource-gen)](https://www.npmjs.com/package/@constantant/openapi-resource-gen)
+
 Nx generator that reads an OpenAPI 3.x spec and emits one `InjectionToken` per
 endpoint, each in its own `.ts` file. The result is a tree-shakeable Angular
 data-access library: only tokens that are actually injected end up in the bundle.
+
+## Installation
+
+```bash
+npm install -D @constantant/openapi-resource-gen
+```
+
+Then register it as a local plugin in your `nx.json` or use it directly:
+
+```bash
+npx nx g @constantant/openapi-resource-gen:api-resource --specPath=specs/myapi.yaml --outputDir=libs/myapi-data-access/src
+```
 
 ## Concept
 
@@ -41,6 +55,16 @@ base URL overrides.
 ---
 
 ## Running the generator
+
+If installed as a dev dependency (`@constantant/openapi-resource-gen`):
+
+```bash
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=specs/petstore.yaml \
+  --outputDir=libs/petstore-data-access/src
+```
+
+In this monorepo (local workspace plugin registered via npm workspaces):
 
 ```bash
 npx nx g openapi-resource-gen:api-resource \
