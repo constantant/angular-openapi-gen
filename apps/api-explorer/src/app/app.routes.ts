@@ -18,15 +18,8 @@ export const appRoutes: Route[] = [
       import('./pages/pets/pets-page').then((m) => m.PetsPageComponent),
   },
   {
-    path: 'travel',
+    path: 'weather',
     loadComponent: () =>
-      import('./pages/travel/travel-page').then((m) => m.TravelPageComponent),
-  },
-  {
-    path: 'payments',
-    loadComponent: () =>
-      import('./pages/payments/payments-page').then(
-        (m) => m.PaymentsPageComponent
-      ),
+      import('./pages/weather/weather-page').then((m) => m.WeatherPageComponent),
   },
 ];

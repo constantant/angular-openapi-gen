@@ -1,0 +1,11 @@
+<div class="page">
+  <h1>Weather — Amsterdam</h1>
+
+  @if (forecast.isLoading()) {
+    <p class="loading">Loading forecast…</p>
+  } @else if (forecast.error()) {
+    <p class="error">Failed to load forecast</p>
+  } @else {
+    <pre>{{ forecast.value() | json }}</pre>
+  }
+</div>

@@ -20,21 +20,10 @@
     </div>
 
     <div class="card">
-      <h2>Travel</h2>
-      @if (trips.isLoading()) { <p class="loading">Loading…</p> }
-      @else if (trips.error()) { <p class="error">API error</p> }
-      @else { <p>{{ ($any(trips.value()) ?? []).length }} trips</p> }
-
-      @if (bookings.isLoading()) { <p class="loading">Loading…</p> }
-      @else if (bookings.error()) { <p class="error">API error</p> }
-      @else { <p>{{ ($any(bookings.value()) ?? []).length }} bookings</p> }
-    </div>
-
-    <div class="card">
-      <h2>Stripe</h2>
-      @if (invoices.isLoading()) { <p class="loading">Loading…</p> }
-      @else if (invoices.error()) { <p class="error">API error (auth required)</p> }
-      @else { <p>{{ $any(invoices.value())?.data?.length ?? 0 }} invoices</p> }
+      <h2>Weather</h2>
+      @if (forecast.isLoading()) { <p class="loading">Loading…</p> }
+      @else if (forecast.error()) { <p class="error">API error</p> }
+      @else { <p>{{ $any(forecast.value())?.current?.temperature_2m }}°C · Amsterdam</p> }
     </div>
   </div>
 </div>

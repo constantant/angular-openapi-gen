@@ -15,14 +15,9 @@ import {
   provideFindPetsByStatus,
 } from '@angular-openapi-gen/petstore-data-access';
 import {
-  TRAVEL_BASE_URL,
-  provideGetTrips,
-  provideGetBookings,
-} from '@angular-openapi-gen/travel-data-access';
-import {
-  STRIPE_BASE_URL,
-  provideGetInvoices,
-} from '@angular-openapi-gen/stripe-data-access';
+  WEATHER_BASE_URL,
+  provideGetV1Forecast,
+} from '@angular-openapi-gen/weather-data-access';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -31,13 +26,10 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     { provide: GITHUB_BASE_URL, useValue: 'https://api.github.com' },
     { provide: PETSTORE_BASE_URL, useValue: 'https://petstore3.swagger.io/api/v3' },
-    { provide: TRAVEL_BASE_URL, useValue: 'https://try.microcks.io/rest/Train+Travel+API/1.0.0' },
-    { provide: STRIPE_BASE_URL, useValue: 'https://api.stripe.com' },
+    { provide: WEATHER_BASE_URL, useValue: 'https://api.open-meteo.com' },
     provideUsersGetByUsername(),
     provideReposListForUser(),
     provideFindPetsByStatus(),
-    provideGetTrips(),
-    provideGetBookings(),
-    provideGetInvoices(),
+    provideGetV1Forecast(),
   ],
 };

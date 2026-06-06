@@ -21,11 +21,8 @@
       "@angular-openapi-gen/petstore-data-access": [
         "libs/petstore-data-access/src/index.ts"
       ],
-      "@angular-openapi-gen/travel-data-access": [
-        "libs/travel-data-access/src/index.ts"
-      ],
-      "@angular-openapi-gen/stripe-data-access": [
-        "libs/stripe-data-access/src/index.ts"
+      "@angular-openapi-gen/weather-data-access": [
+        "libs/weather-data-access/src/index.ts"
       ]
     }
   },
