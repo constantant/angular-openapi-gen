@@ -31,23 +31,26 @@ export function provideYoutubeSearchList(): FactoryProvider {
           | YoutubeSearchListParams
           | (() => YoutubeSearchListParams | undefined),
       ) =>
-        httpResource<YoutubeSearchListResponse>(() => ({
-          url: `${base}/youtube/v3/search`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-          headers: {
-            ...(oauth2?.() != null
-              ? { Authorization: `Bearer ${oauth2()}` }
-              : {}),
-            ...(oauth2c?.() != null
-              ? { Authorization: `Bearer ${oauth2c()}` }
-              : {}),
-          },
-        }));
+        httpResource<YoutubeSearchListResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/youtube/v3/search`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+            headers: {
+              ...(oauth2?.() != null
+                ? { Authorization: `Bearer ${oauth2()}` }
+                : {}),
+              ...(oauth2c?.() != null
+                ? { Authorization: `Bearer ${oauth2c()}` }
+                : {}),
+            },
+          };
+        });
     },
   };
 }

@@ -15,7 +15,7 @@
         />
         <mat-hint>
           @if (apiKey()) {
-            Connected — requests include <code>Authorization: Bearer &lt;key&gt;</code>
+            Connected — requests include <code>?key=&lt;key&gt;</code>
           } @else {
             Get a free key at
             <a href="https://console.developers.google.com/apis/api/youtube.googleapis.com/credentials" target="_blank" rel="noopener">
@@ -51,6 +51,8 @@
 
   @if (!apiKey()) {
     <p class="mat-body-2 hint">Enter an API key above to start searching.</p>
+  } @else if (!query()) {
+    <p class="mat-body-2 hint">Type a query and press Search.</p>
   } @else if (videos().length) {
     <div class="results-header">
       <span class="mat-body-2">About {{ totalResults() | number }} results for "{{ query() }}"</span>

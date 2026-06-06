@@ -34,12 +34,12 @@ export class YoutubePageComponent {
   private searchYoutube = inject(YOUTUBE_SEARCH_LIST);
   readonly apiKey = inject(YOUTUBE_API_KEY);
 
-  readonly query = signal('Angular');
+  readonly query = signal('');
   readonly inputValue = signal('Angular');
 
   readonly results = this.searchYoutube(() =>
     this.apiKey() && this.query()
-      ? { q: this.query(), part: ['snippet'], maxResults: 12, type: ['video'] }
+      ? { q: this.query(), part: ['snippet'], maxResults: 12, type: ['video'], key: this.apiKey()! }
       : undefined
   );
 

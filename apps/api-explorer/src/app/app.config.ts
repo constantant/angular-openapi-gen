@@ -2,7 +2,6 @@ import {
   ApplicationConfig,
   InjectionToken,
   WritableSignal,
-  inject,
   provideBrowserGlobalErrorListeners,
   signal,
 } from '@angular/core';
@@ -25,8 +24,6 @@ import {
 } from '@angular-openapi-gen/weather-data-access';
 import {
   YOUTUBE_BASE_URL,
-  OAUTH2,
-  OAUTH2C,
   provideYoutubeSearchList,
 } from '@angular-openapi-gen/youtube-data-access';
 
@@ -45,8 +42,6 @@ export const appConfig: ApplicationConfig = {
     { provide: PETSTORE_BASE_URL, useValue: 'https://petstore3.swagger.io/api/v3' },
     { provide: WEATHER_BASE_URL, useValue: 'https://api.open-meteo.com' },
     { provide: YOUTUBE_BASE_URL, useValue: 'https://youtube.googleapis.com' },
-    { provide: OAUTH2,  useFactory: () => inject(YOUTUBE_API_KEY) },
-    { provide: OAUTH2C, useFactory: () => inject(YOUTUBE_API_KEY) },
     provideUsersGetByUsername(),
     provideReposListForUser(),
     provideFindPetsByStatus(),

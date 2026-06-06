@@ -31,23 +31,26 @@ export function provideYoutubePlaylistItemsList(): FactoryProvider {
           | YoutubePlaylistItemsListParams
           | (() => YoutubePlaylistItemsListParams | undefined),
       ) =>
-        httpResource<YoutubePlaylistItemsListResponse>(() => ({
-          url: `${base}/youtube/v3/playlistItems`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-          headers: {
-            ...(oauth2?.() != null
-              ? { Authorization: `Bearer ${oauth2()}` }
-              : {}),
-            ...(oauth2c?.() != null
-              ? { Authorization: `Bearer ${oauth2c()}` }
-              : {}),
-          },
-        }));
+        httpResource<YoutubePlaylistItemsListResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/youtube/v3/playlistItems`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+            headers: {
+              ...(oauth2?.() != null
+                ? { Authorization: `Bearer ${oauth2()}` }
+                : {}),
+              ...(oauth2c?.() != null
+                ? { Authorization: `Bearer ${oauth2c()}` }
+                : {}),
+            },
+          };
+        });
     },
   };
 }
