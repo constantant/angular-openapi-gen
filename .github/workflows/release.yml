@@ -75,10 +75,16 @@ jobs:
           "
 
       # Publish using a granular npm token stored as a GitHub secret.
-      # --provenance adds a Sigstore attestation (supply-chain transparency).
+      # Skips gracefully if the version is already on the registry (idempotent).
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
         working-directory: dist/tools/openapi-resource-gen
-        run: npm publish --access public
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "@constantant/openapi-resource-gen@${VERSION}" version 2>/dev/null | grep -q .; then
+            echo "Version ${VERSION} already published — nothing to do."
+          else
+            npm publish --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
