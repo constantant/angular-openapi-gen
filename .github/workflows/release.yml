@@ -78,7 +78,11 @@ jobs:
 
       # Trusted publishing: npm CLI exchanges the GitHub OIDC token for publish
       # credentials automatically. No NPM_TOKEN secret required.
+      # NODE_AUTH_TOKEN is unset so npm falls through to OIDC detection instead
+      # of trying to authenticate with the GITHUB_TOKEN injected by setup-node.
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
         working-directory: dist/tools/openapi-resource-gen
         run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ""
