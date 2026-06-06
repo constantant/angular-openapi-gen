@@ -1,30 +1,38 @@
 <div class="page">
-  <h1>Repositories</h1>
+  <h1 class="mat-headline-medium">Repositories</h1>
 
   @if (user.isLoading()) {
-    <p class="loading">Loading user…</p>
+    <mat-progress-bar mode="indeterminate" />
   } @else if (user.error()) {
-    <p class="error">Failed to load user</p>
+    <p class="mat-body-2 error">Failed to load user</p>
   } @else {
-    <div class="profile">
-      <strong>{{ $any(user.value())?.login }}</strong>
-      <span>{{ $any(user.value())?.public_repos }} public repos</span>
-    </div>
+    <mat-card class="profile-card">
+      <mat-card-content>
+        <span class="mat-subtitle-1">{{ $any(user.value())?.login }}</span>
+        <span class="mat-body-2"> · {{ $any(user.value())?.public_repos }} public repos</span>
+      </mat-card-content>
+    </mat-card>
   }
 
   @if (repos.isLoading()) {
-    <p class="loading">Loading repos…</p>
+    <mat-progress-bar mode="indeterminate" />
   } @else if (repos.error()) {
-    <p class="error">Failed to load repos</p>
+    <p class="mat-body-2 error">Failed to load repos</p>
   } @else {
-    <ul class="repo-list">
+    <mat-list>
       @for (repo of $any(repos.value()) ?? []; track repo.id) {
-        <li class="repo-item">
-          <strong>{{ repo.name }}</strong>
-          <span class="stars">★ {{ repo.stargazers_count }}</span>
-          @if (repo.description) { <p>{{ repo.description }}</p> }
-        </li>
+        <mat-list-item>
+          <span matListItemTitle>{{ repo.name }}</span>
+          @if (repo.description) {
+            <span matListItemLine>{{ repo.description }}</span>
+          }
+          <span matListItemMeta>
+            <mat-chip-set>
+              <mat-chip>★ {{ repo.stargazers_count }}</mat-chip>
+            </mat-chip-set>
+          </span>
+        </mat-list-item>
       }
-    </ul>
+    </mat-list>
   }
 </div>

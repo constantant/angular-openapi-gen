@@ -1,4 +1,6 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import {
   USERS_GET_BY_USERNAME,
   REPOS_LIST_FOR_USER,
@@ -8,7 +10,7 @@ import { GET_V1_FORECAST } from '@angular-openapi-gen/weather-data-access';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [MatCardModule, MatProgressBarModule],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './dashboard.html',
 })

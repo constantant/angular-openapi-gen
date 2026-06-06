@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { appRoutes } from './app.routes';
 import {
   GITHUB_BASE_URL,
@@ -22,6 +23,7 @@ import {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    provideAnimationsAsync(),
     provideRouter(appRoutes),
     provideHttpClient(withFetch()),
     { provide: GITHUB_BASE_URL, useValue: 'https://api.github.com' },

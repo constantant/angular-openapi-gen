@@ -1,11 +1,15 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FIND_PETS_BY_STATUS, FindPetsByStatusParams } from '@angular-openapi-gen/petstore-data-access';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatBadgeModule } from '@angular/material/badge';
 
 type PetStatus = FindPetsByStatusParams['status'];
 
 @Component({
   selector: 'app-pets-page',
-  imports: [],
+  imports: [MatChipsModule, MatListModule, MatProgressBarModule, MatBadgeModule],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './pets-page.html',
 })

@@ -3,10 +3,14 @@ import {
   USERS_GET_BY_USERNAME,
   REPOS_LIST_FOR_USER,
 } from '@angular-openapi-gen/github-data-access';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatChipsModule } from '@angular/material/chips';
 
 @Component({
   selector: 'app-repos-page',
-  imports: [],
+  imports: [MatCardModule, MatListModule, MatProgressBarModule, MatChipsModule],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './repos-page.html',
 })

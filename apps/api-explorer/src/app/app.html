@@ -1,12 +1,15 @@
-<div class="shell">
-  <nav class="sidenav">
-    <span class="brand">API Explorer</span>
-    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    <a routerLink="/repos" routerLinkActive="active">Repos</a>
-    <a routerLink="/pets" routerLinkActive="active">Pets</a>
-    <a routerLink="/weather" routerLinkActive="active">Weather</a>
-  </nav>
-  <main class="content">
+<mat-sidenav-container class="shell">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <mat-toolbar class="brand">API Explorer</mat-toolbar>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a mat-list-item routerLink="/repos" routerLinkActive="active">Repos</a>
+      <a mat-list-item routerLink="/pets" routerLinkActive="active">Pets</a>
+      <a mat-list-item routerLink="/weather" routerLinkActive="active">Weather</a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
     <router-outlet />
-  </main>
-</div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

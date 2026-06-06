@@ -1,17 +1,18 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { GET_V1_FORECAST } from '@angular-openapi-gen/weather-data-access';
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-weather-page',
-  imports: [JsonPipe],
+  imports: [JsonPipe, MatCardModule, MatProgressBarModule],
   changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './weather-page.html',
 })
 export class WeatherPageComponent {
   private getForecast = inject(GET_V1_FORECAST);
 
-  // Amsterdam
   readonly forecast = this.getForecast({
     latitude: '52.374',
     longitude: '4.89',

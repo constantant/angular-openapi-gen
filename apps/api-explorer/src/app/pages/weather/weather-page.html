@@ -1,11 +1,32 @@
 <div class="page">
-  <h1>Weather — Amsterdam</h1>
+  <h1 class="mat-headline-medium">Weather — Amsterdam</h1>
 
   @if (forecast.isLoading()) {
-    <p class="loading">Loading forecast…</p>
+    <mat-progress-bar mode="indeterminate" />
   } @else if (forecast.error()) {
-    <p class="error">Failed to load forecast</p>
+    <p class="mat-body-2 error">Failed to load forecast</p>
   } @else {
-    <pre>{{ forecast.value() | json }}</pre>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Current conditions</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="mat-body-1">
+          Temperature: {{ $any(forecast.value())?.current?.temperature_2m }}°C
+        </p>
+        <p class="mat-body-1">
+          Wind: {{ $any(forecast.value())?.current?.wind_speed_10m }} km/h
+        </p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="forecast-card">
+      <mat-card-header>
+        <mat-card-title>3-day forecast</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <pre>{{ $any(forecast.value())?.daily | json }}</pre>
+      </mat-card-content>
+    </mat-card>
   }
 </div>

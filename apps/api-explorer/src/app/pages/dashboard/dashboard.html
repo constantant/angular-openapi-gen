@@ -1,29 +1,52 @@
 <div class="page">
-  <h1>Dashboard</h1>
+  <h1 class="mat-headline-medium">Dashboard</h1>
+
   <div class="cards">
-    <div class="card">
-      <h2>GitHub</h2>
-      @if (user.isLoading()) { <p class="loading">Loading user…</p> }
-      @else if (user.error()) { <p class="error">API error</p> }
-      @else { <p>{{ $any(user.value())?.login }} · {{ $any(user.value())?.public_repos }} repos</p> }
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>GitHub</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (user.isLoading() || repos.isLoading()) {
+          <mat-progress-bar mode="indeterminate" />
+        } @else if (user.error() || repos.error()) {
+          <p class="mat-body-2 error">API error</p>
+        } @else {
+          <p class="mat-body-1">{{ $any(user.value())?.login }} · {{ $any(user.value())?.public_repos }} repos</p>
+          <p class="mat-body-2">{{ ($any(repos.value()) ?? []).length }} repos loaded</p>
+        }
+      </mat-card-content>
+    </mat-card>
 
-      @if (repos.isLoading()) { <p class="loading">Loading repos…</p> }
-      @else if (repos.error()) { <p class="error">API error</p> }
-      @else { <p>{{ ($any(repos.value()) ?? []).length }} repos loaded</p> }
-    </div>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Petstore</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        @if (pets.isLoading()) {
+          <mat-progress-bar mode="indeterminate" />
+        } @else if (pets.error()) {
+          <p class="mat-body-2 error">API error</p>
+        } @else {
+          <p class="mat-body-1">{{ ($any(pets.value()) ?? []).length }} pets available</p>
+        }
+      </mat-card-content>
+    </mat-card>
 
-    <div class="card">
-      <h2>Petstore</h2>
-      @if (pets.isLoading()) { <p class="loading">Loading…</p> }
-      @else if (pets.error()) { <p class="error">API error</p> }
-      @else { <p>{{ ($any(pets.value()) ?? []).length }} pets available</p> }
-    </div>
-
-    <div class="card">
-      <h2>Weather</h2>
-      @if (forecast.isLoading()) { <p class="loading">Loading…</p> }
-      @else if (forecast.error()) { <p class="error">API error</p> }
-      @else { <p>{{ $any(forecast.value())?.current?.temperature_2m }}°C · Amsterdam</p> }
-    </div>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Weather</mat-card-title>
+        <mat-card-subtitle>Amsterdam</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (forecast.isLoading()) {
+          <mat-progress-bar mode="indeterminate" />
+        } @else if (forecast.error()) {
+          <p class="mat-body-2 error">API error</p>
+        } @else {
+          <p class="mat-body-1">{{ $any(forecast.value())?.current?.temperature_2m }}°C</p>
+        }
+      </mat-card-content>
+    </mat-card>
   </div>
 </div>

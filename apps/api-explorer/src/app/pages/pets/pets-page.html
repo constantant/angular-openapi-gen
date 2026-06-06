@@ -1,29 +1,29 @@
 <div class="page">
-  <h1>Pets</h1>
+  <h1 class="mat-headline-medium">Pets</h1>
 
-  <div class="filter-bar">
+  <mat-chip-listbox
+    [value]="status()"
+    (change)="status.set($event.value)"
+    class="filter-chips">
     @for (s of statusOptions; track s) {
-      <button
-        class="chip"
-        [class.active]="status() === s"
-        (click)="status.set(s)">
-        {{ s }}
-      </button>
+      <mat-chip-option [value]="s">{{ s }}</mat-chip-option>
     }
-  </div>
+  </mat-chip-listbox>
 
   @if (petsByStatus.isLoading()) {
-    <p class="loading">Loading…</p>
+    <mat-progress-bar mode="indeterminate" />
   } @else if (petsByStatus.error()) {
-    <p class="error">Failed to load pets</p>
+    <p class="mat-body-2 error">Failed to load pets</p>
   } @else {
-    <ul class="pet-list">
+    <mat-list>
       @for (pet of $any(petsByStatus.value()) ?? []; track pet.id) {
-        <li class="pet-item">
-          <strong>{{ pet.name }}</strong>
-          <span class="badge">{{ pet.status }}</span>
-        </li>
+        <mat-list-item>
+          <span matListItemTitle>{{ pet.name }}</span>
+          <span matListItemMeta>
+            <mat-chip highlighted>{{ pet.status }}</mat-chip>
+          </span>
+        </mat-list-item>
       }
-    </ul>
+    </mat-list>
   }
 </div>
