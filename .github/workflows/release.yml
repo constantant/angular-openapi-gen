@@ -79,11 +79,13 @@ jobs:
       # Trusted publishing: npm CLI exchanges the GitHub OIDC token for publish
       # credentials automatically. No NPM_TOKEN secret required.
       # --provenance triggers npm's OIDC token exchange with the trusted publisher.
-      # We also strip the _authToken line that setup-node wrote into the runner
-      # .npmrc (NPM_CONFIG_USERCONFIG), because an empty token still blocks OIDC.
+      # NODE_AUTH_TOKEN must be absent: setup-node sets it to GITHUB_TOKEN, and
+      # both the .npmrc _authToken entry and the env var block OIDC detection.
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
         working-directory: dist/tools/openapi-resource-gen
         run: |
           sed -i '/authToken/d' "${NPM_CONFIG_USERCONFIG}"
           npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ""
