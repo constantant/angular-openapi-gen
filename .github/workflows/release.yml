@@ -78,13 +78,36 @@ jobs:
       # Skips gracefully if the version is already on the registry (idempotent).
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
+        id: publish
         working-directory: dist/tools/openapi-resource-gen
         run: |
           VERSION=$(node -p "require('./package.json').version")
           if npm view "@constantant/openapi-resource-gen@${VERSION}" version 2>/dev/null | grep -q .; then
             echo "Version ${VERSION} already published — nothing to do."
+            echo "published=false" >> "$GITHUB_OUTPUT"
           else
             npm publish --access public
+            echo "published=true" >> "$GITHUB_OUTPUT"
           fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Write job summary
+        run: |
+          VERSION="${{ steps.publish.outputs.version }}"
+          PUBLISHED="${{ steps.publish.outputs.published }}"
+          {
+            if [[ "$PUBLISHED" == "true" ]]; then
+              echo "## ✅ Published \`@constantant/openapi-resource-gen@${VERSION}\`"
+              echo ""
+              echo "**npm:** https://www.npmjs.com/package/@constantant/openapi-resource-gen/v/${VERSION}"
+              echo ""
+              echo "### Changelog"
+              # Extract the section for this version from CHANGELOG.md
+              awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
+                tools/openapi-resource-gen/CHANGELOG.md
+            else
+              echo "## ℹ️ No new version — \`@constantant/openapi-resource-gen@${VERSION}\` already on npm"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
