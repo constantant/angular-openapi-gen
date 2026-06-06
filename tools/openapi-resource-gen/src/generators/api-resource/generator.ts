@@ -15,8 +15,9 @@ const openapiTS = require('openapi-typescript/dist/index.cjs') as (
 import * as path from 'path';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import { buildEndpoints } from './parse-spec';
-import { renderTokenFile } from './render-token';
+import { buildEndpoints, parseSecuritySchemes } from './parse-spec';
+import { renderTokenFile, renderSecurityTokenFile } from './render-token';
+import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
   specPath: string;
@@ -98,7 +99,19 @@ export async function apiResourceGenerator(
       tmpl: '',
     });
 
-    // 5. Build EndpointModels from the already-dereferenced API
+    // 5. Parse security schemes and build EndpointModels
+    const securitySchemes = parseSecuritySchemes(api);
+    const schemesByName = new Map<string, SecuritySchemeModel>(
+      securitySchemes.map((s) => [s.schemeName, s])
+    );
+
+    for (const scheme of securitySchemes) {
+      tree.write(
+        joinPathFragments(outputDir, `${scheme.fileName}.ts`),
+        renderSecurityTokenFile(scheme)
+      );
+    }
+
     const endpoints = buildEndpoints(api, allowedTags, namingConvention);
 
     // 6. Group by tag
@@ -115,7 +128,7 @@ export async function apiResourceGenerator(
       for (const ep of tagEndpoints) {
         tree.write(
           joinPathFragments(tagDir, `${ep.fileName}.token.ts`),
-          renderTokenFile(ep, baseUrlToken, providedIn)
+          renderTokenFile(ep, baseUrlToken, providedIn, schemesByName)
         );
       }
 
@@ -126,12 +139,11 @@ export async function apiResourceGenerator(
       tree.write(joinPathFragments(tagDir, 'index.ts'), tagBarrel);
     }
 
-    // 8. Root barrel index (includes api-base-url token for app.config.ts providers)
+    // 8. Root barrel index
     const rootBarrel =
       `export * from './api-base-url.token';\n` +
-      [...byTag.keys()]
-        .map((tag) => `export * from './${tag}';`)
-        .join('\n') + '\n';
+      securitySchemes.map((s) => `export * from './${s.fileName}';\n`).join('') +
+      [...byTag.keys()].map((tag) => `export * from './${tag}';\n`).join('');
     tree.write(joinPathFragments(outputDir, 'index.ts'), rootBarrel);
   } finally {
     try {

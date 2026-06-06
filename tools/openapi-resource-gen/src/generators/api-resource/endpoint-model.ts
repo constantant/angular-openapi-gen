@@ -1,3 +1,22 @@
+export type SecurityKind =
+  | 'bearer'
+  | 'basic'
+  | 'apiKey-header'
+  | 'apiKey-query'
+  | 'oauth2'
+  | 'openIdConnect';
+
+export interface SecuritySchemeModel {
+  schemeName: string;
+  kind: SecurityKind;
+  /** Header name (apiKey-header) or query param name (apiKey-query). */
+  apiKeyParamName?: string;
+  /** SCREAMING_SNAKE constant exported from the security token file. */
+  tokenName: string;
+  /** Kebab file name without extension, e.g. `bearer-auth.security-token`. */
+  fileName: string;
+}
+
 export interface EndpointModel {
   tag: string;
   operationId: string;
@@ -11,4 +30,6 @@ export interface EndpointModel {
   hasResponse: boolean;
   responseStatus: string | null;
   bodyContentType: string | null;
+  /** Names of security schemes that apply to this endpoint (resolved from global + operation level). */
+  securitySchemeNames: string[];
 }

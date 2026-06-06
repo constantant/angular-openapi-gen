@@ -1,6 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import type { EndpointModel } from './endpoint-model';
+import type { EndpointModel, SecurityKind, SecuritySchemeModel } from './endpoint-model';
 
 const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
   OpenAPIV3.HttpMethods.GET,
@@ -30,12 +30,51 @@ export function toKebabCase(str: string): string {
     .replace(/^-|-$/g, '');
 }
 
+export function parseSecuritySchemes(api: OpenAPIV3.Document): SecuritySchemeModel[] {
+  const rawSchemes = (api.components?.securitySchemes ?? {}) as Record<
+    string,
+    OpenAPIV3.SecuritySchemeObject
+  >;
+  const result: SecuritySchemeModel[] = [];
+
+  for (const [schemeName, scheme] of Object.entries(rawSchemes)) {
+    let kind: SecurityKind;
+    let apiKeyParamName: string | undefined;
+
+    if (scheme.type === 'http') {
+      kind =
+        (scheme as OpenAPIV3.HttpSecurityScheme).scheme?.toLowerCase() === 'bearer'
+          ? 'bearer'
+          : 'basic';
+    } else if (scheme.type === 'apiKey') {
+      const apiKey = scheme as OpenAPIV3.ApiKeySecurityScheme;
+      kind = apiKey.in === 'query' ? 'apiKey-query' : 'apiKey-header';
+      apiKeyParamName = apiKey.name;
+    } else if (scheme.type === 'oauth2') {
+      kind = 'oauth2';
+    } else {
+      kind = 'openIdConnect';
+    }
+
+    result.push({
+      schemeName,
+      kind,
+      apiKeyParamName,
+      tokenName: toScreamingSnake(schemeName),
+      fileName: toKebabCase(schemeName) + '.security-token',
+    });
+  }
+
+  return result;
+}
+
 export function buildEndpoints(
   api: OpenAPIV3.Document,
   allowedTags: string[] | null,
   namingConvention: 'camel' | 'kebab'
 ): EndpointModel[] {
   const endpoints: EndpointModel[] = [];
+  const globalSecurity = (api.security ?? []) as OpenAPIV3.SecurityRequirementObject[];
 
   for (const [apiPath, pathItem] of Object.entries(api.paths ?? {})) {
     if (!pathItem) continue;
@@ -71,6 +110,17 @@ export function buildEndpoints(
         .map((p) => p.name);
 
       const hasQueryParams = allParams.some((p) => p.in === 'query');
+
+      // Operation-level security overrides global; [] means explicitly no security.
+      const operationSecurity = operation.security as
+        | OpenAPIV3.SecurityRequirementObject[]
+        | undefined;
+      const resolvedSecurity =
+        operationSecurity !== undefined ? operationSecurity : globalSecurity;
+      const securitySchemeNames = [
+        ...new Set(resolvedSecurity.flatMap((req) => Object.keys(req))),
+      ];
+
       const requestBody = operation.requestBody as
         | OpenAPIV3.RequestBodyObject
         | undefined;
@@ -113,6 +163,7 @@ export function buildEndpoints(
         hasResponse,
         responseStatus,
         bodyContentType,
+        securitySchemeNames,
       });
     }
   }

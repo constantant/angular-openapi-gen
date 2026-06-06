@@ -1,4 +1,4 @@
-import type { EndpointModel } from './endpoint-model';
+import type { EndpointModel, SecuritySchemeModel } from './endpoint-model';
 
 function toPascalCase(str: string): string {
   return str
@@ -14,15 +14,46 @@ function toCamelCase(str: string): string {
   return parts[0] + parts.slice(1).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
 }
 
+function headerEntryForScheme(s: SecuritySchemeModel, varName: string): string {
+  switch (s.kind) {
+    case 'bearer':
+    case 'oauth2':
+    case 'openIdConnect':
+      return `{ Authorization: \`Bearer \${${varName}}\` }`;
+    case 'basic':
+      return `{ Authorization: \`Basic \${${varName}}\` }`;
+    case 'apiKey-header':
+      return `{ ${JSON.stringify(s.apiKeyParamName ?? 'X-Api-Key')}: ${varName} }`;
+    default:
+      return '{}';
+  }
+}
+
+export function renderSecurityTokenFile(scheme: SecuritySchemeModel): string {
+  return [
+    `import { InjectionToken } from '@angular/core';`,
+    ``,
+    `export const ${scheme.tokenName} = new InjectionToken<string>('${scheme.tokenName}');`,
+    ``,
+  ].join('\n');
+}
+
 export function renderTokenFile(
   ep: EndpointModel,
   baseUrlToken: string,
-  providedIn: 'root' | 'none' = 'none'
+  providedIn: 'root' | 'none' = 'none',
+  schemesByName: Map<string, SecuritySchemeModel> = new Map()
 ): string {
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
   const isGet = ep.method === 'get';
   const { responseStatus } = ep;
+
+  const applicableSchemes = ep.securitySchemeNames
+    .map((name) => schemesByName.get(name))
+    .filter((s): s is SecuritySchemeModel => s !== undefined);
+  const headerSchemes = applicableSchemes.filter((s) => s.kind !== 'apiKey-query');
+  const querySchemes = applicableSchemes.filter((s) => s.kind === 'apiKey-query');
 
   const lines: string[] = [];
 
@@ -34,6 +65,9 @@ export function renderTokenFile(
   lines.push(`import { httpResource } from '@angular/common/http';`);
   lines.push(`import type { paths } from '../schema.d';`);
   lines.push(`import { ${baseUrlToken} } from '../api-base-url.token';`);
+  for (const scheme of applicableSchemes) {
+    lines.push(`import { ${scheme.tokenName} } from '../${scheme.fileName}';`);
+  }
   lines.push('');
 
   // Exported type aliases sourced directly from the generated paths type.
@@ -69,19 +103,29 @@ export function renderTokenFile(
     `>('${ep.tokenName}'${providedIn === 'root' ? `, {` : ')'}`,
   );
 
+  const securityInjects = (indent: string) =>
+    applicableSchemes
+      .map(
+        (s) =>
+          `${indent}const ${toCamelCase(s.schemeName)} = inject(${s.tokenName}, { optional: true });`
+      )
+      .join('\n');
+
   if (providedIn === 'root') {
     lines.push(
       `  providedIn: 'root',`,
       `  factory: () => {`,
       `    const base = inject(${baseUrlToken});`,
+    );
+    if (applicableSchemes.length > 0) lines.push(securityInjects('    '));
+    lines.push(
       `    return (${fnArgs}) =>`,
       `      httpResource<${responseT}>(() => ({`,
       `        url: \`\${base}${urlTemplate}\`,`,
     );
-    appendResourceOptions(lines, ep, isGet, '        ');
+    appendResourceOptions(lines, ep, isGet, '        ', headerSchemes, querySchemes);
     lines.push(`      }));`, `  },`, `});`, '');
   } else {
-    // providedIn: 'none' — token has no factory; provide via the helper below
     lines.push('');
     lines.push(
       `export function provide${pascal}(): FactoryProvider {`,
@@ -89,11 +133,14 @@ export function renderTokenFile(
       `    provide: ${ep.tokenName},`,
       `    useFactory: () => {`,
       `      const base = inject(${baseUrlToken});`,
+    );
+    if (applicableSchemes.length > 0) lines.push(securityInjects('      '));
+    lines.push(
       `      return (${fnArgs}) =>`,
       `        httpResource<${responseT}>(() => ({`,
       `          url: \`\${base}${urlTemplate}\`,`,
     );
-    appendResourceOptions(lines, ep, isGet, '          ');
+    appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes);
     lines.push(`        }));`, `    },`, `  };`, `}`, '');
   }
 
@@ -104,18 +151,51 @@ function appendResourceOptions(
   lines: string[],
   ep: EndpointModel,
   isGet: boolean,
-  indent: string
+  indent: string,
+  headerSchemes: SecuritySchemeModel[],
+  querySchemes: SecuritySchemeModel[],
 ): void {
   if (!isGet) {
     lines.push(`${indent}method: '${ep.method.toUpperCase()}',`);
   }
-  if (isGet && ep.hasQueryParams) {
-    lines.push(
-      `${indent}params: (typeof params === 'function' ? params() : params) as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`
-    );
+
+  const hasRegularParams = isGet && ep.hasQueryParams;
+  const hasAuthQueryParams = querySchemes.length > 0;
+
+  if (hasRegularParams || hasAuthQueryParams) {
+    const authQueryParts = querySchemes
+      .map(
+        (s) =>
+          `...(${toCamelCase(s.schemeName)} != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: ${toCamelCase(s.schemeName)} } : {})`
+      )
+      .join(', ');
+
+    if (hasRegularParams && hasAuthQueryParams) {
+      lines.push(
+        `${indent}params: { ...(typeof params === 'function' ? params() : params), ${authQueryParts} } as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`
+      );
+    } else if (hasRegularParams) {
+      lines.push(
+        `${indent}params: (typeof params === 'function' ? params() : params) as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`
+      );
+    } else {
+      lines.push(
+        `${indent}params: { ${authQueryParts} } as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`
+      );
+    }
   }
+
   if (!isGet && ep.hasBody) {
     lines.push(`${indent}body,`);
+  }
+
+  if (headerSchemes.length > 0) {
+    lines.push(`${indent}headers: {`);
+    for (const s of headerSchemes) {
+      const varName = toCamelCase(s.schemeName);
+      lines.push(`${indent}  ...(${varName} != null ? ${headerEntryForScheme(s, varName)} : {}),`);
+    }
+    lines.push(`${indent}},`);
   }
 }
 
