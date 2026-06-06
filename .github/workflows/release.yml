@@ -83,15 +83,33 @@ jobs:
       - name: Exchange OIDC token for temporary npm token
         if: ${{ !inputs.dryRun }}
         run: |
-          OIDC_TOKEN=$(curl -sf \
+          echo "Step 1: requesting GitHub OIDC token (audience=npm)..."
+          OIDC_RESP=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm" \
-            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            | jq -r '.value')
-          NPM_RESP=$(curl -sf \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}")
+          OIDC_STATUS=$(echo "$OIDC_RESP" | grep "HTTP_STATUS:" | cut -d: -f2)
+          OIDC_BODY=$(echo "$OIDC_RESP" | sed '/HTTP_STATUS:/d')
+          echo "OIDC status: $OIDC_STATUS"
+          OIDC_TOKEN=$(echo "$OIDC_BODY" | jq -r '.value')
+          if [ -z "$OIDC_TOKEN" ] || [ "$OIDC_TOKEN" = "null" ]; then
+            echo "ERROR: failed to get OIDC token. Body: $OIDC_BODY"
+            exit 1
+          fi
+          echo "OIDC token obtained (${#OIDC_TOKEN} chars)"
+
+          echo "Step 2: exchanging OIDC token at npmjs.com..."
+          NPM_RESP=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
             -X POST "https://registry.npmjs.org/-/oidc/token" \
             -H "Content-Type: application/json" \
             -d "{\"token\": \"${OIDC_TOKEN}\"}")
-          NPM_TOKEN=$(echo "$NPM_RESP" | jq -r '.token')
+          NPM_STATUS=$(echo "$NPM_RESP" | grep "HTTP_STATUS:" | cut -d: -f2)
+          NPM_BODY=$(echo "$NPM_RESP" | sed '/HTTP_STATUS:/d')
+          echo "npmjs.com OIDC status: $NPM_STATUS"
+          if [ "$NPM_STATUS" != "200" ]; then
+            echo "ERROR: OIDC exchange failed. Body: $NPM_BODY"
+            exit 1
+          fi
+          NPM_TOKEN=$(echo "$NPM_BODY" | jq -r '.token')
           echo "::add-mask::${NPM_TOKEN}"
           echo "NPM_PUBLISH_TOKEN=${NPM_TOKEN}" >> "$GITHUB_ENV"
 
