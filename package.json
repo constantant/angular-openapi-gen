@@ -4,7 +4,9 @@
   "license": "MIT",
   "scripts": {},
   "private": true,
-  "workspaces": ["tools/openapi-resource-gen"],
+  "workspaces": [
+    "tools/openapi-resource-gen"
+  ],
   "dependencies": {
     "@angular-devkit/build-angular": "~21.2.0",
     "@angular/common": "~21.2.0",
@@ -41,6 +43,7 @@
     "@swc/core": "~1.15.5",
     "@swc/helpers": "~0.5.18",
     "@types/express": "^4.17.21",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "20.19.9",
     "@typescript-eslint/utils": "^8.40.0",
     "angular-eslint": "^21.2.0",
