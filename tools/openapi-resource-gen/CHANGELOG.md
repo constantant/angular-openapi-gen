@@ -1,3 +1,14 @@
+## 1.1.2 (2026-06-06)
+
+### 🩹 Fixes
+
+- include CHANGELOG.md in dist package assets ([38f6045](https://github.com/constantant/angular-openapi-gen/commit/38f6045))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.1.1 (2026-06-06)
 
 ### 🩹 Fixes

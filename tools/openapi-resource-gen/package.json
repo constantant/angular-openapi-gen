@@ -1,6 +1,6 @@
 {
   "name": "@constantant/openapi-resource-gen",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Nx generator: one InjectionToken per OpenAPI endpoint — tree-shakeable Angular data-access libs via httpResource",
   "license": "MIT",
   "main": "src/index.js",
