@@ -25,7 +25,7 @@ function headerEntryForScheme(s: SecuritySchemeModel, varName: string): string {
     case 'basic':
       return `{ Authorization: \`Basic \${${val}}\` }`;
     case 'apiKey-header':
-      return `{ ${JSON.stringify(s.apiKeyParamName ?? 'X-Api-Key')}: ${val} }`;
+      return `{ ${JSON.stringify(s.apiKeyParamName ?? 'X-Api-Key')}: \`\${${val}}\` }`;
     default:
       return '{}';
   }
@@ -168,7 +168,7 @@ function appendResourceOptions(
     const authQueryParts = querySchemes
       .map(
         (s) =>
-          `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: ${toCamelCase(s.schemeName)}() } : {})`
+          `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: \`\${${toCamelCase(s.schemeName)}()}\` } : {})`
       )
       .join(', ');
 

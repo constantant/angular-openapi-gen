@@ -1,0 +1,61 @@
+.auth-card,
+.search-card {
+  margin-bottom: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.search-form {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  mat-form-field { flex: 1; }
+  button { margin-top: 4px; height: 56px; }
+}
+
+.results-header {
+  margin-bottom: 12px;
+}
+
+.video-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+
+  &:hover .video-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.video-card {
+  transition: box-shadow 0.2s;
+  height: 100%;
+}
+
+.thumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  margin: 0;
+}
+
+.video-title {
+  font-weight: 500;
+  margin: 8px 0 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.channel-name {
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.hint {
+  color: var(--mat-sys-on-surface-variant);
+}

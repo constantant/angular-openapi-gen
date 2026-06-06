@@ -1,0 +1,71 @@
+<div class="page">
+  <h1 class="mat-headline-medium">YouTube</h1>
+
+  <mat-card class="auth-card">
+    <mat-card-content>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>API Key</mat-label>
+        <mat-icon matPrefix>key</mat-icon>
+        <input
+          matInput
+          type="password"
+          placeholder="YouTube Data API v3 key"
+          [ngModel]="apiKey()"
+          (ngModelChange)="apiKey.set($event || null)"
+        />
+        <mat-hint>
+          @if (apiKey()) {
+            Connected — requests include <code>Authorization: Bearer &lt;key&gt;</code>
+          } @else {
+            Enter a key to enable search
+          }
+        </mat-hint>
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="search-card">
+    <mat-card-content>
+      <form (ngSubmit)="submit()" class="search-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Search videos</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [ngModel]="inputValue()" (ngModelChange)="inputValue.set($event)" name="q" />
+        </mat-form-field>
+        <button mat-flat-button type="submit">Search</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  @if (results.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (results.error()) {
+    <p class="mat-body-2 error">{{ $any(results.error())?.message ?? 'Search failed' }}</p>
+  }
+
+  @if (!apiKey()) {
+    <p class="mat-body-2 hint">Enter an API key above to start searching.</p>
+  } @else if (videos().length) {
+    <div class="results-header">
+      <span class="mat-body-2">About {{ totalResults() | number }} results for "{{ query() }}"</span>
+    </div>
+
+    <div class="cards">
+      @for (video of videos(); track video.id?.videoId) {
+        <a [href]="videoUrl(video)" target="_blank" rel="noopener" class="video-link">
+          <mat-card class="video-card">
+            @if (thumbnailUrl(video)) {
+              <img mat-card-image [src]="thumbnailUrl(video)" [alt]="video.snippet?.title" class="thumbnail" />
+            }
+            <mat-card-content>
+              <p class="mat-body-2 video-title">{{ video.snippet?.title }}</p>
+              <p class="mat-body-2 channel-name">{{ video.snippet?.channelTitle }}</p>
+            </mat-card-content>
+          </mat-card>
+        </a>
+      }
+    </div>
+  }
+</div>

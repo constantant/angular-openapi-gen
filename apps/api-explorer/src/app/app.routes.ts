@@ -22,4 +22,9 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./pages/weather/weather-page').then((m) => m.WeatherPageComponent),
   },
+  {
+    path: 'youtube',
+    loadComponent: () =>
+      import('./pages/youtube/youtube-page').then((m) => m.YoutubePageComponent),
+  },
 ];

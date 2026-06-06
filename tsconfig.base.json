@@ -24,6 +24,9 @@
       ],
       "@angular-openapi-gen/weather-data-access": [
         "libs/weather-data-access/src/index.ts"
+      ],
+      "@angular-openapi-gen/youtube-data-access": [
+        "libs/youtube-data-access/src/index.ts"
       ]
     }
   },

@@ -23,7 +23,7 @@ export function provideGetPetById(): FactoryProvider {
         httpResource<GetPetByIdResponse>(() => ({
           url: `${base}/pet/${petId}`,
           headers: {
-            ...(apiKey?.() != null ? { api_key: apiKey() } : {}),
+            ...(apiKey?.() != null ? { api_key: `${apiKey()}` } : {}),
             ...(petstoreAuth?.() != null
               ? { Authorization: `Bearer ${petstoreAuth()}` }
               : {}),

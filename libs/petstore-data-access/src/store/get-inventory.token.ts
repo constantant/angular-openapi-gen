@@ -21,7 +21,7 @@ export function provideGetInventory(): FactoryProvider {
         httpResource<GetInventoryResponse>(() => ({
           url: `${base}/store/inventory`,
           headers: {
-            ...(apiKey?.() != null ? { api_key: apiKey() } : {}),
+            ...(apiKey?.() != null ? { api_key: `${apiKey()}` } : {}),
           },
         }));
     },
