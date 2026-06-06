@@ -27,10 +27,13 @@ jobs:
           fetch-depth: 0         # full history so nx release can read all commits
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # registry-url writes an .npmrc pointing at registry.npmjs.org.
+      # Without NODE_AUTH_TOKEN set, npm falls through to OIDC trusted publishing.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: npm ci
@@ -56,14 +59,25 @@ jobs:
         if: ${{ !inputs.dryRun }}
         run: git push --follow-tags origin master
 
-      # Build after version bump so the correct version lands in dist/package.json.
-      # --skip-nx-cache ensures the freshly bumped package.json version is used,
-      # not a stale cached dist from a prior run.
+      # Build after version bump. Nx Cloud may cache the old version; explicitly
+      # write the bumped version into dist/package.json after building.
       - name: Build
         run: npx nx build openapi-resource-gen --skip-nx-cache
 
-      # Trusted publishing: npm CLI exchanges the OIDC token for publish credentials.
-      # No NPM_TOKEN secret needed — provenance attestation is automatic.
+      - name: Sync version into dist
+        run: |
+          VERSION=$(node -p "require('./tools/openapi-resource-gen/package.json').version")
+          echo "Syncing version $VERSION into dist"
+          node -e "
+            const fs = require('fs');
+            const p = 'dist/tools/openapi-resource-gen/package.json';
+            const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+      # Trusted publishing: npm CLI exchanges the GitHub OIDC token for publish
+      # credentials automatically. No NPM_TOKEN secret required.
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
         working-directory: dist/tools/openapi-resource-gen
