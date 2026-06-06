@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposUpdatePullRequestReviewProtectionBody = NonNullable<
+export type ReposUpdatePullRequestReviewProtectionBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['patch']['requestBody']
 >['content']['application/json'];
 
-type ReposUpdatePullRequestReviewProtectionResponse =
+export type ReposUpdatePullRequestReviewProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['patch']['responses']['200']['content']['application/json'];
 
 export const REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION = new InjectionToken<

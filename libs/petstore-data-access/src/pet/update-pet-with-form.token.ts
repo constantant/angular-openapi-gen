@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
-type UpdatePetWithFormResponse =
+export type UpdatePetWithFormResponse =
   paths['/pet/{petId}']['post']['responses']['200']['content']['application/json'];
 
 export const UPDATE_PET_WITH_FORM = new InjectionToken<

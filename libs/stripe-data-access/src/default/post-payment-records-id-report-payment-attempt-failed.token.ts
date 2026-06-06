@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPaymentRecordsIdReportPaymentAttemptFailedBody = NonNullable<
+export type PostPaymentRecordsIdReportPaymentAttemptFailedBody = NonNullable<
   paths['/v1/payment_records/{id}/report_payment_attempt_failed']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPaymentRecordsIdReportPaymentAttemptFailedResponse =
+export type PostPaymentRecordsIdReportPaymentAttemptFailedResponse =
   paths['/v1/payment_records/{id}/report_payment_attempt_failed']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYMENT_RECORDS_ID_REPORT_PAYMENT_ATTEMPT_FAILED =

@@ -3,17 +3,21 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetTreasuryOutboundTransfersOutboundTransferParams =
+export type GetTreasuryOutboundTransfersOutboundTransferParams =
   paths['/v1/treasury/outbound_transfers/{outbound_transfer}']['get']['parameters']['query'];
 
-type GetTreasuryOutboundTransfersOutboundTransferResponse =
+export type GetTreasuryOutboundTransfersOutboundTransferResponse =
   paths['/v1/treasury/outbound_transfers/{outbound_transfer}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER =
   new InjectionToken<
     (
-      outbound_transfer: string,
-      params?: GetTreasuryOutboundTransfersOutboundTransferParams,
+      outboundTransfer: string,
+      params?:
+        | GetTreasuryOutboundTransfersOutboundTransferParams
+        | (() =>
+            | GetTreasuryOutboundTransfersOutboundTransferParams
+            | undefined),
     ) => ReturnType<
       typeof httpResource<GetTreasuryOutboundTransfersOutboundTransferResponse>
     >
@@ -22,13 +26,19 @@ export const GET_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER =
     factory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
-        outbound_transfer: string,
-        params?: GetTreasuryOutboundTransfersOutboundTransferParams,
+        outboundTransfer: string,
+        params?:
+          | GetTreasuryOutboundTransfersOutboundTransferParams
+          | (() =>
+              | GetTreasuryOutboundTransfersOutboundTransferParams
+              | undefined),
       ) =>
         httpResource<GetTreasuryOutboundTransfersOutboundTransferResponse>(
           () => ({
-            url: `${base}/v1/treasury/outbound_transfers/${outbound_transfer}`,
-            params: params as unknown as Record<
+            url: `${base}/v1/treasury/outbound_transfers/${outboundTransfer}`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

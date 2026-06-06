@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostIssuingSettlementsSettlementBody = NonNullable<
+export type PostIssuingSettlementsSettlementBody = NonNullable<
   paths['/v1/issuing/settlements/{settlement}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostIssuingSettlementsSettlementResponse =
+export type PostIssuingSettlementsSettlementResponse =
   paths['/v1/issuing/settlements/{settlement}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_ISSUING_SETTLEMENTS_SETTLEMENT = new InjectionToken<

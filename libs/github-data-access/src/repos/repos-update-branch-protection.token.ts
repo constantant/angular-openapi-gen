@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposUpdateBranchProtectionBody = NonNullable<
+export type ReposUpdateBranchProtectionBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['requestBody']
 >['content']['application/json'];
 
-type ReposUpdateBranchProtectionResponse =
+export type ReposUpdateBranchProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['200']['content']['application/json'];
 
 export const REPOS_UPDATE_BRANCH_PROTECTION = new InjectionToken<

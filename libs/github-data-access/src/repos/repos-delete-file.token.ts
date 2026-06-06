@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposDeleteFileBody = NonNullable<
+export type ReposDeleteFileBody = NonNullable<
   paths['/repos/{owner}/{repo}/contents/{path}']['delete']['requestBody']
 >['content']['application/json'];
 
-type ReposDeleteFileResponse =
+export type ReposDeleteFileResponse =
   paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['200']['content']['application/json'];
 
 export const REPOS_DELETE_FILE = new InjectionToken<

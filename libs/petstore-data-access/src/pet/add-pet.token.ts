@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
-type AddPetBody = NonNullable<
+export type AddPetBody = NonNullable<
   paths['/pet']['post']['requestBody']
 >['content']['application/json'];
 
-type AddPetResponse =
+export type AddPetResponse =
   paths['/pet']['post']['responses']['200']['content']['application/json'];
 
 export const ADD_PET = new InjectionToken<

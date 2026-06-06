@@ -3,17 +3,21 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetIssuingPersonalizationDesignsPersonalizationDesignParams =
+export type GetIssuingPersonalizationDesignsPersonalizationDesignParams =
   paths['/v1/issuing/personalization_designs/{personalization_design}']['get']['parameters']['query'];
 
-type GetIssuingPersonalizationDesignsPersonalizationDesignResponse =
+export type GetIssuingPersonalizationDesignsPersonalizationDesignResponse =
   paths['/v1/issuing/personalization_designs/{personalization_design}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN =
   new InjectionToken<
     (
-      personalization_design: string,
-      params?: GetIssuingPersonalizationDesignsPersonalizationDesignParams,
+      personalizationDesign: string,
+      params?:
+        | GetIssuingPersonalizationDesignsPersonalizationDesignParams
+        | (() =>
+            | GetIssuingPersonalizationDesignsPersonalizationDesignParams
+            | undefined),
     ) => ReturnType<
       typeof httpResource<GetIssuingPersonalizationDesignsPersonalizationDesignResponse>
     >
@@ -22,13 +26,19 @@ export const GET_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN =
     factory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
-        personalization_design: string,
-        params?: GetIssuingPersonalizationDesignsPersonalizationDesignParams,
+        personalizationDesign: string,
+        params?:
+          | GetIssuingPersonalizationDesignsPersonalizationDesignParams
+          | (() =>
+              | GetIssuingPersonalizationDesignsPersonalizationDesignParams
+              | undefined),
       ) =>
         httpResource<GetIssuingPersonalizationDesignsPersonalizationDesignResponse>(
           () => ({
-            url: `${base}/v1/issuing/personalization_designs/${personalization_design}`,
-            params: params as unknown as Record<
+            url: `${base}/v1/issuing/personalization_designs/${personalizationDesign}`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

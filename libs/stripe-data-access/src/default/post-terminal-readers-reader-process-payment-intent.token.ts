@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTerminalReadersReaderProcessPaymentIntentBody = NonNullable<
+export type PostTerminalReadersReaderProcessPaymentIntentBody = NonNullable<
   paths['/v1/terminal/readers/{reader}/process_payment_intent']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTerminalReadersReaderProcessPaymentIntentResponse =
+export type PostTerminalReadersReaderProcessPaymentIntentResponse =
   paths['/v1/terminal/readers/{reader}/process_payment_intent']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TERMINAL_READERS_READER_PROCESS_PAYMENT_INTENT =

@@ -3,18 +3,20 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetRepoRulesetHistoryParams =
+export type ReposGetRepoRulesetHistoryParams =
   paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['parameters']['query'];
 
-type ReposGetRepoRulesetHistoryResponse =
+export type ReposGetRepoRulesetHistoryResponse =
   paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_REPO_RULESET_HISTORY = new InjectionToken<
   (
     owner: string,
     repo: string,
-    ruleset_id: string,
-    params?: ReposGetRepoRulesetHistoryParams,
+    rulesetId: string,
+    params?:
+      | ReposGetRepoRulesetHistoryParams
+      | (() => ReposGetRepoRulesetHistoryParams | undefined),
   ) => ReturnType<typeof httpResource<ReposGetRepoRulesetHistoryResponse>>
 >('REPOS_GET_REPO_RULESET_HISTORY', {
   providedIn: 'root',
@@ -23,12 +25,16 @@ export const REPOS_GET_REPO_RULESET_HISTORY = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      ruleset_id: string,
-      params?: ReposGetRepoRulesetHistoryParams,
+      rulesetId: string,
+      params?:
+        | ReposGetRepoRulesetHistoryParams
+        | (() => ReposGetRepoRulesetHistoryParams | undefined),
     ) =>
       httpResource<ReposGetRepoRulesetHistoryResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/rulesets/${ruleset_id}/history`,
-        params: params as unknown as Record<
+        url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}/history`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

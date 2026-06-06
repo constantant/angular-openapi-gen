@@ -7,15 +7,15 @@ export const REPOS_DELETE_AN_ENVIRONMENT = new InjectionToken<
   (
     owner: string,
     repo: string,
-    environment_name: string,
+    environmentName: string,
   ) => ReturnType<typeof httpResource<unknown>>
 >('REPOS_DELETE_AN_ENVIRONMENT', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, environment_name: string) =>
+    return (owner: string, repo: string, environmentName: string) =>
       httpResource<unknown>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environment_name}`,
+        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
         method: 'DELETE',
       }));
   },

@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetCodeFrequencyStatsResponse =
+export type ReposGetCodeFrequencyStatsResponse =
   paths['/repos/{owner}/{repo}/stats/code_frequency']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_CODE_FREQUENCY_STATS = new InjectionToken<

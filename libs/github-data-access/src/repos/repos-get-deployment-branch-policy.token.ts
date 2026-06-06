@@ -3,15 +3,15 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetDeploymentBranchPolicyResponse =
+export type ReposGetDeploymentBranchPolicyResponse =
   paths['/repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies/{branch_policy_id}']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_DEPLOYMENT_BRANCH_POLICY = new InjectionToken<
   (
     owner: string,
     repo: string,
-    environment_name: string,
-    branch_policy_id: string,
+    environmentName: string,
+    branchPolicyId: string,
   ) => ReturnType<typeof httpResource<ReposGetDeploymentBranchPolicyResponse>>
 >('REPOS_GET_DEPLOYMENT_BRANCH_POLICY', {
   providedIn: 'root',
@@ -20,11 +20,11 @@ export const REPOS_GET_DEPLOYMENT_BRANCH_POLICY = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      environment_name: string,
-      branch_policy_id: string,
+      environmentName: string,
+      branchPolicyId: string,
     ) =>
       httpResource<ReposGetDeploymentBranchPolicyResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environment_name}/deployment-branch-policies/${branch_policy_id}`,
+        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
       }));
   },
 });

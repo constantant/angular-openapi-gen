@@ -1,0 +1,48 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type ClassroomListAcceptedAssignmentsForAnAssignmentParams =
+  paths['/assignments/{assignment_id}/accepted_assignments']['get']['parameters']['query'];
+
+export type ClassroomListAcceptedAssignmentsForAnAssignmentResponse =
+  paths['/assignments/{assignment_id}/accepted_assignments']['get']['responses']['200']['content']['application/json'];
+
+export const CLASSROOM_LIST_ACCEPTED_ASSIGNMENTS_FOR_AN_ASSIGNMENT =
+  new InjectionToken<
+    (
+      assignmentId: string,
+      params?:
+        | ClassroomListAcceptedAssignmentsForAnAssignmentParams
+        | (() =>
+            | ClassroomListAcceptedAssignmentsForAnAssignmentParams
+            | undefined),
+    ) => ReturnType<
+      typeof httpResource<ClassroomListAcceptedAssignmentsForAnAssignmentResponse>
+    >
+  >('CLASSROOM_LIST_ACCEPTED_ASSIGNMENTS_FOR_AN_ASSIGNMENT', {
+    providedIn: 'root',
+    factory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        assignmentId: string,
+        params?:
+          | ClassroomListAcceptedAssignmentsForAnAssignmentParams
+          | (() =>
+              | ClassroomListAcceptedAssignmentsForAnAssignmentParams
+              | undefined),
+      ) =>
+        httpResource<ClassroomListAcceptedAssignmentsForAnAssignmentResponse>(
+          () => ({
+            url: `${base}/assignments/${assignmentId}/accepted_assignments`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          }),
+        );
+    },
+  });

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersAddSocialAccountForAuthenticatedUserBody = NonNullable<
+export type UsersAddSocialAccountForAuthenticatedUserBody = NonNullable<
   paths['/user/social_accounts']['post']['requestBody']
 >['content']['application/json'];
 
-type UsersAddSocialAccountForAuthenticatedUserResponse =
+export type UsersAddSocialAccountForAuthenticatedUserResponse =
   paths['/user/social_accounts']['post']['responses']['201']['content']['application/json'];
 
 export const USERS_ADD_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER =

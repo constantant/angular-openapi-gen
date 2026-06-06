@@ -3,10 +3,10 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetContentParams =
+export type ReposGetContentParams =
   paths['/repos/{owner}/{repo}/contents/{path}']['get']['parameters']['query'];
 
-type ReposGetContentResponse =
+export type ReposGetContentResponse =
   paths['/repos/{owner}/{repo}/contents/{path}']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_CONTENT = new InjectionToken<
@@ -14,7 +14,7 @@ export const REPOS_GET_CONTENT = new InjectionToken<
     owner: string,
     repo: string,
     path: string,
-    params?: ReposGetContentParams,
+    params?: ReposGetContentParams | (() => ReposGetContentParams | undefined),
   ) => ReturnType<typeof httpResource<ReposGetContentResponse>>
 >('REPOS_GET_CONTENT', {
   providedIn: 'root',
@@ -24,11 +24,15 @@ export const REPOS_GET_CONTENT = new InjectionToken<
       owner: string,
       repo: string,
       path: string,
-      params?: ReposGetContentParams,
+      params?:
+        | ReposGetContentParams
+        | (() => ReposGetContentParams | undefined),
     ) =>
       httpResource<ReposGetContentResponse>(() => ({
         url: `${base}/repos/${owner}/${repo}/contents/${path}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

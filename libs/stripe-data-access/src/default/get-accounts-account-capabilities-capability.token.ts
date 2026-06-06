@@ -3,17 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetAccountsAccountCapabilitiesCapabilityParams =
+export type GetAccountsAccountCapabilitiesCapabilityParams =
   paths['/v1/accounts/{account}/capabilities/{capability}']['get']['parameters']['query'];
 
-type GetAccountsAccountCapabilitiesCapabilityResponse =
+export type GetAccountsAccountCapabilitiesCapabilityResponse =
   paths['/v1/accounts/{account}/capabilities/{capability}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_ACCOUNTS_ACCOUNT_CAPABILITIES_CAPABILITY = new InjectionToken<
   (
     account: string,
     capability: string,
-    params?: GetAccountsAccountCapabilitiesCapabilityParams,
+    params?:
+      | GetAccountsAccountCapabilitiesCapabilityParams
+      | (() => GetAccountsAccountCapabilitiesCapabilityParams | undefined),
   ) => ReturnType<
     typeof httpResource<GetAccountsAccountCapabilitiesCapabilityResponse>
   >
@@ -24,11 +26,15 @@ export const GET_ACCOUNTS_ACCOUNT_CAPABILITIES_CAPABILITY = new InjectionToken<
     return (
       account: string,
       capability: string,
-      params?: GetAccountsAccountCapabilitiesCapabilityParams,
+      params?:
+        | GetAccountsAccountCapabilitiesCapabilityParams
+        | (() => GetAccountsAccountCapabilitiesCapabilityParams | undefined),
     ) =>
       httpResource<GetAccountsAccountCapabilitiesCapabilityResponse>(() => ({
         url: `${base}/v1/accounts/${account}/capabilities/${capability}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

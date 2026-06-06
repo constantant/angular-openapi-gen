@@ -3,16 +3,16 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostRadarValueListsValueListBody = NonNullable<
+export type PostRadarValueListsValueListBody = NonNullable<
   paths['/v1/radar/value_lists/{value_list}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostRadarValueListsValueListResponse =
+export type PostRadarValueListsValueListResponse =
   paths['/v1/radar/value_lists/{value_list}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_RADAR_VALUE_LISTS_VALUE_LIST = new InjectionToken<
   (
-    value_list: string,
+    valueList: string,
     body:
       | PostRadarValueListsValueListBody
       | Signal<PostRadarValueListsValueListBody>,
@@ -22,13 +22,13 @@ export const POST_RADAR_VALUE_LISTS_VALUE_LIST = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      value_list: string,
+      valueList: string,
       body:
         | PostRadarValueListsValueListBody
         | Signal<PostRadarValueListsValueListBody>,
     ) =>
       httpResource<PostRadarValueListsValueListResponse>(() => ({
-        url: `${base}/v1/radar/value_lists/${value_list}`,
+        url: `${base}/v1/radar/value_lists/${valueList}`,
         method: 'POST',
         body,
       }));

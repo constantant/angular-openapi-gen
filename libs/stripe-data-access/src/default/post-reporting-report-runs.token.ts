@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostReportingReportRunsBody = NonNullable<
+export type PostReportingReportRunsBody = NonNullable<
   paths['/v1/reporting/report_runs']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostReportingReportRunsResponse =
+export type PostReportingReportRunsResponse =
   paths['/v1/reporting/report_runs']['post']['responses']['200']['content']['application/json'];
 
 export const POST_REPORTING_REPORT_RUNS = new InjectionToken<

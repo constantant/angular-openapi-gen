@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostInvoicesInvoiceVoidBody = NonNullable<
+export type PostInvoicesInvoiceVoidBody = NonNullable<
   paths['/v1/invoices/{invoice}/void']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostInvoicesInvoiceVoidResponse =
+export type PostInvoicesInvoiceVoidResponse =
   paths['/v1/invoices/{invoice}/void']['post']['responses']['200']['content']['application/json'];
 
 export const POST_INVOICES_INVOICE_VOID = new InjectionToken<

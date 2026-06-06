@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCheckAutomatedSecurityFixesResponse =
+export type ReposCheckAutomatedSecurityFixesResponse =
   paths['/repos/{owner}/{repo}/automated-security-fixes']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_CHECK_AUTOMATED_SECURITY_FIXES = new InjectionToken<

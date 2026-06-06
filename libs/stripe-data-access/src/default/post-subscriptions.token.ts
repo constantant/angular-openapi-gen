@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostSubscriptionsBody = NonNullable<
+export type PostSubscriptionsBody = NonNullable<
   paths['/v1/subscriptions']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostSubscriptionsResponse =
+export type PostSubscriptionsResponse =
   paths['/v1/subscriptions']['post']['responses']['200']['content']['application/json'];
 
 export const POST_SUBSCRIPTIONS = new InjectionToken<

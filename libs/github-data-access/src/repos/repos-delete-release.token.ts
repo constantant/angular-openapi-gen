@@ -7,15 +7,15 @@ export const REPOS_DELETE_RELEASE = new InjectionToken<
   (
     owner: string,
     repo: string,
-    release_id: string,
+    releaseId: string,
   ) => ReturnType<typeof httpResource<unknown>>
 >('REPOS_DELETE_RELEASE', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, release_id: string) =>
+    return (owner: string, repo: string, releaseId: string) =>
       httpResource<unknown>(() => ({
-        url: `${base}/repos/${owner}/${repo}/releases/${release_id}`,
+        url: `${base}/repos/${owner}/${repo}/releases/${releaseId}`,
         method: 'DELETE',
       }));
   },

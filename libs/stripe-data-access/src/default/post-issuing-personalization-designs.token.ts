@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostIssuingPersonalizationDesignsBody = NonNullable<
+export type PostIssuingPersonalizationDesignsBody = NonNullable<
   paths['/v1/issuing/personalization_designs']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostIssuingPersonalizationDesignsResponse =
+export type PostIssuingPersonalizationDesignsResponse =
   paths['/v1/issuing/personalization_designs']['post']['responses']['200']['content']['application/json'];
 
 export const POST_ISSUING_PERSONALIZATION_DESIGNS = new InjectionToken<

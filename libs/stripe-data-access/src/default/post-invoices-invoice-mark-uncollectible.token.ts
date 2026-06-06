@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostInvoicesInvoiceMarkUncollectibleBody = NonNullable<
+export type PostInvoicesInvoiceMarkUncollectibleBody = NonNullable<
   paths['/v1/invoices/{invoice}/mark_uncollectible']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostInvoicesInvoiceMarkUncollectibleResponse =
+export type PostInvoicesInvoiceMarkUncollectibleResponse =
   paths['/v1/invoices/{invoice}/mark_uncollectible']['post']['responses']['200']['content']['application/json'];
 
 export const POST_INVOICES_INVOICE_MARK_UNCOLLECTIBLE = new InjectionToken<

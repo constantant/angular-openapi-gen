@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPayoutsPayoutBody = NonNullable<
+export type PostPayoutsPayoutBody = NonNullable<
   paths['/v1/payouts/{payout}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPayoutsPayoutResponse =
+export type PostPayoutsPayoutResponse =
   paths['/v1/payouts/{payout}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYOUTS_PAYOUT = new InjectionToken<

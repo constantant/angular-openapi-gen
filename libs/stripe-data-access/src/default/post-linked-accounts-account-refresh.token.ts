@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostLinkedAccountsAccountRefreshBody = NonNullable<
+export type PostLinkedAccountsAccountRefreshBody = NonNullable<
   paths['/v1/linked_accounts/{account}/refresh']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostLinkedAccountsAccountRefreshResponse =
+export type PostLinkedAccountsAccountRefreshResponse =
   paths['/v1/linked_accounts/{account}/refresh']['post']['responses']['200']['content']['application/json'];
 
 export const POST_LINKED_ACCOUNTS_ACCOUNT_REFRESH = new InjectionToken<

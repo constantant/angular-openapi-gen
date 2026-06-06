@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
-type UploadFileBody = NonNullable<
+export type UploadFileBody = NonNullable<
   paths['/pet/{petId}/uploadImage']['post']['requestBody']
 >['content']['application/octet-stream'];
 
-type UploadFileResponse =
+export type UploadFileResponse =
   paths['/pet/{petId}/uploadImage']['post']['responses']['200']['content']['application/json'];
 
 export const UPLOAD_FILE = new InjectionToken<

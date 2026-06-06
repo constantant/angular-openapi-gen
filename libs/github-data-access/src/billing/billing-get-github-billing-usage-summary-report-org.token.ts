@@ -1,0 +1,48 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type BillingGetGithubBillingUsageSummaryReportOrgParams =
+  paths['/organizations/{org}/settings/billing/usage/summary']['get']['parameters']['query'];
+
+export type BillingGetGithubBillingUsageSummaryReportOrgResponse =
+  paths['/organizations/{org}/settings/billing/usage/summary']['get']['responses']['200']['content']['application/json'];
+
+export const BILLING_GET_GITHUB_BILLING_USAGE_SUMMARY_REPORT_ORG =
+  new InjectionToken<
+    (
+      org: string,
+      params?:
+        | BillingGetGithubBillingUsageSummaryReportOrgParams
+        | (() =>
+            | BillingGetGithubBillingUsageSummaryReportOrgParams
+            | undefined),
+    ) => ReturnType<
+      typeof httpResource<BillingGetGithubBillingUsageSummaryReportOrgResponse>
+    >
+  >('BILLING_GET_GITHUB_BILLING_USAGE_SUMMARY_REPORT_ORG', {
+    providedIn: 'root',
+    factory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | BillingGetGithubBillingUsageSummaryReportOrgParams
+          | (() =>
+              | BillingGetGithubBillingUsageSummaryReportOrgParams
+              | undefined),
+      ) =>
+        httpResource<BillingGetGithubBillingUsageSummaryReportOrgResponse>(
+          () => ({
+            url: `${base}/organizations/${org}/settings/billing/usage/summary`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          }),
+        );
+    },
+  });

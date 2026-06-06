@@ -3,17 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTreasuryFinancialAccountsFinancialAccountFeaturesBody = NonNullable<
-  paths['/v1/treasury/financial_accounts/{financial_account}/features']['post']['requestBody']
->['content']['application/x-www-form-urlencoded'];
+export type PostTreasuryFinancialAccountsFinancialAccountFeaturesBody =
+  NonNullable<
+    paths['/v1/treasury/financial_accounts/{financial_account}/features']['post']['requestBody']
+  >['content']['application/x-www-form-urlencoded'];
 
-type PostTreasuryFinancialAccountsFinancialAccountFeaturesResponse =
+export type PostTreasuryFinancialAccountsFinancialAccountFeaturesResponse =
   paths['/v1/treasury/financial_accounts/{financial_account}/features']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TREASURY_FINANCIAL_ACCOUNTS_FINANCIAL_ACCOUNT_FEATURES =
   new InjectionToken<
     (
-      financial_account: string,
+      financialAccount: string,
       body:
         | PostTreasuryFinancialAccountsFinancialAccountFeaturesBody
         | Signal<PostTreasuryFinancialAccountsFinancialAccountFeaturesBody>,
@@ -25,14 +26,14 @@ export const POST_TREASURY_FINANCIAL_ACCOUNTS_FINANCIAL_ACCOUNT_FEATURES =
     factory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
-        financial_account: string,
+        financialAccount: string,
         body:
           | PostTreasuryFinancialAccountsFinancialAccountFeaturesBody
           | Signal<PostTreasuryFinancialAccountsFinancialAccountFeaturesBody>,
       ) =>
         httpResource<PostTreasuryFinancialAccountsFinancialAccountFeaturesResponse>(
           () => ({
-            url: `${base}/v1/treasury/financial_accounts/${financial_account}/features`,
+            url: `${base}/v1/treasury/financial_accounts/${financialAccount}/features`,
             method: 'POST',
             body,
           }),

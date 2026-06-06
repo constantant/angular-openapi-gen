@@ -3,25 +3,34 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetRefundsRefundParams =
+export type GetRefundsRefundParams =
   paths['/v1/refunds/{refund}']['get']['parameters']['query'];
 
-type GetRefundsRefundResponse =
+export type GetRefundsRefundResponse =
   paths['/v1/refunds/{refund}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_REFUNDS_REFUND = new InjectionToken<
   (
     refund: string,
-    params?: GetRefundsRefundParams,
+    params?:
+      | GetRefundsRefundParams
+      | (() => GetRefundsRefundParams | undefined),
   ) => ReturnType<typeof httpResource<GetRefundsRefundResponse>>
 >('GET_REFUNDS_REFUND', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (refund: string, params?: GetRefundsRefundParams) =>
+    return (
+      refund: string,
+      params?:
+        | GetRefundsRefundParams
+        | (() => GetRefundsRefundParams | undefined),
+    ) =>
       httpResource<GetRefundsRefundResponse>(() => ({
         url: `${base}/v1/refunds/${refund}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

@@ -3,11 +3,12 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPaymentRecordsIdReportPaymentAttemptGuaranteedBody = NonNullable<
-  paths['/v1/payment_records/{id}/report_payment_attempt_guaranteed']['post']['requestBody']
->['content']['application/x-www-form-urlencoded'];
+export type PostPaymentRecordsIdReportPaymentAttemptGuaranteedBody =
+  NonNullable<
+    paths['/v1/payment_records/{id}/report_payment_attempt_guaranteed']['post']['requestBody']
+  >['content']['application/x-www-form-urlencoded'];
 
-type PostPaymentRecordsIdReportPaymentAttemptGuaranteedResponse =
+export type PostPaymentRecordsIdReportPaymentAttemptGuaranteedResponse =
   paths['/v1/payment_records/{id}/report_payment_attempt_guaranteed']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYMENT_RECORDS_ID_REPORT_PAYMENT_ATTEMPT_GUARANTEED =

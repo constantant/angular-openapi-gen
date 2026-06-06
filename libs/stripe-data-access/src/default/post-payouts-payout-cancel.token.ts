@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPayoutsPayoutCancelBody = NonNullable<
+export type PostPayoutsPayoutCancelBody = NonNullable<
   paths['/v1/payouts/{payout}/cancel']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPayoutsPayoutCancelResponse =
+export type PostPayoutsPayoutCancelResponse =
   paths['/v1/payouts/{payout}/cancel']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYOUTS_PAYOUT_CANCEL = new InjectionToken<

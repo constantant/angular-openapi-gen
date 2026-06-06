@@ -3,15 +3,17 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersListFollowedByAuthenticatedUserParams =
+export type UsersListFollowedByAuthenticatedUserParams =
   paths['/user/following']['get']['parameters']['query'];
 
-type UsersListFollowedByAuthenticatedUserResponse =
+export type UsersListFollowedByAuthenticatedUserResponse =
   paths['/user/following']['get']['responses']['200']['content']['application/json'];
 
 export const USERS_LIST_FOLLOWED_BY_AUTHENTICATED_USER = new InjectionToken<
   (
-    params?: UsersListFollowedByAuthenticatedUserParams,
+    params?:
+      | UsersListFollowedByAuthenticatedUserParams
+      | (() => UsersListFollowedByAuthenticatedUserParams | undefined),
   ) => ReturnType<
     typeof httpResource<UsersListFollowedByAuthenticatedUserResponse>
   >
@@ -19,10 +21,16 @@ export const USERS_LIST_FOLLOWED_BY_AUTHENTICATED_USER = new InjectionToken<
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (params?: UsersListFollowedByAuthenticatedUserParams) =>
+    return (
+      params?:
+        | UsersListFollowedByAuthenticatedUserParams
+        | (() => UsersListFollowedByAuthenticatedUserParams | undefined),
+    ) =>
       httpResource<UsersListFollowedByAuthenticatedUserResponse>(() => ({
         url: `${base}/user/following`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

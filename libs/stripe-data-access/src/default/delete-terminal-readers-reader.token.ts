@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteTerminalReadersReaderBody = NonNullable<
+export type DeleteTerminalReadersReaderBody = NonNullable<
   paths['/v1/terminal/readers/{reader}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteTerminalReadersReaderResponse =
+export type DeleteTerminalReadersReaderResponse =
   paths['/v1/terminal/readers/{reader}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_TERMINAL_READERS_READER = new InjectionToken<

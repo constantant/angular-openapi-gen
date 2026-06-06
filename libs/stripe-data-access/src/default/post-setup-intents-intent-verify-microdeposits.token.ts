@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostSetupIntentsIntentVerifyMicrodepositsBody = NonNullable<
+export type PostSetupIntentsIntentVerifyMicrodepositsBody = NonNullable<
   paths['/v1/setup_intents/{intent}/verify_microdeposits']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostSetupIntentsIntentVerifyMicrodepositsResponse =
+export type PostSetupIntentsIntentVerifyMicrodepositsResponse =
   paths['/v1/setup_intents/{intent}/verify_microdeposits']['post']['responses']['200']['content']['application/json'];
 
 export const POST_SETUP_INTENTS_INTENT_VERIFY_MICRODEPOSITS =

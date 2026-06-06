@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetUsersWithAccessToProtectedBranchResponse =
+export type ReposGetUsersWithAccessToProtectedBranchResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH =

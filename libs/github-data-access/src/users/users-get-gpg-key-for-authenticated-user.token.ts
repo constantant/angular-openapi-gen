@@ -3,12 +3,12 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersGetGpgKeyForAuthenticatedUserResponse =
+export type UsersGetGpgKeyForAuthenticatedUserResponse =
   paths['/user/gpg_keys/{gpg_key_id}']['get']['responses']['200']['content']['application/json'];
 
 export const USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
-    gpg_key_id: string,
+    gpgKeyId: string,
   ) => ReturnType<
     typeof httpResource<UsersGetGpgKeyForAuthenticatedUserResponse>
   >
@@ -16,9 +16,9 @@ export const USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER = new InjectionToken<
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (gpg_key_id: string) =>
+    return (gpgKeyId: string) =>
       httpResource<UsersGetGpgKeyForAuthenticatedUserResponse>(() => ({
-        url: `${base}/user/gpg_keys/${gpg_key_id}`,
+        url: `${base}/user/gpg_keys/${gpgKeyId}`,
       }));
   },
 });

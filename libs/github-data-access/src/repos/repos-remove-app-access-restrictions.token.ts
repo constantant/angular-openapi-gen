@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposRemoveAppAccessRestrictionsBody = NonNullable<
+export type ReposRemoveAppAccessRestrictionsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['delete']['requestBody']
 >['content']['application/json'];
 
-type ReposRemoveAppAccessRestrictionsResponse =
+export type ReposRemoveAppAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['delete']['responses']['200']['content']['application/json'];
 
 export const REPOS_REMOVE_APP_ACCESS_RESTRICTIONS = new InjectionToken<

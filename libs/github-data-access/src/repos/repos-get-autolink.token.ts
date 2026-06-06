@@ -3,22 +3,22 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetAutolinkResponse =
+export type ReposGetAutolinkResponse =
   paths['/repos/{owner}/{repo}/autolinks/{autolink_id}']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_AUTOLINK = new InjectionToken<
   (
     owner: string,
     repo: string,
-    autolink_id: string,
+    autolinkId: string,
   ) => ReturnType<typeof httpResource<ReposGetAutolinkResponse>>
 >('REPOS_GET_AUTOLINK', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, autolink_id: string) =>
+    return (owner: string, repo: string, autolinkId: string) =>
       httpResource<ReposGetAutolinkResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/autolinks/${autolink_id}`,
+        url: `${base}/repos/${owner}/${repo}/autolinks/${autolinkId}`,
       }));
   },
 });

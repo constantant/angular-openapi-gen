@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateForAuthenticatedUserBody = NonNullable<
+export type ReposCreateForAuthenticatedUserBody = NonNullable<
   paths['/user/repos']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateForAuthenticatedUserResponse =
+export type ReposCreateForAuthenticatedUserResponse =
   paths['/user/repos']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_CREATE_FOR_AUTHENTICATED_USER = new InjectionToken<

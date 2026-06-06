@@ -5,23 +5,23 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export const REPOS_DISABLE_DEPLOYMENT_PROTECTION_RULE = new InjectionToken<
   (
-    environment_name: string,
+    environmentName: string,
     repo: string,
     owner: string,
-    protection_rule_id: string,
+    protectionRuleId: string,
   ) => ReturnType<typeof httpResource<unknown>>
 >('REPOS_DISABLE_DEPLOYMENT_PROTECTION_RULE', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
     return (
-      environment_name: string,
+      environmentName: string,
       repo: string,
       owner: string,
-      protection_rule_id: string,
+      protectionRuleId: string,
     ) =>
       httpResource<unknown>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environment_name}/deployment_protection_rules/${protection_rule_id}`,
+        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/${protectionRuleId}`,
         method: 'DELETE',
       }));
   },

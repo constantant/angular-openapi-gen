@@ -3,11 +3,12 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody = NonNullable<
-  paths['/user/email/visibility']['patch']['requestBody']
->['content']['application/json'];
+export type UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody =
+  NonNullable<
+    paths['/user/email/visibility']['patch']['requestBody']
+  >['content']['application/json'];
 
-type UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse =
+export type UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse =
   paths['/user/email/visibility']['patch']['responses']['200']['content']['application/json'];
 
 export const USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER =

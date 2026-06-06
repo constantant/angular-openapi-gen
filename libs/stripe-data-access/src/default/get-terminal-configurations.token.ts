@@ -3,24 +3,32 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetTerminalConfigurationsParams =
+export type GetTerminalConfigurationsParams =
   paths['/v1/terminal/configurations']['get']['parameters']['query'];
 
-type GetTerminalConfigurationsResponse =
+export type GetTerminalConfigurationsResponse =
   paths['/v1/terminal/configurations']['get']['responses']['200']['content']['application/json'];
 
 export const GET_TERMINAL_CONFIGURATIONS = new InjectionToken<
   (
-    params?: GetTerminalConfigurationsParams,
+    params?:
+      | GetTerminalConfigurationsParams
+      | (() => GetTerminalConfigurationsParams | undefined),
   ) => ReturnType<typeof httpResource<GetTerminalConfigurationsResponse>>
 >('GET_TERMINAL_CONFIGURATIONS', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (params?: GetTerminalConfigurationsParams) =>
+    return (
+      params?:
+        | GetTerminalConfigurationsParams
+        | (() => GetTerminalConfigurationsParams | undefined),
+    ) =>
       httpResource<GetTerminalConfigurationsResponse>(() => ({
         url: `${base}/v1/terminal/configurations`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

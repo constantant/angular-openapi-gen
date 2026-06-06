@@ -3,16 +3,16 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPaymentMethodsPaymentMethodAttachBody = NonNullable<
+export type PostPaymentMethodsPaymentMethodAttachBody = NonNullable<
   paths['/v1/payment_methods/{payment_method}/attach']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPaymentMethodsPaymentMethodAttachResponse =
+export type PostPaymentMethodsPaymentMethodAttachResponse =
   paths['/v1/payment_methods/{payment_method}/attach']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYMENT_METHODS_PAYMENT_METHOD_ATTACH = new InjectionToken<
   (
-    payment_method: string,
+    paymentMethod: string,
     body:
       | PostPaymentMethodsPaymentMethodAttachBody
       | Signal<PostPaymentMethodsPaymentMethodAttachBody>,
@@ -24,13 +24,13 @@ export const POST_PAYMENT_METHODS_PAYMENT_METHOD_ATTACH = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      payment_method: string,
+      paymentMethod: string,
       body:
         | PostPaymentMethodsPaymentMethodAttachBody
         | Signal<PostPaymentMethodsPaymentMethodAttachBody>,
     ) =>
       httpResource<PostPaymentMethodsPaymentMethodAttachResponse>(() => ({
-        url: `${base}/v1/payment_methods/${payment_method}/attach`,
+        url: `${base}/v1/payment_methods/${paymentMethod}/attach`,
         method: 'POST',
         body,
       }));

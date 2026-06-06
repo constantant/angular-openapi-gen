@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCheckImmutableReleasesResponse =
+export type ReposCheckImmutableReleasesResponse =
   paths['/repos/{owner}/{repo}/immutable-releases']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_CHECK_IMMUTABLE_RELEASES = new InjectionToken<

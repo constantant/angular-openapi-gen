@@ -3,19 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody =
+export type DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody =
   NonNullable<
     paths['/v1/customers/{customer}/subscriptions/{subscription_exposed_id}/discount']['delete']['requestBody']
   >['content']['application/x-www-form-urlencoded'];
 
-type DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse =
+export type DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse =
   paths['/v1/customers/{customer}/subscriptions/{subscription_exposed_id}/discount']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT =
   new InjectionToken<
     (
       customer: string,
-      subscription_exposed_id: string,
+      subscriptionExposedId: string,
       body:
         | DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody
         | Signal<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody>,
@@ -30,14 +30,14 @@ export const DELETE_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DIS
         const base = inject(STRIPE_BASE_URL);
         return (
           customer: string,
-          subscription_exposed_id: string,
+          subscriptionExposedId: string,
           body:
             | DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody
             | Signal<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountBody>,
         ) =>
           httpResource<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse>(
             () => ({
-              url: `${base}/v1/customers/${customer}/subscriptions/${subscription_exposed_id}/discount`,
+              url: `${base}/v1/customers/${customer}/subscriptions/${subscriptionExposedId}/discount`,
               method: 'DELETE',
               body,
             }),

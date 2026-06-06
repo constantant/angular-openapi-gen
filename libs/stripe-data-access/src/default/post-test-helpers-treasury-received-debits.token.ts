@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTestHelpersTreasuryReceivedDebitsBody = NonNullable<
+export type PostTestHelpersTreasuryReceivedDebitsBody = NonNullable<
   paths['/v1/test_helpers/treasury/received_debits']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTestHelpersTreasuryReceivedDebitsResponse =
+export type PostTestHelpersTreasuryReceivedDebitsResponse =
   paths['/v1/test_helpers/treasury/received_debits']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TEST_HELPERS_TREASURY_RECEIVED_DEBITS = new InjectionToken<

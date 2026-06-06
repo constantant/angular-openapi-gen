@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposRequestPagesBuildResponse =
+export type ReposRequestPagesBuildResponse =
   paths['/repos/{owner}/{repo}/pages/builds']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_REQUEST_PAGES_BUILD = new InjectionToken<

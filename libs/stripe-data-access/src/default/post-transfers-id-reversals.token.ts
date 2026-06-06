@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTransfersIdReversalsBody = NonNullable<
+export type PostTransfersIdReversalsBody = NonNullable<
   paths['/v1/transfers/{id}/reversals']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTransfersIdReversalsResponse =
+export type PostTransfersIdReversalsResponse =
   paths['/v1/transfers/{id}/reversals']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TRANSFERS_ID_REVERSALS = new InjectionToken<

@@ -3,16 +3,16 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteRadarValueListsValueListBody = NonNullable<
+export type DeleteRadarValueListsValueListBody = NonNullable<
   paths['/v1/radar/value_lists/{value_list}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteRadarValueListsValueListResponse =
+export type DeleteRadarValueListsValueListResponse =
   paths['/v1/radar/value_lists/{value_list}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_RADAR_VALUE_LISTS_VALUE_LIST = new InjectionToken<
   (
-    value_list: string,
+    valueList: string,
     body:
       | DeleteRadarValueListsValueListBody
       | Signal<DeleteRadarValueListsValueListBody>,
@@ -22,13 +22,13 @@ export const DELETE_RADAR_VALUE_LISTS_VALUE_LIST = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      value_list: string,
+      valueList: string,
       body:
         | DeleteRadarValueListsValueListBody
         | Signal<DeleteRadarValueListsValueListBody>,
     ) =>
       httpResource<DeleteRadarValueListsValueListResponse>(() => ({
-        url: `${base}/v1/radar/value_lists/${value_list}`,
+        url: `${base}/v1/radar/value_lists/${valueList}`,
         method: 'DELETE',
         body,
       }));

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostRefundsRefundBody = NonNullable<
+export type PostRefundsRefundBody = NonNullable<
   paths['/v1/refunds/{refund}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostRefundsRefundResponse =
+export type PostRefundsRefundResponse =
   paths['/v1/refunds/{refund}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_REFUNDS_REFUND = new InjectionToken<

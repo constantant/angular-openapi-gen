@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostSubscriptionSchedulesScheduleReleaseBody = NonNullable<
+export type PostSubscriptionSchedulesScheduleReleaseBody = NonNullable<
   paths['/v1/subscription_schedules/{schedule}/release']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostSubscriptionSchedulesScheduleReleaseResponse =
+export type PostSubscriptionSchedulesScheduleReleaseResponse =
   paths['/v1/subscription_schedules/{schedule}/release']['post']['responses']['200']['content']['application/json'];
 
 export const POST_SUBSCRIPTION_SCHEDULES_SCHEDULE_RELEASE = new InjectionToken<

@@ -7,15 +7,15 @@ export const REPOS_DELETE_INVITATION = new InjectionToken<
   (
     owner: string,
     repo: string,
-    invitation_id: string,
+    invitationId: string,
   ) => ReturnType<typeof httpResource<unknown>>
 >('REPOS_DELETE_INVITATION', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, invitation_id: string) =>
+    return (owner: string, repo: string, invitationId: string) =>
       httpResource<unknown>(() => ({
-        url: `${base}/repos/${owner}/${repo}/invitations/${invitation_id}`,
+        url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
         method: 'DELETE',
       }));
   },

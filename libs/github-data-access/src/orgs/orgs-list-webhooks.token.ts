@@ -1,0 +1,39 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type OrgsListWebhooksParams =
+  paths['/orgs/{org}/hooks']['get']['parameters']['query'];
+
+export type OrgsListWebhooksResponse =
+  paths['/orgs/{org}/hooks']['get']['responses']['200']['content']['application/json'];
+
+export const ORGS_LIST_WEBHOOKS = new InjectionToken<
+  (
+    org: string,
+    params?:
+      | OrgsListWebhooksParams
+      | (() => OrgsListWebhooksParams | undefined),
+  ) => ReturnType<typeof httpResource<OrgsListWebhooksResponse>>
+>('ORGS_LIST_WEBHOOKS', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(GITHUB_BASE_URL);
+    return (
+      org: string,
+      params?:
+        | OrgsListWebhooksParams
+        | (() => OrgsListWebhooksParams | undefined),
+    ) =>
+      httpResource<OrgsListWebhooksResponse>(() => ({
+        url: `${base}/orgs/${org}/hooks`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
+          string,
+          string | number | boolean | readonly (string | number | boolean)[]
+        >,
+      }));
+  },
+});

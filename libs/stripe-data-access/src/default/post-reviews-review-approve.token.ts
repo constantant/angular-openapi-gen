@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostReviewsReviewApproveBody = NonNullable<
+export type PostReviewsReviewApproveBody = NonNullable<
   paths['/v1/reviews/{review}/approve']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostReviewsReviewApproveResponse =
+export type PostReviewsReviewApproveResponse =
   paths['/v1/reviews/{review}/approve']['post']['responses']['200']['content']['application/json'];
 
 export const POST_REVIEWS_REVIEW_APPROVE = new InjectionToken<

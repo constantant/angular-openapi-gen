@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostQuotesQuoteAcceptBody = NonNullable<
+export type PostQuotesQuoteAcceptBody = NonNullable<
   paths['/v1/quotes/{quote}/accept']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostQuotesQuoteAcceptResponse =
+export type PostQuotesQuoteAcceptResponse =
   paths['/v1/quotes/{quote}/accept']['post']['responses']['200']['content']['application/json'];
 
 export const POST_QUOTES_QUOTE_ACCEPT = new InjectionToken<

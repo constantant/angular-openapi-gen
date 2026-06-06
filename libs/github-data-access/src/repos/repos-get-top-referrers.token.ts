@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetTopReferrersResponse =
+export type ReposGetTopReferrersResponse =
   paths['/repos/{owner}/{repo}/traffic/popular/referrers']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_TOP_REFERRERS = new InjectionToken<

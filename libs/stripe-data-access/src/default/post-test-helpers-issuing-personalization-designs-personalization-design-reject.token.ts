@@ -3,18 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectBody =
+export type PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectBody =
   NonNullable<
     paths['/v1/test_helpers/issuing/personalization_designs/{personalization_design}/reject']['post']['requestBody']
   >['content']['application/x-www-form-urlencoded'];
 
-type PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectResponse =
+export type PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectResponse =
   paths['/v1/test_helpers/issuing/personalization_designs/{personalization_design}/reject']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TEST_HELPERS_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN_REJECT =
   new InjectionToken<
     (
-      personalization_design: string,
+      personalizationDesign: string,
       body:
         | PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectBody
         | Signal<PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectBody>,
@@ -28,14 +28,14 @@ export const POST_TEST_HELPERS_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_D
       factory: () => {
         const base = inject(STRIPE_BASE_URL);
         return (
-          personalization_design: string,
+          personalizationDesign: string,
           body:
             | PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectBody
             | Signal<PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectBody>,
         ) =>
           httpResource<PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignRejectResponse>(
             () => ({
-              url: `${base}/v1/test_helpers/issuing/personalization_designs/${personalization_design}/reject`,
+              url: `${base}/v1/test_helpers/issuing/personalization_designs/${personalizationDesign}/reject`,
               method: 'POST',
               body,
             }),

@@ -3,16 +3,16 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteSubscriptionsSubscriptionExposedIdBody = NonNullable<
+export type DeleteSubscriptionsSubscriptionExposedIdBody = NonNullable<
   paths['/v1/subscriptions/{subscription_exposed_id}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteSubscriptionsSubscriptionExposedIdResponse =
+export type DeleteSubscriptionsSubscriptionExposedIdResponse =
   paths['/v1/subscriptions/{subscription_exposed_id}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID = new InjectionToken<
   (
-    subscription_exposed_id: string,
+    subscriptionExposedId: string,
     body:
       | DeleteSubscriptionsSubscriptionExposedIdBody
       | Signal<DeleteSubscriptionsSubscriptionExposedIdBody>,
@@ -24,13 +24,13 @@ export const DELETE_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      subscription_exposed_id: string,
+      subscriptionExposedId: string,
       body:
         | DeleteSubscriptionsSubscriptionExposedIdBody
         | Signal<DeleteSubscriptionsSubscriptionExposedIdBody>,
     ) =>
       httpResource<DeleteSubscriptionsSubscriptionExposedIdResponse>(() => ({
-        url: `${base}/v1/subscriptions/${subscription_exposed_id}`,
+        url: `${base}/v1/subscriptions/${subscriptionExposedId}`,
         method: 'DELETE',
         body,
       }));

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostSetupIntentsBody = NonNullable<
+export type PostSetupIntentsBody = NonNullable<
   paths['/v1/setup_intents']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostSetupIntentsResponse =
+export type PostSetupIntentsResponse =
   paths['/v1/setup_intents']['post']['responses']['200']['content']['application/json'];
 
 export const POST_SETUP_INTENTS = new InjectionToken<

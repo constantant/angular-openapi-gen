@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteInvoiceitemsInvoiceitemBody = NonNullable<
+export type DeleteInvoiceitemsInvoiceitemBody = NonNullable<
   paths['/v1/invoiceitems/{invoiceitem}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteInvoiceitemsInvoiceitemResponse =
+export type DeleteInvoiceitemsInvoiceitemResponse =
   paths['/v1/invoiceitems/{invoiceitem}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_INVOICEITEMS_INVOICEITEM = new InjectionToken<

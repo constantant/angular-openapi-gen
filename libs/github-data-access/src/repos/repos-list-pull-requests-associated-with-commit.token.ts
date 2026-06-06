@@ -3,10 +3,10 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposListPullRequestsAssociatedWithCommitParams =
+export type ReposListPullRequestsAssociatedWithCommitParams =
   paths['/repos/{owner}/{repo}/commits/{commit_sha}/pulls']['get']['parameters']['query'];
 
-type ReposListPullRequestsAssociatedWithCommitResponse =
+export type ReposListPullRequestsAssociatedWithCommitResponse =
   paths['/repos/{owner}/{repo}/commits/{commit_sha}/pulls']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT =
@@ -14,8 +14,10 @@ export const REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT =
     (
       owner: string,
       repo: string,
-      commit_sha: string,
-      params?: ReposListPullRequestsAssociatedWithCommitParams,
+      commitSha: string,
+      params?:
+        | ReposListPullRequestsAssociatedWithCommitParams
+        | (() => ReposListPullRequestsAssociatedWithCommitParams | undefined),
     ) => ReturnType<
       typeof httpResource<ReposListPullRequestsAssociatedWithCommitResponse>
     >
@@ -26,12 +28,16 @@ export const REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT =
       return (
         owner: string,
         repo: string,
-        commit_sha: string,
-        params?: ReposListPullRequestsAssociatedWithCommitParams,
+        commitSha: string,
+        params?:
+          | ReposListPullRequestsAssociatedWithCommitParams
+          | (() => ReposListPullRequestsAssociatedWithCommitParams | undefined),
       ) =>
         httpResource<ReposListPullRequestsAssociatedWithCommitResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/commits/${commit_sha}/pulls`,
-          params: params as unknown as Record<
+          url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/pulls`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
             string,
             string | number | boolean | readonly (string | number | boolean)[]
           >,

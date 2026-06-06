@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPromotionCodesBody = NonNullable<
+export type PostPromotionCodesBody = NonNullable<
   paths['/v1/promotion_codes']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPromotionCodesResponse =
+export type PostPromotionCodesResponse =
   paths['/v1/promotion_codes']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PROMOTION_CODES = new InjectionToken<

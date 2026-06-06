@@ -3,17 +3,21 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetFinancialConnectionsTransactionsTransactionParams =
+export type GetFinancialConnectionsTransactionsTransactionParams =
   paths['/v1/financial_connections/transactions/{transaction}']['get']['parameters']['query'];
 
-type GetFinancialConnectionsTransactionsTransactionResponse =
+export type GetFinancialConnectionsTransactionsTransactionResponse =
   paths['/v1/financial_connections/transactions/{transaction}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_FINANCIAL_CONNECTIONS_TRANSACTIONS_TRANSACTION =
   new InjectionToken<
     (
       transaction: string,
-      params?: GetFinancialConnectionsTransactionsTransactionParams,
+      params?:
+        | GetFinancialConnectionsTransactionsTransactionParams
+        | (() =>
+            | GetFinancialConnectionsTransactionsTransactionParams
+            | undefined),
     ) => ReturnType<
       typeof httpResource<GetFinancialConnectionsTransactionsTransactionResponse>
     >
@@ -23,12 +27,18 @@ export const GET_FINANCIAL_CONNECTIONS_TRANSACTIONS_TRANSACTION =
       const base = inject(STRIPE_BASE_URL);
       return (
         transaction: string,
-        params?: GetFinancialConnectionsTransactionsTransactionParams,
+        params?:
+          | GetFinancialConnectionsTransactionsTransactionParams
+          | (() =>
+              | GetFinancialConnectionsTransactionsTransactionParams
+              | undefined),
       ) =>
         httpResource<GetFinancialConnectionsTransactionsTransactionResponse>(
           () => ({
             url: `${base}/v1/financial_connections/transactions/${transaction}`,
-            params: params as unknown as Record<
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

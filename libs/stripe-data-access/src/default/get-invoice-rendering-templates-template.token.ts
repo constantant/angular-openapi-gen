@@ -3,16 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetInvoiceRenderingTemplatesTemplateParams =
+export type GetInvoiceRenderingTemplatesTemplateParams =
   paths['/v1/invoice_rendering_templates/{template}']['get']['parameters']['query'];
 
-type GetInvoiceRenderingTemplatesTemplateResponse =
+export type GetInvoiceRenderingTemplatesTemplateResponse =
   paths['/v1/invoice_rendering_templates/{template}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_INVOICE_RENDERING_TEMPLATES_TEMPLATE = new InjectionToken<
   (
     template: string,
-    params?: GetInvoiceRenderingTemplatesTemplateParams,
+    params?:
+      | GetInvoiceRenderingTemplatesTemplateParams
+      | (() => GetInvoiceRenderingTemplatesTemplateParams | undefined),
   ) => ReturnType<
     typeof httpResource<GetInvoiceRenderingTemplatesTemplateResponse>
   >
@@ -22,11 +24,15 @@ export const GET_INVOICE_RENDERING_TEMPLATES_TEMPLATE = new InjectionToken<
     const base = inject(STRIPE_BASE_URL);
     return (
       template: string,
-      params?: GetInvoiceRenderingTemplatesTemplateParams,
+      params?:
+        | GetInvoiceRenderingTemplatesTemplateParams
+        | (() => GetInvoiceRenderingTemplatesTemplateParams | undefined),
     ) =>
       httpResource<GetInvoiceRenderingTemplatesTemplateResponse>(() => ({
         url: `${base}/v1/invoice_rendering_templates/${template}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

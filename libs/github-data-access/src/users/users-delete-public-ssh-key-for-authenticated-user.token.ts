@@ -5,14 +5,14 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export const USERS_DELETE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
-    (key_id: string) => ReturnType<typeof httpResource<unknown>>
+    (keyId: string) => ReturnType<typeof httpResource<unknown>>
   >('USERS_DELETE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER', {
     providedIn: 'root',
     factory: () => {
       const base = inject(GITHUB_BASE_URL);
-      return (key_id: string) =>
+      return (keyId: string) =>
         httpResource<unknown>(() => ({
-          url: `${base}/user/keys/${key_id}`,
+          url: `${base}/user/keys/${keyId}`,
           method: 'DELETE',
         }));
     },

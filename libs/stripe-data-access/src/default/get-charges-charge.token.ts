@@ -3,25 +3,34 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetChargesChargeParams =
+export type GetChargesChargeParams =
   paths['/v1/charges/{charge}']['get']['parameters']['query'];
 
-type GetChargesChargeResponse =
+export type GetChargesChargeResponse =
   paths['/v1/charges/{charge}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_CHARGES_CHARGE = new InjectionToken<
   (
     charge: string,
-    params?: GetChargesChargeParams,
+    params?:
+      | GetChargesChargeParams
+      | (() => GetChargesChargeParams | undefined),
   ) => ReturnType<typeof httpResource<GetChargesChargeResponse>>
 >('GET_CHARGES_CHARGE', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (charge: string, params?: GetChargesChargeParams) =>
+    return (
+      charge: string,
+      params?:
+        | GetChargesChargeParams
+        | (() => GetChargesChargeParams | undefined),
+    ) =>
       httpResource<GetChargesChargeResponse>(() => ({
         url: `${base}/v1/charges/${charge}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

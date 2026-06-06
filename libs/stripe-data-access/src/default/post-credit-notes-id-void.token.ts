@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostCreditNotesIdVoidBody = NonNullable<
+export type PostCreditNotesIdVoidBody = NonNullable<
   paths['/v1/credit_notes/{id}/void']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostCreditNotesIdVoidResponse =
+export type PostCreditNotesIdVoidResponse =
   paths['/v1/credit_notes/{id}/void']['post']['responses']['200']['content']['application/json'];
 
 export const POST_CREDIT_NOTES_ID_VOID = new InjectionToken<

@@ -3,24 +3,32 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetCreditNotesPreviewLinesParams =
+export type GetCreditNotesPreviewLinesParams =
   paths['/v1/credit_notes/preview/lines']['get']['parameters']['query'];
 
-type GetCreditNotesPreviewLinesResponse =
+export type GetCreditNotesPreviewLinesResponse =
   paths['/v1/credit_notes/preview/lines']['get']['responses']['200']['content']['application/json'];
 
 export const GET_CREDIT_NOTES_PREVIEW_LINES = new InjectionToken<
   (
-    params?: GetCreditNotesPreviewLinesParams,
+    params?:
+      | GetCreditNotesPreviewLinesParams
+      | (() => GetCreditNotesPreviewLinesParams | undefined),
   ) => ReturnType<typeof httpResource<GetCreditNotesPreviewLinesResponse>>
 >('GET_CREDIT_NOTES_PREVIEW_LINES', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (params?: GetCreditNotesPreviewLinesParams) =>
+    return (
+      params?:
+        | GetCreditNotesPreviewLinesParams
+        | (() => GetCreditNotesPreviewLinesParams | undefined),
+    ) =>
       httpResource<GetCreditNotesPreviewLinesResponse>(() => ({
         url: `${base}/v1/credit_notes/preview/lines`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

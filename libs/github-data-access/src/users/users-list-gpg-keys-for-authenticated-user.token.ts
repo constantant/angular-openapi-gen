@@ -3,15 +3,17 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersListGpgKeysForAuthenticatedUserParams =
+export type UsersListGpgKeysForAuthenticatedUserParams =
   paths['/user/gpg_keys']['get']['parameters']['query'];
 
-type UsersListGpgKeysForAuthenticatedUserResponse =
+export type UsersListGpgKeysForAuthenticatedUserResponse =
   paths['/user/gpg_keys']['get']['responses']['200']['content']['application/json'];
 
 export const USERS_LIST_GPG_KEYS_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
-    params?: UsersListGpgKeysForAuthenticatedUserParams,
+    params?:
+      | UsersListGpgKeysForAuthenticatedUserParams
+      | (() => UsersListGpgKeysForAuthenticatedUserParams | undefined),
   ) => ReturnType<
     typeof httpResource<UsersListGpgKeysForAuthenticatedUserResponse>
   >
@@ -19,10 +21,16 @@ export const USERS_LIST_GPG_KEYS_FOR_AUTHENTICATED_USER = new InjectionToken<
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (params?: UsersListGpgKeysForAuthenticatedUserParams) =>
+    return (
+      params?:
+        | UsersListGpgKeysForAuthenticatedUserParams
+        | (() => UsersListGpgKeysForAuthenticatedUserParams | undefined),
+    ) =>
       httpResource<UsersListGpgKeysForAuthenticatedUserResponse>(() => ({
         url: `${base}/user/gpg_keys`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

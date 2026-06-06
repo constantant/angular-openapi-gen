@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostRadarPaymentEvaluationsBody = NonNullable<
+export type PostRadarPaymentEvaluationsBody = NonNullable<
   paths['/v1/radar/payment_evaluations']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostRadarPaymentEvaluationsResponse =
+export type PostRadarPaymentEvaluationsResponse =
   paths['/v1/radar/payment_evaluations']['post']['responses']['200']['content']['application/json'];
 
 export const POST_RADAR_PAYMENT_EVALUATIONS = new InjectionToken<

@@ -3,17 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetProductsProductFeaturesIdParams =
+export type GetProductsProductFeaturesIdParams =
   paths['/v1/products/{product}/features/{id}']['get']['parameters']['query'];
 
-type GetProductsProductFeaturesIdResponse =
+export type GetProductsProductFeaturesIdResponse =
   paths['/v1/products/{product}/features/{id}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_PRODUCTS_PRODUCT_FEATURES_ID = new InjectionToken<
   (
     id: string,
     product: string,
-    params?: GetProductsProductFeaturesIdParams,
+    params?:
+      | GetProductsProductFeaturesIdParams
+      | (() => GetProductsProductFeaturesIdParams | undefined),
   ) => ReturnType<typeof httpResource<GetProductsProductFeaturesIdResponse>>
 >('GET_PRODUCTS_PRODUCT_FEATURES_ID', {
   providedIn: 'root',
@@ -22,11 +24,15 @@ export const GET_PRODUCTS_PRODUCT_FEATURES_ID = new InjectionToken<
     return (
       id: string,
       product: string,
-      params?: GetProductsProductFeaturesIdParams,
+      params?:
+        | GetProductsProductFeaturesIdParams
+        | (() => GetProductsProductFeaturesIdParams | undefined),
     ) =>
       httpResource<GetProductsProductFeaturesIdResponse>(() => ({
         url: `${base}/v1/products/${product}/features/${id}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

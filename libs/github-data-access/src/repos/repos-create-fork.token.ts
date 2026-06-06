@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateForkBody = NonNullable<
+export type ReposCreateForkBody = NonNullable<
   paths['/repos/{owner}/{repo}/forks']['post']['requestBody']
 >['content']['application/json'];
 

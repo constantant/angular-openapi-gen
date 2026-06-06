@@ -3,15 +3,15 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetRepoRulesetVersionResponse =
+export type ReposGetRepoRulesetVersionResponse =
   paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_REPO_RULESET_VERSION = new InjectionToken<
   (
     owner: string,
     repo: string,
-    ruleset_id: string,
-    version_id: string,
+    rulesetId: string,
+    versionId: string,
   ) => ReturnType<typeof httpResource<ReposGetRepoRulesetVersionResponse>>
 >('REPOS_GET_REPO_RULESET_VERSION', {
   providedIn: 'root',
@@ -20,11 +20,11 @@ export const REPOS_GET_REPO_RULESET_VERSION = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      ruleset_id: string,
-      version_id: string,
+      rulesetId: string,
+      versionId: string,
     ) =>
       httpResource<ReposGetRepoRulesetVersionResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/rulesets/${ruleset_id}/history/${version_id}`,
+        url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}/history/${versionId}`,
       }));
   },
 });

@@ -1,0 +1,41 @@
+import { InjectionToken, inject, Signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type OidcCreateOidcCustomPropertyInclusionForOrgBody = NonNullable<
+  paths['/orgs/{org}/actions/oidc/customization/properties/repo']['post']['requestBody']
+>['content']['application/json'];
+
+export type OidcCreateOidcCustomPropertyInclusionForOrgResponse =
+  paths['/orgs/{org}/actions/oidc/customization/properties/repo']['post']['responses']['201']['content']['application/json'];
+
+export const OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ORG =
+  new InjectionToken<
+    (
+      org: string,
+      body:
+        | OidcCreateOidcCustomPropertyInclusionForOrgBody
+        | Signal<OidcCreateOidcCustomPropertyInclusionForOrgBody>,
+    ) => ReturnType<
+      typeof httpResource<OidcCreateOidcCustomPropertyInclusionForOrgResponse>
+    >
+  >('OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ORG', {
+    providedIn: 'root',
+    factory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        body:
+          | OidcCreateOidcCustomPropertyInclusionForOrgBody
+          | Signal<OidcCreateOidcCustomPropertyInclusionForOrgBody>,
+      ) =>
+        httpResource<OidcCreateOidcCustomPropertyInclusionForOrgResponse>(
+          () => ({
+            url: `${base}/orgs/${org}/actions/oidc/customization/properties/repo`,
+            method: 'POST',
+            body,
+          }),
+        );
+    },
+  });

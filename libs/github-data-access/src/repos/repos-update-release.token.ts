@@ -3,18 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposUpdateReleaseBody = NonNullable<
+export type ReposUpdateReleaseBody = NonNullable<
   paths['/repos/{owner}/{repo}/releases/{release_id}']['patch']['requestBody']
 >['content']['application/json'];
 
-type ReposUpdateReleaseResponse =
+export type ReposUpdateReleaseResponse =
   paths['/repos/{owner}/{repo}/releases/{release_id}']['patch']['responses']['200']['content']['application/json'];
 
 export const REPOS_UPDATE_RELEASE = new InjectionToken<
   (
     owner: string,
     repo: string,
-    release_id: string,
+    releaseId: string,
     body: ReposUpdateReleaseBody | Signal<ReposUpdateReleaseBody>,
   ) => ReturnType<typeof httpResource<ReposUpdateReleaseResponse>>
 >('REPOS_UPDATE_RELEASE', {
@@ -24,11 +24,11 @@ export const REPOS_UPDATE_RELEASE = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      release_id: string,
+      releaseId: string,
       body: ReposUpdateReleaseBody | Signal<ReposUpdateReleaseBody>,
     ) =>
       httpResource<ReposUpdateReleaseResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/releases/${release_id}`,
+        url: `${base}/repos/${owner}/${repo}/releases/${releaseId}`,
         method: 'PATCH',
         body,
       }));

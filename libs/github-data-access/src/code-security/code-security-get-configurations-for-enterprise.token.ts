@@ -1,0 +1,46 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type CodeSecurityGetConfigurationsForEnterpriseParams =
+  paths['/enterprises/{enterprise}/code-security/configurations']['get']['parameters']['query'];
+
+export type CodeSecurityGetConfigurationsForEnterpriseResponse =
+  paths['/enterprises/{enterprise}/code-security/configurations']['get']['responses']['200']['content']['application/json'];
+
+export const CODE_SECURITY_GET_CONFIGURATIONS_FOR_ENTERPRISE =
+  new InjectionToken<
+    (
+      enterprise: string,
+      params?:
+        | CodeSecurityGetConfigurationsForEnterpriseParams
+        | (() => CodeSecurityGetConfigurationsForEnterpriseParams | undefined),
+    ) => ReturnType<
+      typeof httpResource<CodeSecurityGetConfigurationsForEnterpriseResponse>
+    >
+  >('CODE_SECURITY_GET_CONFIGURATIONS_FOR_ENTERPRISE', {
+    providedIn: 'root',
+    factory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        enterprise: string,
+        params?:
+          | CodeSecurityGetConfigurationsForEnterpriseParams
+          | (() =>
+              | CodeSecurityGetConfigurationsForEnterpriseParams
+              | undefined),
+      ) =>
+        httpResource<CodeSecurityGetConfigurationsForEnterpriseResponse>(
+          () => ({
+            url: `${base}/enterprises/${enterprise}/code-security/configurations`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          }),
+        );
+    },
+  });

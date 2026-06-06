@@ -3,18 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateOrUpdateEnvironmentBody = NonNullable<
+export type ReposCreateOrUpdateEnvironmentBody = NonNullable<
   paths['/repos/{owner}/{repo}/environments/{environment_name}']['put']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateOrUpdateEnvironmentResponse =
+export type ReposCreateOrUpdateEnvironmentResponse =
   paths['/repos/{owner}/{repo}/environments/{environment_name}']['put']['responses']['200']['content']['application/json'];
 
 export const REPOS_CREATE_OR_UPDATE_ENVIRONMENT = new InjectionToken<
   (
     owner: string,
     repo: string,
-    environment_name: string,
+    environmentName: string,
     body:
       | ReposCreateOrUpdateEnvironmentBody
       | Signal<ReposCreateOrUpdateEnvironmentBody>,
@@ -26,13 +26,13 @@ export const REPOS_CREATE_OR_UPDATE_ENVIRONMENT = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      environment_name: string,
+      environmentName: string,
       body:
         | ReposCreateOrUpdateEnvironmentBody
         | Signal<ReposCreateOrUpdateEnvironmentBody>,
     ) =>
       httpResource<ReposCreateOrUpdateEnvironmentResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environment_name}`,
+        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
         method: 'PUT',
         body,
       }));

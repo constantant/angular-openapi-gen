@@ -7,15 +7,15 @@ export const REPOS_DELETE_COMMIT_COMMENT = new InjectionToken<
   (
     owner: string,
     repo: string,
-    comment_id: string,
+    commentId: string,
   ) => ReturnType<typeof httpResource<unknown>>
 >('REPOS_DELETE_COMMIT_COMMENT', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, comment_id: string) =>
+    return (owner: string, repo: string, commentId: string) =>
       httpResource<unknown>(() => ({
-        url: `${base}/repos/${owner}/${repo}/comments/${comment_id}`,
+        url: `${base}/repos/${owner}/${repo}/comments/${commentId}`,
         method: 'DELETE',
       }));
   },

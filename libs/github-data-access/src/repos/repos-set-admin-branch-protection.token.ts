@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposSetAdminBranchProtectionResponse =
+export type ReposSetAdminBranchProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins']['post']['responses']['200']['content']['application/json'];
 
 export const REPOS_SET_ADMIN_BRANCH_PROTECTION = new InjectionToken<

@@ -3,23 +3,25 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetEventsParams = paths['/v1/events']['get']['parameters']['query'];
+export type GetEventsParams = paths['/v1/events']['get']['parameters']['query'];
 
-type GetEventsResponse =
+export type GetEventsResponse =
   paths['/v1/events']['get']['responses']['200']['content']['application/json'];
 
 export const GET_EVENTS = new InjectionToken<
   (
-    params?: GetEventsParams,
+    params?: GetEventsParams | (() => GetEventsParams | undefined),
   ) => ReturnType<typeof httpResource<GetEventsResponse>>
 >('GET_EVENTS', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (params?: GetEventsParams) =>
+    return (params?: GetEventsParams | (() => GetEventsParams | undefined)) =>
       httpResource<GetEventsResponse>(() => ({
         url: `${base}/v1/events`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

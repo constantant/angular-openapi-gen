@@ -3,11 +3,12 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostCustomersCustomerBalanceTransactionsTransactionBody = NonNullable<
-  paths['/v1/customers/{customer}/balance_transactions/{transaction}']['post']['requestBody']
->['content']['application/x-www-form-urlencoded'];
+export type PostCustomersCustomerBalanceTransactionsTransactionBody =
+  NonNullable<
+    paths['/v1/customers/{customer}/balance_transactions/{transaction}']['post']['requestBody']
+  >['content']['application/x-www-form-urlencoded'];
 
-type PostCustomersCustomerBalanceTransactionsTransactionResponse =
+export type PostCustomersCustomerBalanceTransactionsTransactionResponse =
   paths['/v1/customers/{customer}/balance_transactions/{transaction}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION =

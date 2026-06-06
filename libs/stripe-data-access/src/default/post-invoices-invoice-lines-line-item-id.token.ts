@@ -3,17 +3,17 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostInvoicesInvoiceLinesLineItemIdBody = NonNullable<
+export type PostInvoicesInvoiceLinesLineItemIdBody = NonNullable<
   paths['/v1/invoices/{invoice}/lines/{line_item_id}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostInvoicesInvoiceLinesLineItemIdResponse =
+export type PostInvoicesInvoiceLinesLineItemIdResponse =
   paths['/v1/invoices/{invoice}/lines/{line_item_id}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_INVOICES_INVOICE_LINES_LINE_ITEM_ID = new InjectionToken<
   (
     invoice: string,
-    line_item_id: string,
+    lineItemId: string,
     body:
       | PostInvoicesInvoiceLinesLineItemIdBody
       | Signal<PostInvoicesInvoiceLinesLineItemIdBody>,
@@ -26,13 +26,13 @@ export const POST_INVOICES_INVOICE_LINES_LINE_ITEM_ID = new InjectionToken<
     const base = inject(STRIPE_BASE_URL);
     return (
       invoice: string,
-      line_item_id: string,
+      lineItemId: string,
       body:
         | PostInvoicesInvoiceLinesLineItemIdBody
         | Signal<PostInvoicesInvoiceLinesLineItemIdBody>,
     ) =>
       httpResource<PostInvoicesInvoiceLinesLineItemIdResponse>(() => ({
-        url: `${base}/v1/invoices/${invoice}/lines/${line_item_id}`,
+        url: `${base}/v1/invoices/${invoice}/lines/${lineItemId}`,
         method: 'POST',
         body,
       }));

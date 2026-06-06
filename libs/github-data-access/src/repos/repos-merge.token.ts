@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposMergeBody = NonNullable<
+export type ReposMergeBody = NonNullable<
   paths['/repos/{owner}/{repo}/merges']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposMergeResponse =
+export type ReposMergeResponse =
   paths['/repos/{owner}/{repo}/merges']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_MERGE = new InjectionToken<

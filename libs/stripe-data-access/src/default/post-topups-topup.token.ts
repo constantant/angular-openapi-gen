@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTopupsTopupBody = NonNullable<
+export type PostTopupsTopupBody = NonNullable<
   paths['/v1/topups/{topup}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTopupsTopupResponse =
+export type PostTopupsTopupResponse =
   paths['/v1/topups/{topup}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TOPUPS_TOPUP = new InjectionToken<

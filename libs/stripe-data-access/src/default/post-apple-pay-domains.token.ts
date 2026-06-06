@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostApplePayDomainsBody = NonNullable<
+export type PostApplePayDomainsBody = NonNullable<
   paths['/v1/apple_pay/domains']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostApplePayDomainsResponse =
+export type PostApplePayDomainsResponse =
   paths['/v1/apple_pay/domains']['post']['responses']['200']['content']['application/json'];
 
 export const POST_APPLE_PAY_DOMAINS = new InjectionToken<

@@ -3,16 +3,16 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPaymentMethodsPaymentMethodDetachBody = NonNullable<
+export type PostPaymentMethodsPaymentMethodDetachBody = NonNullable<
   paths['/v1/payment_methods/{payment_method}/detach']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPaymentMethodsPaymentMethodDetachResponse =
+export type PostPaymentMethodsPaymentMethodDetachResponse =
   paths['/v1/payment_methods/{payment_method}/detach']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYMENT_METHODS_PAYMENT_METHOD_DETACH = new InjectionToken<
   (
-    payment_method: string,
+    paymentMethod: string,
     body:
       | PostPaymentMethodsPaymentMethodDetachBody
       | Signal<PostPaymentMethodsPaymentMethodDetachBody>,
@@ -24,13 +24,13 @@ export const POST_PAYMENT_METHODS_PAYMENT_METHOD_DETACH = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      payment_method: string,
+      paymentMethod: string,
       body:
         | PostPaymentMethodsPaymentMethodDetachBody
         | Signal<PostPaymentMethodsPaymentMethodDetachBody>,
     ) =>
       httpResource<PostPaymentMethodsPaymentMethodDetachResponse>(() => ({
-        url: `${base}/v1/payment_methods/${payment_method}/detach`,
+        url: `${base}/v1/payment_methods/${paymentMethod}/detach`,
         method: 'POST',
         body,
       }));

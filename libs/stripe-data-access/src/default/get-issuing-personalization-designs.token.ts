@@ -3,24 +3,32 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetIssuingPersonalizationDesignsParams =
+export type GetIssuingPersonalizationDesignsParams =
   paths['/v1/issuing/personalization_designs']['get']['parameters']['query'];
 
-type GetIssuingPersonalizationDesignsResponse =
+export type GetIssuingPersonalizationDesignsResponse =
   paths['/v1/issuing/personalization_designs']['get']['responses']['200']['content']['application/json'];
 
 export const GET_ISSUING_PERSONALIZATION_DESIGNS = new InjectionToken<
   (
-    params?: GetIssuingPersonalizationDesignsParams,
+    params?:
+      | GetIssuingPersonalizationDesignsParams
+      | (() => GetIssuingPersonalizationDesignsParams | undefined),
   ) => ReturnType<typeof httpResource<GetIssuingPersonalizationDesignsResponse>>
 >('GET_ISSUING_PERSONALIZATION_DESIGNS', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (params?: GetIssuingPersonalizationDesignsParams) =>
+    return (
+      params?:
+        | GetIssuingPersonalizationDesignsParams
+        | (() => GetIssuingPersonalizationDesignsParams | undefined),
+    ) =>
       httpResource<GetIssuingPersonalizationDesignsResponse>(() => ({
         url: `${base}/v1/issuing/personalization_designs`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateAttestationBody = NonNullable<
+export type ReposCreateAttestationBody = NonNullable<
   paths['/repos/{owner}/{repo}/attestations']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateAttestationResponse =
+export type ReposCreateAttestationResponse =
   paths['/repos/{owner}/{repo}/attestations']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_CREATE_ATTESTATION = new InjectionToken<

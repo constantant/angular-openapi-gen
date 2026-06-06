@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostBillingPortalConfigurationsBody = NonNullable<
+export type PostBillingPortalConfigurationsBody = NonNullable<
   paths['/v1/billing_portal/configurations']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostBillingPortalConfigurationsResponse =
+export type PostBillingPortalConfigurationsResponse =
   paths['/v1/billing_portal/configurations']['post']['responses']['200']['content']['application/json'];
 
 export const POST_BILLING_PORTAL_CONFIGURATIONS = new InjectionToken<

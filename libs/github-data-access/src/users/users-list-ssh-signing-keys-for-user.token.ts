@@ -3,25 +3,34 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersListSshSigningKeysForUserParams =
+export type UsersListSshSigningKeysForUserParams =
   paths['/users/{username}/ssh_signing_keys']['get']['parameters']['query'];
 
-type UsersListSshSigningKeysForUserResponse =
+export type UsersListSshSigningKeysForUserResponse =
   paths['/users/{username}/ssh_signing_keys']['get']['responses']['200']['content']['application/json'];
 
 export const USERS_LIST_SSH_SIGNING_KEYS_FOR_USER = new InjectionToken<
   (
     username: string,
-    params?: UsersListSshSigningKeysForUserParams,
+    params?:
+      | UsersListSshSigningKeysForUserParams
+      | (() => UsersListSshSigningKeysForUserParams | undefined),
   ) => ReturnType<typeof httpResource<UsersListSshSigningKeysForUserResponse>>
 >('USERS_LIST_SSH_SIGNING_KEYS_FOR_USER', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (username: string, params?: UsersListSshSigningKeysForUserParams) =>
+    return (
+      username: string,
+      params?:
+        | UsersListSshSigningKeysForUserParams
+        | (() => UsersListSshSigningKeysForUserParams | undefined),
+    ) =>
       httpResource<UsersListSshSigningKeysForUserResponse>(() => ({
         url: `${base}/users/${username}/ssh_signing_keys`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteSubscriptionItemsItemBody = NonNullable<
+export type DeleteSubscriptionItemsItemBody = NonNullable<
   paths['/v1/subscription_items/{item}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteSubscriptionItemsItemResponse =
+export type DeleteSubscriptionItemsItemResponse =
   paths['/v1/subscription_items/{item}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_SUBSCRIPTION_ITEMS_ITEM = new InjectionToken<

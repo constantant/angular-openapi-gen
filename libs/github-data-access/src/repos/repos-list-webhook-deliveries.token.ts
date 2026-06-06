@@ -3,18 +3,20 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposListWebhookDeliveriesParams =
+export type ReposListWebhookDeliveriesParams =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['parameters']['query'];
 
-type ReposListWebhookDeliveriesResponse =
+export type ReposListWebhookDeliveriesResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_LIST_WEBHOOK_DELIVERIES = new InjectionToken<
   (
     owner: string,
     repo: string,
-    hook_id: string,
-    params?: ReposListWebhookDeliveriesParams,
+    hookId: string,
+    params?:
+      | ReposListWebhookDeliveriesParams
+      | (() => ReposListWebhookDeliveriesParams | undefined),
   ) => ReturnType<typeof httpResource<ReposListWebhookDeliveriesResponse>>
 >('REPOS_LIST_WEBHOOK_DELIVERIES', {
   providedIn: 'root',
@@ -23,12 +25,16 @@ export const REPOS_LIST_WEBHOOK_DELIVERIES = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      hook_id: string,
-      params?: ReposListWebhookDeliveriesParams,
+      hookId: string,
+      params?:
+        | ReposListWebhookDeliveriesParams
+        | (() => ReposListWebhookDeliveriesParams | undefined),
     ) =>
       httpResource<ReposListWebhookDeliveriesResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/hooks/${hook_id}/deliveries`,
-        params: params as unknown as Record<
+        url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/deliveries`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

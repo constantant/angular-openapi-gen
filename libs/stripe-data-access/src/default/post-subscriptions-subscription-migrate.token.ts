@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostSubscriptionsSubscriptionMigrateBody = NonNullable<
+export type PostSubscriptionsSubscriptionMigrateBody = NonNullable<
   paths['/v1/subscriptions/{subscription}/migrate']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostSubscriptionsSubscriptionMigrateResponse =
+export type PostSubscriptionsSubscriptionMigrateResponse =
   paths['/v1/subscriptions/{subscription}/migrate']['post']['responses']['200']['content']['application/json'];
 
 export const POST_SUBSCRIPTIONS_SUBSCRIPTION_MIGRATE = new InjectionToken<

@@ -3,26 +3,36 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposListPagesBuildsParams =
+export type ReposListPagesBuildsParams =
   paths['/repos/{owner}/{repo}/pages/builds']['get']['parameters']['query'];
 
-type ReposListPagesBuildsResponse =
+export type ReposListPagesBuildsResponse =
   paths['/repos/{owner}/{repo}/pages/builds']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_LIST_PAGES_BUILDS = new InjectionToken<
   (
     owner: string,
     repo: string,
-    params?: ReposListPagesBuildsParams,
+    params?:
+      | ReposListPagesBuildsParams
+      | (() => ReposListPagesBuildsParams | undefined),
   ) => ReturnType<typeof httpResource<ReposListPagesBuildsResponse>>
 >('REPOS_LIST_PAGES_BUILDS', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (owner: string, repo: string, params?: ReposListPagesBuildsParams) =>
+    return (
+      owner: string,
+      repo: string,
+      params?:
+        | ReposListPagesBuildsParams
+        | (() => ReposListPagesBuildsParams | undefined),
+    ) =>
       httpResource<ReposListPagesBuildsResponse>(() => ({
         url: `${base}/repos/${owner}/${repo}/pages/builds`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

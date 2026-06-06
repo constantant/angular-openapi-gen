@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostFinancialConnectionsAccountsAccountDisconnectBody = NonNullable<
+export type PostFinancialConnectionsAccountsAccountDisconnectBody = NonNullable<
   paths['/v1/financial_connections/accounts/{account}/disconnect']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostFinancialConnectionsAccountsAccountDisconnectResponse =
+export type PostFinancialConnectionsAccountsAccountDisconnectResponse =
   paths['/v1/financial_connections/accounts/{account}/disconnect']['post']['responses']['200']['content']['application/json'];
 
 export const POST_FINANCIAL_CONNECTIONS_ACCOUNTS_ACCOUNT_DISCONNECT =

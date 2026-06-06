@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostBillingCreditGrantsIdBody = NonNullable<
+export type PostBillingCreditGrantsIdBody = NonNullable<
   paths['/v1/billing/credit_grants/{id}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostBillingCreditGrantsIdResponse =
+export type PostBillingCreditGrantsIdResponse =
   paths['/v1/billing/credit_grants/{id}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_BILLING_CREDIT_GRANTS_ID = new InjectionToken<

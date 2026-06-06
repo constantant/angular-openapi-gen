@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersCreateSshSigningKeyForAuthenticatedUserBody = NonNullable<
+export type UsersCreateSshSigningKeyForAuthenticatedUserBody = NonNullable<
   paths['/user/ssh_signing_keys']['post']['requestBody']
 >['content']['application/json'];
 
-type UsersCreateSshSigningKeyForAuthenticatedUserResponse =
+export type UsersCreateSshSigningKeyForAuthenticatedUserResponse =
   paths['/user/ssh_signing_keys']['post']['responses']['201']['content']['application/json'];
 
 export const USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER =

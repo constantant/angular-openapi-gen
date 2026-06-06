@@ -3,18 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposUpdateWebhookConfigForRepoBody = NonNullable<
+export type ReposUpdateWebhookConfigForRepoBody = NonNullable<
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/config']['patch']['requestBody']
 >['content']['application/json'];
 
-type ReposUpdateWebhookConfigForRepoResponse =
+export type ReposUpdateWebhookConfigForRepoResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/config']['patch']['responses']['200']['content']['application/json'];
 
 export const REPOS_UPDATE_WEBHOOK_CONFIG_FOR_REPO = new InjectionToken<
   (
     owner: string,
     repo: string,
-    hook_id: string,
+    hookId: string,
     body:
       | ReposUpdateWebhookConfigForRepoBody
       | Signal<ReposUpdateWebhookConfigForRepoBody>,
@@ -26,13 +26,13 @@ export const REPOS_UPDATE_WEBHOOK_CONFIG_FOR_REPO = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      hook_id: string,
+      hookId: string,
       body:
         | ReposUpdateWebhookConfigForRepoBody
         | Signal<ReposUpdateWebhookConfigForRepoBody>,
     ) =>
       httpResource<ReposUpdateWebhookConfigForRepoResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/hooks/${hook_id}/config`,
+        url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/config`,
         method: 'PATCH',
         body,
       }));

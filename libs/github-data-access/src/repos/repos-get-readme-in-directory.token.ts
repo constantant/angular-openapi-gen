@@ -3,10 +3,10 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetReadmeInDirectoryParams =
+export type ReposGetReadmeInDirectoryParams =
   paths['/repos/{owner}/{repo}/readme/{dir}']['get']['parameters']['query'];
 
-type ReposGetReadmeInDirectoryResponse =
+export type ReposGetReadmeInDirectoryResponse =
   paths['/repos/{owner}/{repo}/readme/{dir}']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_README_IN_DIRECTORY = new InjectionToken<
@@ -14,7 +14,9 @@ export const REPOS_GET_README_IN_DIRECTORY = new InjectionToken<
     owner: string,
     repo: string,
     dir: string,
-    params?: ReposGetReadmeInDirectoryParams,
+    params?:
+      | ReposGetReadmeInDirectoryParams
+      | (() => ReposGetReadmeInDirectoryParams | undefined),
   ) => ReturnType<typeof httpResource<ReposGetReadmeInDirectoryResponse>>
 >('REPOS_GET_README_IN_DIRECTORY', {
   providedIn: 'root',
@@ -24,11 +26,15 @@ export const REPOS_GET_README_IN_DIRECTORY = new InjectionToken<
       owner: string,
       repo: string,
       dir: string,
-      params?: ReposGetReadmeInDirectoryParams,
+      params?:
+        | ReposGetReadmeInDirectoryParams
+        | (() => ReposGetReadmeInDirectoryParams | undefined),
     ) =>
       httpResource<ReposGetReadmeInDirectoryResponse>(() => ({
         url: `${base}/repos/${owner}/${repo}/readme/${dir}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

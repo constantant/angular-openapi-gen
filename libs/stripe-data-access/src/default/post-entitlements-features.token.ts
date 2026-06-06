@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostEntitlementsFeaturesBody = NonNullable<
+export type PostEntitlementsFeaturesBody = NonNullable<
   paths['/v1/entitlements/features']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostEntitlementsFeaturesResponse =
+export type PostEntitlementsFeaturesResponse =
   paths['/v1/entitlements/features']['post']['responses']['200']['content']['application/json'];
 
 export const POST_ENTITLEMENTS_FEATURES = new InjectionToken<

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteCouponsCouponBody = NonNullable<
+export type DeleteCouponsCouponBody = NonNullable<
   paths['/v1/coupons/{coupon}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteCouponsCouponResponse =
+export type DeleteCouponsCouponResponse =
   paths['/v1/coupons/{coupon}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_COUPONS_COUPON = new InjectionToken<

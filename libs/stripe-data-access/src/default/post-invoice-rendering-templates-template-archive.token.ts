@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostInvoiceRenderingTemplatesTemplateArchiveBody = NonNullable<
+export type PostInvoiceRenderingTemplatesTemplateArchiveBody = NonNullable<
   paths['/v1/invoice_rendering_templates/{template}/archive']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostInvoiceRenderingTemplatesTemplateArchiveResponse =
+export type PostInvoiceRenderingTemplatesTemplateArchiveResponse =
   paths['/v1/invoice_rendering_templates/{template}/archive']['post']['responses']['200']['content']['application/json'];
 
 export const POST_INVOICE_RENDERING_TEMPLATES_TEMPLATE_ARCHIVE =

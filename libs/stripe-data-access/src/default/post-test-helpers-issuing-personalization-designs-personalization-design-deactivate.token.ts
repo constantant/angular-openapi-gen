@@ -3,18 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateBody =
+export type PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateBody =
   NonNullable<
     paths['/v1/test_helpers/issuing/personalization_designs/{personalization_design}/deactivate']['post']['requestBody']
   >['content']['application/x-www-form-urlencoded'];
 
-type PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateResponse =
+export type PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateResponse =
   paths['/v1/test_helpers/issuing/personalization_designs/{personalization_design}/deactivate']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TEST_HELPERS_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN_DEACTIVATE =
   new InjectionToken<
     (
-      personalization_design: string,
+      personalizationDesign: string,
       body:
         | PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateBody
         | Signal<PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateBody>,
@@ -28,14 +28,14 @@ export const POST_TEST_HELPERS_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_D
       factory: () => {
         const base = inject(STRIPE_BASE_URL);
         return (
-          personalization_design: string,
+          personalizationDesign: string,
           body:
             | PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateBody
             | Signal<PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateBody>,
         ) =>
           httpResource<PostTestHelpersIssuingPersonalizationDesignsPersonalizationDesignDeactivateResponse>(
             () => ({
-              url: `${base}/v1/test_helpers/issuing/personalization_designs/${personalization_design}/deactivate`,
+              url: `${base}/v1/test_helpers/issuing/personalization_designs/${personalizationDesign}/deactivate`,
               method: 'POST',
               body,
             }),

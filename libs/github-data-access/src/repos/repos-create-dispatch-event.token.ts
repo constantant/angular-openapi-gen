@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateDispatchEventBody = NonNullable<
+export type ReposCreateDispatchEventBody = NonNullable<
   paths['/repos/{owner}/{repo}/dispatches']['post']['requestBody']
 >['content']['application/json'];
 

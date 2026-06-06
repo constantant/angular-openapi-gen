@@ -9,12 +9,17 @@ function toPascalCase(str: string): string {
     .join('');
 }
 
+function toCamelCase(str: string): string {
+  const parts = str.split(/[-_]+/).filter(Boolean);
+  return parts[0] + parts.slice(1).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+}
+
 export function renderTokenFile(
   ep: EndpointModel,
   baseUrlToken: string
 ): string {
   const pascal = toPascalCase(ep.operationId);
-  const urlTemplate = ep.apiPath.replace(/\{(\w+)\}/g, '${$1}');
+  const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
   const isGet = ep.method === 'get';
   const { responseStatus } = ep;
 
@@ -33,21 +38,21 @@ export function renderTokenFile(
   // NonNullable<> guards optional requestBody fields that are typed as T | undefined.
   if (isGet && ep.hasQueryParams) {
     lines.push(
-      `type ${pascal}Params =`,
+      `export type ${pascal}Params =`,
       `  paths['${ep.apiPath}']['${ep.method}']['parameters']['query'];`,
       ''
     );
   }
   if (!isGet && ep.hasBody && ep.bodyContentType) {
     lines.push(
-      `type ${pascal}Body =`,
+      `export type ${pascal}Body =`,
       `  NonNullable<paths['${ep.apiPath}']['${ep.method}']['requestBody']>['content']['${ep.bodyContentType}'];`,
       ''
     );
   }
   if (responseStatus) {
     lines.push(
-      `type ${pascal}Response =`,
+      `export type ${pascal}Response =`,
       `  paths['${ep.apiPath}']['${ep.method}']['responses']['${responseStatus}']['content']['application/json'];`,
       ''
     );
@@ -90,7 +95,7 @@ function buildFnArgs(
   pascal: string,
   isGet: boolean
 ): string {
-  const args: string[] = ep.pathParams.map((p) => `${p}: string`);
+  const args: string[] = ep.pathParams.map((p) => `${toCamelCase(p)}: string`);
   if (isGet && ep.hasQueryParams) args.push(`params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);
   if (!isGet && ep.hasBody)
     args.push(`body: ${pascal}Body | Signal<${pascal}Body>`);

@@ -1,0 +1,39 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type GitGetTreeParams =
+  paths['/repos/{owner}/{repo}/git/trees/{tree_sha}']['get']['parameters']['query'];
+
+export type GitGetTreeResponse =
+  paths['/repos/{owner}/{repo}/git/trees/{tree_sha}']['get']['responses']['200']['content']['application/json'];
+
+export const GIT_GET_TREE = new InjectionToken<
+  (
+    owner: string,
+    repo: string,
+    treeSha: string,
+    params?: GitGetTreeParams | (() => GitGetTreeParams | undefined),
+  ) => ReturnType<typeof httpResource<GitGetTreeResponse>>
+>('GIT_GET_TREE', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(GITHUB_BASE_URL);
+    return (
+      owner: string,
+      repo: string,
+      treeSha: string,
+      params?: GitGetTreeParams | (() => GitGetTreeParams | undefined),
+    ) =>
+      httpResource<GitGetTreeResponse>(() => ({
+        url: `${base}/repos/${owner}/${repo}/git/trees/${treeSha}`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
+          string,
+          string | number | boolean | readonly (string | number | boolean)[]
+        >,
+      }));
+  },
+});

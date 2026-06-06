@@ -3,16 +3,16 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostShippingRatesShippingRateTokenBody = NonNullable<
+export type PostShippingRatesShippingRateTokenBody = NonNullable<
   paths['/v1/shipping_rates/{shipping_rate_token}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostShippingRatesShippingRateTokenResponse =
+export type PostShippingRatesShippingRateTokenResponse =
   paths['/v1/shipping_rates/{shipping_rate_token}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_SHIPPING_RATES_SHIPPING_RATE_TOKEN = new InjectionToken<
   (
-    shipping_rate_token: string,
+    shippingRateToken: string,
     body:
       | PostShippingRatesShippingRateTokenBody
       | Signal<PostShippingRatesShippingRateTokenBody>,
@@ -24,13 +24,13 @@ export const POST_SHIPPING_RATES_SHIPPING_RATE_TOKEN = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      shipping_rate_token: string,
+      shippingRateToken: string,
       body:
         | PostShippingRatesShippingRateTokenBody
         | Signal<PostShippingRatesShippingRateTokenBody>,
     ) =>
       httpResource<PostShippingRatesShippingRateTokenResponse>(() => ({
-        url: `${base}/v1/shipping_rates/${shipping_rate_token}`,
+        url: `${base}/v1/shipping_rates/${shippingRateToken}`,
         method: 'POST',
         body,
       }));

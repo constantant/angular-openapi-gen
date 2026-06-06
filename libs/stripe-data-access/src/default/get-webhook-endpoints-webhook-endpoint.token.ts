@@ -3,16 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetWebhookEndpointsWebhookEndpointParams =
+export type GetWebhookEndpointsWebhookEndpointParams =
   paths['/v1/webhook_endpoints/{webhook_endpoint}']['get']['parameters']['query'];
 
-type GetWebhookEndpointsWebhookEndpointResponse =
+export type GetWebhookEndpointsWebhookEndpointResponse =
   paths['/v1/webhook_endpoints/{webhook_endpoint}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_WEBHOOK_ENDPOINTS_WEBHOOK_ENDPOINT = new InjectionToken<
   (
-    webhook_endpoint: string,
-    params?: GetWebhookEndpointsWebhookEndpointParams,
+    webhookEndpoint: string,
+    params?:
+      | GetWebhookEndpointsWebhookEndpointParams
+      | (() => GetWebhookEndpointsWebhookEndpointParams | undefined),
   ) => ReturnType<
     typeof httpResource<GetWebhookEndpointsWebhookEndpointResponse>
   >
@@ -21,12 +23,16 @@ export const GET_WEBHOOK_ENDPOINTS_WEBHOOK_ENDPOINT = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      webhook_endpoint: string,
-      params?: GetWebhookEndpointsWebhookEndpointParams,
+      webhookEndpoint: string,
+      params?:
+        | GetWebhookEndpointsWebhookEndpointParams
+        | (() => GetWebhookEndpointsWebhookEndpointParams | undefined),
     ) =>
       httpResource<GetWebhookEndpointsWebhookEndpointResponse>(() => ({
-        url: `${base}/v1/webhook_endpoints/${webhook_endpoint}`,
-        params: params as unknown as Record<
+        url: `${base}/v1/webhook_endpoints/${webhookEndpoint}`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

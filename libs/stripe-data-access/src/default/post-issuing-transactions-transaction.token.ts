@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostIssuingTransactionsTransactionBody = NonNullable<
+export type PostIssuingTransactionsTransactionBody = NonNullable<
   paths['/v1/issuing/transactions/{transaction}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostIssuingTransactionsTransactionResponse =
+export type PostIssuingTransactionsTransactionResponse =
   paths['/v1/issuing/transactions/{transaction}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_ISSUING_TRANSACTIONS_TRANSACTION = new InjectionToken<

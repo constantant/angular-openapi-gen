@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostFileLinksLinkBody = NonNullable<
+export type PostFileLinksLinkBody = NonNullable<
   paths['/v1/file_links/{link}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostFileLinksLinkResponse =
+export type PostFileLinksLinkResponse =
   paths['/v1/file_links/{link}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_FILE_LINKS_LINK = new InjectionToken<

@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody =
+export type ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody =
   NonNullable<
     paths['/repos/{owner}/{repo}/properties/values']['patch']['requestBody']
   >['content']['application/json'];

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostChargesChargeCaptureBody = NonNullable<
+export type PostChargesChargeCaptureBody = NonNullable<
   paths['/v1/charges/{charge}/capture']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostChargesChargeCaptureResponse =
+export type PostChargesChargeCaptureResponse =
   paths['/v1/charges/{charge}/capture']['post']['responses']['200']['content']['application/json'];
 
 export const POST_CHARGES_CHARGE_CAPTURE = new InjectionToken<

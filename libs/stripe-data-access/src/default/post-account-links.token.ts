@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostAccountLinksBody = NonNullable<
+export type PostAccountLinksBody = NonNullable<
   paths['/v1/account_links']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostAccountLinksResponse =
+export type PostAccountLinksResponse =
   paths['/v1/account_links']['post']['responses']['200']['content']['application/json'];
 
 export const POST_ACCOUNT_LINKS = new InjectionToken<

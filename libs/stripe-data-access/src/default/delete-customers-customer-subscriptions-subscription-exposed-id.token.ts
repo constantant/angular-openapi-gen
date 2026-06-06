@@ -3,19 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdBody =
+export type DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdBody =
   NonNullable<
     paths['/v1/customers/{customer}/subscriptions/{subscription_exposed_id}']['delete']['requestBody']
   >['content']['application/x-www-form-urlencoded'];
 
-type DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdResponse =
+export type DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdResponse =
   paths['/v1/customers/{customer}/subscriptions/{subscription_exposed_id}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID =
   new InjectionToken<
     (
       customer: string,
-      subscription_exposed_id: string,
+      subscriptionExposedId: string,
       body:
         | DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdBody
         | Signal<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdBody>,
@@ -28,14 +28,14 @@ export const DELETE_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID =
       const base = inject(STRIPE_BASE_URL);
       return (
         customer: string,
-        subscription_exposed_id: string,
+        subscriptionExposedId: string,
         body:
           | DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdBody
           | Signal<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdBody>,
       ) =>
         httpResource<DeleteCustomersCustomerSubscriptionsSubscriptionExposedIdResponse>(
           () => ({
-            url: `${base}/v1/customers/${customer}/subscriptions/${subscription_exposed_id}`,
+            url: `${base}/v1/customers/${customer}/subscriptions/${subscriptionExposedId}`,
             method: 'DELETE',
             body,
           }),

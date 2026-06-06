@@ -3,17 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetApplicationFeesFeeRefundsIdParams =
+export type GetApplicationFeesFeeRefundsIdParams =
   paths['/v1/application_fees/{fee}/refunds/{id}']['get']['parameters']['query'];
 
-type GetApplicationFeesFeeRefundsIdResponse =
+export type GetApplicationFeesFeeRefundsIdResponse =
   paths['/v1/application_fees/{fee}/refunds/{id}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_APPLICATION_FEES_FEE_REFUNDS_ID = new InjectionToken<
   (
     fee: string,
     id: string,
-    params?: GetApplicationFeesFeeRefundsIdParams,
+    params?:
+      | GetApplicationFeesFeeRefundsIdParams
+      | (() => GetApplicationFeesFeeRefundsIdParams | undefined),
   ) => ReturnType<typeof httpResource<GetApplicationFeesFeeRefundsIdResponse>>
 >('GET_APPLICATION_FEES_FEE_REFUNDS_ID', {
   providedIn: 'root',
@@ -22,11 +24,15 @@ export const GET_APPLICATION_FEES_FEE_REFUNDS_ID = new InjectionToken<
     return (
       fee: string,
       id: string,
-      params?: GetApplicationFeesFeeRefundsIdParams,
+      params?:
+        | GetApplicationFeesFeeRefundsIdParams
+        | (() => GetApplicationFeesFeeRefundsIdParams | undefined),
     ) =>
       httpResource<GetApplicationFeesFeeRefundsIdResponse>(() => ({
         url: `${base}/v1/application_fees/${fee}/refunds/${id}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

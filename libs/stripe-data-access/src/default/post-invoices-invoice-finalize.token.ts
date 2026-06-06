@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostInvoicesInvoiceFinalizeBody = NonNullable<
+export type PostInvoicesInvoiceFinalizeBody = NonNullable<
   paths['/v1/invoices/{invoice}/finalize']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostInvoicesInvoiceFinalizeResponse =
+export type PostInvoicesInvoiceFinalizeResponse =
   paths['/v1/invoices/{invoice}/finalize']['post']['responses']['200']['content']['application/json'];
 
 export const POST_INVOICES_INVOICE_FINALIZE = new InjectionToken<

@@ -3,24 +3,32 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetApplicationFeesParams =
+export type GetApplicationFeesParams =
   paths['/v1/application_fees']['get']['parameters']['query'];
 
-type GetApplicationFeesResponse =
+export type GetApplicationFeesResponse =
   paths['/v1/application_fees']['get']['responses']['200']['content']['application/json'];
 
 export const GET_APPLICATION_FEES = new InjectionToken<
   (
-    params?: GetApplicationFeesParams,
+    params?:
+      | GetApplicationFeesParams
+      | (() => GetApplicationFeesParams | undefined),
   ) => ReturnType<typeof httpResource<GetApplicationFeesResponse>>
 >('GET_APPLICATION_FEES', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (params?: GetApplicationFeesParams) =>
+    return (
+      params?:
+        | GetApplicationFeesParams
+        | (() => GetApplicationFeesParams | undefined),
+    ) =>
       httpResource<GetApplicationFeesResponse>(() => ({
         url: `${base}/v1/application_fees`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

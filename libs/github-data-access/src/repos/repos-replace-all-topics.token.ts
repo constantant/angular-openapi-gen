@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposReplaceAllTopicsBody = NonNullable<
+export type ReposReplaceAllTopicsBody = NonNullable<
   paths['/repos/{owner}/{repo}/topics']['put']['requestBody']
 >['content']['application/json'];
 
-type ReposReplaceAllTopicsResponse =
+export type ReposReplaceAllTopicsResponse =
   paths['/repos/{owner}/{repo}/topics']['put']['responses']['200']['content']['application/json'];
 
 export const REPOS_REPLACE_ALL_TOPICS = new InjectionToken<

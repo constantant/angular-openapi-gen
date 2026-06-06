@@ -3,17 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostIssuingPersonalizationDesignsPersonalizationDesignBody = NonNullable<
-  paths['/v1/issuing/personalization_designs/{personalization_design}']['post']['requestBody']
->['content']['application/x-www-form-urlencoded'];
+export type PostIssuingPersonalizationDesignsPersonalizationDesignBody =
+  NonNullable<
+    paths['/v1/issuing/personalization_designs/{personalization_design}']['post']['requestBody']
+  >['content']['application/x-www-form-urlencoded'];
 
-type PostIssuingPersonalizationDesignsPersonalizationDesignResponse =
+export type PostIssuingPersonalizationDesignsPersonalizationDesignResponse =
   paths['/v1/issuing/personalization_designs/{personalization_design}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN =
   new InjectionToken<
     (
-      personalization_design: string,
+      personalizationDesign: string,
       body:
         | PostIssuingPersonalizationDesignsPersonalizationDesignBody
         | Signal<PostIssuingPersonalizationDesignsPersonalizationDesignBody>,
@@ -25,14 +26,14 @@ export const POST_ISSUING_PERSONALIZATION_DESIGNS_PERSONALIZATION_DESIGN =
     factory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
-        personalization_design: string,
+        personalizationDesign: string,
         body:
           | PostIssuingPersonalizationDesignsPersonalizationDesignBody
           | Signal<PostIssuingPersonalizationDesignsPersonalizationDesignBody>,
       ) =>
         httpResource<PostIssuingPersonalizationDesignsPersonalizationDesignResponse>(
           () => ({
-            url: `${base}/v1/issuing/personalization_designs/${personalization_design}`,
+            url: `${base}/v1/issuing/personalization_designs/${personalizationDesign}`,
             method: 'POST',
             body,
           }),

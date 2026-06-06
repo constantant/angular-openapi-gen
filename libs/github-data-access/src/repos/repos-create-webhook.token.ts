@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateWebhookBody = NonNullable<
+export type ReposCreateWebhookBody = NonNullable<
   paths['/repos/{owner}/{repo}/hooks']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateWebhookResponse =
+export type ReposCreateWebhookResponse =
   paths['/repos/{owner}/{repo}/hooks']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_CREATE_WEBHOOK = new InjectionToken<

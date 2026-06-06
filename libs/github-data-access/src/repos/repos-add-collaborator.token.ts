@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposAddCollaboratorBody = NonNullable<
+export type ReposAddCollaboratorBody = NonNullable<
   paths['/repos/{owner}/{repo}/collaborators/{username}']['put']['requestBody']
 >['content']['application/json'];
 
-type ReposAddCollaboratorResponse =
+export type ReposAddCollaboratorResponse =
   paths['/repos/{owner}/{repo}/collaborators/{username}']['put']['responses']['201']['content']['application/json'];
 
 export const REPOS_ADD_COLLABORATOR = new InjectionToken<

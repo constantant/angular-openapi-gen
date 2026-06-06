@@ -3,16 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetCustomersCustomerSubscriptionsParams =
+export type GetCustomersCustomerSubscriptionsParams =
   paths['/v1/customers/{customer}/subscriptions']['get']['parameters']['query'];
 
-type GetCustomersCustomerSubscriptionsResponse =
+export type GetCustomersCustomerSubscriptionsResponse =
   paths['/v1/customers/{customer}/subscriptions']['get']['responses']['200']['content']['application/json'];
 
 export const GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS = new InjectionToken<
   (
     customer: string,
-    params?: GetCustomersCustomerSubscriptionsParams,
+    params?:
+      | GetCustomersCustomerSubscriptionsParams
+      | (() => GetCustomersCustomerSubscriptionsParams | undefined),
   ) => ReturnType<
     typeof httpResource<GetCustomersCustomerSubscriptionsResponse>
   >
@@ -22,11 +24,15 @@ export const GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS = new InjectionToken<
     const base = inject(STRIPE_BASE_URL);
     return (
       customer: string,
-      params?: GetCustomersCustomerSubscriptionsParams,
+      params?:
+        | GetCustomersCustomerSubscriptionsParams
+        | (() => GetCustomersCustomerSubscriptionsParams | undefined),
     ) =>
       httpResource<GetCustomersCustomerSubscriptionsResponse>(() => ({
         url: `${base}/v1/customers/${customer}/subscriptions`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

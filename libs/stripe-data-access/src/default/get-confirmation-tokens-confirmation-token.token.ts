@@ -3,16 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetConfirmationTokensConfirmationTokenParams =
+export type GetConfirmationTokensConfirmationTokenParams =
   paths['/v1/confirmation_tokens/{confirmation_token}']['get']['parameters']['query'];
 
-type GetConfirmationTokensConfirmationTokenResponse =
+export type GetConfirmationTokensConfirmationTokenResponse =
   paths['/v1/confirmation_tokens/{confirmation_token}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_CONFIRMATION_TOKENS_CONFIRMATION_TOKEN = new InjectionToken<
   (
-    confirmation_token: string,
-    params?: GetConfirmationTokensConfirmationTokenParams,
+    confirmationToken: string,
+    params?:
+      | GetConfirmationTokensConfirmationTokenParams
+      | (() => GetConfirmationTokensConfirmationTokenParams | undefined),
   ) => ReturnType<
     typeof httpResource<GetConfirmationTokensConfirmationTokenResponse>
   >
@@ -21,12 +23,16 @@ export const GET_CONFIRMATION_TOKENS_CONFIRMATION_TOKEN = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      confirmation_token: string,
-      params?: GetConfirmationTokensConfirmationTokenParams,
+      confirmationToken: string,
+      params?:
+        | GetConfirmationTokensConfirmationTokenParams
+        | (() => GetConfirmationTokensConfirmationTokenParams | undefined),
     ) =>
       httpResource<GetConfirmationTokensConfirmationTokenResponse>(() => ({
-        url: `${base}/v1/confirmation_tokens/${confirmation_token}`,
-        params: params as unknown as Record<
+        url: `${base}/v1/confirmation_tokens/${confirmationToken}`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

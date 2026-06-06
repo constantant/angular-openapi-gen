@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostQuotesQuoteCancelBody = NonNullable<
+export type PostQuotesQuoteCancelBody = NonNullable<
   paths['/v1/quotes/{quote}/cancel']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostQuotesQuoteCancelResponse =
+export type PostQuotesQuoteCancelResponse =
   paths['/v1/quotes/{quote}/cancel']['post']['responses']['200']['content']['application/json'];
 
 export const POST_QUOTES_QUOTE_CANCEL = new InjectionToken<

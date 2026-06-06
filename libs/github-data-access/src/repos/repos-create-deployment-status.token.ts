@@ -3,18 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateDeploymentStatusBody = NonNullable<
+export type ReposCreateDeploymentStatusBody = NonNullable<
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateDeploymentStatusResponse =
+export type ReposCreateDeploymentStatusResponse =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_CREATE_DEPLOYMENT_STATUS = new InjectionToken<
   (
     owner: string,
     repo: string,
-    deployment_id: string,
+    deploymentId: string,
     body:
       | ReposCreateDeploymentStatusBody
       | Signal<ReposCreateDeploymentStatusBody>,
@@ -26,13 +26,13 @@ export const REPOS_CREATE_DEPLOYMENT_STATUS = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      deployment_id: string,
+      deploymentId: string,
       body:
         | ReposCreateDeploymentStatusBody
         | Signal<ReposCreateDeploymentStatusBody>,
     ) =>
       httpResource<ReposCreateDeploymentStatusResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/deployments/${deployment_id}/statuses`,
+        url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}/statuses`,
         method: 'POST',
         body,
       }));

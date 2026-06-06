@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersDeleteSocialAccountForAuthenticatedUserBody = NonNullable<
+export type UsersDeleteSocialAccountForAuthenticatedUserBody = NonNullable<
   paths['/user/social_accounts']['delete']['requestBody']
 >['content']['application/json'];
 

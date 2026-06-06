@@ -3,17 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCodeownersErrorsParams =
+export type ReposCodeownersErrorsParams =
   paths['/repos/{owner}/{repo}/codeowners/errors']['get']['parameters']['query'];
 
-type ReposCodeownersErrorsResponse =
+export type ReposCodeownersErrorsResponse =
   paths['/repos/{owner}/{repo}/codeowners/errors']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_CODEOWNERS_ERRORS = new InjectionToken<
   (
     owner: string,
     repo: string,
-    params?: ReposCodeownersErrorsParams,
+    params?:
+      | ReposCodeownersErrorsParams
+      | (() => ReposCodeownersErrorsParams | undefined),
   ) => ReturnType<typeof httpResource<ReposCodeownersErrorsResponse>>
 >('REPOS_CODEOWNERS_ERRORS', {
   providedIn: 'root',
@@ -22,11 +24,15 @@ export const REPOS_CODEOWNERS_ERRORS = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      params?: ReposCodeownersErrorsParams,
+      params?:
+        | ReposCodeownersErrorsParams
+        | (() => ReposCodeownersErrorsParams | undefined),
     ) =>
       httpResource<ReposCodeownersErrorsResponse>(() => ({
         url: `${base}/repos/${owner}/${repo}/codeowners/errors`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

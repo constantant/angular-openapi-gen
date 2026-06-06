@@ -5,14 +5,14 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export const REPOS_ACCEPT_INVITATION_FOR_AUTHENTICATED_USER =
   new InjectionToken<
-    (invitation_id: string) => ReturnType<typeof httpResource<unknown>>
+    (invitationId: string) => ReturnType<typeof httpResource<unknown>>
   >('REPOS_ACCEPT_INVITATION_FOR_AUTHENTICATED_USER', {
     providedIn: 'root',
     factory: () => {
       const base = inject(GITHUB_BASE_URL);
-      return (invitation_id: string) =>
+      return (invitationId: string) =>
         httpResource<unknown>(() => ({
-          url: `${base}/user/repository_invitations/${invitation_id}`,
+          url: `${base}/user/repository_invitations/${invitationId}`,
           method: 'PATCH',
         }));
     },

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
-type CreateUserBody = NonNullable<
+export type CreateUserBody = NonNullable<
   paths['/user']['post']['requestBody']
 >['content']['application/json'];
 
-type CreateUserResponse =
+export type CreateUserResponse =
   paths['/user']['post']['responses']['200']['content']['application/json'];
 
 export const CREATE_USER = new InjectionToken<

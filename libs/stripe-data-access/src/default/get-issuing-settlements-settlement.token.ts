@@ -3,16 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetIssuingSettlementsSettlementParams =
+export type GetIssuingSettlementsSettlementParams =
   paths['/v1/issuing/settlements/{settlement}']['get']['parameters']['query'];
 
-type GetIssuingSettlementsSettlementResponse =
+export type GetIssuingSettlementsSettlementResponse =
   paths['/v1/issuing/settlements/{settlement}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_ISSUING_SETTLEMENTS_SETTLEMENT = new InjectionToken<
   (
     settlement: string,
-    params?: GetIssuingSettlementsSettlementParams,
+    params?:
+      | GetIssuingSettlementsSettlementParams
+      | (() => GetIssuingSettlementsSettlementParams | undefined),
   ) => ReturnType<typeof httpResource<GetIssuingSettlementsSettlementResponse>>
 >('GET_ISSUING_SETTLEMENTS_SETTLEMENT', {
   providedIn: 'root',
@@ -20,11 +22,15 @@ export const GET_ISSUING_SETTLEMENTS_SETTLEMENT = new InjectionToken<
     const base = inject(STRIPE_BASE_URL);
     return (
       settlement: string,
-      params?: GetIssuingSettlementsSettlementParams,
+      params?:
+        | GetIssuingSettlementsSettlementParams
+        | (() => GetIssuingSettlementsSettlementParams | undefined),
     ) =>
       httpResource<GetIssuingSettlementsSettlementResponse>(() => ({
         url: `${base}/v1/issuing/settlements/${settlement}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

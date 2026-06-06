@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTerminalLocationsLocationBody = NonNullable<
+export type PostTerminalLocationsLocationBody = NonNullable<
   paths['/v1/terminal/locations/{location}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTerminalLocationsLocationResponse =
+export type PostTerminalLocationsLocationResponse =
   paths['/v1/terminal/locations/{location}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TERMINAL_LOCATIONS_LOCATION = new InjectionToken<

@@ -1,0 +1,45 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type ActionsGetConcurrencyGroupForRepositoryParams =
+  paths['/repos/{owner}/{repo}/actions/concurrency_groups/{concurrency_group_name}']['get']['parameters']['query'];
+
+export type ActionsGetConcurrencyGroupForRepositoryResponse =
+  paths['/repos/{owner}/{repo}/actions/concurrency_groups/{concurrency_group_name}']['get']['responses']['200']['content']['application/json'];
+
+export const ACTIONS_GET_CONCURRENCY_GROUP_FOR_REPOSITORY = new InjectionToken<
+  (
+    owner: string,
+    repo: string,
+    concurrencyGroupName: string,
+    params?:
+      | ActionsGetConcurrencyGroupForRepositoryParams
+      | (() => ActionsGetConcurrencyGroupForRepositoryParams | undefined),
+  ) => ReturnType<
+    typeof httpResource<ActionsGetConcurrencyGroupForRepositoryResponse>
+  >
+>('ACTIONS_GET_CONCURRENCY_GROUP_FOR_REPOSITORY', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(GITHUB_BASE_URL);
+    return (
+      owner: string,
+      repo: string,
+      concurrencyGroupName: string,
+      params?:
+        | ActionsGetConcurrencyGroupForRepositoryParams
+        | (() => ActionsGetConcurrencyGroupForRepositoryParams | undefined),
+    ) =>
+      httpResource<ActionsGetConcurrencyGroupForRepositoryResponse>(() => ({
+        url: `${base}/repos/${owner}/${repo}/actions/concurrency_groups/${concurrencyGroupName}`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
+          string,
+          string | number | boolean | readonly (string | number | boolean)[]
+        >,
+      }));
+  },
+});

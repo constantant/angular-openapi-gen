@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTaxTransactionsCreateFromCalculationBody = NonNullable<
+export type PostTaxTransactionsCreateFromCalculationBody = NonNullable<
   paths['/v1/tax/transactions/create_from_calculation']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTaxTransactionsCreateFromCalculationResponse =
+export type PostTaxTransactionsCreateFromCalculationResponse =
   paths['/v1/tax/transactions/create_from_calculation']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TAX_TRANSACTIONS_CREATE_FROM_CALCULATION = new InjectionToken<

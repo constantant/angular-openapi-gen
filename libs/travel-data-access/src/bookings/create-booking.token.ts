@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { TRAVEL_BASE_URL } from '../api-base-url.token';
 
-type CreateBookingBody = NonNullable<
+export type CreateBookingBody = NonNullable<
   paths['/bookings']['post']['requestBody']
 >['content']['application/json'];
 
-type CreateBookingResponse =
+export type CreateBookingResponse =
   paths['/bookings']['post']['responses']['201']['content']['application/json'];
 
 export const CREATE_BOOKING = new InjectionToken<

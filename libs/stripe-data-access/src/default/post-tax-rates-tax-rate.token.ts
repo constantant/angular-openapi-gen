@@ -3,16 +3,16 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTaxRatesTaxRateBody = NonNullable<
+export type PostTaxRatesTaxRateBody = NonNullable<
   paths['/v1/tax_rates/{tax_rate}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTaxRatesTaxRateResponse =
+export type PostTaxRatesTaxRateResponse =
   paths['/v1/tax_rates/{tax_rate}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TAX_RATES_TAX_RATE = new InjectionToken<
   (
-    tax_rate: string,
+    taxRate: string,
     body: PostTaxRatesTaxRateBody | Signal<PostTaxRatesTaxRateBody>,
   ) => ReturnType<typeof httpResource<PostTaxRatesTaxRateResponse>>
 >('POST_TAX_RATES_TAX_RATE', {
@@ -20,11 +20,11 @@ export const POST_TAX_RATES_TAX_RATE = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      tax_rate: string,
+      taxRate: string,
       body: PostTaxRatesTaxRateBody | Signal<PostTaxRatesTaxRateBody>,
     ) =>
       httpResource<PostTaxRatesTaxRateResponse>(() => ({
-        url: `${base}/v1/tax_rates/${tax_rate}`,
+        url: `${base}/v1/tax_rates/${taxRate}`,
         method: 'POST',
         body,
       }));

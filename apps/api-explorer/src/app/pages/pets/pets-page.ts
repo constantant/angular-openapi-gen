@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { FIND_PETS_BY_STATUS } from '@angular-openapi-gen/petstore-data-access';
+import { FIND_PETS_BY_STATUS, FindPetsByStatusParams } from '@angular-openapi-gen/petstore-data-access';
 
-type PetStatus = 'available' | 'pending' | 'sold';
+type PetStatus = FindPetsByStatusParams['status'];
 
 @Component({
   selector: 'app-pets-page',

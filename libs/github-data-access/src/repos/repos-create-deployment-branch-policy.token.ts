@@ -3,18 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateDeploymentBranchPolicyBody = NonNullable<
+export type ReposCreateDeploymentBranchPolicyBody = NonNullable<
   paths['/repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateDeploymentBranchPolicyResponse =
+export type ReposCreateDeploymentBranchPolicyResponse =
   paths['/repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies']['post']['responses']['200']['content']['application/json'];
 
 export const REPOS_CREATE_DEPLOYMENT_BRANCH_POLICY = new InjectionToken<
   (
     owner: string,
     repo: string,
-    environment_name: string,
+    environmentName: string,
     body:
       | ReposCreateDeploymentBranchPolicyBody
       | Signal<ReposCreateDeploymentBranchPolicyBody>,
@@ -28,13 +28,13 @@ export const REPOS_CREATE_DEPLOYMENT_BRANCH_POLICY = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      environment_name: string,
+      environmentName: string,
       body:
         | ReposCreateDeploymentBranchPolicyBody
         | Signal<ReposCreateDeploymentBranchPolicyBody>,
     ) =>
       httpResource<ReposCreateDeploymentBranchPolicyResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/environments/${environment_name}/deployment-branch-policies`,
+        url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies`,
         method: 'POST',
         body,
       }));

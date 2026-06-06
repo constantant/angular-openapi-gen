@@ -3,17 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetPaymentMethodDomainsPaymentMethodDomainParams =
+export type GetPaymentMethodDomainsPaymentMethodDomainParams =
   paths['/v1/payment_method_domains/{payment_method_domain}']['get']['parameters']['query'];
 
-type GetPaymentMethodDomainsPaymentMethodDomainResponse =
+export type GetPaymentMethodDomainsPaymentMethodDomainResponse =
   paths['/v1/payment_method_domains/{payment_method_domain}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN =
   new InjectionToken<
     (
-      payment_method_domain: string,
-      params?: GetPaymentMethodDomainsPaymentMethodDomainParams,
+      paymentMethodDomain: string,
+      params?:
+        | GetPaymentMethodDomainsPaymentMethodDomainParams
+        | (() => GetPaymentMethodDomainsPaymentMethodDomainParams | undefined),
     ) => ReturnType<
       typeof httpResource<GetPaymentMethodDomainsPaymentMethodDomainResponse>
     >
@@ -22,13 +24,19 @@ export const GET_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN =
     factory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
-        payment_method_domain: string,
-        params?: GetPaymentMethodDomainsPaymentMethodDomainParams,
+        paymentMethodDomain: string,
+        params?:
+          | GetPaymentMethodDomainsPaymentMethodDomainParams
+          | (() =>
+              | GetPaymentMethodDomainsPaymentMethodDomainParams
+              | undefined),
       ) =>
         httpResource<GetPaymentMethodDomainsPaymentMethodDomainResponse>(
           () => ({
-            url: `${base}/v1/payment_method_domains/${payment_method_domain}`,
-            params: params as unknown as Record<
+            url: `${base}/v1/payment_method_domains/${paymentMethodDomain}`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

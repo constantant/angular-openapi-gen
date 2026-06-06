@@ -1,0 +1,48 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type ActionsListSelectedRepositoriesEnabledGithubActionsOrganizationParams =
+  paths['/orgs/{org}/actions/permissions/repositories']['get']['parameters']['query'];
+
+export type ActionsListSelectedRepositoriesEnabledGithubActionsOrganizationResponse =
+  paths['/orgs/{org}/actions/permissions/repositories']['get']['responses']['200']['content']['application/json'];
+
+export const ACTIONS_LIST_SELECTED_REPOSITORIES_ENABLED_GITHUB_ACTIONS_ORGANIZATION =
+  new InjectionToken<
+    (
+      org: string,
+      params?:
+        | ActionsListSelectedRepositoriesEnabledGithubActionsOrganizationParams
+        | (() =>
+            | ActionsListSelectedRepositoriesEnabledGithubActionsOrganizationParams
+            | undefined),
+    ) => ReturnType<
+      typeof httpResource<ActionsListSelectedRepositoriesEnabledGithubActionsOrganizationResponse>
+    >
+  >('ACTIONS_LIST_SELECTED_REPOSITORIES_ENABLED_GITHUB_ACTIONS_ORGANIZATION', {
+    providedIn: 'root',
+    factory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | ActionsListSelectedRepositoriesEnabledGithubActionsOrganizationParams
+          | (() =>
+              | ActionsListSelectedRepositoriesEnabledGithubActionsOrganizationParams
+              | undefined),
+      ) =>
+        httpResource<ActionsListSelectedRepositoriesEnabledGithubActionsOrganizationResponse>(
+          () => ({
+            url: `${base}/orgs/${org}/actions/permissions/repositories`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          }),
+        );
+    },
+  });

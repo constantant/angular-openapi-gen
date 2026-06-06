@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTerminalConfigurationsConfigurationBody = NonNullable<
+export type PostTerminalConfigurationsConfigurationBody = NonNullable<
   paths['/v1/terminal/configurations/{configuration}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTerminalConfigurationsConfigurationResponse =
+export type PostTerminalConfigurationsConfigurationResponse =
   paths['/v1/terminal/configurations/{configuration}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TERMINAL_CONFIGURATIONS_CONFIGURATION = new InjectionToken<

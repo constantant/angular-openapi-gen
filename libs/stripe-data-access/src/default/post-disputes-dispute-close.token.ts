@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostDisputesDisputeCloseBody = NonNullable<
+export type PostDisputesDisputeCloseBody = NonNullable<
   paths['/v1/disputes/{dispute}/close']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostDisputesDisputeCloseResponse =
+export type PostDisputesDisputeCloseResponse =
   paths['/v1/disputes/{dispute}/close']['post']['responses']['200']['content']['application/json'];
 
 export const POST_DISPUTES_DISPUTE_CLOSE = new InjectionToken<

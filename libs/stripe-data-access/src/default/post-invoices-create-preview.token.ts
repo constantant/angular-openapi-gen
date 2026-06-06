@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostInvoicesCreatePreviewBody = NonNullable<
+export type PostInvoicesCreatePreviewBody = NonNullable<
   paths['/v1/invoices/create_preview']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostInvoicesCreatePreviewResponse =
+export type PostInvoicesCreatePreviewResponse =
   paths['/v1/invoices/create_preview']['post']['responses']['200']['content']['application/json'];
 
 export const POST_INVOICES_CREATE_PREVIEW = new InjectionToken<

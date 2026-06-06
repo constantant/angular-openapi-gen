@@ -3,18 +3,22 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountParams =
+export type GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountParams =
   paths['/v1/customers/{customer}/subscriptions/{subscription_exposed_id}/discount']['get']['parameters']['query'];
 
-type GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse =
+export type GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse =
   paths['/v1/customers/{customer}/subscriptions/{subscription_exposed_id}/discount']['get']['responses']['200']['content']['application/json'];
 
 export const GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOUNT =
   new InjectionToken<
     (
       customer: string,
-      subscription_exposed_id: string,
-      params?: GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountParams,
+      subscriptionExposedId: string,
+      params?:
+        | GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountParams
+        | (() =>
+            | GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountParams
+            | undefined),
     ) => ReturnType<
       typeof httpResource<GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse>
     >
@@ -24,13 +28,19 @@ export const GET_CUSTOMERS_CUSTOMER_SUBSCRIPTIONS_SUBSCRIPTION_EXPOSED_ID_DISCOU
       const base = inject(STRIPE_BASE_URL);
       return (
         customer: string,
-        subscription_exposed_id: string,
-        params?: GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountParams,
+        subscriptionExposedId: string,
+        params?:
+          | GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountParams
+          | (() =>
+              | GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountParams
+              | undefined),
       ) =>
         httpResource<GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscountResponse>(
           () => ({
-            url: `${base}/v1/customers/${customer}/subscriptions/${subscription_exposed_id}/discount`,
-            params: params as unknown as Record<
+            url: `${base}/v1/customers/${customer}/subscriptions/${subscriptionExposedId}/discount`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteCustomersCustomerBankAccountsIdBody = NonNullable<
+export type DeleteCustomersCustomerBankAccountsIdBody = NonNullable<
   paths['/v1/customers/{customer}/bank_accounts/{id}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteCustomersCustomerBankAccountsIdResponse =
+export type DeleteCustomersCustomerBankAccountsIdResponse =
   paths['/v1/customers/{customer}/bank_accounts/{id}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_CUSTOMERS_CUSTOMER_BANK_ACCOUNTS_ID = new InjectionToken<

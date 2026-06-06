@@ -3,16 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetBillingCreditBalanceTransactionsIdParams =
+export type GetBillingCreditBalanceTransactionsIdParams =
   paths['/v1/billing/credit_balance_transactions/{id}']['get']['parameters']['query'];
 
-type GetBillingCreditBalanceTransactionsIdResponse =
+export type GetBillingCreditBalanceTransactionsIdResponse =
   paths['/v1/billing/credit_balance_transactions/{id}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_BILLING_CREDIT_BALANCE_TRANSACTIONS_ID = new InjectionToken<
   (
     id: string,
-    params?: GetBillingCreditBalanceTransactionsIdParams,
+    params?:
+      | GetBillingCreditBalanceTransactionsIdParams
+      | (() => GetBillingCreditBalanceTransactionsIdParams | undefined),
   ) => ReturnType<
     typeof httpResource<GetBillingCreditBalanceTransactionsIdResponse>
   >
@@ -20,10 +22,17 @@ export const GET_BILLING_CREDIT_BALANCE_TRANSACTIONS_ID = new InjectionToken<
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (id: string, params?: GetBillingCreditBalanceTransactionsIdParams) =>
+    return (
+      id: string,
+      params?:
+        | GetBillingCreditBalanceTransactionsIdParams
+        | (() => GetBillingCreditBalanceTransactionsIdParams | undefined),
+    ) =>
       httpResource<GetBillingCreditBalanceTransactionsIdResponse>(() => ({
         url: `${base}/v1/billing/credit_balance_transactions/${id}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

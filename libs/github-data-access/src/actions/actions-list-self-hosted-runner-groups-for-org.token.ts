@@ -1,0 +1,42 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type ActionsListSelfHostedRunnerGroupsForOrgParams =
+  paths['/orgs/{org}/actions/runner-groups']['get']['parameters']['query'];
+
+export type ActionsListSelfHostedRunnerGroupsForOrgResponse =
+  paths['/orgs/{org}/actions/runner-groups']['get']['responses']['200']['content']['application/json'];
+
+export const ACTIONS_LIST_SELF_HOSTED_RUNNER_GROUPS_FOR_ORG =
+  new InjectionToken<
+    (
+      org: string,
+      params?:
+        | ActionsListSelfHostedRunnerGroupsForOrgParams
+        | (() => ActionsListSelfHostedRunnerGroupsForOrgParams | undefined),
+    ) => ReturnType<
+      typeof httpResource<ActionsListSelfHostedRunnerGroupsForOrgResponse>
+    >
+  >('ACTIONS_LIST_SELF_HOSTED_RUNNER_GROUPS_FOR_ORG', {
+    providedIn: 'root',
+    factory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        params?:
+          | ActionsListSelfHostedRunnerGroupsForOrgParams
+          | (() => ActionsListSelfHostedRunnerGroupsForOrgParams | undefined),
+      ) =>
+        httpResource<ActionsListSelfHostedRunnerGroupsForOrgResponse>(() => ({
+          url: `${base}/orgs/${org}/actions/runner-groups`,
+          params: (typeof params === 'function'
+            ? params()
+            : params) as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
+        }));
+    },
+  });

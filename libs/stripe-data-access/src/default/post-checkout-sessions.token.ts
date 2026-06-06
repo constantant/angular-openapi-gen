@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostCheckoutSessionsBody = NonNullable<
+export type PostCheckoutSessionsBody = NonNullable<
   paths['/v1/checkout/sessions']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostCheckoutSessionsResponse =
+export type PostCheckoutSessionsResponse =
   paths['/v1/checkout/sessions']['post']['responses']['200']['content']['application/json'];
 
 export const POST_CHECKOUT_SESSIONS = new InjectionToken<

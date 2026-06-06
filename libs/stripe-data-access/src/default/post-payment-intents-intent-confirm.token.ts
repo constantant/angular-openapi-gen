@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPaymentIntentsIntentConfirmBody = NonNullable<
+export type PostPaymentIntentsIntentConfirmBody = NonNullable<
   paths['/v1/payment_intents/{intent}/confirm']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPaymentIntentsIntentConfirmResponse =
+export type PostPaymentIntentsIntentConfirmResponse =
   paths['/v1/payment_intents/{intent}/confirm']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYMENT_INTENTS_INTENT_CONFIRM = new InjectionToken<

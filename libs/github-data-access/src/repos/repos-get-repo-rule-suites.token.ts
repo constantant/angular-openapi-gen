@@ -3,17 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetRepoRuleSuitesParams =
+export type ReposGetRepoRuleSuitesParams =
   paths['/repos/{owner}/{repo}/rulesets/rule-suites']['get']['parameters']['query'];
 
-type ReposGetRepoRuleSuitesResponse =
+export type ReposGetRepoRuleSuitesResponse =
   paths['/repos/{owner}/{repo}/rulesets/rule-suites']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_REPO_RULE_SUITES = new InjectionToken<
   (
     owner: string,
     repo: string,
-    params?: ReposGetRepoRuleSuitesParams,
+    params?:
+      | ReposGetRepoRuleSuitesParams
+      | (() => ReposGetRepoRuleSuitesParams | undefined),
   ) => ReturnType<typeof httpResource<ReposGetRepoRuleSuitesResponse>>
 >('REPOS_GET_REPO_RULE_SUITES', {
   providedIn: 'root',
@@ -22,11 +24,15 @@ export const REPOS_GET_REPO_RULE_SUITES = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      params?: ReposGetRepoRuleSuitesParams,
+      params?:
+        | ReposGetRepoRuleSuitesParams
+        | (() => ReposGetRepoRuleSuitesParams | undefined),
     ) =>
       httpResource<ReposGetRepoRuleSuitesResponse>(() => ({
         url: `${base}/repos/${owner}/${repo}/rulesets/rule-suites`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

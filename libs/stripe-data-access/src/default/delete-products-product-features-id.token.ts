@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteProductsProductFeaturesIdBody = NonNullable<
+export type DeleteProductsProductFeaturesIdBody = NonNullable<
   paths['/v1/products/{product}/features/{id}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteProductsProductFeaturesIdResponse =
+export type DeleteProductsProductFeaturesIdResponse =
   paths['/v1/products/{product}/features/{id}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_PRODUCTS_PRODUCT_FEATURES_ID = new InjectionToken<

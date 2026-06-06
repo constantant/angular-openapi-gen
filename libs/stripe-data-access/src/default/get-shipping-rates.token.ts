@@ -3,24 +3,32 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetShippingRatesParams =
+export type GetShippingRatesParams =
   paths['/v1/shipping_rates']['get']['parameters']['query'];
 
-type GetShippingRatesResponse =
+export type GetShippingRatesResponse =
   paths['/v1/shipping_rates']['get']['responses']['200']['content']['application/json'];
 
 export const GET_SHIPPING_RATES = new InjectionToken<
   (
-    params?: GetShippingRatesParams,
+    params?:
+      | GetShippingRatesParams
+      | (() => GetShippingRatesParams | undefined),
   ) => ReturnType<typeof httpResource<GetShippingRatesResponse>>
 >('GET_SHIPPING_RATES', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (params?: GetShippingRatesParams) =>
+    return (
+      params?:
+        | GetShippingRatesParams
+        | (() => GetShippingRatesParams | undefined),
+    ) =>
       httpResource<GetShippingRatesResponse>(() => ({
         url: `${base}/v1/shipping_rates`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

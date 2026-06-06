@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTreasuryCreditReversalsBody = NonNullable<
+export type PostTreasuryCreditReversalsBody = NonNullable<
   paths['/v1/treasury/credit_reversals']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTreasuryCreditReversalsResponse =
+export type PostTreasuryCreditReversalsResponse =
   paths['/v1/treasury/credit_reversals']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TREASURY_CREDIT_REVERSALS = new InjectionToken<

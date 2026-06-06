@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersAddEmailForAuthenticatedUserBody = NonNullable<
+export type UsersAddEmailForAuthenticatedUserBody = NonNullable<
   paths['/user/emails']['post']['requestBody']
 >['content']['application/json'];
 
-type UsersAddEmailForAuthenticatedUserResponse =
+export type UsersAddEmailForAuthenticatedUserResponse =
   paths['/user/emails']['post']['responses']['201']['content']['application/json'];
 
 export const USERS_ADD_EMAIL_FOR_AUTHENTICATED_USER = new InjectionToken<

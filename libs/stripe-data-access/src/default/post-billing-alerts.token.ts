@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostBillingAlertsBody = NonNullable<
+export type PostBillingAlertsBody = NonNullable<
   paths['/v1/billing/alerts']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostBillingAlertsResponse =
+export type PostBillingAlertsResponse =
   paths['/v1/billing/alerts']['post']['responses']['200']['content']['application/json'];
 
 export const POST_BILLING_ALERTS = new InjectionToken<

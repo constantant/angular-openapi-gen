@@ -5,14 +5,14 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export const USERS_DELETE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
-    (ssh_signing_key_id: string) => ReturnType<typeof httpResource<unknown>>
+    (sshSigningKeyId: string) => ReturnType<typeof httpResource<unknown>>
   >('USERS_DELETE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER', {
     providedIn: 'root',
     factory: () => {
       const base = inject(GITHUB_BASE_URL);
-      return (ssh_signing_key_id: string) =>
+      return (sshSigningKeyId: string) =>
         httpResource<unknown>(() => ({
-          url: `${base}/user/ssh_signing_keys/${ssh_signing_key_id}`,
+          url: `${base}/user/ssh_signing_keys/${sshSigningKeyId}`,
           method: 'DELETE',
         }));
     },

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostSigmaSavedQueriesIdBody = NonNullable<
+export type PostSigmaSavedQueriesIdBody = NonNullable<
   paths['/v1/sigma/saved_queries/{id}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostSigmaSavedQueriesIdResponse =
+export type PostSigmaSavedQueriesIdResponse =
   paths['/v1/sigma/saved_queries/{id}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_SIGMA_SAVED_QUERIES_ID = new InjectionToken<

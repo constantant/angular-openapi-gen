@@ -3,10 +3,10 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCompareCommitsParams =
+export type ReposCompareCommitsParams =
   paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['parameters']['query'];
 
-type ReposCompareCommitsResponse =
+export type ReposCompareCommitsResponse =
   paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_COMPARE_COMMITS = new InjectionToken<
@@ -14,7 +14,9 @@ export const REPOS_COMPARE_COMMITS = new InjectionToken<
     owner: string,
     repo: string,
     basehead: string,
-    params?: ReposCompareCommitsParams,
+    params?:
+      | ReposCompareCommitsParams
+      | (() => ReposCompareCommitsParams | undefined),
   ) => ReturnType<typeof httpResource<ReposCompareCommitsResponse>>
 >('REPOS_COMPARE_COMMITS', {
   providedIn: 'root',
@@ -24,11 +26,15 @@ export const REPOS_COMPARE_COMMITS = new InjectionToken<
       owner: string,
       repo: string,
       basehead: string,
-      params?: ReposCompareCommitsParams,
+      params?:
+        | ReposCompareCommitsParams
+        | (() => ReposCompareCommitsParams | undefined),
     ) =>
       httpResource<ReposCompareCommitsResponse>(() => ({
         url: `${base}/repos/${owner}/${repo}/compare/${basehead}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

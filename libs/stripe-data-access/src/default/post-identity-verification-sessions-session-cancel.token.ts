@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostIdentityVerificationSessionsSessionCancelBody = NonNullable<
+export type PostIdentityVerificationSessionsSessionCancelBody = NonNullable<
   paths['/v1/identity/verification_sessions/{session}/cancel']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostIdentityVerificationSessionsSessionCancelResponse =
+export type PostIdentityVerificationSessionsSessionCancelResponse =
   paths['/v1/identity/verification_sessions/{session}/cancel']['post']['responses']['200']['content']['application/json'];
 
 export const POST_IDENTITY_VERIFICATION_SESSIONS_SESSION_CANCEL =

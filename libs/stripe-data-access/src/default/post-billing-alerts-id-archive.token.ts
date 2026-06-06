@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostBillingAlertsIdArchiveBody = NonNullable<
+export type PostBillingAlertsIdArchiveBody = NonNullable<
   paths['/v1/billing/alerts/{id}/archive']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostBillingAlertsIdArchiveResponse =
+export type PostBillingAlertsIdArchiveResponse =
   paths['/v1/billing/alerts/{id}/archive']['post']['responses']['200']['content']['application/json'];
 
 export const POST_BILLING_ALERTS_ID_ARCHIVE = new InjectionToken<

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTerminalReadersReaderBody = NonNullable<
+export type PostTerminalReadersReaderBody = NonNullable<
   paths['/v1/terminal/readers/{reader}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTerminalReadersReaderResponse =
+export type PostTerminalReadersReaderResponse =
   paths['/v1/terminal/readers/{reader}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TERMINAL_READERS_READER = new InjectionToken<

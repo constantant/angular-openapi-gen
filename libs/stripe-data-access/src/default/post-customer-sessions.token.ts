@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostCustomerSessionsBody = NonNullable<
+export type PostCustomerSessionsBody = NonNullable<
   paths['/v1/customer_sessions']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostCustomerSessionsResponse =
+export type PostCustomerSessionsResponse =
   paths['/v1/customer_sessions']['post']['responses']['200']['content']['application/json'];
 
 export const POST_CUSTOMER_SESSIONS = new InjectionToken<

@@ -3,17 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetAllEnvironmentsParams =
+export type ReposGetAllEnvironmentsParams =
   paths['/repos/{owner}/{repo}/environments']['get']['parameters']['query'];
 
-type ReposGetAllEnvironmentsResponse =
+export type ReposGetAllEnvironmentsResponse =
   paths['/repos/{owner}/{repo}/environments']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_ALL_ENVIRONMENTS = new InjectionToken<
   (
     owner: string,
     repo: string,
-    params?: ReposGetAllEnvironmentsParams,
+    params?:
+      | ReposGetAllEnvironmentsParams
+      | (() => ReposGetAllEnvironmentsParams | undefined),
   ) => ReturnType<typeof httpResource<ReposGetAllEnvironmentsResponse>>
 >('REPOS_GET_ALL_ENVIRONMENTS', {
   providedIn: 'root',
@@ -22,11 +24,15 @@ export const REPOS_GET_ALL_ENVIRONMENTS = new InjectionToken<
     return (
       owner: string,
       repo: string,
-      params?: ReposGetAllEnvironmentsParams,
+      params?:
+        | ReposGetAllEnvironmentsParams
+        | (() => ReposGetAllEnvironmentsParams | undefined),
     ) =>
       httpResource<ReposGetAllEnvironmentsResponse>(() => ({
         url: `${base}/repos/${owner}/${repo}/environments`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

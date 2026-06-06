@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateDeploymentBody = NonNullable<
+export type ReposCreateDeploymentBody = NonNullable<
   paths['/repos/{owner}/{repo}/deployments']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateDeploymentResponse =
+export type ReposCreateDeploymentResponse =
   paths['/repos/{owner}/{repo}/deployments']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_CREATE_DEPLOYMENT = new InjectionToken<

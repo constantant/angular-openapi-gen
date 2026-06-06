@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteTaxIdsIdBody = NonNullable<
+export type DeleteTaxIdsIdBody = NonNullable<
   paths['/v1/tax_ids/{id}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteTaxIdsIdResponse =
+export type DeleteTaxIdsIdResponse =
   paths['/v1/tax_ids/{id}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_TAX_IDS_ID = new InjectionToken<

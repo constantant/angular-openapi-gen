@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostRadarValueListsBody = NonNullable<
+export type PostRadarValueListsBody = NonNullable<
   paths['/v1/radar/value_lists']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostRadarValueListsResponse =
+export type PostRadarValueListsResponse =
   paths['/v1/radar/value_lists']['post']['responses']['200']['content']['application/json'];
 
 export const POST_RADAR_VALUE_LISTS = new InjectionToken<

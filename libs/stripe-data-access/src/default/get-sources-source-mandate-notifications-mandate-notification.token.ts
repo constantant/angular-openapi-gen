@@ -3,18 +3,22 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetSourcesSourceMandateNotificationsMandateNotificationParams =
+export type GetSourcesSourceMandateNotificationsMandateNotificationParams =
   paths['/v1/sources/{source}/mandate_notifications/{mandate_notification}']['get']['parameters']['query'];
 
-type GetSourcesSourceMandateNotificationsMandateNotificationResponse =
+export type GetSourcesSourceMandateNotificationsMandateNotificationResponse =
   paths['/v1/sources/{source}/mandate_notifications/{mandate_notification}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_SOURCES_SOURCE_MANDATE_NOTIFICATIONS_MANDATE_NOTIFICATION =
   new InjectionToken<
     (
-      mandate_notification: string,
+      mandateNotification: string,
       source: string,
-      params?: GetSourcesSourceMandateNotificationsMandateNotificationParams,
+      params?:
+        | GetSourcesSourceMandateNotificationsMandateNotificationParams
+        | (() =>
+            | GetSourcesSourceMandateNotificationsMandateNotificationParams
+            | undefined),
     ) => ReturnType<
       typeof httpResource<GetSourcesSourceMandateNotificationsMandateNotificationResponse>
     >
@@ -23,14 +27,20 @@ export const GET_SOURCES_SOURCE_MANDATE_NOTIFICATIONS_MANDATE_NOTIFICATION =
     factory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
-        mandate_notification: string,
+        mandateNotification: string,
         source: string,
-        params?: GetSourcesSourceMandateNotificationsMandateNotificationParams,
+        params?:
+          | GetSourcesSourceMandateNotificationsMandateNotificationParams
+          | (() =>
+              | GetSourcesSourceMandateNotificationsMandateNotificationParams
+              | undefined),
       ) =>
         httpResource<GetSourcesSourceMandateNotificationsMandateNotificationResponse>(
           () => ({
-            url: `${base}/v1/sources/${source}/mandate_notifications/${mandate_notification}`,
-            params: params as unknown as Record<
+            url: `${base}/v1/sources/${source}/mandate_notifications/${mandateNotification}`,
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPaymentMethodConfigurationsConfigurationBody = NonNullable<
+export type PostPaymentMethodConfigurationsConfigurationBody = NonNullable<
   paths['/v1/payment_method_configurations/{configuration}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPaymentMethodConfigurationsConfigurationResponse =
+export type PostPaymentMethodConfigurationsConfigurationResponse =
   paths['/v1/payment_method_configurations/{configuration}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYMENT_METHOD_CONFIGURATIONS_CONFIGURATION =

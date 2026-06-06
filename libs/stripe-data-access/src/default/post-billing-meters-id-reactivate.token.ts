@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostBillingMetersIdReactivateBody = NonNullable<
+export type PostBillingMetersIdReactivateBody = NonNullable<
   paths['/v1/billing/meters/{id}/reactivate']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostBillingMetersIdReactivateResponse =
+export type PostBillingMetersIdReactivateResponse =
   paths['/v1/billing/meters/{id}/reactivate']['post']['responses']['200']['content']['application/json'];
 
 export const POST_BILLING_METERS_ID_REACTIVATE = new InjectionToken<

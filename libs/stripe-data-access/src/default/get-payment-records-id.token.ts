@@ -3,25 +3,34 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetPaymentRecordsIdParams =
+export type GetPaymentRecordsIdParams =
   paths['/v1/payment_records/{id}']['get']['parameters']['query'];
 
-type GetPaymentRecordsIdResponse =
+export type GetPaymentRecordsIdResponse =
   paths['/v1/payment_records/{id}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_PAYMENT_RECORDS_ID = new InjectionToken<
   (
     id: string,
-    params?: GetPaymentRecordsIdParams,
+    params?:
+      | GetPaymentRecordsIdParams
+      | (() => GetPaymentRecordsIdParams | undefined),
   ) => ReturnType<typeof httpResource<GetPaymentRecordsIdResponse>>
 >('GET_PAYMENT_RECORDS_ID', {
   providedIn: 'root',
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
-    return (id: string, params?: GetPaymentRecordsIdParams) =>
+    return (
+      id: string,
+      params?:
+        | GetPaymentRecordsIdParams
+        | (() => GetPaymentRecordsIdParams | undefined),
+    ) =>
       httpResource<GetPaymentRecordsIdResponse>(() => ({
         url: `${base}/v1/payment_records/${id}`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

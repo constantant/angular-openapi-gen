@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetParticipationStatsResponse =
+export type ReposGetParticipationStatsResponse =
   paths['/repos/{owner}/{repo}/stats/participation']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_PARTICIPATION_STATS = new InjectionToken<

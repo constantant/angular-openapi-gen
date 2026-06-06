@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposRenameBranchBody = NonNullable<
+export type ReposRenameBranchBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposRenameBranchResponse =
+export type ReposRenameBranchResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_RENAME_BRANCH = new InjectionToken<

@@ -3,28 +3,23 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetWebhookDeliveryResponse =
+export type ReposGetWebhookDeliveryResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_WEBHOOK_DELIVERY = new InjectionToken<
   (
     owner: string,
     repo: string,
-    hook_id: string,
-    delivery_id: string,
+    hookId: string,
+    deliveryId: string,
   ) => ReturnType<typeof httpResource<ReposGetWebhookDeliveryResponse>>
 >('REPOS_GET_WEBHOOK_DELIVERY', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (
-      owner: string,
-      repo: string,
-      hook_id: string,
-      delivery_id: string,
-    ) =>
+    return (owner: string, repo: string, hookId: string, deliveryId: string) =>
       httpResource<ReposGetWebhookDeliveryResponse>(() => ({
-        url: `${base}/repos/${owner}/${repo}/hooks/${hook_id}/deliveries/${delivery_id}`,
+        url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/deliveries/${deliveryId}`,
       }));
   },
 });

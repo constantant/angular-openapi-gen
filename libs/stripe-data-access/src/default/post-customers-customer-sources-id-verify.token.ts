@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostCustomersCustomerSourcesIdVerifyBody = NonNullable<
+export type PostCustomersCustomerSourcesIdVerifyBody = NonNullable<
   paths['/v1/customers/{customer}/sources/{id}/verify']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostCustomersCustomerSourcesIdVerifyResponse =
+export type PostCustomersCustomerSourcesIdVerifyResponse =
   paths['/v1/customers/{customer}/sources/{id}/verify']['post']['responses']['200']['content']['application/json'];
 
 export const POST_CUSTOMERS_CUSTOMER_SOURCES_ID_VERIFY = new InjectionToken<

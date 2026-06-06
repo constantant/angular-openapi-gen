@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTestHelpersCustomersCustomerFundCashBalanceBody = NonNullable<
+export type PostTestHelpersCustomersCustomerFundCashBalanceBody = NonNullable<
   paths['/v1/test_helpers/customers/{customer}/fund_cash_balance']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTestHelpersCustomersCustomerFundCashBalanceResponse =
+export type PostTestHelpersCustomersCustomerFundCashBalanceResponse =
   paths['/v1/test_helpers/customers/{customer}/fund_cash_balance']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TEST_HELPERS_CUSTOMERS_CUSTOMER_FUND_CASH_BALANCE =

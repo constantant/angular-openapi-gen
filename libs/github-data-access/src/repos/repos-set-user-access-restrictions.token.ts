@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposSetUserAccessRestrictionsBody = NonNullable<
+export type ReposSetUserAccessRestrictionsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['put']['requestBody']
 >['content']['application/json'];
 
-type ReposSetUserAccessRestrictionsResponse =
+export type ReposSetUserAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['put']['responses']['200']['content']['application/json'];
 
 export const REPOS_SET_USER_ACCESS_RESTRICTIONS = new InjectionToken<

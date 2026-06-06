@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposSetStatusCheckContextsBody = NonNullable<
+export type ReposSetStatusCheckContextsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['requestBody']
 >['content']['application/json'];
 
-type ReposSetStatusCheckContextsResponse =
+export type ReposSetStatusCheckContextsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['responses']['200']['content']['application/json'];
 
 export const REPOS_SET_STATUS_CHECK_CONTEXTS = new InjectionToken<

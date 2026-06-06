@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetCollaboratorPermissionLevelResponse =
+export type ReposGetCollaboratorPermissionLevelResponse =
   paths['/repos/{owner}/{repo}/collaborators/{username}/permission']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_COLLABORATOR_PERMISSION_LEVEL = new InjectionToken<

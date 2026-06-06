@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteTerminalLocationsLocationBody = NonNullable<
+export type DeleteTerminalLocationsLocationBody = NonNullable<
   paths['/v1/terminal/locations/{location}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteTerminalLocationsLocationResponse =
+export type DeleteTerminalLocationsLocationResponse =
   paths['/v1/terminal/locations/{location}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_TERMINAL_LOCATIONS_LOCATION = new InjectionToken<

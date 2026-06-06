@@ -3,12 +3,12 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTestHelpersTerminalReadersReaderSucceedInputCollectionBody =
+export type PostTestHelpersTerminalReadersReaderSucceedInputCollectionBody =
   NonNullable<
     paths['/v1/test_helpers/terminal/readers/{reader}/succeed_input_collection']['post']['requestBody']
   >['content']['application/x-www-form-urlencoded'];
 
-type PostTestHelpersTerminalReadersReaderSucceedInputCollectionResponse =
+export type PostTestHelpersTerminalReadersReaderSucceedInputCollectionResponse =
   paths['/v1/test_helpers/terminal/readers/{reader}/succeed_input_collection']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TEST_HELPERS_TERMINAL_READERS_READER_SUCCEED_INPUT_COLLECTION =

@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCustomPropertiesForReposGetRepositoryValuesResponse =
+export type ReposCustomPropertiesForReposGetRepositoryValuesResponse =
   paths['/repos/{owner}/{repo}/properties/values']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_CUSTOM_PROPERTIES_FOR_REPOS_GET_REPOSITORY_VALUES =

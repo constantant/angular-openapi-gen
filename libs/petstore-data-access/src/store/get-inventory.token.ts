@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
-type GetInventoryResponse =
+export type GetInventoryResponse =
   paths['/store/inventory']['get']['responses']['200']['content']['application/json'];
 
 export const GET_INVENTORY = new InjectionToken<

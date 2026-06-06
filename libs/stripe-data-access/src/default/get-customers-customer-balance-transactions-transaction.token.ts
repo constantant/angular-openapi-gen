@@ -3,10 +3,10 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetCustomersCustomerBalanceTransactionsTransactionParams =
+export type GetCustomersCustomerBalanceTransactionsTransactionParams =
   paths['/v1/customers/{customer}/balance_transactions/{transaction}']['get']['parameters']['query'];
 
-type GetCustomersCustomerBalanceTransactionsTransactionResponse =
+export type GetCustomersCustomerBalanceTransactionsTransactionResponse =
   paths['/v1/customers/{customer}/balance_transactions/{transaction}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION =
@@ -14,7 +14,11 @@ export const GET_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION =
     (
       customer: string,
       transaction: string,
-      params?: GetCustomersCustomerBalanceTransactionsTransactionParams,
+      params?:
+        | GetCustomersCustomerBalanceTransactionsTransactionParams
+        | (() =>
+            | GetCustomersCustomerBalanceTransactionsTransactionParams
+            | undefined),
     ) => ReturnType<
       typeof httpResource<GetCustomersCustomerBalanceTransactionsTransactionResponse>
     >
@@ -25,12 +29,18 @@ export const GET_CUSTOMERS_CUSTOMER_BALANCE_TRANSACTIONS_TRANSACTION =
       return (
         customer: string,
         transaction: string,
-        params?: GetCustomersCustomerBalanceTransactionsTransactionParams,
+        params?:
+          | GetCustomersCustomerBalanceTransactionsTransactionParams
+          | (() =>
+              | GetCustomersCustomerBalanceTransactionsTransactionParams
+              | undefined),
       ) =>
         httpResource<GetCustomersCustomerBalanceTransactionsTransactionResponse>(
           () => ({
             url: `${base}/v1/customers/${customer}/balance_transactions/${transaction}`,
-            params: params as unknown as Record<
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

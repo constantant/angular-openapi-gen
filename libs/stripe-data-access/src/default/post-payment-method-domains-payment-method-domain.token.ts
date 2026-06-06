@@ -3,17 +3,17 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPaymentMethodDomainsPaymentMethodDomainBody = NonNullable<
+export type PostPaymentMethodDomainsPaymentMethodDomainBody = NonNullable<
   paths['/v1/payment_method_domains/{payment_method_domain}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPaymentMethodDomainsPaymentMethodDomainResponse =
+export type PostPaymentMethodDomainsPaymentMethodDomainResponse =
   paths['/v1/payment_method_domains/{payment_method_domain}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN =
   new InjectionToken<
     (
-      payment_method_domain: string,
+      paymentMethodDomain: string,
       body:
         | PostPaymentMethodDomainsPaymentMethodDomainBody
         | Signal<PostPaymentMethodDomainsPaymentMethodDomainBody>,
@@ -25,14 +25,14 @@ export const POST_PAYMENT_METHOD_DOMAINS_PAYMENT_METHOD_DOMAIN =
     factory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
-        payment_method_domain: string,
+        paymentMethodDomain: string,
         body:
           | PostPaymentMethodDomainsPaymentMethodDomainBody
           | Signal<PostPaymentMethodDomainsPaymentMethodDomainBody>,
       ) =>
         httpResource<PostPaymentMethodDomainsPaymentMethodDomainResponse>(
           () => ({
-            url: `${base}/v1/payment_method_domains/${payment_method_domain}`,
+            url: `${base}/v1/payment_method_domains/${paymentMethodDomain}`,
             method: 'POST',
             body,
           }),

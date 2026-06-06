@@ -3,11 +3,12 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTestHelpersTerminalReadersReaderPresentPaymentMethodBody = NonNullable<
-  paths['/v1/test_helpers/terminal/readers/{reader}/present_payment_method']['post']['requestBody']
->['content']['application/x-www-form-urlencoded'];
+export type PostTestHelpersTerminalReadersReaderPresentPaymentMethodBody =
+  NonNullable<
+    paths['/v1/test_helpers/terminal/readers/{reader}/present_payment_method']['post']['requestBody']
+  >['content']['application/x-www-form-urlencoded'];
 
-type PostTestHelpersTerminalReadersReaderPresentPaymentMethodResponse =
+export type PostTestHelpersTerminalReadersReaderPresentPaymentMethodResponse =
   paths['/v1/test_helpers/terminal/readers/{reader}/present_payment_method']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TEST_HELPERS_TERMINAL_READERS_READER_PRESENT_PAYMENT_METHOD =

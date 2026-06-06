@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposSetTeamAccessRestrictionsBody = NonNullable<
+export type ReposSetTeamAccessRestrictionsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['put']['requestBody']
 >['content']['application/json'];
 
-type ReposSetTeamAccessRestrictionsResponse =
+export type ReposSetTeamAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['put']['responses']['200']['content']['application/json'];
 
 export const REPOS_SET_TEAM_ACCESS_RESTRICTIONS = new InjectionToken<

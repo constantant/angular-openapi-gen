@@ -3,17 +3,17 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposUpdateOrgRulesetBody = NonNullable<
+export type ReposUpdateOrgRulesetBody = NonNullable<
   paths['/orgs/{org}/rulesets/{ruleset_id}']['put']['requestBody']
 >['content']['application/json'];
 
-type ReposUpdateOrgRulesetResponse =
+export type ReposUpdateOrgRulesetResponse =
   paths['/orgs/{org}/rulesets/{ruleset_id}']['put']['responses']['200']['content']['application/json'];
 
 export const REPOS_UPDATE_ORG_RULESET = new InjectionToken<
   (
     org: string,
-    ruleset_id: string,
+    rulesetId: string,
     body: ReposUpdateOrgRulesetBody | Signal<ReposUpdateOrgRulesetBody>,
   ) => ReturnType<typeof httpResource<ReposUpdateOrgRulesetResponse>>
 >('REPOS_UPDATE_ORG_RULESET', {
@@ -22,11 +22,11 @@ export const REPOS_UPDATE_ORG_RULESET = new InjectionToken<
     const base = inject(GITHUB_BASE_URL);
     return (
       org: string,
-      ruleset_id: string,
+      rulesetId: string,
       body: ReposUpdateOrgRulesetBody | Signal<ReposUpdateOrgRulesetBody>,
     ) =>
       httpResource<ReposUpdateOrgRulesetResponse>(() => ({
-        url: `${base}/orgs/${org}/rulesets/${ruleset_id}`,
+        url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
         method: 'PUT',
         body,
       }));

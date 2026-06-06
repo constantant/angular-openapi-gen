@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostPlansPlanBody = NonNullable<
+export type PostPlansPlanBody = NonNullable<
   paths['/v1/plans/{plan}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostPlansPlanResponse =
+export type PostPlansPlanResponse =
   paths['/v1/plans/{plan}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_PLANS_PLAN = new InjectionToken<

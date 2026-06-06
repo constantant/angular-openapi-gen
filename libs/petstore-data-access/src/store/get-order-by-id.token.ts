@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
-type GetOrderByIdResponse =
+export type GetOrderByIdResponse =
   paths['/store/order/{orderId}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_ORDER_BY_ID = new InjectionToken<

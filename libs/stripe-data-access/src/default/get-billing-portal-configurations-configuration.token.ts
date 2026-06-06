@@ -3,17 +3,19 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetBillingPortalConfigurationsConfigurationParams =
+export type GetBillingPortalConfigurationsConfigurationParams =
   paths['/v1/billing_portal/configurations/{configuration}']['get']['parameters']['query'];
 
-type GetBillingPortalConfigurationsConfigurationResponse =
+export type GetBillingPortalConfigurationsConfigurationResponse =
   paths['/v1/billing_portal/configurations/{configuration}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_BILLING_PORTAL_CONFIGURATIONS_CONFIGURATION =
   new InjectionToken<
     (
       configuration: string,
-      params?: GetBillingPortalConfigurationsConfigurationParams,
+      params?:
+        | GetBillingPortalConfigurationsConfigurationParams
+        | (() => GetBillingPortalConfigurationsConfigurationParams | undefined),
     ) => ReturnType<
       typeof httpResource<GetBillingPortalConfigurationsConfigurationResponse>
     >
@@ -23,12 +25,18 @@ export const GET_BILLING_PORTAL_CONFIGURATIONS_CONFIGURATION =
       const base = inject(STRIPE_BASE_URL);
       return (
         configuration: string,
-        params?: GetBillingPortalConfigurationsConfigurationParams,
+        params?:
+          | GetBillingPortalConfigurationsConfigurationParams
+          | (() =>
+              | GetBillingPortalConfigurationsConfigurationParams
+              | undefined),
       ) =>
         httpResource<GetBillingPortalConfigurationsConfigurationResponse>(
           () => ({
             url: `${base}/v1/billing_portal/configurations/${configuration}`,
-            params: params as unknown as Record<
+            params: (typeof params === 'function'
+              ? params()
+              : params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

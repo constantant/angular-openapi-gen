@@ -3,16 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetReportingReportTypesReportTypeParams =
+export type GetReportingReportTypesReportTypeParams =
   paths['/v1/reporting/report_types/{report_type}']['get']['parameters']['query'];
 
-type GetReportingReportTypesReportTypeResponse =
+export type GetReportingReportTypesReportTypeResponse =
   paths['/v1/reporting/report_types/{report_type}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_REPORTING_REPORT_TYPES_REPORT_TYPE = new InjectionToken<
   (
-    report_type: string,
-    params?: GetReportingReportTypesReportTypeParams,
+    reportType: string,
+    params?:
+      | GetReportingReportTypesReportTypeParams
+      | (() => GetReportingReportTypesReportTypeParams | undefined),
   ) => ReturnType<
     typeof httpResource<GetReportingReportTypesReportTypeResponse>
   >
@@ -21,12 +23,16 @@ export const GET_REPORTING_REPORT_TYPES_REPORT_TYPE = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      report_type: string,
-      params?: GetReportingReportTypesReportTypeParams,
+      reportType: string,
+      params?:
+        | GetReportingReportTypesReportTypeParams
+        | (() => GetReportingReportTypesReportTypeParams | undefined),
     ) =>
       httpResource<GetReportingReportTypesReportTypeResponse>(() => ({
-        url: `${base}/v1/reporting/report_types/${report_type}`,
-        params: params as unknown as Record<
+        url: `${base}/v1/reporting/report_types/${reportType}`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

@@ -3,18 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailBody =
+export type PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailBody =
   NonNullable<
     paths['/v1/test_helpers/treasury/outbound_transfers/{outbound_transfer}/fail']['post']['requestBody']
   >['content']['application/x-www-form-urlencoded'];
 
-type PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailResponse =
+export type PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailResponse =
   paths['/v1/test_helpers/treasury/outbound_transfers/{outbound_transfer}/fail']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TEST_HELPERS_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER_FAIL =
   new InjectionToken<
     (
-      outbound_transfer: string,
+      outboundTransfer: string,
       body:
         | PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailBody
         | Signal<PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailBody>,
@@ -26,14 +26,14 @@ export const POST_TEST_HELPERS_TREASURY_OUTBOUND_TRANSFERS_OUTBOUND_TRANSFER_FAI
     factory: () => {
       const base = inject(STRIPE_BASE_URL);
       return (
-        outbound_transfer: string,
+        outboundTransfer: string,
         body:
           | PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailBody
           | Signal<PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailBody>,
       ) =>
         httpResource<PostTestHelpersTreasuryOutboundTransfersOutboundTransferFailResponse>(
           () => ({
-            url: `${base}/v1/test_helpers/treasury/outbound_transfers/${outbound_transfer}/fail`,
+            url: `${base}/v1/test_helpers/treasury/outbound_transfers/${outboundTransfer}/fail`,
             method: 'POST',
             body,
           }),

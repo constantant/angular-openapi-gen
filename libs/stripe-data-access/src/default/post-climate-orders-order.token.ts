@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostClimateOrdersOrderBody = NonNullable<
+export type PostClimateOrdersOrderBody = NonNullable<
   paths['/v1/climate/orders/{order}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostClimateOrdersOrderResponse =
+export type PostClimateOrdersOrderResponse =
   paths['/v1/climate/orders/{order}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_CLIMATE_ORDERS_ORDER = new InjectionToken<

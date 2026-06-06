@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTreasuryInboundTransfersBody = NonNullable<
+export type PostTreasuryInboundTransfersBody = NonNullable<
   paths['/v1/treasury/inbound_transfers']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTreasuryInboundTransfersResponse =
+export type PostTreasuryInboundTransfersResponse =
   paths['/v1/treasury/inbound_transfers']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TREASURY_INBOUND_TRANSFERS = new InjectionToken<

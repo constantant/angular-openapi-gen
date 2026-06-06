@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostFinancialConnectionsSessionsBody = NonNullable<
+export type PostFinancialConnectionsSessionsBody = NonNullable<
   paths['/v1/financial_connections/sessions']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostFinancialConnectionsSessionsResponse =
+export type PostFinancialConnectionsSessionsResponse =
   paths['/v1/financial_connections/sessions']['post']['responses']['200']['content']['application/json'];
 
 export const POST_FINANCIAL_CONNECTIONS_SESSIONS = new InjectionToken<

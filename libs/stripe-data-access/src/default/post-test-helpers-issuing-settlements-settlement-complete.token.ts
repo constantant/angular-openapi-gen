@@ -3,11 +3,12 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTestHelpersIssuingSettlementsSettlementCompleteBody = NonNullable<
-  paths['/v1/test_helpers/issuing/settlements/{settlement}/complete']['post']['requestBody']
->['content']['application/x-www-form-urlencoded'];
+export type PostTestHelpersIssuingSettlementsSettlementCompleteBody =
+  NonNullable<
+    paths['/v1/test_helpers/issuing/settlements/{settlement}/complete']['post']['requestBody']
+  >['content']['application/x-www-form-urlencoded'];
 
-type PostTestHelpersIssuingSettlementsSettlementCompleteResponse =
+export type PostTestHelpersIssuingSettlementsSettlementCompleteResponse =
   paths['/v1/test_helpers/issuing/settlements/{settlement}/complete']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TEST_HELPERS_ISSUING_SETTLEMENTS_SETTLEMENT_COMPLETE =

@@ -3,25 +3,34 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type UsersListPublicKeysForUserParams =
+export type UsersListPublicKeysForUserParams =
   paths['/users/{username}/keys']['get']['parameters']['query'];
 
-type UsersListPublicKeysForUserResponse =
+export type UsersListPublicKeysForUserResponse =
   paths['/users/{username}/keys']['get']['responses']['200']['content']['application/json'];
 
 export const USERS_LIST_PUBLIC_KEYS_FOR_USER = new InjectionToken<
   (
     username: string,
-    params?: UsersListPublicKeysForUserParams,
+    params?:
+      | UsersListPublicKeysForUserParams
+      | (() => UsersListPublicKeysForUserParams | undefined),
   ) => ReturnType<typeof httpResource<UsersListPublicKeysForUserResponse>>
 >('USERS_LIST_PUBLIC_KEYS_FOR_USER', {
   providedIn: 'root',
   factory: () => {
     const base = inject(GITHUB_BASE_URL);
-    return (username: string, params?: UsersListPublicKeysForUserParams) =>
+    return (
+      username: string,
+      params?:
+        | UsersListPublicKeysForUserParams
+        | (() => UsersListPublicKeysForUserParams | undefined),
+    ) =>
       httpResource<UsersListPublicKeysForUserResponse>(() => ({
         url: `${base}/users/${username}/keys`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

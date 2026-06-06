@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteAccountsAccountExternalAccountsIdBody = NonNullable<
+export type DeleteAccountsAccountExternalAccountsIdBody = NonNullable<
   paths['/v1/accounts/{account}/external_accounts/{id}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteAccountsAccountExternalAccountsIdResponse =
+export type DeleteAccountsAccountExternalAccountsIdResponse =
   paths['/v1/accounts/{account}/external_accounts/{id}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_ACCOUNTS_ACCOUNT_EXTERNAL_ACCOUNTS_ID = new InjectionToken<

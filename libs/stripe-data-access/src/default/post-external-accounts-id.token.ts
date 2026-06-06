@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostExternalAccountsIdBody = NonNullable<
+export type PostExternalAccountsIdBody = NonNullable<
   paths['/v1/external_accounts/{id}']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostExternalAccountsIdResponse =
+export type PostExternalAccountsIdResponse =
   paths['/v1/external_accounts/{id}']['post']['responses']['200']['content']['application/json'];
 
 export const POST_EXTERNAL_ACCOUNTS_ID = new InjectionToken<

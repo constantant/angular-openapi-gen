@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostSourcesSourceVerifyBody = NonNullable<
+export type PostSourcesSourceVerifyBody = NonNullable<
   paths['/v1/sources/{source}/verify']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostSourcesSourceVerifyResponse =
+export type PostSourcesSourceVerifyResponse =
   paths['/v1/sources/{source}/verify']['post']['responses']['200']['content']['application/json'];
 
 export const POST_SOURCES_SOURCE_VERIFY = new InjectionToken<

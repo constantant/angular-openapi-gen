@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateAutolinkBody = NonNullable<
+export type ReposCreateAutolinkBody = NonNullable<
   paths['/repos/{owner}/{repo}/autolinks']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateAutolinkResponse =
+export type ReposCreateAutolinkResponse =
   paths['/repos/{owner}/{repo}/autolinks']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_CREATE_AUTOLINK = new InjectionToken<

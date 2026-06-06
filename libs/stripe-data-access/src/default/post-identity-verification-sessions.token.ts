@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostIdentityVerificationSessionsBody = NonNullable<
+export type PostIdentityVerificationSessionsBody = NonNullable<
   paths['/v1/identity/verification_sessions']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostIdentityVerificationSessionsResponse =
+export type PostIdentityVerificationSessionsResponse =
   paths['/v1/identity/verification_sessions']['post']['responses']['200']['content']['application/json'];
 
 export const POST_IDENTITY_VERIFICATION_SESSIONS = new InjectionToken<

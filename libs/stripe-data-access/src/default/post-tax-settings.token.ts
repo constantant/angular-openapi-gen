@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostTaxSettingsBody = NonNullable<
+export type PostTaxSettingsBody = NonNullable<
   paths['/v1/tax/settings']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostTaxSettingsResponse =
+export type PostTaxSettingsResponse =
   paths['/v1/tax/settings']['post']['responses']['200']['content']['application/json'];
 
 export const POST_TAX_SETTINGS = new InjectionToken<

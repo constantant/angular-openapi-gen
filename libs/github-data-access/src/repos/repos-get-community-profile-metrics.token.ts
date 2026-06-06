@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetCommunityProfileMetricsResponse =
+export type ReposGetCommunityProfileMetricsResponse =
   paths['/repos/{owner}/{repo}/community/profile']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_COMMUNITY_PROFILE_METRICS = new InjectionToken<

@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteApplePayDomainsDomainBody = NonNullable<
+export type DeleteApplePayDomainsDomainBody = NonNullable<
   paths['/v1/apple_pay/domains/{domain}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteApplePayDomainsDomainResponse =
+export type DeleteApplePayDomainsDomainResponse =
   paths['/v1/apple_pay/domains/{domain}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_APPLE_PAY_DOMAINS_DOMAIN = new InjectionToken<

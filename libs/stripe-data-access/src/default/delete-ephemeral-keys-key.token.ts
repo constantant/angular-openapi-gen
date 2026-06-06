@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type DeleteEphemeralKeysKeyBody = NonNullable<
+export type DeleteEphemeralKeysKeyBody = NonNullable<
   paths['/v1/ephemeral_keys/{key}']['delete']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type DeleteEphemeralKeysKeyResponse =
+export type DeleteEphemeralKeysKeyResponse =
   paths['/v1/ephemeral_keys/{key}']['delete']['responses']['200']['content']['application/json'];
 
 export const DELETE_EPHEMERAL_KEYS_KEY = new InjectionToken<

@@ -3,16 +3,18 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type GetTestHelpersTestClocksTestClockParams =
+export type GetTestHelpersTestClocksTestClockParams =
   paths['/v1/test_helpers/test_clocks/{test_clock}']['get']['parameters']['query'];
 
-type GetTestHelpersTestClocksTestClockResponse =
+export type GetTestHelpersTestClocksTestClockResponse =
   paths['/v1/test_helpers/test_clocks/{test_clock}']['get']['responses']['200']['content']['application/json'];
 
 export const GET_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK = new InjectionToken<
   (
-    test_clock: string,
-    params?: GetTestHelpersTestClocksTestClockParams,
+    testClock: string,
+    params?:
+      | GetTestHelpersTestClocksTestClockParams
+      | (() => GetTestHelpersTestClocksTestClockParams | undefined),
   ) => ReturnType<
     typeof httpResource<GetTestHelpersTestClocksTestClockResponse>
   >
@@ -21,12 +23,16 @@ export const GET_TEST_HELPERS_TEST_CLOCKS_TEST_CLOCK = new InjectionToken<
   factory: () => {
     const base = inject(STRIPE_BASE_URL);
     return (
-      test_clock: string,
-      params?: GetTestHelpersTestClocksTestClockParams,
+      testClock: string,
+      params?:
+        | GetTestHelpersTestClocksTestClockParams
+        | (() => GetTestHelpersTestClocksTestClockParams | undefined),
     ) =>
       httpResource<GetTestHelpersTestClocksTestClockResponse>(() => ({
-        url: `${base}/v1/test_helpers/test_clocks/${test_clock}`,
-        params: params as unknown as Record<
+        url: `${base}/v1/test_helpers/test_clocks/${testClock}`,
+        params: (typeof params === 'function'
+          ? params()
+          : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,

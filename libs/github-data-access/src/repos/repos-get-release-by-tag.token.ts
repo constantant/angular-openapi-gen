@@ -3,7 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposGetReleaseByTagResponse =
+export type ReposGetReleaseByTagResponse =
   paths['/repos/{owner}/{repo}/releases/tags/{tag}']['get']['responses']['200']['content']['application/json'];
 
 export const REPOS_GET_RELEASE_BY_TAG = new InjectionToken<

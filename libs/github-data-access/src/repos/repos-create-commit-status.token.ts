@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-type ReposCreateCommitStatusBody = NonNullable<
+export type ReposCreateCommitStatusBody = NonNullable<
   paths['/repos/{owner}/{repo}/statuses/{sha}']['post']['requestBody']
 >['content']['application/json'];
 
-type ReposCreateCommitStatusResponse =
+export type ReposCreateCommitStatusResponse =
   paths['/repos/{owner}/{repo}/statuses/{sha}']['post']['responses']['201']['content']['application/json'];
 
 export const REPOS_CREATE_COMMIT_STATUS = new InjectionToken<

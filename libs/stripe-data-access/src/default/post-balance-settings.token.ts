@@ -3,11 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { STRIPE_BASE_URL } from '../api-base-url.token';
 
-type PostBalanceSettingsBody = NonNullable<
+export type PostBalanceSettingsBody = NonNullable<
   paths['/v1/balance_settings']['post']['requestBody']
 >['content']['application/x-www-form-urlencoded'];
 
-type PostBalanceSettingsResponse =
+export type PostBalanceSettingsResponse =
   paths['/v1/balance_settings']['post']['responses']['200']['content']['application/json'];
 
 export const POST_BALANCE_SETTINGS = new InjectionToken<
