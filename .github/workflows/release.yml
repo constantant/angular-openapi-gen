@@ -46,7 +46,7 @@ jobs:
       # creates a git commit + tag, and opens a GitHub Release (draft: false).
       - name: Bump version and generate changelog
         run: |
-          FLAGS="--skip-publish --yes"
+          FLAGS="--skip-publish"
           [[ "${{ inputs.firstRelease }}" == "true" ]] && FLAGS="$FLAGS --first-release"
           npx nx release $FLAGS
         env:
