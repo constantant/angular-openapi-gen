@@ -6,7 +6,12 @@ import {
 } from '@nx/devkit';
 import * as fs from 'fs';
 import * as jsYaml from 'js-yaml';
-import openapiTS from 'openapi-typescript';
+// openapi-typescript ships as ESM-only; use the bundled CJS build so this
+// CommonJS generator can call it without a dynamic import().
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const openapiTS = require('openapi-typescript/dist/index.cjs') as (
+  path: string
+) => Promise<string>;
 import * as path from 'path';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
