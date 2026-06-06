@@ -6,7 +6,7 @@ test.describe('Navigation', () => {
   });
 
   test('shows exactly the right nav links', async ({ page }) => {
-    const nav = page.locator('nav.sidenav');
+    const nav = page.locator('mat-sidenav');
     await expect(nav.getByRole('link', { name: 'Dashboard' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Repos' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Pets' })).toBeVisible();
@@ -14,7 +14,7 @@ test.describe('Navigation', () => {
   });
 
   test('active link updates on navigation', async ({ page }) => {
-    const nav = page.locator('nav.sidenav');
+    const nav = page.locator('mat-sidenav');
     await nav.getByRole('link', { name: 'Repos' }).click();
     await expect(nav.getByRole('link', { name: 'Repos' })).toHaveClass(/active/);
     await expect(nav.getByRole('link', { name: 'Dashboard' })).not.toHaveClass(/active/);
