@@ -57,6 +57,25 @@ jobs:
         if: ${{ !inputs.dryRun }}
         run: git push --follow-tags origin master
 
+      - name: Create GitHub Release
+        if: ${{ !inputs.dryRun }}
+        run: |
+          VERSION=$(node -p "require('./tools/openapi-resource-gen/package.json').version")
+          TAG="openapi-resource-gen@${VERSION}"
+          # Extract the section for this version from CHANGELOG.md (content between
+          # the "## VERSION" heading and the next "## " heading)
+          NOTES=$(awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
+            tools/openapi-resource-gen/CHANGELOG.md)
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — skipping."
+          else
+            gh release create "$TAG" \
+              --title "@constantant/openapi-resource-gen@${VERSION}" \
+              --notes "${NOTES:-No changelog entries for this version.}"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # Build after version bump. Nx Cloud may cache the old version; explicitly
       # write the bumped version into dist/package.json after building.
       - name: Build
