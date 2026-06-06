@@ -1,0 +1,30 @@
+<div class="page">
+  <h1>Repositories</h1>
+
+  @if (user.isLoading()) {
+    <p class="loading">Loading user…</p>
+  } @else if (user.error()) {
+    <p class="error">Failed to load user</p>
+  } @else {
+    <div class="profile">
+      <strong>{{ $any(user.value())?.login }}</strong>
+      <span>{{ $any(user.value())?.public_repos }} public repos</span>
+    </div>
+  }
+
+  @if (repos.isLoading()) {
+    <p class="loading">Loading repos…</p>
+  } @else if (repos.error()) {
+    <p class="error">Failed to load repos</p>
+  } @else {
+    <ul class="repo-list">
+      @for (repo of $any(repos.value()) ?? []; track repo.id) {
+        <li class="repo-item">
+          <strong>{{ repo.name }}</strong>
+          <span class="stars">★ {{ repo.stargazers_count }}</span>
+          @if (repo.description) { <p>{{ repo.description }}</p> }
+        </li>
+      }
+    </ul>
+  }
+</div>

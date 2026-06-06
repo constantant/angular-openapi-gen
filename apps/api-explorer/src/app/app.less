@@ -1,0 +1,141 @@
+.shell {
+  display: flex;
+  height: 100vh;
+  font-family: sans-serif;
+}
+
+.sidenav {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background: #1e1e2e;
+  color: #cdd6f4;
+
+  .brand {
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 8px 0 16px;
+    border-bottom: 1px solid #313244;
+    margin-bottom: 8px;
+    color: #cba6f7;
+  }
+
+  a {
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: #cdd6f4;
+    text-decoration: none;
+    font-size: 0.9rem;
+
+    &:hover { background: #313244; }
+    &.active { background: #45475a; color: #cba6f7; font-weight: 600; }
+  }
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background: #1e1e2e;
+  color: #cdd6f4;
+}
+
+.page {
+  padding: 24px;
+
+  h1 { font-size: 1.5rem; margin: 0 0 20px; color: #cba6f7; }
+  h2 { font-size: 1.1rem; margin: 16px 0 8px; color: #89dceb; }
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  padding: 16px;
+  border-radius: 8px;
+  background: #313244;
+
+  h2 { margin: 0 0 8px; }
+  p { margin: 4px 0; font-size: 0.9rem; }
+}
+
+.loading { color: #a6e3a1; font-size: 0.85rem; }
+.error   { color: #f38ba8; font-size: 0.85rem; }
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chip {
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid #45475a;
+  background: transparent;
+  color: #cdd6f4;
+  cursor: pointer;
+  font-size: 0.85rem;
+
+  &:hover { background: #313244; }
+  &.active { background: #cba6f7; color: #1e1e2e; border-color: #cba6f7; }
+}
+
+.profile {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #313244;
+  border-radius: 8px;
+}
+
+.repo-list, .pet-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.repo-item, .pet-item {
+  padding: 12px;
+  background: #313244;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+
+  p { margin: 4px 0 0; width: 100%; font-size: 0.85rem; color: #a6adc8; }
+}
+
+.stars {
+  font-size: 0.8rem;
+  color: #f9e2af;
+  margin-left: auto;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #45475a;
+  margin-left: auto;
+}
+
+pre {
+  background: #181825;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  overflow-x: auto;
+  color: #a6e3a1;
+}

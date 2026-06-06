@@ -1,0 +1,29 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { STRIPE_BASE_URL } from '../api-base-url.token';
+
+type GetPaymentLinksParams =
+  paths['/v1/payment_links']['get']['parameters']['query'];
+
+type GetPaymentLinksResponse =
+  paths['/v1/payment_links']['get']['responses']['200']['content']['application/json'];
+
+export const GET_PAYMENT_LINKS = new InjectionToken<
+  (
+    params?: GetPaymentLinksParams,
+  ) => ReturnType<typeof httpResource<GetPaymentLinksResponse>>
+>('GET_PAYMENT_LINKS', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(STRIPE_BASE_URL);
+    return (params?: GetPaymentLinksParams) =>
+      httpResource<GetPaymentLinksResponse>(() => ({
+        url: `${base}/v1/payment_links`,
+        params: params as unknown as Record<
+          string,
+          string | number | boolean | readonly (string | number | boolean)[]
+        >,
+      }));
+  },
+});

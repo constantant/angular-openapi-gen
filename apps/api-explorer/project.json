@@ -21,11 +21,7 @@
           }
         ],
         "styles": ["apps/api-explorer/src/styles.less"],
-        "server": "apps/api-explorer/src/main.server.ts",
-        "ssr": {
-          "entry": "apps/api-explorer/src/server.ts"
-        },
-        "outputMode": "server"
+        "prerender": false
       },
       "configurations": {
         "production": {

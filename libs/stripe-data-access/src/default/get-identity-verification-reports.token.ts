@@ -1,0 +1,29 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { STRIPE_BASE_URL } from '../api-base-url.token';
+
+type GetIdentityVerificationReportsParams =
+  paths['/v1/identity/verification_reports']['get']['parameters']['query'];
+
+type GetIdentityVerificationReportsResponse =
+  paths['/v1/identity/verification_reports']['get']['responses']['200']['content']['application/json'];
+
+export const GET_IDENTITY_VERIFICATION_REPORTS = new InjectionToken<
+  (
+    params?: GetIdentityVerificationReportsParams,
+  ) => ReturnType<typeof httpResource<GetIdentityVerificationReportsResponse>>
+>('GET_IDENTITY_VERIFICATION_REPORTS', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(STRIPE_BASE_URL);
+    return (params?: GetIdentityVerificationReportsParams) =>
+      httpResource<GetIdentityVerificationReportsResponse>(() => ({
+        url: `${base}/v1/identity/verification_reports`,
+        params: params as unknown as Record<
+          string,
+          string | number | boolean | readonly (string | number | boolean)[]
+        >,
+      }));
+  },
+});

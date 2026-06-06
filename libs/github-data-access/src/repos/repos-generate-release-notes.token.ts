@@ -1,0 +1,36 @@
+import { InjectionToken, inject, Signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+type ReposGenerateReleaseNotesBody = NonNullable<
+  paths['/repos/{owner}/{repo}/releases/generate-notes']['post']['requestBody']
+>['content']['application/json'];
+
+type ReposGenerateReleaseNotesResponse =
+  paths['/repos/{owner}/{repo}/releases/generate-notes']['post']['responses']['200']['content']['application/json'];
+
+export const REPOS_GENERATE_RELEASE_NOTES = new InjectionToken<
+  (
+    owner: string,
+    repo: string,
+    body: ReposGenerateReleaseNotesBody | Signal<ReposGenerateReleaseNotesBody>,
+  ) => ReturnType<typeof httpResource<ReposGenerateReleaseNotesResponse>>
+>('REPOS_GENERATE_RELEASE_NOTES', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(GITHUB_BASE_URL);
+    return (
+      owner: string,
+      repo: string,
+      body:
+        | ReposGenerateReleaseNotesBody
+        | Signal<ReposGenerateReleaseNotesBody>,
+    ) =>
+      httpResource<ReposGenerateReleaseNotesResponse>(() => ({
+        url: `${base}/repos/${owner}/${repo}/releases/generate-notes`,
+        method: 'POST',
+        body,
+      }));
+  },
+});

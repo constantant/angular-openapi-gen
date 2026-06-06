@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "rootDir": ".",
+    "baseUrl": ".",
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
@@ -13,7 +14,20 @@
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "paths": {}
+    "paths": {
+      "@angular-openapi-gen/github-data-access": [
+        "libs/github-data-access/src/index.ts"
+      ],
+      "@angular-openapi-gen/petstore-data-access": [
+        "libs/petstore-data-access/src/index.ts"
+      ],
+      "@angular-openapi-gen/travel-data-access": [
+        "libs/travel-data-access/src/index.ts"
+      ],
+      "@angular-openapi-gen/stripe-data-access": [
+        "libs/stripe-data-access/src/index.ts"
+      ]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

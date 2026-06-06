@@ -1,2 +1,13 @@
-<app-nx-welcome></app-nx-welcome>
-<router-outlet></router-outlet>
+<div class="shell">
+  <nav class="sidenav">
+    <span class="brand">API Explorer</span>
+    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    <a routerLink="/repos" routerLinkActive="active">Repos</a>
+    <a routerLink="/pets" routerLinkActive="active">Pets</a>
+    <a routerLink="/travel" routerLinkActive="active">Travel</a>
+    <a routerLink="/payments" routerLinkActive="active">Payments</a>
+  </nav>
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

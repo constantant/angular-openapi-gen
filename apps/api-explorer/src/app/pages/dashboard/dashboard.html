@@ -1,0 +1,40 @@
+<div class="page">
+  <h1>Dashboard</h1>
+  <div class="cards">
+    <div class="card">
+      <h2>GitHub</h2>
+      @if (user.isLoading()) { <p class="loading">Loading user…</p> }
+      @else if (user.error()) { <p class="error">API error</p> }
+      @else { <p>{{ $any(user.value())?.login }} · {{ $any(user.value())?.public_repos }} repos</p> }
+
+      @if (repos.isLoading()) { <p class="loading">Loading repos…</p> }
+      @else if (repos.error()) { <p class="error">API error</p> }
+      @else { <p>{{ ($any(repos.value()) ?? []).length }} repos loaded</p> }
+    </div>
+
+    <div class="card">
+      <h2>Petstore</h2>
+      @if (pets.isLoading()) { <p class="loading">Loading…</p> }
+      @else if (pets.error()) { <p class="error">API error</p> }
+      @else { <p>{{ ($any(pets.value()) ?? []).length }} pets available</p> }
+    </div>
+
+    <div class="card">
+      <h2>Travel</h2>
+      @if (trips.isLoading()) { <p class="loading">Loading…</p> }
+      @else if (trips.error()) { <p class="error">API error</p> }
+      @else { <p>{{ ($any(trips.value()) ?? []).length }} trips</p> }
+
+      @if (bookings.isLoading()) { <p class="loading">Loading…</p> }
+      @else if (bookings.error()) { <p class="error">API error</p> }
+      @else { <p>{{ ($any(bookings.value()) ?? []).length }} bookings</p> }
+    </div>
+
+    <div class="card">
+      <h2>Stripe</h2>
+      @if (invoices.isLoading()) { <p class="loading">Loading…</p> }
+      @else if (invoices.error()) { <p class="error">API error (auth required)</p> }
+      @else { <p>{{ $any(invoices.value())?.data?.length ?? 0 }} invoices</p> }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,26 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+type ReposGetCommitSignatureProtectionResponse =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures']['get']['responses']['200']['content']['application/json'];
+
+export const REPOS_GET_COMMIT_SIGNATURE_PROTECTION = new InjectionToken<
+  (
+    owner: string,
+    repo: string,
+    branch: string,
+  ) => ReturnType<
+    typeof httpResource<ReposGetCommitSignatureProtectionResponse>
+  >
+>('REPOS_GET_COMMIT_SIGNATURE_PROTECTION', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(GITHUB_BASE_URL);
+    return (owner: string, repo: string, branch: string) =>
+      httpResource<ReposGetCommitSignatureProtectionResponse>(() => ({
+        url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_signatures`,
+      }));
+  },
+});

@@ -1,0 +1,29 @@
+<div class="page">
+  <h1>Pets</h1>
+
+  <div class="filter-bar">
+    @for (s of statusOptions; track s) {
+      <button
+        class="chip"
+        [class.active]="status() === s"
+        (click)="status.set(s)">
+        {{ s }}
+      </button>
+    }
+  </div>
+
+  @if (petsByStatus.isLoading()) {
+    <p class="loading">Loading…</p>
+  } @else if (petsByStatus.error()) {
+    <p class="error">Failed to load pets</p>
+  } @else {
+    <ul class="pet-list">
+      @for (pet of $any(petsByStatus.value()) ?? []; track pet.id) {
+        <li class="pet-item">
+          <strong>{{ pet.name }}</strong>
+          <span class="badge">{{ pet.status }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>

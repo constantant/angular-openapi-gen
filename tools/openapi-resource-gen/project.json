@@ -1,0 +1,42 @@
+{
+  "name": "openapi-resource-gen",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/openapi-resource-gen/src",
+  "projectType": "library",
+  "tags": ["scope:tools", "type:generator"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/tools/openapi-resource-gen",
+        "main": "tools/openapi-resource-gen/src/index.ts",
+        "tsConfig": "tools/openapi-resource-gen/tsconfig.lib.json",
+        "assets": [
+          {
+            "input": "tools/openapi-resource-gen",
+            "glob": "generators.json",
+            "output": "."
+          },
+          {
+            "input": "tools/openapi-resource-gen/src",
+            "glob": "**/schema.json",
+            "output": "./src"
+          },
+          {
+            "input": "tools/openapi-resource-gen/src",
+            "glob": "**/files/**",
+            "output": "./src"
+          }
+        ]
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx vitest run --config tools/openapi-resource-gen/vitest.config.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

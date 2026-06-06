@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "api-resource": {
+      "factory": "./src/generators/api-resource/generator",
+      "schema": "./src/generators/api-resource/schema.json",
+      "description": "Generate InjectionToken-based API resource files from an OpenAPI 3.x spec"
+    }
+  }
+}

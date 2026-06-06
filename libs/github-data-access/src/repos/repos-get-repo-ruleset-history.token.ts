@@ -1,0 +1,37 @@
+import { InjectionToken, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+type ReposGetRepoRulesetHistoryParams =
+  paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['parameters']['query'];
+
+type ReposGetRepoRulesetHistoryResponse =
+  paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['200']['content']['application/json'];
+
+export const REPOS_GET_REPO_RULESET_HISTORY = new InjectionToken<
+  (
+    owner: string,
+    repo: string,
+    ruleset_id: string,
+    params?: ReposGetRepoRulesetHistoryParams,
+  ) => ReturnType<typeof httpResource<ReposGetRepoRulesetHistoryResponse>>
+>('REPOS_GET_REPO_RULESET_HISTORY', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(GITHUB_BASE_URL);
+    return (
+      owner: string,
+      repo: string,
+      ruleset_id: string,
+      params?: ReposGetRepoRulesetHistoryParams,
+    ) =>
+      httpResource<ReposGetRepoRulesetHistoryResponse>(() => ({
+        url: `${base}/repos/${owner}/${repo}/rulesets/${ruleset_id}/history`,
+        params: params as unknown as Record<
+          string,
+          string | number | boolean | readonly (string | number | boolean)[]
+        >,
+      }));
+  },
+});

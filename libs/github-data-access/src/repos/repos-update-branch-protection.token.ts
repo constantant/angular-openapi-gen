@@ -1,0 +1,40 @@
+import { InjectionToken, inject, Signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+type ReposUpdateBranchProtectionBody = NonNullable<
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['requestBody']
+>['content']['application/json'];
+
+type ReposUpdateBranchProtectionResponse =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['200']['content']['application/json'];
+
+export const REPOS_UPDATE_BRANCH_PROTECTION = new InjectionToken<
+  (
+    owner: string,
+    repo: string,
+    branch: string,
+    body:
+      | ReposUpdateBranchProtectionBody
+      | Signal<ReposUpdateBranchProtectionBody>,
+  ) => ReturnType<typeof httpResource<ReposUpdateBranchProtectionResponse>>
+>('REPOS_UPDATE_BRANCH_PROTECTION', {
+  providedIn: 'root',
+  factory: () => {
+    const base = inject(GITHUB_BASE_URL);
+    return (
+      owner: string,
+      repo: string,
+      branch: string,
+      body:
+        | ReposUpdateBranchProtectionBody
+        | Signal<ReposUpdateBranchProtectionBody>,
+    ) =>
+      httpResource<ReposUpdateBranchProtectionResponse>(() => ({
+        url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection`,
+        method: 'PUT',
+        body,
+      }));
+  },
+});
