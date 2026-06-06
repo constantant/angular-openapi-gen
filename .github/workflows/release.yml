@@ -76,33 +76,28 @@ jobs:
             fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
           "
 
-      # Trusted publishing: npm CLI exchanges the GitHub OIDC token for publish
-      # credentials automatically. No NPM_TOKEN secret required.
-      # --provenance triggers npm's OIDC token exchange with the trusted publisher.
-      # NODE_AUTH_TOKEN must be absent: setup-node sets it to GITHUB_TOKEN, and
-      # both the .npmrc _authToken entry and the env var block OIDC detection.
-      - name: Debug npm trusted publishing environment
+      # Trusted publishing: manually exchange the GitHub OIDC token for a
+      # temporary npm token via npmjs.com's OIDC endpoint, then publish.
+      # npm 10.x does not auto-trigger the OIDC flow; the exchange must be
+      # done explicitly. Requires a Trusted Publisher configured on npmjs.com.
+      - name: Exchange OIDC token for temporary npm token
         if: ${{ !inputs.dryRun }}
         run: |
-          echo "npm version: $(npm --version)"
-          echo "node version: $(node --version)"
-          echo "OIDC URL set: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && echo YES || echo NO)"
-          echo "npmrc content:"
-          cat "${NPM_CONFIG_USERCONFIG}" || echo "(empty)"
-          echo "npm config registry:"
-          npm config get registry
-        env:
-          NODE_AUTH_TOKEN: ""
+          OIDC_TOKEN=$(curl -sf \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=npm" \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            | jq -r '.value')
+          NPM_RESP=$(curl -sf \
+            -X POST "https://registry.npmjs.org/-/oidc/token" \
+            -H "Content-Type: application/json" \
+            -d "{\"token\": \"${OIDC_TOKEN}\"}")
+          NPM_TOKEN=$(echo "$NPM_RESP" | jq -r '.token')
+          echo "::add-mask::${NPM_TOKEN}"
+          echo "NPM_PUBLISH_TOKEN=${NPM_TOKEN}" >> "$GITHUB_ENV"
 
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
         working-directory: dist/tools/openapi-resource-gen
-        run: |
-          sed -i '/authToken/d' "${NPM_CONFIG_USERCONFIG}"
-          npm publish --access public --provenance
+        run: npm publish --access public --provenance
         env:
-          NODE_AUTH_TOKEN: ""
-
-      - name: Show npm debug log on failure
-        if: failure()
-        run: cat ~/.npm/_logs/*.log 2>/dev/null | tail -100 || echo "no npm debug log"
+          NODE_AUTH_TOKEN: ${{ env.NPM_PUBLISH_TOKEN }}
