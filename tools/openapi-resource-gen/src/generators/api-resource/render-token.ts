@@ -113,6 +113,8 @@ export function renderTokenFile(
       )
       .join('\n');
 
+  const needsBlockBody = isGet && ep.hasQueryParams;
+
   if (providedIn === 'root') {
     lines.push(
       `  providedIn: 'root',`,
@@ -120,13 +122,26 @@ export function renderTokenFile(
       `    const base = inject(${baseUrlToken});`,
     );
     if (applicableSchemes.length > 0) lines.push(securityInjects('    '));
-    lines.push(
-      `    return (${fnArgs}) =>`,
-      `      httpResource<${responseT}>(() => ({`,
-      `        url: \`\${base}${urlTemplate}\`,`,
-    );
-    appendResourceOptions(lines, ep, isGet, '        ', headerSchemes, querySchemes);
-    lines.push(`      }));`, `  },`, `});`, '');
+    if (needsBlockBody) {
+      lines.push(
+        `    return (${fnArgs}) =>`,
+        `      httpResource<${responseT}>(() => {`,
+        `        const _params = typeof params === 'function' ? params() : params;`,
+        `        if (typeof params === 'function' && _params === undefined) return undefined;`,
+        `        return {`,
+        `          url: \`\${base}${urlTemplate}\`,`,
+      );
+      appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, true);
+      lines.push(`        };`, `      });`, `  },`, `});`, '');
+    } else {
+      lines.push(
+        `    return (${fnArgs}) =>`,
+        `      httpResource<${responseT}>(() => ({`,
+        `        url: \`\${base}${urlTemplate}\`,`,
+      );
+      appendResourceOptions(lines, ep, isGet, '        ', headerSchemes, querySchemes, false);
+      lines.push(`      }));`, `  },`, `});`, '');
+    }
   } else {
     lines.push('');
     lines.push(
@@ -137,13 +152,26 @@ export function renderTokenFile(
       `      const base = inject(${baseUrlToken});`,
     );
     if (applicableSchemes.length > 0) lines.push(securityInjects('      '));
-    lines.push(
-      `      return (${fnArgs}) =>`,
-      `        httpResource<${responseT}>(() => ({`,
-      `          url: \`\${base}${urlTemplate}\`,`,
-    );
-    appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes);
-    lines.push(`        }));`, `    },`, `  };`, `}`, '');
+    if (needsBlockBody) {
+      lines.push(
+        `      return (${fnArgs}) =>`,
+        `        httpResource<${responseT}>(() => {`,
+        `          const _params = typeof params === 'function' ? params() : params;`,
+        `          if (typeof params === 'function' && _params === undefined) return undefined;`,
+        `          return {`,
+        `            url: \`\${base}${urlTemplate}\`,`,
+      );
+      appendResourceOptions(lines, ep, isGet, '            ', headerSchemes, querySchemes, true);
+      lines.push(`          };`, `        });`, `    },`, `  };`, `}`, '');
+    } else {
+      lines.push(
+        `      return (${fnArgs}) =>`,
+        `        httpResource<${responseT}>(() => ({`,
+        `          url: \`\${base}${urlTemplate}\`,`,
+      );
+      appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, false);
+      lines.push(`        }));`, `    },`, `  };`, `}`, '');
+    }
   }
 
   return lines.join('\n');
@@ -156,6 +184,7 @@ function appendResourceOptions(
   indent: string,
   headerSchemes: SecuritySchemeModel[],
   querySchemes: SecuritySchemeModel[],
+  usePrecomputedParams = false,
 ): void {
   if (!isGet) {
     lines.push(`${indent}method: '${ep.method.toUpperCase()}',`);
@@ -171,19 +200,17 @@ function appendResourceOptions(
           `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: \`\${${toCamelCase(s.schemeName)}()}\` } : {})`
       )
       .join(', ');
+    const paramsExpr = usePrecomputedParams
+      ? '_params'
+      : `(typeof params === 'function' ? params() : params)`;
+    const cast = ` as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>`;
 
     if (hasRegularParams && hasAuthQueryParams) {
-      lines.push(
-        `${indent}params: { ...(typeof params === 'function' ? params() : params), ${authQueryParts} } as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`
-      );
+      lines.push(`${indent}params: { ...${paramsExpr}, ${authQueryParts} }${cast},`);
     } else if (hasRegularParams) {
-      lines.push(
-        `${indent}params: (typeof params === 'function' ? params() : params) as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`
-      );
+      lines.push(`${indent}params: ${paramsExpr}${cast},`);
     } else {
-      lines.push(
-        `${indent}params: { ${authQueryParts} } as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`
-      );
+      lines.push(`${indent}params: { ${authQueryParts} }${cast},`);
     }
   }
 
