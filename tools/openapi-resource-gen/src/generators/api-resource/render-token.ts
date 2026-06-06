@@ -74,7 +74,7 @@ export function renderTokenFile(
     lines.push(`        method: '${ep.method.toUpperCase()}',`);
   }
   if (isGet && ep.hasQueryParams) {
-    lines.push(`        params: params as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`);
+    lines.push(`        params: (typeof params === 'function' ? params() : params) as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,`);
   }
   if (!isGet && ep.hasBody) {
     lines.push(`        body,`);
@@ -91,7 +91,7 @@ function buildFnArgs(
   isGet: boolean
 ): string {
   const args: string[] = ep.pathParams.map((p) => `${p}: string`);
-  if (isGet && ep.hasQueryParams) args.push(`params?: ${pascal}Params`);
+  if (isGet && ep.hasQueryParams) args.push(`params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);
   if (!isGet && ep.hasBody)
     args.push(`body: ${pascal}Body | Signal<${pascal}Body>`);
   return args.join(', ');

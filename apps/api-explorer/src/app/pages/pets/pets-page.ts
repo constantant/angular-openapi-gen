@@ -14,5 +14,5 @@ export class PetsPageComponent {
   readonly statusOptions: PetStatus[] = ['available', 'pending', 'sold'];
   readonly status = signal<PetStatus>('available');
 
-  readonly petsByStatus = this.findPetsByStatus({ status: this.status() });
+  readonly petsByStatus = this.findPetsByStatus(() => ({ status: this.status() }));
 }

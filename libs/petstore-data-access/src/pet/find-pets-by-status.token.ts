@@ -11,16 +11,16 @@ type FindPetsByStatusResponse =
 
 export const FIND_PETS_BY_STATUS = new InjectionToken<
   (
-    params?: FindPetsByStatusParams,
+    params?: FindPetsByStatusParams | (() => FindPetsByStatusParams | undefined),
   ) => ReturnType<typeof httpResource<FindPetsByStatusResponse>>
 >('FIND_PETS_BY_STATUS', {
   providedIn: 'root',
   factory: () => {
     const base = inject(PETSTORE_BASE_URL);
-    return (params?: FindPetsByStatusParams) =>
+    return (params?: FindPetsByStatusParams | (() => FindPetsByStatusParams | undefined)) =>
       httpResource<FindPetsByStatusResponse>(() => ({
         url: `${base}/pet/findByStatus`,
-        params: params as unknown as Record<
+        params: (typeof params === 'function' ? params() : params) as unknown as Record<
           string,
           string | number | boolean | readonly (string | number | boolean)[]
         >,
