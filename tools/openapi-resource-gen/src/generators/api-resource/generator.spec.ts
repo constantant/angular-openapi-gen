@@ -6,8 +6,9 @@ vi.mock('@apidevtools/swagger-parser', () => ({
   default: { dereference: vi.fn() },
 }));
 
-vi.mock('child_process', () => ({
-  execSync: vi.fn().mockReturnValue('export type paths = {};\n'),
+vi.mock('openapi-typescript', () => ({
+  default: vi.fn().mockResolvedValue('export type paths = {};\n'),
+  COMMENT_HEADER: '',
 }));
 
 import SwaggerParser from '@apidevtools/swagger-parser';
@@ -106,7 +107,7 @@ describe('api-resource generator', () => {
     expect(tree.exists('libs/petstore/src/pets/delete-pet.token.ts')).toBe(true);
   });
 
-  it('GET token references paths type for query params', async () => {
+  it('GET token uses providedIn: none by default (provide helper)', async () => {
     await apiResourceGenerator(tree, {
       specPath: 'specs/petstore.yaml',
       outputDir: 'libs/petstore/src',
@@ -114,8 +115,22 @@ describe('api-resource generator', () => {
     const content = tree.read('libs/petstore/src/pets/list-pets.token.ts', 'utf-8')!;
     expect(content).toContain("paths['/pets']['get']['parameters']['query']");
     expect(content).toContain('LIST_PETS');
-    expect(content).toContain("providedIn: 'root'");
+    expect(content).toContain('provideListPets');
+    expect(content).toContain('FactoryProvider');
+    expect(content).not.toContain("providedIn: 'root'");
     expect(content).toContain('httpResource');
+  });
+
+  it('GET token self-registers when providedIn: root', async () => {
+    await apiResourceGenerator(tree, {
+      specPath: 'specs/petstore.yaml',
+      outputDir: 'libs/petstore/src',
+      providedIn: 'root',
+    });
+    const content = tree.read('libs/petstore/src/pets/list-pets.token.ts', 'utf-8')!;
+    expect(content).toContain("providedIn: 'root'");
+    expect(content).not.toContain('provideListPets');
+    expect(content).not.toContain('FactoryProvider');
   });
 
   it('GET token with path param interpolates into URL', async () => {
