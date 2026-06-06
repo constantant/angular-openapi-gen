@@ -30,7 +30,7 @@ export function provideUpdatePet(): FactoryProvider {
           body,
           headers: {
             ...(petstoreAuth?.() != null
-              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              ? { Authorization: `Bearer ${petstoreAuth()}` }
               : {}),
           },
         }));

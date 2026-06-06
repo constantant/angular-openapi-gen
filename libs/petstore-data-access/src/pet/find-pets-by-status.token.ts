@@ -39,7 +39,7 @@ export function provideFindPetsByStatus(): FactoryProvider {
           >,
           headers: {
             ...(petstoreAuth?.() != null
-              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              ? { Authorization: `Bearer ${petstoreAuth()}` }
               : {}),
           },
         }));

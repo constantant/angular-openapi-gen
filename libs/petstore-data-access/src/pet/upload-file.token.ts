@@ -31,7 +31,7 @@ export function provideUploadFile(): FactoryProvider {
           body,
           headers: {
             ...(petstoreAuth?.() != null
-              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              ? { Authorization: `Bearer ${petstoreAuth()}` }
               : {}),
           },
         }));

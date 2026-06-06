@@ -23,7 +23,7 @@ export function provideUpdatePetWithForm(): FactoryProvider {
           method: 'POST',
           headers: {
             ...(petstoreAuth?.() != null
-              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              ? { Authorization: `Bearer ${petstoreAuth()}` }
               : {}),
           },
         }));

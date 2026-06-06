@@ -37,7 +37,7 @@ export function provideFindPetsByTags(): FactoryProvider {
           >,
           headers: {
             ...(petstoreAuth?.() != null
-              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              ? { Authorization: `Bearer ${petstoreAuth()}` }
               : {}),
           },
         }));

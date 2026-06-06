@@ -41,10 +41,10 @@ export function provideYoutubeSearchList(): FactoryProvider {
           >,
           headers: {
             ...(oauth2?.() != null
-              ? { Authorization: `Bearer ${oauth2!()}` }
+              ? { Authorization: `Bearer ${oauth2()}` }
               : {}),
             ...(oauth2c?.() != null
-              ? { Authorization: `Bearer ${oauth2c!()}` }
+              ? { Authorization: `Bearer ${oauth2c()}` }
               : {}),
           },
         }));

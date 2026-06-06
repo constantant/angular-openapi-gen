@@ -16,7 +16,7 @@ function toCamelCase(str: string): string {
 }
 
 function headerEntryForScheme(s: SecuritySchemeModel, varName: string): string {
-  const val = `${varName}!()`;
+  const val = `${varName}()`;
   switch (s.kind) {
     case 'bearer':
     case 'oauth2':
@@ -168,7 +168,7 @@ function appendResourceOptions(
     const authQueryParts = querySchemes
       .map(
         (s) =>
-          `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: ${toCamelCase(s.schemeName)}!() } : {})`
+          `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: ${toCamelCase(s.schemeName)}() } : {})`
       )
       .join(', ');
 

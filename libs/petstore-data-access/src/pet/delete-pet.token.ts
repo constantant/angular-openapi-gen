@@ -20,7 +20,7 @@ export function provideDeletePet(): FactoryProvider {
           method: 'DELETE',
           headers: {
             ...(petstoreAuth?.() != null
-              ? { Authorization: `Bearer ${petstoreAuth!()}` }
+              ? { Authorization: `Bearer ${petstoreAuth()}` }
               : {}),
           },
         }));
