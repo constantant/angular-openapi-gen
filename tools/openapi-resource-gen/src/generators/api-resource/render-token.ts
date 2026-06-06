@@ -3,15 +3,16 @@ import type { EndpointModel, SecuritySchemeModel } from './endpoint-model';
 function toPascalCase(str: string): string {
   return str
     .replace(/\//g, '-')
-    .split(/[-_\s]+/)
+    .split(/[-_.\s]+/)
     .filter(Boolean)
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
     .join('');
 }
 
 function toCamelCase(str: string): string {
-  const parts = str.split(/[-_]+/).filter(Boolean);
-  return parts[0] + parts.slice(1).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+  const parts = str.split(/[-_.]+/).filter(Boolean);
+  const first = parts[0].charAt(0).toLowerCase() + parts[0].slice(1);
+  return first + parts.slice(1).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
 }
 
 function headerEntryForScheme(s: SecuritySchemeModel, varName: string): string {
