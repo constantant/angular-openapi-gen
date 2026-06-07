@@ -58,18 +58,29 @@ base URL overrides.
 
 ## Running the generator
 
+Pass a local file path or any `https://` URL:
+
 ```bash
+# From a local file
 npx nx g @constantant/openapi-resource-gen:api-resource \
   --specPath=specs/petstore.yaml \
   --outputDir=libs/petstore-data-access/src \
   --baseUrlToken=PETSTORE_BASE_URL
+
+# From a remote URL (no curl step needed)
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=https://petstore3.swagger.io/api/v3/openapi.yaml \
+  --outputDir=libs/petstore-data-access/src \
+  --baseUrlToken=PETSTORE_BASE_URL
 ```
+
+Re-run the same command whenever your spec changes — the generator overwrites updated files and **deletes any token files that no longer correspond to an endpoint in the spec**.
 
 ### Options
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `specPath` | yes | — | Path to the OpenAPI 3.x YAML or JSON spec file |
+| `specPath` | yes | — | Local path **or** `https://` URL to the OpenAPI 3.x YAML or JSON spec |
 | `outputDir` | yes | — | Output directory relative to the workspace root |
 | `baseUrlToken` | no | `API_BASE_URL` | Name of the base-URL `InjectionToken` emitted alongside the endpoint tokens |
 | `tagFilter` | no | all tags | Comma-separated list of OpenAPI tags to include |
@@ -149,6 +160,30 @@ the returned function and are interpolated into the URL template:
 export const REPOS_GET = new InjectionToken<
   (owner: string, repo: string) => ReturnType<typeof httpResource<ReposGetResponse>>
 >('REPOS_GET');
+```
+
+### GET with header params
+
+`in: header` parameters (e.g. `X-Api-Version`, `Accept-Language`) become named
+string arguments on the returned function, placed after path params but before
+query params. Required header params are required args; optional ones get `?`:
+
+```typescript
+export const LIST_REPORTS = new InjectionToken<
+  (xApiVersion: string, acceptLanguage?: string, params?: ListReportsParams)
+    => ReturnType<typeof httpResource<ListReportsResponse>>
+>('LIST_REPORTS');
+```
+
+Inside the resource, they are merged into the `headers` object. Required params
+are set directly; optional ones use a conditional spread so no header is sent
+when the value is `undefined`:
+
+```typescript
+headers: {
+  'X-Api-Version': xApiVersion,
+  ...(acceptLanguage != null ? { 'Accept-Language': acceptLanguage } : {}),
+},
 ```
 
 ### Mutation (POST/PUT/PATCH/DELETE)
@@ -250,6 +285,37 @@ transparently by the interceptor at the HTTP layer.
 
 ---
 
+## Declarative re-generation with the executor
+
+Instead of remembering the full `nx g` command, declare a `generate` target in
+your lib's `project.json` using the bundled executor:
+
+```json
+{
+  "name": "petstore-data-access",
+  "targets": {
+    "generate": {
+      "executor": "@constantant/openapi-resource-gen:generate",
+      "options": {
+        "specPath": "https://petstore3.swagger.io/api/v3/openapi.yaml",
+        "outputDir": "libs/petstore-data-access/src",
+        "baseUrlToken": "PETSTORE_BASE_URL"
+      }
+    }
+  }
+}
+```
+
+Then regenerate any time with:
+
+```bash
+npx nx run petstore-data-access:generate
+```
+
+The executor accepts the same options as the generator.
+
+---
+
 ## Consuming tokens in a component
 
 ### 1. Register providers in `app.config.ts`
@@ -320,28 +386,22 @@ type PetStatus = FindPetsByStatusParams['status']; // 'available' | 'pending' | 
 
 ## Adding a new data-access lib
 
-1. Fetch the spec into `specs/`:
-   ```bash
-   curl -L https://example.com/openapi.yaml -o specs/myapi.yaml
-   ```
-
-2. Run the generator:
+1. Run the generator (pass a URL directly — no curl step needed):
    ```bash
    npx nx g @constantant/openapi-resource-gen:api-resource \
-     --specPath=specs/myapi.yaml \
+     --specPath=https://example.com/openapi.yaml \
      --outputDir=libs/myapi-data-access/src \
      --baseUrlToken=MYAPI_BASE_URL
    ```
 
-3. Add a path alias to `tsconfig.base.json`:
+2. Add a path alias to `tsconfig.base.json`:
    ```json
    "@angular-openapi-gen/myapi-data-access": ["libs/myapi-data-access/src/index.ts"]
    ```
 
-4. Add base URL provider and token providers to `app.config.ts`.
+3. Add base URL provider and token providers to `app.config.ts`.
 
-To regenerate after a spec update, re-run the same command — the generator
-overwrites all files in `outputDir`.
+4. Optionally, add a `generate` target to your lib's `project.json` (see the executor section above) so future regeneration is just `nx run myapi-data-access:generate`.
 
 ---
 

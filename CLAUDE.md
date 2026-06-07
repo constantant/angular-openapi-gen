@@ -32,7 +32,7 @@ libs/
   youtube-data-access/        # generated — YouTube Data API v3 (76 endpoints)
 
 tools/
-  openapi-resource-gen/       # Nx plugin (generator + schema), published as @constantant/openapi-resource-gen
+  openapi-resource-gen/       # Nx plugin (generator + executor), published as @constantant/openapi-resource-gen
     src/
       generators/
         api-resource/
@@ -46,6 +46,10 @@ tools/
               __operationId__.token.ts__tmpl__
             api-base-url.token.ts__tmpl__
             index.ts__tmpl__
+      executors/
+        generate/
+          schema.json
+          executor.ts         # wraps the generator for nx run project:generate
 ```
 
 ---
@@ -115,6 +119,10 @@ Rules:
   add `method: 'POST'` (etc.) and `body` to the resource config.
 - Path params (e.g. `/pets/{id}`): become required args on the returned function,
   interpolated into the URL string inside the reactive lambda.
+- Header params (`in: header`, e.g. `X-Api-Version`): become named string args after path params.
+  Required → plain `arg: string`; optional → `arg?: string`. Rendered into a `headers` object in
+  the resource config; optional ones use a conditional spread (`...(arg != null ? {...} : {})`).
+  Auth scheme headers appear alongside them in the same `headers` block.
 
 ### Security tokens
 
@@ -178,19 +186,22 @@ provideHttpClient(withInterceptors([myapiDigestAuthInterceptor])),
 
 ### Parsing pipeline
 
-1. `js-yaml` + `stripNonSchemaRefs()` — load YAML, strip non-spec `$ref` links (markdown, images).
-2. `openapi-typescript` (programmatic API) — emit `schema.d.ts` from the cleaned spec.
-3. `@apidevtools/swagger-parser` — dereference all `$ref` chains for endpoint extraction.
-4. `parseSecuritySchemes(api)` — extract security schemes into `SecuritySchemeModel[]`.
-5. `buildEndpoints(api, tags, convention)` — map each operation to `EndpointModel`.
-6. `renderTokenFile()` / `renderSecurityTokenFile()` — emit token files as strings.
-7. `@nx/devkit` `formatFiles()` — run Prettier over all written files.
+1. If `specPath` is an `http://`/`https://` URL, download to a temp file first (Node `https`/`http`).
+2. `js-yaml` + `stripNonSchemaRefs()` — load YAML, strip non-spec `$ref` links (markdown, images).
+3. Validate the parsed object: must be OpenAPI 3.x (`openapi` field starts with `'3'`) and have a `paths` key. Throws a descriptive error otherwise.
+4. `openapi-typescript` (programmatic API) — emit `schema.d.ts` from the cleaned spec.
+5. `@apidevtools/swagger-parser` — dereference all `$ref` chains for endpoint extraction.
+6. `parseSecuritySchemes(api)` — extract security schemes into `SecuritySchemeModel[]`.
+7. `buildEndpoints(api, tags, convention)` — map each operation to `EndpointModel`.
+8. `renderTokenFile()` / `renderSecurityTokenFile()` — emit token files as strings.
+9. Stale file cleanup — delete any `.token.ts` / `.security-token.ts` files present before the run that weren't produced this run.
+10. `@nx/devkit` `formatFiles()` — run Prettier over all written files.
 
 ### Schema inputs (`schema.json`)
 
 ```json
 {
-  "specPath":        "path to the OpenAPI YAML/JSON file",
+  "specPath":        "local path OR https:// URL to the OpenAPI YAML/JSON file",
   "outputDir":       "output directory inside libs/",
   "baseUrlToken":    "optional: name of the base URL token (default: API_BASE_URL)",
   "tagFilter":       "optional: only generate tokens for these tags",
@@ -349,6 +360,10 @@ Conventional Commits PR title (it becomes the squash commit). See
 | Request suppression | Block-body lambda with early `return undefined`     | Shorthand `() => ({url})` always fires; returning undefined from lambda makes resource idle |
 | Security tokens — signal | `InjectionToken<Signal<string | null>>` per scheme | `bearer`/`basic`/`apiKey`: reactive — changing the signal auto-refires any resource that reads it |
 | Security tokens — digest | `InjectionToken<HttpInterceptorFn>` + named host-scoped interceptor | Challenge-response at HTTP layer; base URL token prevents cross-API interceptor conflicts |
+| Remote spec URL | `specPath` accepts `http://`/`https://` URLs — downloads to a temp file, then processes identically to local files | Eliminates the `curl` pre-step; temp file is cleaned up in the `finally` block regardless of success/failure |
+| Header params | `in: header` params become named string args (required or optional), rendered into a `headers` block alongside auth scheme headers | Consistent with how path params are surfaced; keeps the public API surface explicit and typed |
+| Stale file cleanup | Before generation, snapshot existing `.token.ts`/`.security-token.ts` files; after generation, delete any that weren't produced this run | Prevents phantom exports when endpoints are removed or `tagFilter` narrows the output |
+| Nx executor | `@constantant/openapi-resource-gen:generate` executor wraps the generator so users can declare a `generate` target in `project.json` | `nx run mylib:generate` is easier to remember and can be wired into CI; uses `FsTree`+`flushChanges` from `nx/src/generators/tree` (not in `@nx/devkit` public API) |
 | Lint cache invalidation | `@nx/eslint:lint` has an `externalDependencies` input listing the ESLint plugin packages (`eslint`, `angular-eslint`, `typescript-eslint`, `@eslint/js`, …) in `nx.json` | A rule-strengthening dependency bump (e.g. an `angular-eslint` major) must re-lint against current source, not return a stale cached "pass". Without this, the angular-eslint 22 upgrade merged green while leaving `master` failing `prefer-on-push-component-change-detection` |
 
 ---

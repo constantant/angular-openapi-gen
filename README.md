@@ -142,6 +142,7 @@ Key properties of every generated file:
 - **Signal-native** — `httpResource` re-fires the request automatically when any signal inside the reactive lambda changes
 - **Request suppression** — returning `undefined` from the lambda keeps the resource idle (no request)
 - **Scoped base URL** — each lib has its own `InjectionToken<string>` so different parts of an app can point at different environments
+- **Header params** — `in: header` parameters become named string args on the factory function and are merged into the `headers` object alongside any auth scheme headers
 - **Security tokens** — signal-based schemes (`bearer`, `basic`, `apiKey`) emit `InjectionToken<Signal<string | null>>`; `digest` schemes emit `InjectionToken<HttpInterceptorFn>` + a named, host-scoped interceptor that delegates only to requests matching the lib's base URL, preventing cross-API conflicts
 
 ---
@@ -219,16 +220,20 @@ npx nx run-many -t lint
 # Type-check everything
 npx nx run-many -t typecheck
 
-# Generate a data-access lib from a spec
+# Generate from a local file
 npx nx g @constantant/openapi-resource-gen:api-resource \
   --specPath=specs/myapi.yaml \
   --outputDir=libs/myapi-data-access/src \
   --baseUrlToken=MYAPI_BASE_URL
 
-# Pass a URL directly — no manual curl step needed
-# npx nx g @constantant/openapi-resource-gen:api-resource \
-#   --specPath=https://petstore3.swagger.io/api/v3/openapi.yaml \
-#   --outputDir=libs/petstore-data-access/src
+# Generate from a URL (no curl step needed)
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=https://petstore3.swagger.io/api/v3/openapi.yaml \
+  --outputDir=libs/petstore-data-access/src \
+  --baseUrlToken=PETSTORE_BASE_URL
+
+# Or declare a generate target in project.json and run:
+npx nx run petstore-data-access:generate
 ```
 
 ---
