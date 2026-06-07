@@ -10,9 +10,13 @@ import * as http from 'http';
 import * as jsYaml from 'js-yaml';
 // openapi-typescript ships as ESM-only; use the bundled CJS build so this
 // CommonJS generator can call it without a dynamic import().
-const openapiTS = require('openapi-typescript/dist/index.cjs') as (
-  path: string
-) => Promise<string>;
+// v6: module.exports = fn (returns string); v7: exports.default = fn (returns ts.Node[])
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const _openapiTSMod: any = require('openapi-typescript/dist/index.cjs');
+const _openapiTS: (source: string | URL) => Promise<unknown> =
+  typeof _openapiTSMod === 'function' ? _openapiTSMod : _openapiTSMod.default;
+const _astToString: ((nodes: unknown[]) => string) | undefined =
+  typeof _openapiTSMod === 'function' ? undefined : _openapiTSMod.astToString;
 import * as path from 'path';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
@@ -186,7 +190,8 @@ export async function apiResourceGenerator(
     //    circular refs; openapi-typescript resolves $refs itself).
     let schemaDts: string;
     try {
-      schemaDts = await openapiTS(tmpClean);
+      const result = await _openapiTS(tmpClean);
+      schemaDts = typeof result === 'string' ? result : _astToString!(result as unknown[]);
     } catch (e) {
       throw new Error(`Failed to generate TypeScript types from spec: ${(e as Error).message}`, { cause: e });
     }
