@@ -71,6 +71,23 @@ jobs:
         if: ${{ !inputs.dryRun }}
         run: git push --follow-tags origin master
 
+      - name: Create GitHub Release
+        if: ${{ !inputs.dryRun }}
+        run: |
+          VERSION=$(node -p "require('./tools/openapi-resource-gen/package.json').version")
+          TAG="openapi-resource-gen@${VERSION}"
+          NOTES=$(awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
+            tools/openapi-resource-gen/CHANGELOG.md)
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — skipping."
+          else
+            gh release create "$TAG" \
+              --title "@constantant/openapi-resource-gen@${VERSION}" \
+              --notes "${NOTES:-No changelog entries for this version.}"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # Build after the version bump so the dist package.json carries the new version.
       # --skip-nx-cache ensures the build always runs fresh (no stale cached output).
       - name: Build
