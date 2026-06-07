@@ -25,7 +25,19 @@
         "{workspaceRoot}/.eslintrc.json",
         "{workspaceRoot}/.eslintignore",
         "{workspaceRoot}/eslint.config.mjs",
-        "{workspaceRoot}/tools/eslint-rules/**/*"
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        {
+          "externalDependencies": [
+            "eslint",
+            "@eslint/js",
+            "@nx/eslint-plugin",
+            "angular-eslint",
+            "typescript-eslint",
+            "@typescript-eslint/utils",
+            "eslint-config-prettier",
+            "eslint-plugin-playwright"
+          ]
+        }
       ]
     },
     "@angular/build:unit-test": {
