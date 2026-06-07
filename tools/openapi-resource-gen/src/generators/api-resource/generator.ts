@@ -18,6 +18,7 @@ const _openapiTS: (source: string | URL) => Promise<unknown> =
 const _astToString: ((nodes: unknown[]) => string) | undefined =
   typeof _openapiTSMod === 'function' ? undefined : _openapiTSMod.astToString;
 import * as path from 'path';
+import { pathToFileURL } from 'url';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
 import { buildEndpoints, parseSecuritySchemes } from './parse-spec';
@@ -175,9 +176,9 @@ export async function apiResourceGenerator(
   }
 
   const cleanedParsed = stripNonSchemaRefs(rawParsed);
-  const tmpClean = path
-    .join(path.dirname(absoluteSpecPath), `_tmp_oas_${Date.now()}.json`)
-    .replace(/\\/g, '/');
+  const tmpClean = path.join(path.dirname(absoluteSpecPath), `_tmp_oas_${Date.now()}.json`);
+  // v7 requires a URL object (plain paths are treated as document content by Redocly's parser)
+  const tmpCleanUrl = pathToFileURL(tmpClean);
 
   // Track every file path written in this run to detect stale files.
   const writtenFiles = new Set<string>();
@@ -190,7 +191,7 @@ export async function apiResourceGenerator(
     //    circular refs; openapi-typescript resolves $refs itself).
     let schemaDts: string;
     try {
-      const result = await _openapiTS(tmpClean);
+      const result = await _openapiTS(tmpCleanUrl);
       schemaDts = typeof result === 'string' ? result : _astToString!(result as unknown[]);
     } catch (e) {
       throw new Error(`Failed to generate TypeScript types from spec: ${(e as Error).message}`, { cause: e });
