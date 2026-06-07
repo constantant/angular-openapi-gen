@@ -203,6 +203,8 @@ The workflow is idempotent — if the current version is already on npm it skips
 
 **Note on nx release commit detection**: nx release counts only commits that touch files within `tools/openapi-resource-gen/`. Workflow-only changes (e.g. editing `.github/`) do not trigger a version bump.
 
+**Note on branch protection**: `master` is protected (PRs require CI + a code-owner review, linear history). Admin enforcement is intentionally left off so the release workflow's `GITHUB_TOKEN` can push the version commit and tag directly during a release.
+
 ---
 
 ## Contributing
