@@ -349,6 +349,7 @@ Conventional Commits PR title (it becomes the squash commit). See
 | Request suppression | Block-body lambda with early `return undefined`     | Shorthand `() => ({url})` always fires; returning undefined from lambda makes resource idle |
 | Security tokens — signal | `InjectionToken<Signal<string | null>>` per scheme | `bearer`/`basic`/`apiKey`: reactive — changing the signal auto-refires any resource that reads it |
 | Security tokens — digest | `InjectionToken<HttpInterceptorFn>` + named host-scoped interceptor | Challenge-response at HTTP layer; base URL token prevents cross-API interceptor conflicts |
+| Lint cache invalidation | `@nx/eslint:lint` has an `externalDependencies` input listing the ESLint plugin packages (`eslint`, `angular-eslint`, `typescript-eslint`, `@eslint/js`, …) in `nx.json` | A rule-strengthening dependency bump (e.g. an `angular-eslint` major) must re-lint against current source, not return a stale cached "pass". Without this, the angular-eslint 22 upgrade merged green while leaving `master` failing `prefer-on-push-component-change-detection` |
 
 ---
 
