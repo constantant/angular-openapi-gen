@@ -12,7 +12,7 @@ data-access library: only tokens that are actually injected end up in the bundle
 npm install -D @constantant/openapi-resource-gen
 ```
 
-Then register it as a local plugin in your `nx.json` or use it directly:
+Then use it directly:
 
 ```bash
 npx nx g @constantant/openapi-resource-gen:api-resource --specPath=specs/myapi.yaml --outputDir=libs/myapi-data-access/src
@@ -28,6 +28,8 @@ signal-native HTTP wrapper.
 OpenAPI spec  →  generator  →  one .token.ts per endpoint
                                    └─ InjectionToken + typed factory function
                                    └─ export type Params / Body / Response
+               →  one .security-token.ts per security scheme
+                                   └─ InjectionToken<Signal<string | null>>
 ```
 
 All types are derived from the generated `schema.d.ts` (via `openapi-typescript`)
@@ -48,7 +50,7 @@ Bundling all endpoints into a single file would prevent this.
 | `'root'` | Yes — self-registers | Just `inject()` it anywhere; Angular handles registration |
 
 `'none'` is the default because it lets you inject the same token with different
-`API_BASE_URL` values in different route sub-trees (e.g. staging vs production,
+base URL values in different route sub-trees (e.g. staging vs production,
 or different micro-frontends). `'root'` is simpler but prevents per-scope
 base URL overrides.
 
@@ -56,20 +58,11 @@ base URL overrides.
 
 ## Running the generator
 
-If installed as a dev dependency (`@constantant/openapi-resource-gen`):
-
 ```bash
 npx nx g @constantant/openapi-resource-gen:api-resource \
   --specPath=specs/petstore.yaml \
-  --outputDir=libs/petstore-data-access/src
-```
-
-In this monorepo (local workspace plugin registered via npm workspaces):
-
-```bash
-npx nx g openapi-resource-gen:api-resource \
-  --specPath=specs/petstore.yaml \
-  --outputDir=libs/petstore-data-access/src
+  --outputDir=libs/petstore-data-access/src \
+  --baseUrlToken=PETSTORE_BASE_URL
 ```
 
 ### Options
@@ -89,12 +82,13 @@ npx nx g openapi-resource-gen:api-resource \
 
 ```
 {outputDir}/
-  schema.d.ts                    # openapi-typescript output, never edit manually
-  api-base-url.token.ts          # InjectionToken<string> for the API root URL
-  index.ts                       # re-exports all tag barrels + api-base-url.token
+  schema.d.ts                       # openapi-typescript output, never edit manually
+  api-base-url.token.ts             # InjectionToken<string> for the API root URL
+  {scheme}.security-token.ts        # one per security scheme (if any)
+  index.ts                          # re-exports all tag barrels + base-url + security tokens
   {tag}/
-    index.ts                     # re-exports all token files in this tag folder
-    {operation-id}.token.ts      # one file per endpoint
+    index.ts                        # re-exports all token files in this tag folder
+    {operation-id}.token.ts         # one file per endpoint
 ```
 
 Tags map to subfolders; untagged operations go into `default/`.
@@ -103,7 +97,10 @@ Tags map to subfolders; untagged operations go into `default/`.
 
 ## Generated token anatomy
 
-### GET with query params — `find-pets-by-status.token.ts`
+### GET with query params
+
+For GET endpoints with query params, the reactive lambda uses a **block-body form** so it can
+return `undefined` to suppress the request when a thunk returns `undefined`.
 
 ```typescript
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
@@ -113,7 +110,6 @@ import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
 export type FindPetsByStatusParams =
   paths['/pet/findByStatus']['get']['parameters']['query'];
-
 export type FindPetsByStatusResponse =
   paths['/pet/findByStatus']['get']['responses']['200']['content']['application/json'];
 
@@ -128,16 +124,23 @@ export function provideFindPetsByStatus(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       return (params?) =>
-        httpResource<FindPetsByStatusResponse>(() => ({
-          url: `${base}/pet/findByStatus`,
-          params: (typeof params === 'function' ? params() : params) as ...,
-        }));
+        httpResource<FindPetsByStatusResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined) return undefined;
+          return {
+            url: `${base}/pet/findByStatus`,
+            params: _params as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,
+          };
+        });
     },
   };
 }
 ```
 
-### GET with path params — `repos-get.token.ts`
+Why block-body? `httpResource(() => ({ url }))` always returns an object → always fires.
+`httpResource(() => { ...; return undefined; })` → resource stays idle when `undefined` is returned.
+
+### GET with path params
 
 Path params (`/repos/{owner}/{repo}`) become required positional arguments on
 the returned function and are interpolated into the URL template:
@@ -151,7 +154,50 @@ export const REPOS_GET = new InjectionToken<
 ### Mutation (POST/PUT/PATCH/DELETE)
 
 The factory returns `(body: BodyType | Signal<BodyType>) => httpResource(...)`.
-The resource config receives `method: 'POST'` and `body` automatically.
+The resource config receives `method: 'POST'` (etc.) and `body` automatically.
+
+### Security schemes
+
+When the OpenAPI spec defines security schemes, the generator emits one
+`InjectionToken<Signal<string | null>>` file per scheme:
+
+```typescript
+// oauth2.security-token.ts
+import { InjectionToken, Signal } from '@angular/core';
+export const OAUTH2 = new InjectionToken<Signal<string | null>>('OAUTH2');
+```
+
+Endpoint tokens inject these optionally. Reading the signal inside the `httpResource`
+lambda creates a reactive dependency — the request re-fires when the token value changes:
+
+```typescript
+const oauth2 = inject(OAUTH2, { optional: true }); // Signal<string | null> | null
+// In the reactive lambda:
+headers: {
+  ...(oauth2?.() != null ? { Authorization: `Bearer ${oauth2()}` } : {}),
+},
+```
+
+Supported scheme kinds:
+
+| Kind | Auth mechanism |
+|------|---------------|
+| `bearer` / `oauth2` / `openIdConnect` | `Authorization: Bearer <token>` |
+| `basic` | `Authorization: Basic <token>` |
+| `apiKey-header` | Custom header (e.g. `X-API-Key: <token>`) |
+| `apiKey-query` | Query param (e.g. `?apiKey=<token>`) |
+
+To wire up a security token in `app.config.ts`:
+
+```typescript
+// Create a writable signal at the app level
+export const MY_API_KEY = new InjectionToken<WritableSignal<string | null>>(
+  'MY_API_KEY', { providedIn: 'root', factory: () => signal(null) }
+);
+
+// Provide the scheme token
+{ provide: OAUTH2, useFactory: () => inject(MY_API_KEY) }
+```
 
 ---
 
@@ -192,12 +238,21 @@ export class PetsPageComponent {
 }
 ```
 
-### Reactive params (signal-driven re-fetch)
+### Conditional requests (thunk returning undefined)
 
 The `params` argument accepts either a plain object or a **thunk**
-`() => ParamsType`. When a thunk is passed it is called inside the
-`httpResource` reactive lambda, so any signal reads inside it register as
-dependencies — the request re-fires automatically when a signal changes.
+`() => ParamsType | undefined`. When a thunk returns `undefined`, the resource
+stays idle (no HTTP request). When it returns a value, the resource fires and
+re-fires on any signal change inside the thunk:
+
+```typescript
+// No request fires until both conditions are met
+readonly results = this.youtubeSearch(() =>
+  this.apiKey() && this.query()
+    ? { q: this.query(), key: this.apiKey()! }
+    : undefined
+);
+```
 
 ---
 
@@ -223,14 +278,16 @@ type PetStatus = FindPetsByStatusParams['status']; // 'available' | 'pending' | 
 
 2. Run the generator:
    ```bash
-   npx nx g openapi-resource-gen:api-resource \
+   npx nx g @constantant/openapi-resource-gen:api-resource \
      --specPath=specs/myapi.yaml \
-     --outputDir=libs/myapi-data-access/src
+     --outputDir=libs/myapi-data-access/src \
+     --baseUrlToken=MYAPI_BASE_URL
    ```
 
-3. Create `libs/myapi-data-access/package.json` (or add a path alias to
-   `tsconfig.base.json`) so the lib is importable as
-   `@angular-openapi-gen/myapi-data-access`.
+3. Add a path alias to `tsconfig.base.json`:
+   ```json
+   "@angular-openapi-gen/myapi-data-access": ["libs/myapi-data-access/src/index.ts"]
+   ```
 
 4. Add base URL provider and token providers to `app.config.ts`.
 
@@ -244,11 +301,12 @@ overwrites all files in `outputDir`.
 | Step | Tool | Purpose |
 |------|------|---------|
 | Spec loading | `js-yaml` + custom `stripNonSchemaRefs()` | Handle YAML and remove non-spec `$ref` links (markdown, images) that would break parsing |
-| Type generation | `openapi-typescript` CLI | Emit `schema.d.ts` — the single source of truth for all request/response types |
+| Type generation | `openapi-typescript` programmatic API | Emit `schema.d.ts` — the single source of truth for all request/response types |
 | Spec dereferencing | `@apidevtools/swagger-parser` | Resolve all `$ref` chains for endpoint extraction |
-| Code generation | `@nx/devkit` `generateFiles()` + inline string building | EJS template for `api-base-url.token.ts`; direct string assembly for token files |
+| Security parsing | `parseSecuritySchemes(api)` | Extract scheme definitions; resolve per-operation overrides |
+| Code generation | `renderTokenFile()` / `renderSecurityTokenFile()` | Direct string assembly for all token files |
 | Formatting | `@nx/devkit` `formatFiles()` | Runs Prettier over all written files |
 
 Hyphenated path parameter names (e.g. `{enterprise-team}` in the GitHub spec)
-are converted to camelCase in the function signature and the URL template via
-`toCamelCase()` to produce valid JavaScript identifiers.
+and dotted operationIds (e.g. `youtube.search.list`) are converted to camelCase /
+PascalCase via `toCamelCase()` / `toPascalCase()` to produce valid JavaScript identifiers.

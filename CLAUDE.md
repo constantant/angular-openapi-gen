@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI specs via `httpResource`.
 
-> **Implementation status**: Core generator is built and published to npm as `@constantant/openapi-resource-gen` (v1.1.3). All five data-access libs (`github`, `petstore`, `travel`, `stripe`, `weather`) are generated. `apps/api-explorer` is wired up with routes and Angular Material UI. The demo app, bundle inspector, and full Angular Material polish described below may still be in progress.
+> **Implementation status**: Core generator is built and published to npm as `@constantant/openapi-resource-gen` (v1.1.3). Data-access libs: `github`, `petstore`, `weather`, `youtube`. `apps/api-explorer` is wired up with routes and Angular Material UI.
 
 ---
 
@@ -14,7 +14,7 @@ Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI 
 
 Build an Nx generator (`openapi-resource-gen`) that reads an OpenAPI 3.x spec and emits one
 `InjectionToken` per endpoint, each in its own `.ts` file, enabling maximum tree-shaking.
-Validate the approach with a demo Angular 22 app (`api-explorer`) that consumes four
+Validate the approach with a demo Angular 22 app (`api-explorer`) that consumes multiple
 real-world APIs but ships only the endpoints it actually injects.
 
 ---
@@ -28,16 +28,19 @@ apps/
 libs/
   github-data-access/         # generated — github/rest-api-description
   petstore-data-access/       # generated — OAI petstore spec
-  travel-data-access/         # generated — Train Travel API (bump.sh)
-  stripe-data-access/         # generated — stripe/openapi spec3.yaml
+  weather-data-access/        # generated — Open-Meteo forecast API
+  youtube-data-access/        # generated — YouTube Data API v3 (76 endpoints)
 
 tools/
-  openapi-resource-gen/       # Nx plugin (generator + schema)
+  openapi-resource-gen/       # Nx plugin (generator + schema), published as @constantant/openapi-resource-gen
     src/
       generators/
         api-resource/
           schema.json
           generator.ts
+          parse-spec.ts
+          render-token.ts
+          endpoint-model.ts
           files/              # EJS templates
             __tag__/
               __operationId__.token.ts__tmpl__
@@ -52,6 +55,7 @@ tools/
 - `httpResource()` — stable (Angular 22). Reactive wrapper around `HttpClient`.
   Returns `HttpResourceRef<T>` with `.value()`, `.isLoading()`, `.error()` signals.
   The lambda re-runs whenever signals inside it change (like `switchMap` but declarative).
+  Returns `undefined` from the lambda to suppress the request entirely (resource stays idle).
 - `@Service()` decorator — stable (Angular 22). Replaces `@Injectable({ providedIn: 'root' })`.
   Default behaviour is root-scoped singleton, tree-shakeable.
 - `OnPush` — now the default `ChangeDetectionStrategy`. New components get it automatically.
@@ -65,43 +69,74 @@ tools/
 
 ## Generated token pattern (canonical)
 
-Every generated file MUST follow this exact structure:
+### GET with query params (`providedIn: 'none'` — the default)
 
 ```typescript
-// libs/petstore-data-access/src/pets/list-pets.token.ts
-import { InjectionToken, inject } from '@angular/core';
+// libs/petstore-data-access/src/pet/find-pets-by-status.token.ts
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
-import { API_BASE_URL } from '../api-base-url.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
-type ListPetsParams =
-  paths['/pets']['get']['parameters']['query'];
-type ListPetsResponse =
-  paths['/pets']['get']['responses']['200']['content']['application/json'];
+export type FindPetsByStatusParams =
+  paths['/pet/findByStatus']['get']['parameters']['query'];
+export type FindPetsByStatusResponse =
+  paths['/pet/findByStatus']['get']['responses']['200']['content']['application/json'];
 
-export const LIST_PETS = new InjectionToken<
-  (params?: ListPetsParams) => ReturnType<typeof httpResource<ListPetsResponse>>
->('LIST_PETS', {
-  providedIn: 'root',
-  factory: () => {
-    const base = inject(API_BASE_URL);
-    return (params?) =>
-      httpResource<ListPetsResponse>(() => ({
-        url: `${base}/pets`,
-        params: params as Record<string, string>,
-      }));
-  },
-});
+export const FIND_PETS_BY_STATUS = new InjectionToken<
+  (params?: FindPetsByStatusParams | (() => FindPetsByStatusParams | undefined))
+    => ReturnType<typeof httpResource<FindPetsByStatusResponse>>
+>('FIND_PETS_BY_STATUS');
+
+export function provideFindPetsByStatus(): FactoryProvider {
+  return {
+    provide: FIND_PETS_BY_STATUS,
+    useFactory: () => {
+      const base = inject(PETSTORE_BASE_URL);
+      return (params?) =>
+        httpResource<FindPetsByStatusResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined) return undefined;
+          return {
+            url: `${base}/pet/findByStatus`,
+            params: _params as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,
+          };
+        });
+    },
+  };
+}
 ```
 
 Rules:
-- `providedIn: 'root'` on every token — self-registering, tree-shakeable.
+- GET + query params uses **block-body lambda** with `_params` pre-computation and early `return undefined` guard — this makes `httpResource` idle when the thunk returns `undefined`. Shorthand `() => ({...})` would always fire because the lambda always returns an object.
 - `inject()` inside factory only — no constructor DI.
 - Types always sourced from `paths[...]['get']['responses']['200'][...]` — never hand-written.
-- Mutations (POST/PUT/PATCH/DELETE): factory returns `(body: Signal<T> | T) => HttpResourceRef<R>`,
+- Mutations (POST/PUT/PATCH/DELETE): factory returns `(body: Signal<T> | T) => httpResource(...)`,
   add `method: 'POST'` (etc.) and `body` to the resource config.
 - Path params (e.g. `/pets/{id}`): become required args on the returned function,
   interpolated into the URL string inside the reactive lambda.
+
+### Security tokens
+
+When the spec has security schemes, the generator emits one additional file per scheme:
+
+```typescript
+// libs/youtube-data-access/src/oauth2.security-token.ts
+import { InjectionToken, Signal } from '@angular/core';
+export const OAUTH2 = new InjectionToken<Signal<string | null>>('OAUTH2');
+```
+
+Endpoint tokens inject security tokens optionally and merge auth into headers/params:
+
+```typescript
+const oauth2 = inject(OAUTH2, { optional: true }); // Signal<string | null> | null
+// In the reactive lambda:
+headers: {
+  ...(oauth2?.() != null ? { Authorization: `Bearer ${oauth2()}` } : {}),
+},
+```
+
+Supported security kinds: `bearer`, `oauth2`, `openIdConnect`, `basic`, `apiKey-header`, `apiKey-query`.
 
 ---
 
@@ -109,11 +144,13 @@ Rules:
 
 ### Parsing pipeline
 
-1. `@apidevtools/swagger-parser` — validate + fully dereference `$ref` chains.
-2. `openapi-typescript` (CLI) — emit `schema.d.ts` from the spec.
-3. Custom `EndpointModel[]` builder — maps each operation to:
-   `{ tag, operationId, method, path, pathParams, queryType, bodyType, responseType }`
-4. `generateFiles()` from `@nx/devkit` — render EJS templates per endpoint.
+1. `js-yaml` + `stripNonSchemaRefs()` — load YAML, strip non-spec `$ref` links (markdown, images).
+2. `openapi-typescript` (programmatic API) — emit `schema.d.ts` from the cleaned spec.
+3. `@apidevtools/swagger-parser` — dereference all `$ref` chains for endpoint extraction.
+4. `parseSecuritySchemes(api)` — extract security schemes into `SecuritySchemeModel[]`.
+5. `buildEndpoints(api, tags, convention)` — map each operation to `EndpointModel`.
+6. `renderTokenFile()` / `renderSecurityTokenFile()` — emit token files as strings.
+7. `@nx/devkit` `formatFiles()` — run Prettier over all written files.
 
 ### Schema inputs (`schema.json`)
 
@@ -123,7 +160,8 @@ Rules:
   "outputDir":       "output directory inside libs/",
   "baseUrlToken":    "optional: name of the base URL token (default: API_BASE_URL)",
   "tagFilter":       "optional: only generate tokens for these tags",
-  "namingConvention":"camel | kebab (default: kebab for filenames, SCREAMING_SNAKE for token names)"
+  "namingConvention":"camel | kebab (default: kebab for filenames, SCREAMING_SNAKE for token names)",
+  "providedIn":      "none | root (default: none)"
 }
 ```
 
@@ -132,7 +170,7 @@ Rules:
 - Each OpenAPI tag becomes one subfolder under `outputDir`.
 - Untagged operations go into `default/`.
 - Each folder gets its own `index.ts` barrel.
-- Root `index.ts` re-exports all folder barrels.
+- Root `index.ts` re-exports all folder barrels + security token files.
 
 ---
 
@@ -140,46 +178,34 @@ Rules:
 
 ### Routes
 
-| Path         | Component              | Tokens injected                        | Source lib               |
-|--------------|------------------------|----------------------------------------|--------------------------|
-| `/`          | `DashboardComponent`   | `LIST_REPOS`, `LIST_PETS`, `LIST_TRIPS`, `LIST_INVOICES`, `GET_USER`, `LIST_BOOKINGS` | all four libs |
-| `/repos`     | `ReposPageComponent`   | `LIST_REPOS`, `GET_USER`               | github-data-access       |
-| `/pets`      | `PetsPageComponent`    | `LIST_PETS`, `FIND_PETS_BY_STATUS`     | petstore-data-access     |
-| `/travel`    | `TravelPageComponent`  | `LIST_TRIPS`, `LIST_BOOKINGS`          | travel-data-access       |
-| `/payments`  | `PaymentsPageComponent`| `LIST_INVOICES`                        | stripe-data-access       |
-
-### Tree-shaking proof
-
-The app intentionally imports all four data-access libs in `package.json` but only injects
-a handful of the ~250 available tokens. The dashboard shows a live bundle bar:
-
-- Blue segment = injected tokens (~3.1 kB for 6 tokens)
-- Gray segment = tree-shaken tokens (0 kB — 244 tokens never referenced)
-
-A `BundleInspectorComponent` (dev mode only) reads `stats.json` from the esbuild output
-and renders the breakdown. Disable it with `SHOW_BUNDLE_INSPECTOR=false` in `environment.ts`.
+| Path       | Component               | Tokens injected                           | Source lib           |
+|------------|-------------------------|-------------------------------------------|----------------------|
+| `/`        | `DashboardComponent`    | `GET_USER`, `LIST_REPOS`, `FIND_PETS_BY_STATUS`, `GET_V1_FORECAST` | multiple |
+| `/repos`   | `ReposPageComponent`    | `GET_USER`, `LIST_REPOS`                  | github-data-access   |
+| `/pets`    | `PetsPageComponent`     | `FIND_PETS_BY_STATUS`                     | petstore-data-access |
+| `/weather` | `WeatherPageComponent`  | `GET_V1_FORECAST`                         | weather-data-access  |
+| `/youtube` | `YoutubePageComponent`  | `YOUTUBE_SEARCH_LIST`                     | youtube-data-access  |
 
 ### Angular Material usage
 
 - `MatToolbar` — top app bar
-- `MatSidenav` / `MatNavList` — navigation rail (collapsed to icons, labels on hover)
-- `MatCard` — metric cards + content panels
-- `MatChipListbox` / `MatChip` — status filter chips (available / pending / sold)
-- `MatTable` + `MatPaginator` — data lists on detail pages
-- `MatProgressBar` — bundle visualization bar
-- `MatBadge` — token count badges on nav items
-- `MatTooltip` — token name shown on hover over shaken tokens
+- `MatSidenav` / `MatNavList` — navigation rail
+- `MatCard` — content panels
+- `MatChipListbox` / `MatChip` — status filter chips
+- `MatTable` + `MatPaginator` — data lists
+- `MatProgressBar` — loading indicator
+- `MatFormField` / `MatInput` — search and auth key input
 
 ---
 
 ## OpenAPI specs used
 
-| Lib                    | Spec source                                              | Endpoints |
-|------------------------|----------------------------------------------------------|-----------|
-| `github-data-access`   | `github/rest-api-description` — `api.github.com.yaml`   | ~38 used  |
-| `petstore-data-access` | OAI Petstore v3                                          | 12        |
-| `travel-data-access`   | Train Travel API (bump.sh modern petstore replacement)   | 9         |
-| `stripe-data-access`   | `stripe/openapi` — `openapi/spec3.yaml`                  | ~188      |
+| Lib                    | Spec source                                            | Endpoints  |
+|------------------------|--------------------------------------------------------|------------|
+| `github-data-access`   | `github/rest-api-description` — `api.github.com.yaml` | ~38 used   |
+| `petstore-data-access` | OAI Petstore v3                                        | 12         |
+| `weather-data-access`  | Open-Meteo forecast API                                | ~5 used    |
+| `youtube-data-access`  | YouTube Data API v3                                    | 76 (all)   |
 
 Fetch commands:
 ```bash
@@ -191,13 +217,9 @@ curl -L https://raw.githubusercontent.com/github/rest-api-description/main/descr
 curl -L https://petstore3.swagger.io/api/v3/openapi.yaml \
   -o specs/petstore.yaml
 
-# Train Travel
-curl -L https://raw.githubusercontent.com/bump-sh-examples/train-travel-api/main/openapi.yaml \
-  -o specs/travel.yaml
-
-# Stripe
-curl -L https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.yaml \
-  -o specs/stripe.yaml
+# YouTube Data API v3
+curl -L https://raw.githubusercontent.com/APIs-guru/openapi-directory/main/APIs/googleapis.com/youtube/v3/openapi.yaml \
+  -o specs/youtube.yaml
 ```
 
 ---
@@ -209,33 +231,29 @@ curl -L https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.ya
 npx nx serve api-explorer                  # Dev server on http://localhost:4200
 
 # Build
-npx nx build api-explorer                  # Production SSR build
+npx nx build api-explorer                  # Production build
 npx nx build api-explorer --stats-json     # Include esbuild bundle stats
 
 # Test
-npx nx test api-explorer                   # Run all unit tests (Vitest)
-npx nx test api-explorer --testFile=apps/api-explorer/src/app/app.spec.ts  # Single file
+npx nx test api-explorer                   # Run unit tests (Vitest)
 npx nx e2e api-explorer-e2e               # Run Playwright E2E tests
+npx nx test openapi-resource-gen           # Run generator unit tests
 
 # Lint / format
-npx nx lint api-explorer                   # Lint one project
 npx nx run-many -t lint                    # Lint all projects
 npx prettier --write apps/                 # Format code
 
 # Type-check all
 npx nx run-many -t typecheck
 
-# Generate a data-access lib from a spec (once generator is built)
-npx nx g openapi-resource-gen:api-resource \
-  --specPath=specs/stripe.yaml \
-  --outputDir=libs/stripe-data-access/src \
-  --tagFilter=invoices,customers
+# Generate a data-access lib from a spec
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=specs/youtube.yaml \
+  --outputDir=libs/youtube-data-access/src \
+  --baseUrlToken=YOUTUBE_BASE_URL
 
 # Inspect bundle after build with --stats-json
 npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
-
-# Run generator unit tests
-npx nx test openapi-resource-gen
 ```
 
 ---
@@ -251,6 +269,7 @@ npx nx test openapi-resource-gen
 - Imports: always import from the barrel `index.ts` of a lib, never from internal paths.
 - Do not add `console.log` to committed code.
 - Commit messages: `feat:`, `fix:`, `chore:`, `docs:` prefixes.
+- Never edit generated files (under `libs/*/src/`) — regenerate via the generator instead.
 
 ---
 
@@ -262,8 +281,10 @@ npx nx test openapi-resource-gen
 | Type source | `openapi-typescript` `paths` type | Zero runtime, fully typed, no codegen bloat |
 | HTTP primitive | `httpResource` (stable, Angular 22) | Signal-native, auto-cancels stale requests |
 | Mutation pattern | Factory returns `(body) => httpResource(...)` | Consistent API surface for GET and mutations |
-| Base URL injection | `API_BASE_URL` `InjectionToken` per lib | Lets apps override URL per environment |
+| Base URL injection | Named `InjectionToken<string>` per lib | Lets apps override URL per environment |
 | Params type | Typed via `paths[...]['parameters']['query']` | Full type safety, no manual interfaces |
+| Request suppression | Block-body lambda with early `return undefined` | Shorthand `() => ({url})` always fires; returning undefined from lambda makes resource idle |
+| Security tokens | `InjectionToken<Signal<string | null>>` per scheme | Reactive — changing the signal auto-refires any resource that reads it |
 
 ---
 
@@ -276,5 +297,4 @@ npx nx test openapi-resource-gen
 - `openapi-typescript`: https://openapi-ts.dev
 - `@apidevtools/swagger-parser`: https://apitools.dev/swagger-parser
 - Angular Material: https://material.angular.dev
-- Stripe OpenAPI spec: https://github.com/stripe/openapi
-- Train Travel API spec: https://bump.sh/blog/modern-openapi-petstore-replacement
+- YouTube Data API v3 spec: https://developers.google.com/youtube/v3
