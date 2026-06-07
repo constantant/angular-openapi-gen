@@ -1,6 +1,7 @@
 export type SecurityKind =
   | 'bearer'
   | 'basic'
+  | 'digest'
   | 'apiKey-header'
   | 'apiKey-query'
   | 'oauth2'

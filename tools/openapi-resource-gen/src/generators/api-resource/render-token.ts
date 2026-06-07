@@ -31,7 +31,36 @@ function headerEntryForScheme(s: SecuritySchemeModel, varName: string): string {
   }
 }
 
-export function renderSecurityTokenFile(scheme: SecuritySchemeModel): string {
+function apiPrefixFromBaseToken(baseUrlToken: string): string {
+  const stripped = baseUrlToken.replace(/_BASE_URL$/i, '');
+  return toCamelCase(stripped.toLowerCase().replace(/_/g, '-'));
+}
+
+export function renderSecurityTokenFile(
+  scheme: SecuritySchemeModel,
+  baseUrlToken: string
+): string {
+  if (scheme.kind === 'digest') {
+    const interceptorName =
+      apiPrefixFromBaseToken(baseUrlToken) + toPascalCase(scheme.schemeName) + 'Interceptor';
+    return [
+      `import { InjectionToken, inject } from '@angular/core';`,
+      `import { HttpInterceptorFn } from '@angular/common/http';`,
+      `import { ${baseUrlToken} } from './api-base-url.token';`,
+      ``,
+      `export const ${scheme.tokenName} = new InjectionToken<HttpInterceptorFn>('${scheme.tokenName}');`,
+      ``,
+      `export const ${interceptorName}: HttpInterceptorFn = (req, next) => {`,
+      `  const base = inject(${baseUrlToken});`,
+      `  if (!req.url.startsWith(base)) return next(req);`,
+      `  const fn = inject(${scheme.tokenName}, { optional: true });`,
+      `  if (!fn) return next(req);`,
+      `  return fn(req, next);`,
+      `};`,
+      ``,
+    ].join('\n');
+  }
+
   return [
     `import { InjectionToken, Signal } from '@angular/core';`,
     ``,
@@ -53,7 +82,7 @@ export function renderTokenFile(
 
   const applicableSchemes = ep.securitySchemeNames
     .map((name) => schemesByName.get(name))
-    .filter((s): s is SecuritySchemeModel => s !== undefined);
+    .filter((s): s is SecuritySchemeModel => s !== undefined && s.kind !== 'digest');
   const headerSchemes = applicableSchemes.filter((s) => s.kind !== 'apiKey-query');
   const querySchemes = applicableSchemes.filter((s) => s.kind === 'apiKey-query');
 

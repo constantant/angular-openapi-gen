@@ -42,10 +42,8 @@ export function parseSecuritySchemes(api: OpenAPIV3.Document): SecuritySchemeMod
     let apiKeyParamName: string | undefined;
 
     if (scheme.type === 'http') {
-      kind =
-        (scheme as OpenAPIV3.HttpSecurityScheme).scheme?.toLowerCase() === 'bearer'
-          ? 'bearer'
-          : 'basic';
+      const httpScheme = (scheme as OpenAPIV3.HttpSecurityScheme).scheme?.toLowerCase();
+      kind = httpScheme === 'bearer' ? 'bearer' : httpScheme === 'digest' ? 'digest' : 'basic';
     } else if (scheme.type === 'apiKey') {
       const apiKey = scheme as OpenAPIV3.ApiKeySecurityScheme;
       kind = apiKey.in === 'query' ? 'apiKey-query' : 'apiKey-header';

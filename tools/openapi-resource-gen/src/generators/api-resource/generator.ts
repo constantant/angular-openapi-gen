@@ -108,7 +108,7 @@ export async function apiResourceGenerator(
     for (const scheme of securitySchemes) {
       tree.write(
         joinPathFragments(outputDir, `${scheme.fileName}.ts`),
-        renderSecurityTokenFile(scheme)
+        renderSecurityTokenFile(scheme, baseUrlToken)
       );
     }
 
