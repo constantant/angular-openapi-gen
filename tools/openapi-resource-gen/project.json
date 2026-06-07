@@ -20,6 +20,11 @@
           },
           {
             "input": "tools/openapi-resource-gen",
+            "glob": "executors.json",
+            "output": "."
+          },
+          {
+            "input": "tools/openapi-resource-gen",
             "glob": "package.json",
             "output": "."
           },

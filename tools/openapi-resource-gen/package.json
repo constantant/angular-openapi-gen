@@ -6,6 +6,7 @@
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "generators": "./generators.json",
+  "executors": "./executors.json",
   "keywords": [
     "nx",
     "nx-plugin",

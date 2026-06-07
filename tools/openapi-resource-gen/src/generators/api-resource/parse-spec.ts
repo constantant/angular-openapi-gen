@@ -107,6 +107,10 @@ export function buildEndpoints(
         .filter((p) => p.in === 'path')
         .map((p) => p.name);
 
+      const headerParams = allParams
+        .filter((p) => p.in === 'header')
+        .map((p) => ({ name: p.name, required: p.required === true }));
+
       const hasQueryParams = allParams.some((p) => p.in === 'query');
 
       // Operation-level security overrides global; [] means explicitly no security.
@@ -157,6 +161,7 @@ export function buildEndpoints(
         method,
         apiPath,
         pathParams,
+        headerParams,
         tokenName,
         fileName,
         hasQueryParams,

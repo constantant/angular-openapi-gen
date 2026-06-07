@@ -247,8 +247,19 @@ function appendResourceOptions(
     lines.push(`${indent}body,`);
   }
 
-  if (headerSchemes.length > 0) {
+  const hasHeaderParams = ep.headerParams.length > 0;
+  if (headerSchemes.length > 0 || hasHeaderParams) {
     lines.push(`${indent}headers: {`);
+    // Explicit header params from the spec (e.g. X-Api-Version, Accept-Language)
+    for (const h of ep.headerParams) {
+      const varName = toCamelCase(h.name);
+      if (h.required) {
+        lines.push(`${indent}  ${JSON.stringify(h.name)}: ${varName},`);
+      } else {
+        lines.push(`${indent}  ...(${varName} != null ? { ${JSON.stringify(h.name)}: ${varName} } : {}),`);
+      }
+    }
+    // Auth scheme headers (signal-based, always optional)
     for (const s of headerSchemes) {
       const varName = toCamelCase(s.schemeName);
       lines.push(`${indent}  ...(${varName}?.() != null ? ${headerEntryForScheme(s, varName)} : {}),`);
@@ -258,7 +269,11 @@ function appendResourceOptions(
 }
 
 function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean): string {
+  // Order: required path params, required header params, optional header params, query params / body
   const args: string[] = ep.pathParams.map((p) => `${toCamelCase(p)}: string`);
+  for (const h of ep.headerParams) {
+    args.push(h.required ? `${toCamelCase(h.name)}: string` : `${toCamelCase(h.name)}?: string`);
+  }
   if (isGet && ep.hasQueryParams)
     args.push(`params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);
   if (!isGet && ep.hasBody)

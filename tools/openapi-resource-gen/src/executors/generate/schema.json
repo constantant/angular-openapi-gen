@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "Generate",
+  "title": "Re-generate API resource tokens from an OpenAPI spec",
+  "type": "object",
+  "properties": {
+    "specPath": {
+      "type": "string",
+      "description": "Local path or https:// URL to the OpenAPI 3.x YAML or JSON spec file"
+    },
+    "outputDir": {
+      "type": "string",
+      "description": "Output directory for generated files (relative to workspace root)"
+    },
+    "baseUrlToken": {
+      "type": "string",
+      "description": "Name of the InjectionToken holding the API base URL",
+      "default": "API_BASE_URL"
+    },
+    "tagFilter": {
+      "type": "string",
+      "description": "Comma-separated list of OpenAPI tags to include (empty = all tags)"
+    },
+    "namingConvention": {
+      "type": "string",
+      "enum": ["camel", "kebab"],
+      "default": "kebab",
+      "description": "File naming convention: kebab-case filenames with SCREAMING_SNAKE token names"
+    },
+    "providedIn": {
+      "type": "string",
+      "enum": ["root", "none"],
+      "default": "none",
+      "description": "none: export provideX() helpers for scoped provision. root: self-registering singleton."
+    }
+  },
+  "required": ["specPath", "outputDir"]
+}

@@ -146,7 +146,31 @@ export async function apiResourceGenerator(
     }
   }
 
-  const rawParsed = jsYaml.load(fs.readFileSync(absoluteSpecPath, 'utf-8'));
+  let rawParsed: unknown;
+  try {
+    rawParsed = jsYaml.load(fs.readFileSync(absoluteSpecPath, 'utf-8'));
+  } catch (e) {
+    throw new Error(`Failed to parse spec as YAML/JSON: ${(e as Error).message}`);
+  }
+
+  // Validate it looks like an OpenAPI 3.x document before doing any work.
+  const specObj = rawParsed as Record<string, unknown> | null;
+  if (!specObj || typeof specObj !== 'object') {
+    throw new Error(`Spec does not appear to be a valid YAML/JSON document: ${specPath}`);
+  }
+  const openapiVersion = String(specObj['openapi'] ?? '');
+  if (!openapiVersion.startsWith('3')) {
+    throw new Error(
+      `Only OpenAPI 3.x specs are supported. Found: "${openapiVersion || '(no openapi field)'}". ` +
+      `For Swagger 2.x specs, convert first with swagger2openapi.`
+    );
+  }
+  if (!specObj['paths'] || typeof specObj['paths'] !== 'object') {
+    throw new Error(
+      `No "paths" object found in spec. Is "${specPath}" a valid OpenAPI 3.x file?`
+    );
+  }
+
   const cleanedParsed = stripNonSchemaRefs(rawParsed);
   const tmpClean = path
     .join(path.dirname(absoluteSpecPath), `_tmp_oas_${Date.now()}.json`)
@@ -161,12 +185,22 @@ export async function apiResourceGenerator(
     // 2. Emit schema.d.ts via openapi-typescript programmatic API, using the
     //    cleaned spec (not the dereferenced result — dereferenced Stripe has
     //    circular refs; openapi-typescript resolves $refs itself).
-    const schemaDts = await openapiTS(tmpClean);
+    let schemaDts: string;
+    try {
+      schemaDts = await openapiTS(tmpClean);
+    } catch (e) {
+      throw new Error(`Failed to generate TypeScript types from spec: ${(e as Error).message}`);
+    }
     tree.write(joinPathFragments(outputDir, 'schema.d.ts'), schemaDts);
 
     // 3. Dereference for endpoint extraction (may produce circular objects —
     //    that's fine because we only iterate over it, never serialize it).
-    const api = (await SwaggerParser.dereference(tmpClean)) as OpenAPIV3.Document;
+    let api: OpenAPIV3.Document;
+    try {
+      api = (await SwaggerParser.dereference(tmpClean)) as OpenAPIV3.Document;
+    } catch (e) {
+      throw new Error(`Failed to resolve $ref chains in spec: ${(e as Error).message}`);
+    }
 
     // 4. Emit api-base-url.token.ts from the EJS template in files/
     generateFiles(tree, path.join(__dirname, 'files'), outputDir, {

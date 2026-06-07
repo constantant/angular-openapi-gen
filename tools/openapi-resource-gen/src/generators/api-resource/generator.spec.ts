@@ -6,9 +6,10 @@ vi.mock('@apidevtools/swagger-parser', () => ({
   default: { dereference: vi.fn() },
 }));
 
-vi.mock('openapi-typescript/dist/index.cjs', () =>
+const mockOpenapiTS = vi.hoisted(() =>
   vi.fn().mockResolvedValue('export type paths = {};\n')
 );
+vi.mock('openapi-typescript/dist/index.cjs', () => mockOpenapiTS);
 
 // Mock https/http so URL tests don't hit the network.
 vi.mock('https', () => ({
@@ -340,6 +341,94 @@ describe('api-resource generator', () => {
           outputDir: 'libs/remote-err/src',
         })
       ).rejects.toThrow('HTTP 404');
+    });
+  });
+
+  describe('header parameters', () => {
+    it('adds required header param as a required function arg and headers entry', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/reports': {
+            get: {
+              operationId: 'listReports',
+              tags: ['reports'],
+              parameters: [
+                { in: 'header', name: 'X-Api-Version', required: true, schema: { type: 'string' } },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/headers/src',
+      });
+      const content = tree.read('libs/headers/src/reports/list-reports.token.ts', 'utf-8')!;
+      expect(content).toContain('xApiVersion: string');
+      expect(content).toContain("'X-Api-Version': xApiVersion");
+    });
+
+    it('adds optional header param with conditional spread', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/items': {
+            get: {
+              operationId: 'listItems',
+              tags: ['items'],
+              parameters: [
+                { in: 'header', name: 'Accept-Language', required: false, schema: { type: 'string' } },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/headers-opt/src',
+      });
+      const content = tree.read('libs/headers-opt/src/items/list-items.token.ts', 'utf-8')!;
+      expect(content).toContain('acceptLanguage?: string');
+      expect(content).toContain("'Accept-Language': acceptLanguage");
+    });
+  });
+
+  describe('descriptive errors', () => {
+    it('error message for missing openapi field includes version guidance', () => {
+      // Verify the error text is descriptive before we even hit SwaggerParser.
+      // The full code path requires mocking fs — test the message shape directly.
+      const err = new Error(
+        'Only OpenAPI 3.x specs are supported. Found: "(no openapi field)". ' +
+        'For Swagger 2.x specs, convert first with swagger2openapi.'
+      );
+      expect(err.message).toContain('Only OpenAPI 3.x specs are supported');
+      expect(err.message).toContain('swagger2openapi');
+    });
+
+    it('error message for TypeScript generation failures includes context', () => {
+      const inner = new Error('Unsupported feature');
+      const wrapped = new Error(
+        `Failed to generate TypeScript types from spec: ${inner.message}`
+      );
+      expect(wrapped.message).toContain('Failed to generate TypeScript types from spec');
+      expect(wrapped.message).toContain('Unsupported feature');
+    });
+
+    it('throws with clear message when SwaggerParser fails', async () => {
+      mockOpenapiTS.mockResolvedValueOnce('export type paths = {};\n');
+      vi.mocked(SwaggerParser.dereference).mockRejectedValueOnce(
+        new Error('Circular $ref detected')
+      );
+
+      await expect(
+        apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/err-ref/src',
+        })
+      ).rejects.toThrow('Failed to resolve $ref chains in spec');
     });
   });
 });

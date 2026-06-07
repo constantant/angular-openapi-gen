@@ -24,6 +24,7 @@ export interface EndpointModel {
   method: string;
   apiPath: string;
   pathParams: string[];
+  headerParams: Array<{ name: string; required: boolean }>;
   tokenName: string;
   fileName: string;
   hasQueryParams: boolean;
