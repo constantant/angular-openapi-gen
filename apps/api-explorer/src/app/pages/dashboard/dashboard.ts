@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import {
@@ -11,7 +11,6 @@ import { GET_V1_FORECAST } from '@angular-openapi-gen/weather-data-access';
 @Component({
   selector: 'app-dashboard',
   imports: [MatCardModule, MatProgressBarModule],
-  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './dashboard.html',
 })
 export class DashboardComponent {
