@@ -158,17 +158,22 @@ The resource config receives `method: 'POST'` (etc.) and `body` automatically.
 
 ### Security schemes
 
-When the OpenAPI spec defines security schemes, the generator emits one
-`InjectionToken<Signal<string | null>>` file per scheme:
+The generator emits one file per security scheme. Two patterns are used depending on the
+scheme kind.
+
+#### Signal-based schemes
+
+`bearer`, `oauth2`, `openIdConnect`, `basic`, `apiKey-header`, `apiKey-query` — emit
+`InjectionToken<Signal<string | null>>`. Endpoint tokens inject these optionally and merge
+auth into the request as headers or query params. Reading the signal inside the `httpResource`
+lambda creates a reactive dependency — the request re-fires automatically when the token value
+changes:
 
 ```typescript
 // oauth2.security-token.ts
 import { InjectionToken, Signal } from '@angular/core';
 export const OAUTH2 = new InjectionToken<Signal<string | null>>('OAUTH2');
 ```
-
-Endpoint tokens inject these optionally. Reading the signal inside the `httpResource`
-lambda creates a reactive dependency — the request re-fires when the token value changes:
 
 ```typescript
 const oauth2 = inject(OAUTH2, { optional: true }); // Signal<string | null> | null
@@ -178,8 +183,6 @@ headers: {
 },
 ```
 
-Supported scheme kinds:
-
 | Kind | Auth mechanism |
 |------|---------------|
 | `bearer` / `oauth2` / `openIdConnect` | `Authorization: Bearer <token>` |
@@ -187,17 +190,63 @@ Supported scheme kinds:
 | `apiKey-header` | Custom header (e.g. `X-API-Key: <token>`) |
 | `apiKey-query` | Query param (e.g. `?apiKey=<token>`) |
 
-To wire up a security token in `app.config.ts`:
+Wire up in `app.config.ts`:
 
 ```typescript
-// Create a writable signal at the app level
 export const MY_API_KEY = new InjectionToken<WritableSignal<string | null>>(
   'MY_API_KEY', { providedIn: 'root', factory: () => signal(null) }
 );
 
-// Provide the scheme token
 { provide: OAUTH2, useFactory: () => inject(MY_API_KEY) }
 ```
+
+#### Interceptor-based schemes
+
+`digest` — HTTP Digest is a challenge-response protocol: the Authorization header value
+depends on the request URL, method, and a server-issued nonce, so it cannot be computed
+as a static signal value. The generator emits `InjectionToken<HttpInterceptorFn>` plus a
+**named, host-scoped interceptor wrapper**:
+
+```typescript
+// digest-auth.security-token.ts (generated for MYAPI_BASE_URL)
+import { InjectionToken, inject } from '@angular/core';
+import { HttpInterceptorFn } from '@angular/common/http';
+import { MYAPI_BASE_URL } from './api-base-url.token';
+
+export const DIGEST_AUTH = new InjectionToken<HttpInterceptorFn>('DIGEST_AUTH');
+
+export const myapiDigestAuthInterceptor: HttpInterceptorFn = (req, next) => {
+  const base = inject(MYAPI_BASE_URL);
+  if (!req.url.startsWith(base)) return next(req); // scoped to this API only
+  const fn = inject(DIGEST_AUTH, { optional: true });
+  if (!fn) return next(req);
+  return fn(req, next);
+};
+```
+
+The interceptor name is derived from the base URL token name (`MYAPI_BASE_URL` → `myapi`)
+and the scheme name. This makes it unique per API — if two APIs both use Digest, they emit
+distinct interceptors with distinct host guards and never interfere with each other.
+
+The consumer's implementation receives the full `HttpRequest`, which carries
+`req.urlWithParams`, `req.method`, and `req.body` — everything needed to compute the
+RFC 7616 hash with no reconstruction:
+
+```typescript
+import { myapiDigestAuthInterceptor, DIGEST_AUTH } from '@angular-openapi-gen/myapi-data-access';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(
+      withInterceptors([myapiDigestAuthInterceptor])
+    ),
+    { provide: DIGEST_AUTH, useValue: myDigestInterceptorFn },
+  ],
+};
+```
+
+Digest endpoint tokens do not inject the `DIGEST_AUTH` token directly — auth is applied
+transparently by the interceptor at the HTTP layer.
 
 ---
 

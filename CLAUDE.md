@@ -118,15 +118,18 @@ Rules:
 
 ### Security tokens
 
-When the spec has security schemes, the generator emits one additional file per scheme:
+When the spec has security schemes, the generator emits one additional file per scheme.
+Two different patterns are used depending on the scheme kind.
+
+**Signal-based** (`bearer`, `oauth2`, `openIdConnect`, `basic`, `apiKey-header`, `apiKey-query`) —
+emits `InjectionToken<Signal<string | null>>`. Endpoint tokens inject these optionally and
+merge auth into the request headers/params:
 
 ```typescript
 // libs/youtube-data-access/src/oauth2.security-token.ts
 import { InjectionToken, Signal } from '@angular/core';
 export const OAUTH2 = new InjectionToken<Signal<string | null>>('OAUTH2');
 ```
-
-Endpoint tokens inject security tokens optionally and merge auth into headers/params:
 
 ```typescript
 const oauth2 = inject(OAUTH2, { optional: true }); // Signal<string | null> | null
@@ -136,7 +139,38 @@ headers: {
 },
 ```
 
-Supported security kinds: `bearer`, `oauth2`, `openIdConnect`, `basic`, `apiKey-header`, `apiKey-query`.
+**Interceptor-based** (`digest`) — Digest is a challenge-response protocol (URL + method +
+nonce hash) that cannot be computed as a static header. The generator emits
+`InjectionToken<HttpInterceptorFn>` plus a **named, host-scoped interceptor wrapper**:
+
+```typescript
+// libs/myapi-data-access/src/digest-auth.security-token.ts
+import { InjectionToken, inject } from '@angular/core';
+import { HttpInterceptorFn } from '@angular/common/http';
+import { MYAPI_BASE_URL } from './api-base-url.token';
+
+export const DIGEST_AUTH = new InjectionToken<HttpInterceptorFn>('DIGEST_AUTH');
+
+export const myapiDigestAuthInterceptor: HttpInterceptorFn = (req, next) => {
+  const base = inject(MYAPI_BASE_URL);
+  if (!req.url.startsWith(base)) return next(req); // scoped to this API only
+  const fn = inject(DIGEST_AUTH, { optional: true });
+  if (!fn) return next(req);
+  return fn(req, next); // req.urlWithParams, req.method, req.body available
+};
+```
+
+The interceptor name is derived from the base URL token (`MYAPI_BASE_URL` → `myapi`) and the
+scheme name, making it unique per API. Multiple APIs with digest auth have distinct interceptors
+and distinct base URL checks — no cross-API conflicts. The consumer's implementation receives
+the full `HttpRequest`, which carries everything needed for the RFC 7616 hash.
+
+Consumer wires it in `app.config.ts`:
+
+```typescript
+provideHttpClient(withInterceptors([myapiDigestAuthInterceptor])),
+{ provide: DIGEST_AUTH, useValue: myDigestInterceptorFn },
+```
 
 ---
 
@@ -291,7 +325,8 @@ npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
 | Base URL injection | Named `InjectionToken<string>` per lib              | Lets apps override URL per environment |
 | Params type | Typed via `paths[...]['parameters']['query']`       | Full type safety, no manual interfaces |
 | Request suppression | Block-body lambda with early `return undefined`     | Shorthand `() => ({url})` always fires; returning undefined from lambda makes resource idle |
-| Security tokens | `InjectionToken<Signal<string | null>>` per scheme | Reactive — changing the signal auto-refires any resource that reads it |
+| Security tokens — signal | `InjectionToken<Signal<string | null>>` per scheme | `bearer`/`basic`/`apiKey`: reactive — changing the signal auto-refires any resource that reads it |
+| Security tokens — digest | `InjectionToken<HttpInterceptorFn>` + named host-scoped interceptor | Challenge-response at HTTP layer; base URL token prevents cross-API interceptor conflicts |
 
 ---
 

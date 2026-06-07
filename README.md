@@ -94,7 +94,7 @@ Key properties of every generated file:
 - **Signal-native** — `httpResource` re-fires the request automatically when any signal inside the reactive lambda changes
 - **Request suppression** — returning `undefined` from the lambda keeps the resource idle (no request)
 - **Scoped base URL** — each lib has its own `InjectionToken<string>` so different parts of an app can point at different environments
-- **Security tokens** — when the spec has security schemes, the generator emits `InjectionToken<Signal<string | null>>` files; reading the signal inside the lambda creates a reactive dependency
+- **Security tokens** — signal-based schemes (`bearer`, `basic`, `apiKey`) emit `InjectionToken<Signal<string | null>>`; `digest` schemes emit `InjectionToken<HttpInterceptorFn>` + a named, host-scoped interceptor that delegates only to requests matching the lib's base URL, preventing cross-API conflicts
 
 ---
 
