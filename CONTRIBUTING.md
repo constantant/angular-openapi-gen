@@ -84,6 +84,18 @@ conventional-commit-style **PR title** — it becomes the squash-merge commit.
 - [ ] Docs (`README.md` / generator README) updated if behaviour changed.
 - [ ] PR title follows Conventional Commits.
 
+## Branch protection & merging
+
+`master` is a protected branch. Open your PR against it; before it can merge:
+
+- the **CI** workflow (the `main` job) must pass,
+- it needs **1 approving review** from a code owner (see [CODEOWNERS](.github/CODEOWNERS)),
+- history is kept **linear** — PRs are merged via **squash** or **rebase**, not
+  merge commits. The squash-merge commit message is taken from your PR title, so
+  keep it in Conventional Commits form.
+
+Direct pushes to `master` are blocked; all changes go through a PR.
+
 ## License
 
 By contributing you agree that your contributions are licensed under the
