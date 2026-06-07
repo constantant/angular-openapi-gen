@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & ideas
+    url: https://github.com/constantant/angular-openapi-gen/discussions
+    about: Ask a question or discuss an idea — please don't open an issue for these.
+  - name: npm package
+    url: https://www.npmjs.com/package/@constantant/openapi-resource-gen
+    about: Package page for @constantant/openapi-resource-gen.

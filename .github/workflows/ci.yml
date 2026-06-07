@@ -6,6 +6,11 @@ on:
       - master
   pull_request:
 
+# Cancel superseded runs on the same branch/PR so pushes don't pile up runners.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   actions: read
   contents: read

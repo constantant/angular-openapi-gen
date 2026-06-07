@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest an idea or enhancement
+labels: ["enhancement", "triage"]
+body:
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Which part of the project would this affect?
+      options:
+        - Generator (tools/openapi-resource-gen)
+        - Generated token pattern / output
+        - Demo app (apps/api-explorer)
+        - CI / release / tooling
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What problem are you trying to solve? What's the use case?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe what you'd like to happen. Include example config or output if relevant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds or other approaches you've thought about.
+    validations:
+      required: false
