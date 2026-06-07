@@ -3,18 +3,25 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
+      specifier:
+        description: 'Version bump (empty = auto from conventional commits)'
+        type: choice
+        options: ['', 'patch', 'minor', 'major', 'premajor', 'preminor', 'prepatch', 'prerelease']
+        default: ''
+      preid:
+        description: 'Pre-release id (alpha / beta / rc) — only used with pre* specifier'
+        type: string
+        default: ''
       dryRun:
         description: 'Dry run — skip git push and npm publish'
         type: boolean
         default: false
-      firstRelease:
-        description: 'First release — no previous tag to diff against'
-        type: boolean
-        default: false
 
-# contents: write  → create GitHub releases, push version commit + tag
+# contents: write  → create commits, tags, and GitHub releases
+# id-token: write  → npm provenance attestation via OIDC
 permissions:
   contents: write
+  id-token: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -28,8 +35,8 @@ jobs:
           fetch-depth: 0         # full history so nx release can read all commits
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # registry-url writes an .npmrc pointing at registry.npmjs.org.
-      # Without NODE_AUTH_TOKEN set, npm falls through to OIDC trusted publishing.
+      # registry-url writes an .npmrc pointing at registry.npmjs.org and
+      # sets up NODE_AUTH_TOKEN forwarding for npm publish.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -44,60 +51,33 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Determines version bump from conventional commits since the last tag,
-      # updates tools/openapi-resource-gen/package.json, writes CHANGELOG.md,
-      # creates a git commit + tag, and opens a GitHub Release (draft: false).
+      # Determines version bump from conventional commits since the last tag (or
+      # from --specifier when provided), updates package.json and CHANGELOG.md,
+      # creates a git commit + tag, and creates a GitHub Release.
+      # --skip-publish: npm publishing is handled separately so we can add --provenance.
+      # --yes: skip interactive confirmation prompts.
       - name: Bump version and generate changelog
         run: |
-          FLAGS="--skip-publish"
-          [[ "${{ inputs.firstRelease }}" == "true" ]] && FLAGS="$FLAGS --first-release"
+          FLAGS="--skip-publish --yes"
+          [[ -n "${{ inputs.specifier }}" ]] && FLAGS="$FLAGS --specifier=${{ inputs.specifier }}"
+          [[ -n "${{ inputs.preid }}" ]] && FLAGS="$FLAGS --preid=${{ inputs.preid }}"
           npx nx release $FLAGS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Dry-run stops here — all subsequent steps touch the remote or npm registry.
+      # Dry-run stops here — all subsequent steps touch the remote or the npm registry.
       - name: Push version commit and tag
         if: ${{ !inputs.dryRun }}
         run: git push --follow-tags origin master
 
-      - name: Create GitHub Release
-        if: ${{ !inputs.dryRun }}
-        run: |
-          VERSION=$(node -p "require('./tools/openapi-resource-gen/package.json').version")
-          TAG="openapi-resource-gen@${VERSION}"
-          # Extract the section for this version from CHANGELOG.md (content between
-          # the "## VERSION" heading and the next "## " heading)
-          NOTES=$(awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
-            tools/openapi-resource-gen/CHANGELOG.md)
-          if gh release view "$TAG" &>/dev/null; then
-            echo "Release $TAG already exists — skipping."
-          else
-            gh release create "$TAG" \
-              --title "@constantant/openapi-resource-gen@${VERSION}" \
-              --notes "${NOTES:-No changelog entries for this version.}"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Build after version bump. Nx Cloud may cache the old version; explicitly
-      # write the bumped version into dist/package.json after building.
+      # Build after the version bump so the dist package.json carries the new version.
+      # --skip-nx-cache ensures the build always runs fresh (no stale cached output).
       - name: Build
         run: npx nx build openapi-resource-gen --skip-nx-cache
 
-      - name: Sync version into dist
-        run: |
-          VERSION=$(node -p "require('./tools/openapi-resource-gen/package.json').version")
-          echo "Syncing version $VERSION into dist"
-          node -e "
-            const fs = require('fs');
-            const p = 'dist/tools/openapi-resource-gen/package.json';
-            const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
-            pkg.version = '$VERSION';
-            fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
-          "
-
-      # Publish using a granular npm token stored as a GitHub secret.
-      # Skips gracefully if the version is already on the registry (idempotent).
+      # Pre-release versions (1.2.0-beta.1) are published under the "next" dist-tag
+      # so that `npm install @constantant/openapi-resource-gen` still gets the stable release.
+      # --provenance attaches a signed OIDC provenance attestation (supply-chain security).
       - name: Publish to npm
         if: ${{ !inputs.dryRun }}
         id: publish
@@ -108,7 +88,8 @@ jobs:
             echo "Version ${VERSION} already published — nothing to do."
             echo "published=false" >> "$GITHUB_OUTPUT"
           else
-            npm publish --access public
+            NPM_TAG=$(echo "$VERSION" | grep -q '-' && echo "next" || echo "latest")
+            npm publish --access public --provenance --tag "$NPM_TAG"
             echo "published=true" >> "$GITHUB_OUTPUT"
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
@@ -116,20 +97,24 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Write job summary
+        if: always()
         run: |
-          VERSION="${{ steps.publish.outputs.version }}"
-          PUBLISHED="${{ steps.publish.outputs.published }}"
-          {
-            if [[ "$PUBLISHED" == "true" ]]; then
-              echo "## ✅ Published \`@constantant/openapi-resource-gen@${VERSION}\`"
-              echo ""
-              echo "**npm:** https://www.npmjs.com/package/@constantant/openapi-resource-gen/v/${VERSION}"
-              echo ""
-              echo "### Changelog"
-              # Extract the section for this version from CHANGELOG.md
-              awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
-                tools/openapi-resource-gen/CHANGELOG.md
-            else
-              echo "## ℹ️ No new version — \`@constantant/openapi-resource-gen@${VERSION}\` already on npm"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "${{ inputs.dryRun }}" == "true" ]]; then
+            echo "## 🔍 Dry run — no changes were pushed or published" >> "$GITHUB_STEP_SUMMARY"
+          else
+            VERSION="${{ steps.publish.outputs.version }}"
+            PUBLISHED="${{ steps.publish.outputs.published }}"
+            {
+              if [[ "$PUBLISHED" == "true" ]]; then
+                echo "## ✅ Published \`@constantant/openapi-resource-gen@${VERSION}\`"
+                echo ""
+                echo "**npm:** https://www.npmjs.com/package/@constantant/openapi-resource-gen/v/${VERSION}"
+                echo ""
+                echo "### Changelog"
+                awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
+                  tools/openapi-resource-gen/CHANGELOG.md
+              else
+                echo "## ℹ️ No new version — \`@constantant/openapi-resource-gen@${VERSION}\` already on npm"
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
