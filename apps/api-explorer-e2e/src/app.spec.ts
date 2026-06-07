@@ -11,6 +11,7 @@ test.describe('Navigation', () => {
     await expect(nav.getByRole('link', { name: 'Repos' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Pets' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Weather' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'YouTube' })).toBeVisible();
   });
 
   test('active link updates on navigation', async ({ page }) => {
@@ -40,6 +41,12 @@ test.describe('Pages', () => {
   test('weather page loads with correct heading', async ({ page }) => {
     await page.goto('/weather');
     await expect(page.getByRole('heading', { name: /weather/i })).toBeVisible();
+  });
+
+  test('youtube page loads with api key prompt', async ({ page }) => {
+    await page.goto('/youtube');
+    await expect(page.getByRole('heading', { name: /youtube/i })).toBeVisible();
+    await expect(page.getByLabel('API Key')).toBeVisible();
   });
 
   test('root redirects to dashboard', async ({ page }) => {
