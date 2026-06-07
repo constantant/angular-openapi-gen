@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   USERS_GET_BY_USERNAME,
   REPOS_LIST_FOR_USER,
@@ -11,7 +11,6 @@ import { MatChipsModule } from '@angular/material/chips';
 @Component({
   selector: 'app-repos-page',
   imports: [MatCardModule, MatListModule, MatProgressBarModule, MatChipsModule],
-  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './repos-page.html',
 })
 export class ReposPageComponent {

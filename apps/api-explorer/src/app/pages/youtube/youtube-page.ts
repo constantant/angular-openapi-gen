@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -26,7 +26,6 @@ type SearchItem = NonNullable<YoutubeSearchListResponse['items']>[number];
     MatProgressBarModule,
     MatChipsModule,
   ],
-  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: './youtube-page.html',
   styleUrl: './youtube-page.less',
 })
