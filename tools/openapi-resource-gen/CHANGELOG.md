@@ -1,3 +1,15 @@
+## 1.3.1 (2026-06-07)
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** bump tsconfig target/lib to ES2022 ([30db4f0](https://github.com/constantant/angular-openapi-gen/commit/30db4f0))
+- **openapi-resource-gen:** resolve lint errors in generator source ([f89f4b2](https://github.com/constantant/angular-openapi-gen/commit/f89f4b2))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.3.0 (2026-06-07)
 
 ### 🚀 Features
