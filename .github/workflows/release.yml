@@ -58,7 +58,7 @@ jobs:
       # --yes: skip interactive confirmation prompts.
       - name: Bump version and generate changelog
         run: |
-          FLAGS="--skip-publish --yes"
+          FLAGS="--skip-publish"
           [[ -n "${{ inputs.specifier }}" ]] && FLAGS="$FLAGS --specifier=${{ inputs.specifier }}"
           [[ -n "${{ inputs.preid }}" ]] && FLAGS="$FLAGS --preid=${{ inputs.preid }}"
           npx nx release $FLAGS
