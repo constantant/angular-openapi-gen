@@ -1,3 +1,18 @@
+## 1.2.0 (2026-06-07)
+
+### 🚀 Features
+
+- **generator:** add Digest auth security scheme support ([a31e1b9](https://github.com/constantant/angular-openapi-gen/commit/a31e1b9))
+
+### 📖 Documentation
+
+- document Digest auth security scheme support ([5265b0a](https://github.com/constantant/angular-openapi-gen/commit/5265b0a))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.1.4 (2026-06-07)
 
 ### 🚀 Features
