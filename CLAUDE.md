@@ -314,6 +314,28 @@ npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
 
 ---
 
+## Repository & contribution governance
+
+This is a **public, MIT-licensed** repo open to outside contributions. Community
+health files live at the root and under `.github/`:
+
+- `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`
+- `.github/CODEOWNERS` (`* @constantant`), `.github/dependabot.yml`
+- `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/*` (YAML forms)
+
+`master` is **branch-protected** — no direct pushes; all changes go via PR:
+- the CI `main` job must pass,
+- 1 approving **code-owner** review is required,
+- **linear history** (squash/rebase merges only — no merge commits),
+- `enforce_admins` is **off** so the release workflow's `GITHUB_TOKEN` can still
+  push the version bump commit + tag during `nx release`.
+
+When making changes here, branch off `master` and open a PR; use a
+Conventional Commits PR title (it becomes the squash commit). See
+`CONTRIBUTING.md` for the full workflow.
+
+---
+
 ## Key decisions
 
 | Decision | Choice                                              | Reason |

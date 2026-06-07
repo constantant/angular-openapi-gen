@@ -359,3 +359,15 @@ overwrites all files in `outputDir`.
 Hyphenated path parameter names (e.g. `{enterprise-team}` in the GitHub spec)
 and dotted operationIds (e.g. `youtube.search.list`) are converted to camelCase /
 PascalCase via `toCamelCase()` / `toPascalCase()` to produce valid JavaScript identifiers.
+
+---
+
+## Contributing
+
+This package is developed in the [`angular-openapi-gen`](https://github.com/constantant/angular-openapi-gen)
+Nx workspace. Issues and pull requests are welcome — see
+[CONTRIBUTING.md](https://github.com/constantant/angular-openapi-gen/blob/master/CONTRIBUTING.md).
+
+## License
+
+[MIT](https://github.com/constantant/angular-openapi-gen/blob/master/LICENSE)
