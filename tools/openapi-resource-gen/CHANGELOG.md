@@ -1,3 +1,22 @@
+## 1.1.4 (2026-06-07)
+
+### 🚀 Features
+
+- **api-explorer:** add YouTube page with reactive auth token ([adba6b2](https://github.com/constantant/angular-openapi-gen/commit/adba6b2))
+- **generator:** make security tokens reactive via Signal<string | null> ([52484e7](https://github.com/constantant/angular-openapi-gen/commit/52484e7))
+- **youtube:** add youtube-data-access lib and fix dotted operationId support ([64ef851](https://github.com/constantant/angular-openapi-gen/commit/64ef851))
+- **generator:** add security scheme support ([b3c7629](https://github.com/constantant/angular-openapi-gen/commit/b3c7629))
+
+### 🩹 Fixes
+
+- **generator:** suppress httpResource when params thunk returns undefined ([8cb9782](https://github.com/constantant/angular-openapi-gen/commit/8cb9782))
+- **generator:** remove redundant non-null assertions in security headers ([5ffe9bb](https://github.com/constantant/angular-openapi-gen/commit/5ffe9bb))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.1.3 (2026-06-06)
 
 This was a version bump only for openapi-resource-gen to align it with other projects, there were no code changes.
