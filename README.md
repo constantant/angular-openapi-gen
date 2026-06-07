@@ -23,7 +23,7 @@ Because esbuild tree-shakes at file boundaries, any token you never `inject()` c
 ## The generator — `@constantant/openapi-resource-gen`
 
 Published on npm: **[`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen)**  
-Current version: **1.1.3**
+Current version: **1.2.0**
 
 ```bash
 npx nx g @constantant/openapi-resource-gen:api-resource \

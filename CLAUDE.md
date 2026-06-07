@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI specs via `httpResource`.
 
-> **Implementation status**: Core generator is built and published to npm as `@constantant/openapi-resource-gen` (v1.1.3). Data-access libs: `github`, `petstore`, `weather`, `youtube`. `apps/api-explorer` is wired up with routes and Angular Material UI.
+> **Implementation status**: Core generator is built and published to npm as `@constantant/openapi-resource-gen` (v1.2.0). Data-access libs: `github`, `petstore`, `weather`, `youtube`. `apps/api-explorer` is wired up with routes and Angular Material UI.
 
 ---
 
