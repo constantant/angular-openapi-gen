@@ -10,7 +10,6 @@ import * as http from 'http';
 import * as jsYaml from 'js-yaml';
 // openapi-typescript ships as ESM-only; use the bundled CJS build so this
 // CommonJS generator can call it without a dynamic import().
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const openapiTS = require('openapi-typescript/dist/index.cjs') as (
   path: string
 ) => Promise<string>;
@@ -150,7 +149,7 @@ export async function apiResourceGenerator(
   try {
     rawParsed = jsYaml.load(fs.readFileSync(absoluteSpecPath, 'utf-8'));
   } catch (e) {
-    throw new Error(`Failed to parse spec as YAML/JSON: ${(e as Error).message}`);
+    throw new Error(`Failed to parse spec as YAML/JSON: ${(e as Error).message}`, { cause: e });
   }
 
   // Validate it looks like an OpenAPI 3.x document before doing any work.
@@ -189,7 +188,7 @@ export async function apiResourceGenerator(
     try {
       schemaDts = await openapiTS(tmpClean);
     } catch (e) {
-      throw new Error(`Failed to generate TypeScript types from spec: ${(e as Error).message}`);
+      throw new Error(`Failed to generate TypeScript types from spec: ${(e as Error).message}`, { cause: e });
     }
     tree.write(joinPathFragments(outputDir, 'schema.d.ts'), schemaDts);
 
@@ -199,7 +198,7 @@ export async function apiResourceGenerator(
     try {
       api = (await SwaggerParser.dereference(tmpClean)) as OpenAPIV3.Document;
     } catch (e) {
-      throw new Error(`Failed to resolve $ref chains in spec: ${(e as Error).message}`);
+      throw new Error(`Failed to resolve $ref chains in spec: ${(e as Error).message}`, { cause: e });
     }
 
     // 4. Emit api-base-url.token.ts from the EJS template in files/

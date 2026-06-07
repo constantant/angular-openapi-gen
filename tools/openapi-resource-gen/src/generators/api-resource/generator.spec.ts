@@ -304,7 +304,7 @@ describe('api-resource generator', () => {
 
       vi.mocked(https.get).mockImplementation((_url: unknown, callback: unknown) => {
         const cb = callback as (res: object) => void;
-        const fakeRes = Object.assign(new Readable({ read() {} }), {
+        const fakeRes = Object.assign(new Readable({ read: vi.fn() }), {
           statusCode: 200,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           pipe(dest: any) {
