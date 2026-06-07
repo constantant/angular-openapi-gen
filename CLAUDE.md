@@ -260,6 +260,14 @@ npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
 
 ## Coding conventions
 
+> **CRITICAL — generated code is read-only.**
+> Files under `libs/*/src/` are 100% machine-generated and must **never** be edited by hand.
+> Any bug or missing feature in a generated file must be fixed in the generator
+> (`tools/openapi-resource-gen/`) and then the affected lib must be regenerated with
+> `npx nx g @constantant/openapi-resource-gen:api-resource ...`.
+> The `node_modules/@constantant/openapi-resource-gen` package is a Windows Junction that points
+> directly at `tools/openapi-resource-gen`, so generator changes are live immediately — no publish step needed.
+
 - All new components: standalone, no `NgModule`, no `zone.js`.
 - Change detection: `OnPush` is the default — do NOT set it explicitly unless overriding.
 - Signals: prefer `signal()` + `computed()` over RxJS for local state.
@@ -269,7 +277,6 @@ npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
 - Imports: always import from the barrel `index.ts` of a lib, never from internal paths.
 - Do not add `console.log` to committed code.
 - Commit messages: `feat:`, `fix:`, `chore:`, `docs:` prefixes.
-- Never edit generated files (under `libs/*/src/`) — regenerate via the generator instead.
 
 ---
 
