@@ -1,5 +1,9 @@
 # angular-openapi-gen
 
+[![CI](https://github.com/constantant/angular-openapi-gen/actions/workflows/ci.yml/badge.svg)](https://github.com/constantant/angular-openapi-gen/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@constantant/openapi-resource-gen)](https://www.npmjs.com/package/@constantant/openapi-resource-gen)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 An Angular 22 · Nx monorepo that demonstrates **tree-shakeable, signal-native API clients** generated from OpenAPI 3.x specs.
 
 The core idea: one `InjectionToken` per API endpoint, each in its own `.ts` file.
@@ -198,6 +202,18 @@ What the workflow does:
 The workflow is idempotent — if the current version is already on npm it skips publishing gracefully.
 
 **Note on nx release commit detection**: nx release counts only commits that touch files within `tools/openapi-resource-gen/`. Workflow-only changes (e.g. editing `.github/`) do not trigger a version bump.
+
+---
+
+## Contributing
+
+Contributions are welcome! Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** before
+opening a PR — in particular the rule that **generated code under `libs/*/src/` is
+never hand-edited** (fix the generator and regenerate instead).
+
+- Code of Conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- Security policy: [SECURITY.md](SECURITY.md)
+- Questions & ideas: [GitHub Discussions](https://github.com/constantant/angular-openapi-gen/discussions)
 
 ---
 

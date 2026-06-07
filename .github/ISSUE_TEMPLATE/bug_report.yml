@@ -1,0 +1,74 @@
+name: Bug report
+description: Report a problem with the generator, a generated lib, or the demo app
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! Please fill out the fields below.
+        For security vulnerabilities, **do not** use this form — see [SECURITY.md](https://github.com/constantant/angular-openapi-gen/blob/master/SECURITY.md).
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Which part of the project does this concern?
+      options:
+        - Generator (tools/openapi-resource-gen)
+        - A generated data-access lib (libs/*)
+        - Demo app (apps/api-explorer)
+        - CI / release workflow
+        - Documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, including any error output.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: >
+        Include the exact `nx g @constantant/openapi-resource-gen:api-resource ...`
+        command and, if relevant, a minimal OpenAPI spec snippet that triggers it.
+      placeholder: |
+        1. Run `npx nx g @constantant/openapi-resource-gen:api-resource --specPath=... --outputDir=...`
+        2. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: Package, Node, and framework versions.
+      placeholder: |
+        @constantant/openapi-resource-gen: 1.2.0
+        Node: 24.x
+        Nx: 22.7.5
+        Angular: 22.0.0
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I am not reporting a hand-edit of generated `libs/*/src/` code (those are not supported — fixes go in the generator).
+          required: true
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
