@@ -18,10 +18,8 @@ on:
         default: false
 
 # contents: write  → create commits, tags, and GitHub releases
-# id-token: write  → npm provenance attestation via OIDC
 permissions:
   contents: write
-  id-token: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -89,7 +87,7 @@ jobs:
             echo "published=false" >> "$GITHUB_OUTPUT"
           else
             NPM_TAG=$(echo "$VERSION" | grep -q '-' && echo "next" || echo "latest")
-            npm publish --access public --provenance --tag "$NPM_TAG"
+            npm publish --access public --tag "$NPM_TAG"
             echo "published=true" >> "$GITHUB_OUTPUT"
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
