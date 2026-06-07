@@ -275,15 +275,15 @@ npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
 
 ## Key decisions
 
-| Decision | Choice | Reason |
-|----------|--------|--------|
-| Token granularity | One file per endpoint | Enables file-level tree-shaking by esbuild |
-| Type source | `openapi-typescript` `paths` type | Zero runtime, fully typed, no codegen bloat |
-| HTTP primitive | `httpResource` (stable, Angular 22) | Signal-native, auto-cancels stale requests |
-| Mutation pattern | Factory returns `(body) => httpResource(...)` | Consistent API surface for GET and mutations |
-| Base URL injection | Named `InjectionToken<string>` per lib | Lets apps override URL per environment |
-| Params type | Typed via `paths[...]['parameters']['query']` | Full type safety, no manual interfaces |
-| Request suppression | Block-body lambda with early `return undefined` | Shorthand `() => ({url})` always fires; returning undefined from lambda makes resource idle |
+| Decision | Choice                                              | Reason |
+|----------|-----------------------------------------------------|--------|
+| Token granularity | One file per endpoint                               | Enables file-level tree-shaking by esbuild |
+| Type source | `openapi-typescript` `paths` type                   | Zero runtime, fully typed, no codegen bloat |
+| HTTP primitive | `httpResource` (stable, Angular 22)                 | Signal-native, auto-cancels stale requests |
+| Mutation pattern | Factory returns `(body) => httpResource(...)`       | Consistent API surface for GET and mutations |
+| Base URL injection | Named `InjectionToken<string>` per lib              | Lets apps override URL per environment |
+| Params type | Typed via `paths[...]['parameters']['query']`       | Full type safety, no manual interfaces |
+| Request suppression | Block-body lambda with early `return undefined`     | Shorthand `() => ({url})` always fires; returning undefined from lambda makes resource idle |
 | Security tokens | `InjectionToken<Signal<string | null>>` per scheme | Reactive — changing the signal auto-refires any resource that reads it |
 
 ---
