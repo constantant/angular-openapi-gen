@@ -1,3 +1,21 @@
+## 1.3.0 (2026-06-07)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** tier 2 community-readiness improvements ([990d850](https://github.com/constantant/angular-openapi-gen/commit/990d850))
+- **openapi-resource-gen:** tier 1 community-readiness improvements ([a344f50](https://github.com/constantant/angular-openapi-gen/commit/a344f50))
+
+### 📖 Documentation
+
+- align docs with Tier 1 & 2 generator changes ([a30f2fc](https://github.com/constantant/angular-openapi-gen/commit/a30f2fc))
+- document public repo governance and branch protection ([d7bd84e](https://github.com/constantant/angular-openapi-gen/commit/d7bd84e))
+
+### ❤️ Thank You
+
+- Claude Opus 4.8
+- Claude Sonnet 4.6
+- kk
+
 ## 1.2.0 (2026-06-07)
 
 ### 🚀 Features
