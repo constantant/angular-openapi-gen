@@ -3,6 +3,11 @@
 [![CI](https://github.com/constantant/angular-openapi-gen/actions/workflows/ci.yml/badge.svg)](https://github.com/constantant/angular-openapi-gen/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/@constantant/openapi-resource-gen)](https://www.npmjs.com/package/@constantant/openapi-resource-gen)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Angular 22+](https://img.shields.io/badge/Angular-22%2B-red)](https://angular.dev)
+
+> **Requires Angular 22+ and Nx 22+.**
+> The generated code uses [`httpResource()`](https://angular.dev/guide/http/http-resource),
+> which is only available from Angular 22 onwards.
 
 An Angular 22 · Nx monorepo that demonstrates **tree-shakeable, signal-native API clients** generated from OpenAPI 3.x specs.
 
@@ -29,17 +34,56 @@ Because esbuild tree-shakes at file boundaries, any token you never `inject()` c
 Published on npm: **[`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen)**  
 Current version: **1.2.0**
 
+### Quick start
+
+**Step 1 — install the generator** (once per workspace):
+
+```bash
+npm install -D @constantant/openapi-resource-gen
+```
+
+**Step 2 — generate a data-access lib** from any OpenAPI 3.x spec (local file or URL):
+
 ```bash
 npx nx g @constantant/openapi-resource-gen:api-resource \
-  --specPath=specs/petstore.yaml \
-  --outputDir=libs/petstore-data-access/src
+  --specPath=https://petstore3.swagger.io/api/v3/openapi.yaml \
+  --outputDir=libs/petstore-data-access/src \
+  --baseUrlToken=PETSTORE_BASE_URL
 ```
+
+**Step 3 — wire up providers and inject in your component:**
+
+```typescript
+// app.config.ts
+import { provideHttpClient } from '@angular/common/http';
+import { PETSTORE_BASE_URL, provideFindPetsByStatus } from './libs/petstore-data-access/src';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(),
+    { provide: PETSTORE_BASE_URL, useValue: 'https://petstore3.swagger.io/api/v3' },
+    provideFindPetsByStatus(),
+  ],
+};
+```
+
+```typescript
+// pets-page.component.ts
+@Component({ ... })
+export class PetsPageComponent {
+  private findPetsByStatus = inject(FIND_PETS_BY_STATUS);
+  readonly status = signal<'available' | 'pending' | 'sold'>('available');
+  readonly pets = this.findPetsByStatus(() => ({ status: this.status() }));
+}
+```
+
+Re-run the generator command whenever your spec changes — it overwrites generated files and removes any that no longer exist in the spec.
 
 ### Generator options
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `specPath` | yes | — | Path to the OpenAPI 3.x YAML or JSON spec |
+| `specPath` | yes | — | Local path **or** `https://` URL to the OpenAPI 3.x YAML or JSON spec |
 | `outputDir` | yes | — | Output directory relative to workspace root |
 | `baseUrlToken` | no | `API_BASE_URL` | Name of the base-URL injection token |
 | `tagFilter` | no | all tags | Comma-separated list of tags to include |
@@ -181,9 +225,10 @@ npx nx g @constantant/openapi-resource-gen:api-resource \
   --outputDir=libs/myapi-data-access/src \
   --baseUrlToken=MYAPI_BASE_URL
 
-# Fetch specs locally
-curl -L https://petstore3.swagger.io/api/v3/openapi.yaml -o specs/petstore.yaml
-curl -L https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.yaml -o specs/github.yaml
+# Pass a URL directly — no manual curl step needed
+# npx nx g @constantant/openapi-resource-gen:api-resource \
+#   --specPath=https://petstore3.swagger.io/api/v3/openapi.yaml \
+#   --outputDir=libs/petstore-data-access/src
 ```
 
 ---

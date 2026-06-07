@@ -46,3 +46,7 @@ Thumbs.db
 .angular
 
 __screenshots__/
+
+# Temp files written by the openapi-resource-gen generator during generation/testing
+_tmp_oas_*.json
+_tmp_oas_*.yaml

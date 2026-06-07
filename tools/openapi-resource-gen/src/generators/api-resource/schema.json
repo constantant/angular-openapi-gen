@@ -7,7 +7,7 @@
   "properties": {
     "specPath": {
       "type": "string",
-      "description": "Path to the OpenAPI 3.x YAML or JSON spec file",
+      "description": "Path or https:// URL to the OpenAPI 3.x YAML or JSON spec file",
       "$default": { "$source": "argv", "index": 0 }
     },
     "outputDir": {

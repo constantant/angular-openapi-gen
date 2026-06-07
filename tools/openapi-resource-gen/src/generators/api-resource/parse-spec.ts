@@ -134,18 +134,21 @@ export function buildEndpoints(
         null;
       const hasBody = bodyContentType !== null;
 
-      const rawStatus = operation.responses?.['200']
-        ? '200'
-        : operation.responses?.['201']
-          ? '201'
-          : null;
-      // Only treat the response as typed JSON when the response actually has
-      // application/json content (not PDF, octet-stream, etc.)
-      const responseObj = rawStatus
-        ? (operation.responses?.[rawStatus] as OpenAPIV3.ResponseObject | undefined)
-        : null;
+      // Pick the first 2xx response code that carries application/json content.
+      // Covers 200, 201, 202, 206, and the catch-all '2XX' used by some specs.
+      const RESPONSE_PRIORITY = ['200', '201', '202', '206', '2XX', '203', '207', '208', '226'];
+      const allResponseCodes = Object.keys(operation.responses ?? {});
+      const orderedCodes = [
+        ...RESPONSE_PRIORITY.filter((c) => allResponseCodes.includes(c)),
+        ...allResponseCodes.filter(
+          (c) => !RESPONSE_PRIORITY.includes(c) && /^2/.test(c)
+        ),
+      ];
       const responseStatus =
-        responseObj?.content?.['application/json'] ? rawStatus : null;
+        orderedCodes.find((code) => {
+          const obj = operation.responses?.[code] as OpenAPIV3.ResponseObject | undefined;
+          return obj?.content?.['application/json'] != null;
+        }) ?? null;
       const hasResponse = responseStatus !== null;
 
       endpoints.push({

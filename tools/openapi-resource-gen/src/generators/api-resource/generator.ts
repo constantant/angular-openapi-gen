@@ -5,6 +5,8 @@ import {
   joinPathFragments,
 } from '@nx/devkit';
 import * as fs from 'fs';
+import * as https from 'https';
+import * as http from 'http';
 import * as jsYaml from 'js-yaml';
 // openapi-typescript ships as ESM-only; use the bundled CJS build so this
 // CommonJS generator can call it without a dynamic import().
@@ -49,6 +51,49 @@ function stripNonSchemaRefs(obj: unknown): unknown {
   return obj;
 }
 
+/** Download a URL to a local temp file. Returns the temp file path. */
+function fetchSpecUrl(url: string, destPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const proto = url.startsWith('https://') ? https : http;
+    const file = fs.createWriteStream(destPath);
+    proto
+      .get(url, (res) => {
+        if (res.statusCode !== 200) {
+          file.close();
+          fs.unlink(destPath, () => undefined);
+          reject(
+            new Error(
+              `Failed to fetch spec from ${url}: HTTP ${res.statusCode ?? 'unknown'}`
+            )
+          );
+          return;
+        }
+        res.pipe(file);
+        file.on('finish', () => file.close(() => resolve()));
+      })
+      .on('error', (err) => {
+        file.close();
+        fs.unlink(destPath, () => undefined);
+        reject(new Error(`Failed to fetch spec from ${url}: ${err.message}`));
+      });
+  });
+}
+
+/** Recursively collect all file paths under a tree directory. */
+function collectTreeFiles(tree: Tree, dir: string): string[] {
+  const result: string[] = [];
+  if (!tree.exists(dir)) return result;
+  for (const child of tree.children(dir)) {
+    const childPath = joinPathFragments(dir, child);
+    if (tree.isFile(childPath)) {
+      result.push(childPath);
+    } else {
+      result.push(...collectTreeFiles(tree, childPath));
+    }
+  }
+  return result;
+}
+
 export async function apiResourceGenerator(
   tree: Tree,
   options: ApiResourceGeneratorSchema
@@ -69,16 +114,46 @@ export async function apiResourceGenerator(
         .filter(Boolean)
     : null;
 
+  // Snapshot which token/security files already exist so we can delete stale
+  // ones that this run no longer produces.
+  const preExistingFiles = new Set(
+    collectTreeFiles(tree, outputDir).filter(
+      (f) => f.endsWith('.token.ts') || f.endsWith('.security-token.ts')
+    )
+  );
+
+  const isUrl =
+    specPath.startsWith('http://') || specPath.startsWith('https://');
+
+  // For URL specs, download to a temp file alongside the workspace root so
+  // relative file $refs in the spec (rare for remote specs) still resolve.
+  const tmpDownload = isUrl
+    ? path.join(process.cwd(), `_tmp_oas_download_${Date.now()}.yaml`).replace(/\\/g, '/')
+    : null;
+
   // 1. Parse spec with js-yaml, strip any $refs pointing to non-spec files
   //    (e.g. x-topics.$ref: ./docs/getting-started.md in the travel spec).
   //    Write the cleaned spec next to the original so relative file $refs
   //    within the spec still resolve when swagger-parser dereferences.
-  const absoluteSpecPath = path.resolve(specPath);
+  let absoluteSpecPath: string;
+  if (isUrl) {
+    await fetchSpecUrl(specPath, tmpDownload!);
+    absoluteSpecPath = tmpDownload!;
+  } else {
+    absoluteSpecPath = path.resolve(specPath);
+    if (!fs.existsSync(absoluteSpecPath)) {
+      throw new Error(`Spec file not found: ${absoluteSpecPath}`);
+    }
+  }
+
   const rawParsed = jsYaml.load(fs.readFileSync(absoluteSpecPath, 'utf-8'));
   const cleanedParsed = stripNonSchemaRefs(rawParsed);
   const tmpClean = path
     .join(path.dirname(absoluteSpecPath), `_tmp_oas_${Date.now()}.json`)
     .replace(/\\/g, '/');
+
+  // Track every file path written in this run to detect stale files.
+  const writtenFiles = new Set<string>();
 
   try {
     fs.writeFileSync(tmpClean, JSON.stringify(cleanedParsed));
@@ -106,10 +181,9 @@ export async function apiResourceGenerator(
     );
 
     for (const scheme of securitySchemes) {
-      tree.write(
-        joinPathFragments(outputDir, `${scheme.fileName}.ts`),
-        renderSecurityTokenFile(scheme, baseUrlToken)
-      );
+      const filePath = joinPathFragments(outputDir, `${scheme.fileName}.ts`);
+      tree.write(filePath, renderSecurityTokenFile(scheme, baseUrlToken));
+      writtenFiles.add(filePath);
     }
 
     const endpoints = buildEndpoints(api, allowedTags, namingConvention);
@@ -126,10 +200,9 @@ export async function apiResourceGenerator(
       const tagDir = joinPathFragments(outputDir, tag);
 
       for (const ep of tagEndpoints) {
-        tree.write(
-          joinPathFragments(tagDir, `${ep.fileName}.token.ts`),
-          renderTokenFile(ep, baseUrlToken, providedIn, schemesByName)
-        );
+        const filePath = joinPathFragments(tagDir, `${ep.fileName}.token.ts`);
+        tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName));
+        writtenFiles.add(filePath);
       }
 
       const tagBarrel =
@@ -145,11 +218,26 @@ export async function apiResourceGenerator(
       securitySchemes.map((s) => `export * from './${s.fileName}';\n`).join('') +
       [...byTag.keys()].map((tag) => `export * from './${tag}';\n`).join('');
     tree.write(joinPathFragments(outputDir, 'index.ts'), rootBarrel);
+
+    // 9. Delete stale token/security files from previous runs that this run
+    //    no longer produces (e.g. removed endpoints, changed tagFilter).
+    for (const stale of preExistingFiles) {
+      if (!writtenFiles.has(stale)) {
+        tree.delete(stale);
+      }
+    }
   } finally {
     try {
       fs.unlinkSync(tmpClean);
     } catch {
       /* ignore */
+    }
+    if (tmpDownload) {
+      try {
+        fs.unlinkSync(tmpDownload);
+      } catch {
+        /* ignore */
+      }
     }
   }
 
