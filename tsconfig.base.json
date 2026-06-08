@@ -27,6 +27,9 @@
       ],
       "@angular-openapi-gen/youtube-data-access": [
         "libs/youtube-data-access/src/index.ts"
+      ],
+      "@constantant/openapi-resource-mocks": [
+        "tools/openapi-resource-mocks/src/index.ts"
       ]
     }
   },

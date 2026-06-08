@@ -46,6 +46,17 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true
+        },
+        "mock": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "apps/api-explorer/src/app/app.config.ts",
+              "with": "apps/api-explorer/src/app/app.config.mock.ts"
+            }
+          ]
         }
       },
       "defaultConfiguration": "production"
@@ -59,6 +70,9 @@
         },
         "development": {
           "buildTarget": "api-explorer:build:development"
+        },
+        "mock": {
+          "buildTarget": "api-explorer:build:mock"
         }
       },
       "defaultConfiguration": "development"
