@@ -1,0 +1,15 @@
+import { FactoryProvider } from '@angular/core';
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import { CODESPACES_DELETE_FOR_AUTHENTICATED_USER } from './codespaces-delete-for-authenticated-user.token';
+import type { CodespacesDeleteForAuthenticatedUserResponse } from './codespaces-delete-for-authenticated-user.token';
+
+export function provideCodespacesDeleteForAuthenticatedUserMock(
+  initialBehavior?: ProviderInitialBehavior<CodespacesDeleteForAuthenticatedUserResponse>,
+): FactoryProvider {
+  return provideMockResource(
+    CODESPACES_DELETE_FOR_AUTHENTICATED_USER,
+    'CODESPACES_DELETE_FOR_AUTHENTICATED_USER',
+    initialBehavior,
+  );
+}

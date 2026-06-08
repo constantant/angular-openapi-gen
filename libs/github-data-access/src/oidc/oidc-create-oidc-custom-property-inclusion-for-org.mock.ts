@@ -1,0 +1,15 @@
+import { FactoryProvider } from '@angular/core';
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import { OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ORG } from './oidc-create-oidc-custom-property-inclusion-for-org.token';
+import type { OidcCreateOidcCustomPropertyInclusionForOrgResponse } from './oidc-create-oidc-custom-property-inclusion-for-org.token';
+
+export function provideOidcCreateOidcCustomPropertyInclusionForOrgMock(
+  initialBehavior?: ProviderInitialBehavior<OidcCreateOidcCustomPropertyInclusionForOrgResponse>,
+): FactoryProvider {
+  return provideMockResource(
+    OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ORG,
+    'OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ORG',
+    initialBehavior,
+  );
+}

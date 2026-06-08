@@ -1,0 +1,15 @@
+import { FactoryProvider } from '@angular/core';
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import { REPOS_GET_REPO_RULESET } from './repos-get-repo-ruleset.token';
+import type { ReposGetRepoRulesetResponse } from './repos-get-repo-ruleset.token';
+
+export function provideReposGetRepoRulesetMock(
+  initialBehavior?: ProviderInitialBehavior<ReposGetRepoRulesetResponse>,
+): FactoryProvider {
+  return provideMockResource(
+    REPOS_GET_REPO_RULESET,
+    'REPOS_GET_REPO_RULESET',
+    initialBehavior,
+  );
+}
