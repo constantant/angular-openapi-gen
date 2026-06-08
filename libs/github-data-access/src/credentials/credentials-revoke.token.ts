@@ -7,10 +7,13 @@ export type CredentialsRevokeBody = NonNullable<
   paths['/credentials/revoke']['post']['requestBody']
 >['content']['application/json'];
 
+export type CredentialsRevokeResponse =
+  paths['/credentials/revoke']['post']['responses']['202']['content']['application/json'];
+
 export const CREDENTIALS_REVOKE = new InjectionToken<
   (
     body: CredentialsRevokeBody | Signal<CredentialsRevokeBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<CredentialsRevokeResponse>>
 >('CREDENTIALS_REVOKE');
 
 export function provideCredentialsRevoke(): FactoryProvider {
@@ -19,7 +22,7 @@ export function provideCredentialsRevoke(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (body: CredentialsRevokeBody | Signal<CredentialsRevokeBody>) =>
-        httpResource<unknown>(() => ({
+        httpResource<CredentialsRevokeResponse>(() => ({
           url: `${base}/credentials/revoke`,
           method: 'POST',
           body,

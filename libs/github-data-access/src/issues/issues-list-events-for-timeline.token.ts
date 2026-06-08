@@ -33,15 +33,18 @@ export function provideIssuesListEventsForTimeline(): FactoryProvider {
           | IssuesListEventsForTimelineParams
           | (() => IssuesListEventsForTimelineParams | undefined),
       ) =>
-        httpResource<IssuesListEventsForTimelineResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/timeline`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<IssuesListEventsForTimelineResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/timeline`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -29,15 +29,18 @@ export function provideIssuesListForOrg(): FactoryProvider {
           | IssuesListForOrgParams
           | (() => IssuesListForOrgParams | undefined),
       ) =>
-        httpResource<IssuesListForOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/issues`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<IssuesListForOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/issues`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

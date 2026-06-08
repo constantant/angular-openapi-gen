@@ -27,15 +27,18 @@ export function provideOrgsListMembers(): FactoryProvider {
           | OrgsListMembersParams
           | (() => OrgsListMembersParams | undefined),
       ) =>
-        httpResource<OrgsListMembersResponse>(() => ({
-          url: `${base}/orgs/${org}/members`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsListMembersResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/members`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

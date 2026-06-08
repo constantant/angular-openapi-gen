@@ -7,6 +7,9 @@ export type OrgsConvertMemberToOutsideCollaboratorBody = NonNullable<
   paths['/orgs/{org}/outside_collaborators/{username}']['put']['requestBody']
 >['content']['application/json'];
 
+export type OrgsConvertMemberToOutsideCollaboratorResponse =
+  paths['/orgs/{org}/outside_collaborators/{username}']['put']['responses']['202']['content']['application/json'];
+
 export const ORGS_CONVERT_MEMBER_TO_OUTSIDE_COLLABORATOR = new InjectionToken<
   (
     org: string,
@@ -14,7 +17,9 @@ export const ORGS_CONVERT_MEMBER_TO_OUTSIDE_COLLABORATOR = new InjectionToken<
     body:
       | OrgsConvertMemberToOutsideCollaboratorBody
       | Signal<OrgsConvertMemberToOutsideCollaboratorBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<
+    typeof httpResource<OrgsConvertMemberToOutsideCollaboratorResponse>
+  >
 >('ORGS_CONVERT_MEMBER_TO_OUTSIDE_COLLABORATOR');
 
 export function provideOrgsConvertMemberToOutsideCollaborator(): FactoryProvider {
@@ -29,7 +34,7 @@ export function provideOrgsConvertMemberToOutsideCollaborator(): FactoryProvider
           | OrgsConvertMemberToOutsideCollaboratorBody
           | Signal<OrgsConvertMemberToOutsideCollaboratorBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<OrgsConvertMemberToOutsideCollaboratorResponse>(() => ({
           url: `${base}/orgs/${org}/outside_collaborators/${username}`,
           method: 'PUT',
           body,

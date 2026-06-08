@@ -3,8 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type OrgsDeleteResponse =
+  paths['/orgs/{org}']['delete']['responses']['202']['content']['application/json'];
+
 export const ORGS_DELETE = new InjectionToken<
-  (org: string) => ReturnType<typeof httpResource<unknown>>
+  (org: string) => ReturnType<typeof httpResource<OrgsDeleteResponse>>
 >('ORGS_DELETE');
 
 export function provideOrgsDelete(): FactoryProvider {
@@ -13,7 +16,7 @@ export function provideOrgsDelete(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string) =>
-        httpResource<unknown>(() => ({
+        httpResource<OrgsDeleteResponse>(() => ({
           url: `${base}/orgs/${org}`,
           method: 'DELETE',
         }));

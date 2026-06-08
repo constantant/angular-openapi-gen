@@ -23,15 +23,18 @@ export function provideSearchCommits(): FactoryProvider {
       return (
         params?: SearchCommitsParams | (() => SearchCommitsParams | undefined),
       ) =>
-        httpResource<SearchCommitsResponse>(() => ({
-          url: `${base}/search/commits`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<SearchCommitsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/search/commits`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

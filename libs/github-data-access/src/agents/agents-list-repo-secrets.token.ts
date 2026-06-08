@@ -31,15 +31,18 @@ export function provideAgentsListRepoSecrets(): FactoryProvider {
           | AgentsListRepoSecretsParams
           | (() => AgentsListRepoSecretsParams | undefined),
       ) =>
-        httpResource<AgentsListRepoSecretsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/agents/secrets`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AgentsListRepoSecretsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/agents/secrets`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

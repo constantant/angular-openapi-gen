@@ -31,15 +31,18 @@ export function provideTeamsListChildInOrg(): FactoryProvider {
           | TeamsListChildInOrgParams
           | (() => TeamsListChildInOrgParams | undefined),
       ) =>
-        httpResource<TeamsListChildInOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/teams/${teamSlug}/teams`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<TeamsListChildInOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/teams/${teamSlug}/teams`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

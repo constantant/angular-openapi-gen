@@ -31,15 +31,18 @@ export function provideOrgsListPatGrantRepositories(): FactoryProvider {
           | OrgsListPatGrantRepositoriesParams
           | (() => OrgsListPatGrantRepositoriesParams | undefined),
       ) =>
-        httpResource<OrgsListPatGrantRepositoriesResponse>(() => ({
-          url: `${base}/orgs/${org}/personal-access-tokens/${patId}/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsListPatGrantRepositoriesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/personal-access-tokens/${patId}/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

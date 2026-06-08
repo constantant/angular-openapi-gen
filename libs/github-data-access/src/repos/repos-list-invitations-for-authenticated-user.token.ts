@@ -29,15 +29,18 @@ export function provideReposListInvitationsForAuthenticatedUser(): FactoryProvid
           | ReposListInvitationsForAuthenticatedUserParams
           | (() => ReposListInvitationsForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<ReposListInvitationsForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/repository_invitations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListInvitationsForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/repository_invitations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

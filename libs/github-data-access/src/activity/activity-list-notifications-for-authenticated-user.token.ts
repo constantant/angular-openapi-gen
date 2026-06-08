@@ -35,15 +35,21 @@ export function provideActivityListNotificationsForAuthenticatedUser(): FactoryP
               | undefined),
       ) =>
         httpResource<ActivityListNotificationsForAuthenticatedUserResponse>(
-          () => ({
-            url: `${base}/notifications`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/notifications`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
         );
     },
   };

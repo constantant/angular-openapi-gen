@@ -31,15 +31,18 @@ export function provideIssuesListLabelsForRepo(): FactoryProvider {
           | IssuesListLabelsForRepoParams
           | (() => IssuesListLabelsForRepoParams | undefined),
       ) =>
-        httpResource<IssuesListLabelsForRepoResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/labels`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<IssuesListLabelsForRepoResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/labels`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

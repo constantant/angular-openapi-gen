@@ -33,15 +33,18 @@ export function provideActivityListPublicEventsForRepoNetwork(): FactoryProvider
           | ActivityListPublicEventsForRepoNetworkParams
           | (() => ActivityListPublicEventsForRepoNetworkParams | undefined),
       ) =>
-        httpResource<ActivityListPublicEventsForRepoNetworkResponse>(() => ({
-          url: `${base}/networks/${owner}/${repo}/events`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActivityListPublicEventsForRepoNetworkResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/networks/${owner}/${repo}/events`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

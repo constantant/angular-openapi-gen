@@ -20,15 +20,18 @@ export function provideGistsList(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (params?: GistsListParams | (() => GistsListParams | undefined)) =>
-        httpResource<GistsListResponse>(() => ({
-          url: `${base}/gists`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<GistsListResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/gists`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

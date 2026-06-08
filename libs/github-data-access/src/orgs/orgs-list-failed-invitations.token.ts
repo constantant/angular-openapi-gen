@@ -29,15 +29,18 @@ export function provideOrgsListFailedInvitations(): FactoryProvider {
           | OrgsListFailedInvitationsParams
           | (() => OrgsListFailedInvitationsParams | undefined),
       ) =>
-        httpResource<OrgsListFailedInvitationsResponse>(() => ({
-          url: `${base}/orgs/${org}/failed_invitations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsListFailedInvitationsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/failed_invitations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

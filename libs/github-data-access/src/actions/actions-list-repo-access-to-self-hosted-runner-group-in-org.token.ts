@@ -39,15 +39,21 @@ export function provideActionsListRepoAccessToSelfHostedRunnerGroupInOrg(): Fact
               | undefined),
       ) =>
         httpResource<ActionsListRepoAccessToSelfHostedRunnerGroupInOrgResponse>(
-          () => ({
-            url: `${base}/orgs/${org}/actions/runner-groups/${runnerGroupId}/repositories`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/orgs/${org}/actions/runner-groups/${runnerGroupId}/repositories`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
         );
     },
   };

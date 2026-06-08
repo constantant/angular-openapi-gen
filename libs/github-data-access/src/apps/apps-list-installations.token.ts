@@ -27,15 +27,18 @@ export function provideAppsListInstallations(): FactoryProvider {
           | AppsListInstallationsParams
           | (() => AppsListInstallationsParams | undefined),
       ) =>
-        httpResource<AppsListInstallationsResponse>(() => ({
-          url: `${base}/app/installations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AppsListInstallationsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/app/installations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -31,15 +31,18 @@ export function providePullsListReviewCommentsForRepo(): FactoryProvider {
           | PullsListReviewCommentsForRepoParams
           | (() => PullsListReviewCommentsForRepoParams | undefined),
       ) =>
-        httpResource<PullsListReviewCommentsForRepoResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/pulls/comments`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<PullsListReviewCommentsForRepoResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/pulls/comments`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

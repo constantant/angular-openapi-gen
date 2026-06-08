@@ -33,15 +33,18 @@ export function provideReposListReleaseAssets(): FactoryProvider {
           | ReposListReleaseAssetsParams
           | (() => ReposListReleaseAssetsParams | undefined),
       ) =>
-        httpResource<ReposListReleaseAssetsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListReleaseAssetsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

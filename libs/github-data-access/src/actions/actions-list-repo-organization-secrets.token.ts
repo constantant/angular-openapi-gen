@@ -33,15 +33,18 @@ export function provideActionsListRepoOrganizationSecrets(): FactoryProvider {
           | ActionsListRepoOrganizationSecretsParams
           | (() => ActionsListRepoOrganizationSecretsParams | undefined),
       ) =>
-        httpResource<ActionsListRepoOrganizationSecretsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/actions/organization-secrets`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListRepoOrganizationSecretsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/actions/organization-secrets`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

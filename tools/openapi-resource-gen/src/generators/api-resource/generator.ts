@@ -212,6 +212,7 @@ export async function apiResourceGenerator(
       baseUrlToken,
       tmpl: '',
     });
+    writtenFiles.add(joinPathFragments(outputDir, 'api-base-url.token.ts'));
 
     // 5. Parse security schemes and build EndpointModels
     const securitySchemes = parseSecuritySchemes(api);

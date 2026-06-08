@@ -34,17 +34,18 @@ export function provideCopilotCopilotEnterpriseOneDayUsageMetrics(): FactoryProv
               | CopilotCopilotEnterpriseOneDayUsageMetricsParams
               | undefined),
       ) =>
-        httpResource<CopilotCopilotEnterpriseOneDayUsageMetricsResponse>(
-          () => ({
+        httpResource<CopilotCopilotEnterpriseOneDayUsageMetricsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
             url: `${base}/enterprises/${enterprise}/copilot/metrics/reports/enterprise-1-day`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
+            params: _params as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,
-          }),
-        );
+          };
+        });
     },
   };
 }

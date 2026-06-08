@@ -33,15 +33,18 @@ export function provideOrgsListPatGrantRequestRepositories(): FactoryProvider {
           | OrgsListPatGrantRequestRepositoriesParams
           | (() => OrgsListPatGrantRequestRepositoriesParams | undefined),
       ) =>
-        httpResource<OrgsListPatGrantRequestRepositoriesResponse>(() => ({
-          url: `${base}/orgs/${org}/personal-access-token-requests/${patRequestId}/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsListPatGrantRequestRepositoriesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/personal-access-token-requests/${patRequestId}/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

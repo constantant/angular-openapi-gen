@@ -3,12 +3,15 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type SecurityAdvisoriesCreateForkResponse =
+  paths['/repos/{owner}/{repo}/security-advisories/{ghsa_id}/forks']['post']['responses']['202']['content']['application/json'];
+
 export const SECURITY_ADVISORIES_CREATE_FORK = new InjectionToken<
   (
     owner: string,
     repo: string,
     ghsaId: string,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<SecurityAdvisoriesCreateForkResponse>>
 >('SECURITY_ADVISORIES_CREATE_FORK');
 
 export function provideSecurityAdvisoriesCreateFork(): FactoryProvider {
@@ -17,7 +20,7 @@ export function provideSecurityAdvisoriesCreateFork(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, ghsaId: string) =>
-        httpResource<unknown>(() => ({
+        httpResource<SecurityAdvisoriesCreateForkResponse>(() => ({
           url: `${base}/repos/${owner}/${repo}/security-advisories/${ghsaId}/forks`,
           method: 'POST',
         }));

@@ -25,15 +25,18 @@ export function provideTeamsList(): FactoryProvider {
         org: string,
         params?: TeamsListParams | (() => TeamsListParams | undefined),
       ) =>
-        httpResource<TeamsListResponse>(() => ({
-          url: `${base}/orgs/${org}/teams`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<TeamsListResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/teams`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

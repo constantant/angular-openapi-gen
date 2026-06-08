@@ -23,15 +23,18 @@ export function provideSearchUsers(): FactoryProvider {
       return (
         params?: SearchUsersParams | (() => SearchUsersParams | undefined),
       ) =>
-        httpResource<SearchUsersResponse>(() => ({
-          url: `${base}/search/users`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<SearchUsersResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/search/users`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

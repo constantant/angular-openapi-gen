@@ -29,15 +29,18 @@ export function provideCodespacesListForAuthenticatedUser(): FactoryProvider {
           | CodespacesListForAuthenticatedUserParams
           | (() => CodespacesListForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<CodespacesListForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/codespaces`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<CodespacesListForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/codespaces`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

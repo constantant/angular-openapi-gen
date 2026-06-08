@@ -37,15 +37,21 @@ export function provideSecurityAdvisoriesListOrgRepositoryAdvisories(): FactoryP
               | undefined),
       ) =>
         httpResource<SecurityAdvisoriesListOrgRepositoryAdvisoriesResponse>(
-          () => ({
-            url: `${base}/orgs/${org}/security-advisories`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/orgs/${org}/security-advisories`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
         );
     },
   };

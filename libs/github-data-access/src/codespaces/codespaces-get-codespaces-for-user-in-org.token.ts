@@ -33,15 +33,18 @@ export function provideCodespacesGetCodespacesForUserInOrg(): FactoryProvider {
           | CodespacesGetCodespacesForUserInOrgParams
           | (() => CodespacesGetCodespacesForUserInOrgParams | undefined),
       ) =>
-        httpResource<CodespacesGetCodespacesForUserInOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/members/${username}/codespaces`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<CodespacesGetCodespacesForUserInOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/members/${username}/codespaces`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

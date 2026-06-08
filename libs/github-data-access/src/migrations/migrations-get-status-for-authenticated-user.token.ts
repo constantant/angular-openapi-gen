@@ -31,15 +31,18 @@ export function provideMigrationsGetStatusForAuthenticatedUser(): FactoryProvide
           | MigrationsGetStatusForAuthenticatedUserParams
           | (() => MigrationsGetStatusForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<MigrationsGetStatusForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/migrations/${migrationId}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<MigrationsGetStatusForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/migrations/${migrationId}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

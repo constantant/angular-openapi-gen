@@ -32,15 +32,18 @@ export function providePrivateRegistriesListOrgPrivateRegistries(): FactoryProvi
           | PrivateRegistriesListOrgPrivateRegistriesParams
           | (() => PrivateRegistriesListOrgPrivateRegistriesParams | undefined),
       ) =>
-        httpResource<PrivateRegistriesListOrgPrivateRegistriesResponse>(() => ({
-          url: `${base}/orgs/${org}/private-registries`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<PrivateRegistriesListOrgPrivateRegistriesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/private-registries`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

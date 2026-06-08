@@ -37,15 +37,21 @@ export function provideBillingGetGithubBillingAiCreditUsageReportUser(): Factory
               | undefined),
       ) =>
         httpResource<BillingGetGithubBillingAiCreditUsageReportUserResponse>(
-          () => ({
-            url: `${base}/users/${username}/settings/billing/ai_credit/usage`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/users/${username}/settings/billing/ai_credit/usage`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
         );
     },
   };

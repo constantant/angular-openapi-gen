@@ -33,15 +33,18 @@ export function provideDependabotListSelectedReposForOrgSecret(): FactoryProvide
           | DependabotListSelectedReposForOrgSecretParams
           | (() => DependabotListSelectedReposForOrgSecretParams | undefined),
       ) =>
-        httpResource<DependabotListSelectedReposForOrgSecretResponse>(() => ({
-          url: `${base}/orgs/${org}/dependabot/secrets/${secretName}/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<DependabotListSelectedReposForOrgSecretResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/dependabot/secrets/${secretName}/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

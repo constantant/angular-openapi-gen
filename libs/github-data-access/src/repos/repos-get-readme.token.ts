@@ -29,15 +29,18 @@ export function provideReposGetReadme(): FactoryProvider {
           | ReposGetReadmeParams
           | (() => ReposGetReadmeParams | undefined),
       ) =>
-        httpResource<ReposGetReadmeResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/readme`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetReadmeResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/readme`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

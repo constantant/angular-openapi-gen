@@ -21,15 +21,18 @@ export function provideLoginUser(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       return (params?: LoginUserParams | (() => LoginUserParams | undefined)) =>
-        httpResource<LoginUserResponse>(() => ({
-          url: `${base}/user/login`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<LoginUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/login`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -33,15 +33,18 @@ export function provideActionsListSelfHostedRunnersForRepo(): FactoryProvider {
           | ActionsListSelfHostedRunnersForRepoParams
           | (() => ActionsListSelfHostedRunnersForRepoParams | undefined),
       ) =>
-        httpResource<ActionsListSelfHostedRunnersForRepoResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/actions/runners`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListSelfHostedRunnersForRepoResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/actions/runners`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

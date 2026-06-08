@@ -33,15 +33,18 @@ export function provideActionsListJobsForWorkflowRun(): FactoryProvider {
           | ActionsListJobsForWorkflowRunParams
           | (() => ActionsListJobsForWorkflowRunParams | undefined),
       ) =>
-        httpResource<ActionsListJobsForWorkflowRunResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/jobs`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListJobsForWorkflowRunResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/jobs`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -29,15 +29,18 @@ export function provideGistsListComments(): FactoryProvider {
           | GistsListCommentsParams
           | (() => GistsListCommentsParams | undefined),
       ) =>
-        httpResource<GistsListCommentsResponse>(() => ({
-          url: `${base}/gists/${gistId}/comments`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<GistsListCommentsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/gists/${gistId}/comments`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

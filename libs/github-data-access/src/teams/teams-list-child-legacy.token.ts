@@ -29,15 +29,18 @@ export function provideTeamsListChildLegacy(): FactoryProvider {
           | TeamsListChildLegacyParams
           | (() => TeamsListChildLegacyParams | undefined),
       ) =>
-        httpResource<TeamsListChildLegacyResponse>(() => ({
-          url: `${base}/teams/${teamId}/teams`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<TeamsListChildLegacyResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/teams/${teamId}/teams`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

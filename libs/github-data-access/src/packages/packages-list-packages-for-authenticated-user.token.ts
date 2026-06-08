@@ -29,15 +29,18 @@ export function providePackagesListPackagesForAuthenticatedUser(): FactoryProvid
           | PackagesListPackagesForAuthenticatedUserParams
           | (() => PackagesListPackagesForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<PackagesListPackagesForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/packages`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<PackagesListPackagesForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/packages`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

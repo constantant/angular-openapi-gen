@@ -31,15 +31,18 @@ export function provideReposListInvitations(): FactoryProvider {
           | ReposListInvitationsParams
           | (() => ReposListInvitationsParams | undefined),
       ) =>
-        httpResource<ReposListInvitationsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/invitations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListInvitationsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/invitations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

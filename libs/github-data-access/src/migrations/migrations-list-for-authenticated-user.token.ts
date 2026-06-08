@@ -29,15 +29,18 @@ export function provideMigrationsListForAuthenticatedUser(): FactoryProvider {
           | MigrationsListForAuthenticatedUserParams
           | (() => MigrationsListForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<MigrationsListForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/migrations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<MigrationsListForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/migrations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

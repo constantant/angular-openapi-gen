@@ -22,15 +22,18 @@ export function provideIssuesList(): FactoryProvider {
       return (
         params?: IssuesListParams | (() => IssuesListParams | undefined),
       ) =>
-        httpResource<IssuesListResponse>(() => ({
-          url: `${base}/issues`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<IssuesListResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/issues`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

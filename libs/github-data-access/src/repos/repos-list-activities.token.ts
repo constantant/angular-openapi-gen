@@ -31,15 +31,18 @@ export function provideReposListActivities(): FactoryProvider {
           | ReposListActivitiesParams
           | (() => ReposListActivitiesParams | undefined),
       ) =>
-        httpResource<ReposListActivitiesResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/activity`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListActivitiesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/activity`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -29,15 +29,18 @@ export function provideOrgsListAttestationRepositories(): FactoryProvider {
           | OrgsListAttestationRepositoriesParams
           | (() => OrgsListAttestationRepositoriesParams | undefined),
       ) =>
-        httpResource<OrgsListAttestationRepositoriesResponse>(() => ({
-          url: `${base}/orgs/${org}/attestations/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsListAttestationRepositoriesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/attestations/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

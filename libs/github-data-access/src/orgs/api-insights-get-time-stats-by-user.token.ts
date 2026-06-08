@@ -31,15 +31,18 @@ export function provideApiInsightsGetTimeStatsByUser(): FactoryProvider {
           | ApiInsightsGetTimeStatsByUserParams
           | (() => ApiInsightsGetTimeStatsByUserParams | undefined),
       ) =>
-        httpResource<ApiInsightsGetTimeStatsByUserResponse>(() => ({
-          url: `${base}/orgs/${org}/insights/api/time-stats/users/${userId}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ApiInsightsGetTimeStatsByUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/insights/api/time-stats/users/${userId}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

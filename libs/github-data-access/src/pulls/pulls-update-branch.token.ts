@@ -7,13 +7,16 @@ export type PullsUpdateBranchBody = NonNullable<
   paths['/repos/{owner}/{repo}/pulls/{pull_number}/update-branch']['put']['requestBody']
 >['content']['application/json'];
 
+export type PullsUpdateBranchResponse =
+  paths['/repos/{owner}/{repo}/pulls/{pull_number}/update-branch']['put']['responses']['202']['content']['application/json'];
+
 export const PULLS_UPDATE_BRANCH = new InjectionToken<
   (
     owner: string,
     repo: string,
     pullNumber: string,
     body: PullsUpdateBranchBody | Signal<PullsUpdateBranchBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<PullsUpdateBranchResponse>>
 >('PULLS_UPDATE_BRANCH');
 
 export function providePullsUpdateBranch(): FactoryProvider {
@@ -27,7 +30,7 @@ export function providePullsUpdateBranch(): FactoryProvider {
         pullNumber: string,
         body: PullsUpdateBranchBody | Signal<PullsUpdateBranchBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<PullsUpdateBranchResponse>(() => ({
           url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/update-branch`,
           method: 'PUT',
           body,

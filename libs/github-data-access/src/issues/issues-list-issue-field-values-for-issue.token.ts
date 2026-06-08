@@ -35,15 +35,18 @@ export function provideIssuesListIssueFieldValuesForIssue(): FactoryProvider {
           | IssuesListIssueFieldValuesForIssueParams
           | (() => IssuesListIssueFieldValuesForIssueParams | undefined),
       ) =>
-        httpResource<IssuesListIssueFieldValuesForIssueResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/issue-field-values`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<IssuesListIssueFieldValuesForIssueResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/issue-field-values`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

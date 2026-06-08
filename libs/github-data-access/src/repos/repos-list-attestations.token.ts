@@ -33,15 +33,18 @@ export function provideReposListAttestations(): FactoryProvider {
           | ReposListAttestationsParams
           | (() => ReposListAttestationsParams | undefined),
       ) =>
-        httpResource<ReposListAttestationsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/attestations/${subjectDigest}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListAttestationsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/attestations/${subjectDigest}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

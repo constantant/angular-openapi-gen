@@ -29,15 +29,18 @@ export function provideGitGetTree(): FactoryProvider {
         treeSha: string,
         params?: GitGetTreeParams | (() => GitGetTreeParams | undefined),
       ) =>
-        httpResource<GitGetTreeResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/git/trees/${treeSha}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<GitGetTreeResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/git/trees/${treeSha}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

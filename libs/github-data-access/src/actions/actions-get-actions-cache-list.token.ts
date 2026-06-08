@@ -31,15 +31,18 @@ export function provideActionsGetActionsCacheList(): FactoryProvider {
           | ActionsGetActionsCacheListParams
           | (() => ActionsGetActionsCacheListParams | undefined),
       ) =>
-        httpResource<ActionsGetActionsCacheListResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/actions/caches`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsGetActionsCacheListResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/actions/caches`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -31,15 +31,18 @@ export function provideReposGetAllEnvironments(): FactoryProvider {
           | ReposGetAllEnvironmentsParams
           | (() => ReposGetAllEnvironmentsParams | undefined),
       ) =>
-        httpResource<ReposGetAllEnvironmentsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/environments`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetAllEnvironmentsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/environments`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

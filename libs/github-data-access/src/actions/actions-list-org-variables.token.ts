@@ -29,15 +29,18 @@ export function provideActionsListOrgVariables(): FactoryProvider {
           | ActionsListOrgVariablesParams
           | (() => ActionsListOrgVariablesParams | undefined),
       ) =>
-        httpResource<ActionsListOrgVariablesResponse>(() => ({
-          url: `${base}/orgs/${org}/actions/variables`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListOrgVariablesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/actions/variables`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

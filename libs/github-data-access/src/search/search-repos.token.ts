@@ -23,15 +23,18 @@ export function provideSearchRepos(): FactoryProvider {
       return (
         params?: SearchReposParams | (() => SearchReposParams | undefined),
       ) =>
-        httpResource<SearchReposResponse>(() => ({
-          url: `${base}/search/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<SearchReposResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/search/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

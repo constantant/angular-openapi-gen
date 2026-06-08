@@ -31,15 +31,18 @@ export function provideReposListDeployKeys(): FactoryProvider {
           | ReposListDeployKeysParams
           | (() => ReposListDeployKeysParams | undefined),
       ) =>
-        httpResource<ReposListDeployKeysResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/keys`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListDeployKeysResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/keys`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

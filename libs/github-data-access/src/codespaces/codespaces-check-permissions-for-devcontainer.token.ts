@@ -33,15 +33,18 @@ export function provideCodespacesCheckPermissionsForDevcontainer(): FactoryProvi
           | CodespacesCheckPermissionsForDevcontainerParams
           | (() => CodespacesCheckPermissionsForDevcontainerParams | undefined),
       ) =>
-        httpResource<CodespacesCheckPermissionsForDevcontainerResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/codespaces/permissions_check`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<CodespacesCheckPermissionsForDevcontainerResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/codespaces/permissions_check`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

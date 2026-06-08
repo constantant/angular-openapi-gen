@@ -33,15 +33,18 @@ export function provideChecksListForRef(): FactoryProvider {
           | ChecksListForRefParams
           | (() => ChecksListForRefParams | undefined),
       ) =>
-        httpResource<ChecksListForRefResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/commits/${ref}/check-runs`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ChecksListForRefResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/commits/${ref}/check-runs`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

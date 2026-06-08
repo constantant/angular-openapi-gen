@@ -29,15 +29,18 @@ export function provideGistsListForUser(): FactoryProvider {
           | GistsListForUserParams
           | (() => GistsListForUserParams | undefined),
       ) =>
-        httpResource<GistsListForUserResponse>(() => ({
-          url: `${base}/users/${username}/gists`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<GistsListForUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/gists`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

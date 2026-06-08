@@ -31,15 +31,18 @@ export function providePackagesListPackagesForOrganization(): FactoryProvider {
           | PackagesListPackagesForOrganizationParams
           | (() => PackagesListPackagesForOrganizationParams | undefined),
       ) =>
-        httpResource<PackagesListPackagesForOrganizationResponse>(() => ({
-          url: `${base}/orgs/${org}/packages`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<PackagesListPackagesForOrganizationResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/packages`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -33,15 +33,18 @@ export function provideAgentsListSelectedReposForOrgVariable(): FactoryProvider 
           | AgentsListSelectedReposForOrgVariableParams
           | (() => AgentsListSelectedReposForOrgVariableParams | undefined),
       ) =>
-        httpResource<AgentsListSelectedReposForOrgVariableResponse>(() => ({
-          url: `${base}/orgs/${org}/agents/variables/${name}/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AgentsListSelectedReposForOrgVariableResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/agents/variables/${name}/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

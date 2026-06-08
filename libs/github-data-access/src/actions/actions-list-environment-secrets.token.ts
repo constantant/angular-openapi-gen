@@ -33,15 +33,18 @@ export function provideActionsListEnvironmentSecrets(): FactoryProvider {
           | ActionsListEnvironmentSecretsParams
           | (() => ActionsListEnvironmentSecretsParams | undefined),
       ) =>
-        httpResource<ActionsListEnvironmentSecretsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/secrets`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListEnvironmentSecretsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/secrets`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

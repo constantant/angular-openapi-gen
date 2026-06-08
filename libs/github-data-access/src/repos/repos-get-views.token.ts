@@ -27,15 +27,18 @@ export function provideReposGetViews(): FactoryProvider {
         repo: string,
         params?: ReposGetViewsParams | (() => ReposGetViewsParams | undefined),
       ) =>
-        httpResource<ReposGetViewsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/traffic/views`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetViewsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/traffic/views`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

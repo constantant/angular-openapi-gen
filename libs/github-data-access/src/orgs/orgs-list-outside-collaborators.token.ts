@@ -29,15 +29,18 @@ export function provideOrgsListOutsideCollaborators(): FactoryProvider {
           | OrgsListOutsideCollaboratorsParams
           | (() => OrgsListOutsideCollaboratorsParams | undefined),
       ) =>
-        httpResource<OrgsListOutsideCollaboratorsResponse>(() => ({
-          url: `${base}/orgs/${org}/outside_collaborators`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsListOutsideCollaboratorsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/outside_collaborators`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

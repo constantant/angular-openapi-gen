@@ -31,15 +31,18 @@ export function provideReposListBranches(): FactoryProvider {
           | ReposListBranchesParams
           | (() => ReposListBranchesParams | undefined),
       ) =>
-        httpResource<ReposListBranchesResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/branches`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListBranchesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/branches`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

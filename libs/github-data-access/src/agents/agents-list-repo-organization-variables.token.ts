@@ -33,15 +33,18 @@ export function provideAgentsListRepoOrganizationVariables(): FactoryProvider {
           | AgentsListRepoOrganizationVariablesParams
           | (() => AgentsListRepoOrganizationVariablesParams | undefined),
       ) =>
-        httpResource<AgentsListRepoOrganizationVariablesResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/agents/organization-variables`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AgentsListRepoOrganizationVariablesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/agents/organization-variables`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

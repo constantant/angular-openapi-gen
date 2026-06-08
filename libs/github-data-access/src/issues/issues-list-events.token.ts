@@ -33,15 +33,18 @@ export function provideIssuesListEvents(): FactoryProvider {
           | IssuesListEventsParams
           | (() => IssuesListEventsParams | undefined),
       ) =>
-        httpResource<IssuesListEventsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/events`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<IssuesListEventsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/issues/${issueNumber}/events`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -3,13 +3,16 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposRedeliverWebhookDeliveryResponse =
+  paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}/attempts']['post']['responses']['202']['content']['application/json'];
+
 export const REPOS_REDELIVER_WEBHOOK_DELIVERY = new InjectionToken<
   (
     owner: string,
     repo: string,
     hookId: string,
     deliveryId: string,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<ReposRedeliverWebhookDeliveryResponse>>
 >('REPOS_REDELIVER_WEBHOOK_DELIVERY');
 
 export function provideReposRedeliverWebhookDelivery(): FactoryProvider {
@@ -23,7 +26,7 @@ export function provideReposRedeliverWebhookDelivery(): FactoryProvider {
         hookId: string,
         deliveryId: string,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<ReposRedeliverWebhookDeliveryResponse>(() => ({
           url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/deliveries/${deliveryId}/attempts`,
           method: 'POST',
         }));

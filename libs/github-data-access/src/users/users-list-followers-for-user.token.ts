@@ -29,15 +29,18 @@ export function provideUsersListFollowersForUser(): FactoryProvider {
           | UsersListFollowersForUserParams
           | (() => UsersListFollowersForUserParams | undefined),
       ) =>
-        httpResource<UsersListFollowersForUserResponse>(() => ({
-          url: `${base}/users/${username}/followers`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<UsersListFollowersForUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/followers`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

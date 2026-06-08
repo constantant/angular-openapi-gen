@@ -31,15 +31,18 @@ export function provideTeamsListReposInOrg(): FactoryProvider {
           | TeamsListReposInOrgParams
           | (() => TeamsListReposInOrgParams | undefined),
       ) =>
-        httpResource<TeamsListReposInOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/teams/${teamSlug}/repos`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<TeamsListReposInOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/teams/${teamSlug}/repos`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

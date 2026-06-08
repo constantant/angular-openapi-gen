@@ -33,15 +33,18 @@ export function provideReposGetRepoRulesetHistory(): FactoryProvider {
           | ReposGetRepoRulesetHistoryParams
           | (() => ReposGetRepoRulesetHistoryParams | undefined),
       ) =>
-        httpResource<ReposGetRepoRulesetHistoryResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}/history`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetRepoRulesetHistoryResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}/history`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -30,15 +30,18 @@ export function provideAppsListSubscriptionsForAuthenticatedUser(): FactoryProvi
           | AppsListSubscriptionsForAuthenticatedUserParams
           | (() => AppsListSubscriptionsForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<AppsListSubscriptionsForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/marketplace_purchases`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AppsListSubscriptionsForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/marketplace_purchases`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

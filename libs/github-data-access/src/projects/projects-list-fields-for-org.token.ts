@@ -31,15 +31,18 @@ export function provideProjectsListFieldsForOrg(): FactoryProvider {
           | ProjectsListFieldsForOrgParams
           | (() => ProjectsListFieldsForOrgParams | undefined),
       ) =>
-        httpResource<ProjectsListFieldsForOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/projectsV2/${projectNumber}/fields`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ProjectsListFieldsForOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/projectsV2/${projectNumber}/fields`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

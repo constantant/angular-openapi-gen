@@ -31,15 +31,18 @@ export function provideMigrationsListReposForAuthenticatedUser(): FactoryProvide
           | MigrationsListReposForAuthenticatedUserParams
           | (() => MigrationsListReposForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<MigrationsListReposForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/migrations/${migrationId}/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<MigrationsListReposForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/migrations/${migrationId}/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

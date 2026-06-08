@@ -29,15 +29,18 @@ export function provideAppsListReposAccessibleToInstallation(): FactoryProvider 
           | AppsListReposAccessibleToInstallationParams
           | (() => AppsListReposAccessibleToInstallationParams | undefined),
       ) =>
-        httpResource<AppsListReposAccessibleToInstallationResponse>(() => ({
-          url: `${base}/installation/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AppsListReposAccessibleToInstallationResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/installation/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -29,15 +29,18 @@ export function provideReposGetOrgRuleSuites(): FactoryProvider {
           | ReposGetOrgRuleSuitesParams
           | (() => ReposGetOrgRuleSuitesParams | undefined),
       ) =>
-        httpResource<ReposGetOrgRuleSuitesResponse>(() => ({
-          url: `${base}/orgs/${org}/rulesets/rule-suites`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetOrgRuleSuitesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/rulesets/rule-suites`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

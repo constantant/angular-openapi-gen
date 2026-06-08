@@ -31,15 +31,18 @@ export function provideDependabotRepositoryAccessForEnterprise(): FactoryProvide
           | DependabotRepositoryAccessForEnterpriseParams
           | (() => DependabotRepositoryAccessForEnterpriseParams | undefined),
       ) =>
-        httpResource<DependabotRepositoryAccessForEnterpriseResponse>(() => ({
-          url: `${base}/enterprises/${enterprise}/dependabot/repository-access`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<DependabotRepositoryAccessForEnterpriseResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/enterprises/${enterprise}/dependabot/repository-access`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

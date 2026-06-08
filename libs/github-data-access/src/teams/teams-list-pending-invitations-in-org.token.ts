@@ -31,15 +31,18 @@ export function provideTeamsListPendingInvitationsInOrg(): FactoryProvider {
           | TeamsListPendingInvitationsInOrgParams
           | (() => TeamsListPendingInvitationsInOrgParams | undefined),
       ) =>
-        httpResource<TeamsListPendingInvitationsInOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/teams/${teamSlug}/invitations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<TeamsListPendingInvitationsInOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/teams/${teamSlug}/invitations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

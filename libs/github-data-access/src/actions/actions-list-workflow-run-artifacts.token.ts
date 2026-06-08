@@ -33,15 +33,18 @@ export function provideActionsListWorkflowRunArtifacts(): FactoryProvider {
           | ActionsListWorkflowRunArtifactsParams
           | (() => ActionsListWorkflowRunArtifactsParams | undefined),
       ) =>
-        httpResource<ActionsListWorkflowRunArtifactsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/artifacts`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListWorkflowRunArtifactsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/actions/runs/${runId}/artifacts`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

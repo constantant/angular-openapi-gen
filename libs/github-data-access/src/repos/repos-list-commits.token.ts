@@ -31,15 +31,18 @@ export function provideReposListCommits(): FactoryProvider {
           | ReposListCommitsParams
           | (() => ReposListCommitsParams | undefined),
       ) =>
-        httpResource<ReposListCommitsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/commits`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListCommitsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/commits`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -31,15 +31,18 @@ export function provideReposCodeownersErrors(): FactoryProvider {
           | ReposCodeownersErrorsParams
           | (() => ReposCodeownersErrorsParams | undefined),
       ) =>
-        httpResource<ReposCodeownersErrorsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/codeowners/errors`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposCodeownersErrorsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/codeowners/errors`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

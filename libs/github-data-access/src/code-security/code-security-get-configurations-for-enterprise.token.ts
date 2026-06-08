@@ -34,17 +34,18 @@ export function provideCodeSecurityGetConfigurationsForEnterprise(): FactoryProv
               | CodeSecurityGetConfigurationsForEnterpriseParams
               | undefined),
       ) =>
-        httpResource<CodeSecurityGetConfigurationsForEnterpriseResponse>(
-          () => ({
+        httpResource<CodeSecurityGetConfigurationsForEnterpriseResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
             url: `${base}/enterprises/${enterprise}/code-security/configurations`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
+            params: _params as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,
-          }),
-        );
+          };
+        });
     },
   };
 }

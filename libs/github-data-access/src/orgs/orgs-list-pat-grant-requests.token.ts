@@ -29,15 +29,18 @@ export function provideOrgsListPatGrantRequests(): FactoryProvider {
           | OrgsListPatGrantRequestsParams
           | (() => OrgsListPatGrantRequestsParams | undefined),
       ) =>
-        httpResource<OrgsListPatGrantRequestsResponse>(() => ({
-          url: `${base}/orgs/${org}/personal-access-token-requests`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsListPatGrantRequestsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/personal-access-token-requests`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

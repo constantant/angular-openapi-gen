@@ -33,15 +33,18 @@ export function provideIssuesListLabelsForMilestone(): FactoryProvider {
           | IssuesListLabelsForMilestoneParams
           | (() => IssuesListLabelsForMilestoneParams | undefined),
       ) =>
-        httpResource<IssuesListLabelsForMilestoneResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/milestones/${milestoneNumber}/labels`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<IssuesListLabelsForMilestoneResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/milestones/${milestoneNumber}/labels`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

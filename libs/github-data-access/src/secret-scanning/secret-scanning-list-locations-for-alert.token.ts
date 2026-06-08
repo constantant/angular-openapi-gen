@@ -35,15 +35,18 @@ export function provideSecretScanningListLocationsForAlert(): FactoryProvider {
           | SecretScanningListLocationsForAlertParams
           | (() => SecretScanningListLocationsForAlertParams | undefined),
       ) =>
-        httpResource<SecretScanningListLocationsForAlertResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/secret-scanning/alerts/${alertNumber}/locations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<SecretScanningListLocationsForAlertResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/secret-scanning/alerts/${alertNumber}/locations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

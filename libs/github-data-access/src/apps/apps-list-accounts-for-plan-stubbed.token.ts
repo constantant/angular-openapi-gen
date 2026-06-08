@@ -29,15 +29,18 @@ export function provideAppsListAccountsForPlanStubbed(): FactoryProvider {
           | AppsListAccountsForPlanStubbedParams
           | (() => AppsListAccountsForPlanStubbedParams | undefined),
       ) =>
-        httpResource<AppsListAccountsForPlanStubbedResponse>(() => ({
-          url: `${base}/marketplace_listing/stubbed/plans/${planId}/accounts`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AppsListAccountsForPlanStubbedResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/marketplace_listing/stubbed/plans/${planId}/accounts`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

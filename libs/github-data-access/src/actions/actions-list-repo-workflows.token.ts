@@ -31,15 +31,18 @@ export function provideActionsListRepoWorkflows(): FactoryProvider {
           | ActionsListRepoWorkflowsParams
           | (() => ActionsListRepoWorkflowsParams | undefined),
       ) =>
-        httpResource<ActionsListRepoWorkflowsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/actions/workflows`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListRepoWorkflowsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/actions/workflows`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

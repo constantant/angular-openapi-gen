@@ -33,15 +33,18 @@ export function providePullsListReviews(): FactoryProvider {
           | PullsListReviewsParams
           | (() => PullsListReviewsParams | undefined),
       ) =>
-        httpResource<PullsListReviewsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/reviews`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<PullsListReviewsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/pulls/${pullNumber}/reviews`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

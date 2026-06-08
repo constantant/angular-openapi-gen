@@ -31,15 +31,18 @@ export function provideDependabotListAlertsForEnterprise(): FactoryProvider {
           | DependabotListAlertsForEnterpriseParams
           | (() => DependabotListAlertsForEnterpriseParams | undefined),
       ) =>
-        httpResource<DependabotListAlertsForEnterpriseResponse>(() => ({
-          url: `${base}/enterprises/${enterprise}/dependabot/alerts`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<DependabotListAlertsForEnterpriseResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/enterprises/${enterprise}/dependabot/alerts`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

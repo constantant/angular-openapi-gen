@@ -39,15 +39,21 @@ export function provideCodespacesPreFlightWithRepoForAuthenticatedUser(): Factor
               | undefined),
       ) =>
         httpResource<CodespacesPreFlightWithRepoForAuthenticatedUserResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/codespaces/new`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/repos/${owner}/${repo}/codespaces/new`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
         );
     },
   };

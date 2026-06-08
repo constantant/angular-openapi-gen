@@ -31,15 +31,18 @@ export function provideAgentTasksListTasksForRepo(): FactoryProvider {
           | AgentTasksListTasksForRepoParams
           | (() => AgentTasksListTasksForRepoParams | undefined),
       ) =>
-        httpResource<AgentTasksListTasksForRepoResponse>(() => ({
-          url: `${base}/agents/repos/${owner}/${repo}/tasks`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AgentTasksListTasksForRepoResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/agents/repos/${owner}/${repo}/tasks`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

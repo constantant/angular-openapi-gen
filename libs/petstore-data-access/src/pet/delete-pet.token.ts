@@ -5,7 +5,7 @@ import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export const DELETE_PET = new InjectionToken<
-  (petId: string) => ReturnType<typeof httpResource<unknown>>
+  (petId: string, apiKey?: string) => ReturnType<typeof httpResource<unknown>>
 >('DELETE_PET');
 
 export function provideDeletePet(): FactoryProvider {
@@ -14,11 +14,12 @@ export function provideDeletePet(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (petId: string) =>
+      return (petId: string, apiKey?: string) =>
         httpResource<unknown>(() => ({
           url: `${base}/pet/${petId}`,
           method: 'DELETE',
           headers: {
+            ...(apiKey != null ? { api_key: apiKey } : {}),
             ...(petstoreAuth?.() != null
               ? { Authorization: `Bearer ${petstoreAuth()}` }
               : {}),

@@ -27,15 +27,18 @@ export function provideLicensesGetAllCommonlyUsed(): FactoryProvider {
           | LicensesGetAllCommonlyUsedParams
           | (() => LicensesGetAllCommonlyUsedParams | undefined),
       ) =>
-        httpResource<LicensesGetAllCommonlyUsedResponse>(() => ({
-          url: `${base}/licenses`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<LicensesGetAllCommonlyUsedResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/licenses`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

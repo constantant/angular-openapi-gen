@@ -37,15 +37,21 @@ export function provideBillingGetGithubBillingPremiumRequestUsageReportOrg(): Fa
               | undefined),
       ) =>
         httpResource<BillingGetGithubBillingPremiumRequestUsageReportOrgResponse>(
-          () => ({
-            url: `${base}/organizations/${org}/settings/billing/premium_request/usage`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/organizations/${org}/settings/billing/premium_request/usage`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
         );
     },
   };

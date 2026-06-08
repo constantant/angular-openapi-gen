@@ -31,15 +31,18 @@ export function provideReposGetAllTopics(): FactoryProvider {
           | ReposGetAllTopicsParams
           | (() => ReposGetAllTopicsParams | undefined),
       ) =>
-        httpResource<ReposGetAllTopicsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/topics`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetAllTopicsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/topics`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

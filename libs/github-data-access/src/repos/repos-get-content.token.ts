@@ -31,15 +31,18 @@ export function provideReposGetContent(): FactoryProvider {
           | ReposGetContentParams
           | (() => ReposGetContentParams | undefined),
       ) =>
-        httpResource<ReposGetContentResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/contents/${path}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetContentResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

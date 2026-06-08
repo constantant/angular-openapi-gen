@@ -31,15 +31,18 @@ export function provideReposListContributors(): FactoryProvider {
           | ReposListContributorsParams
           | (() => ReposListContributorsParams | undefined),
       ) =>
-        httpResource<ReposListContributorsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/contributors`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListContributorsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/contributors`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

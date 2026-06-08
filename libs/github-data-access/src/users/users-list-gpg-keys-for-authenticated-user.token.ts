@@ -29,15 +29,18 @@ export function provideUsersListGpgKeysForAuthenticatedUser(): FactoryProvider {
           | UsersListGpgKeysForAuthenticatedUserParams
           | (() => UsersListGpgKeysForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<UsersListGpgKeysForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/gpg_keys`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<UsersListGpgKeysForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/gpg_keys`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

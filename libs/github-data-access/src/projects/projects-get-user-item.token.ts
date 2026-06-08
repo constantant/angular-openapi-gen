@@ -33,15 +33,18 @@ export function provideProjectsGetUserItem(): FactoryProvider {
           | ProjectsGetUserItemParams
           | (() => ProjectsGetUserItemParams | undefined),
       ) =>
-        httpResource<ProjectsGetUserItemResponse>(() => ({
-          url: `${base}/users/${username}/projectsV2/${projectNumber}/items/${itemId}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ProjectsGetUserItemResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/projectsV2/${projectNumber}/items/${itemId}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

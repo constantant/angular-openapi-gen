@@ -29,15 +29,18 @@ export function provideApiInsightsGetSummaryStats(): FactoryProvider {
           | ApiInsightsGetSummaryStatsParams
           | (() => ApiInsightsGetSummaryStatsParams | undefined),
       ) =>
-        httpResource<ApiInsightsGetSummaryStatsResponse>(() => ({
-          url: `${base}/orgs/${org}/insights/api/summary-stats`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ApiInsightsGetSummaryStatsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/insights/api/summary-stats`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

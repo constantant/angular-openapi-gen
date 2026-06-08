@@ -27,15 +27,18 @@ export function provideClassroomListClassrooms(): FactoryProvider {
           | ClassroomListClassroomsParams
           | (() => ClassroomListClassroomsParams | undefined),
       ) =>
-        httpResource<ClassroomListClassroomsResponse>(() => ({
-          url: `${base}/classrooms`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ClassroomListClassroomsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/classrooms`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

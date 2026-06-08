@@ -31,15 +31,18 @@ export function provideClassroomListAssignmentsForAClassroom(): FactoryProvider 
           | ClassroomListAssignmentsForAClassroomParams
           | (() => ClassroomListAssignmentsForAClassroomParams | undefined),
       ) =>
-        httpResource<ClassroomListAssignmentsForAClassroomResponse>(() => ({
-          url: `${base}/classrooms/${classroomId}/assignments`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ClassroomListAssignmentsForAClassroomResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/classrooms/${classroomId}/assignments`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

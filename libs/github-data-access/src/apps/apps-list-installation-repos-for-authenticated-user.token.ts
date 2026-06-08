@@ -37,15 +37,21 @@ export function provideAppsListInstallationReposForAuthenticatedUser(): FactoryP
               | undefined),
       ) =>
         httpResource<AppsListInstallationReposForAuthenticatedUserResponse>(
-          () => ({
-            url: `${base}/user/installations/${installationId}/repositories`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/user/installations/${installationId}/repositories`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
         );
     },
   };

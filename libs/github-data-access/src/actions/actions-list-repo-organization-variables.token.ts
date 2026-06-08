@@ -33,15 +33,18 @@ export function provideActionsListRepoOrganizationVariables(): FactoryProvider {
           | ActionsListRepoOrganizationVariablesParams
           | (() => ActionsListRepoOrganizationVariablesParams | undefined),
       ) =>
-        httpResource<ActionsListRepoOrganizationVariablesResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/actions/organization-variables`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListRepoOrganizationVariablesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/actions/organization-variables`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

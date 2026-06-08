@@ -30,15 +30,18 @@ export function provideUsersListPublicEmailsForAuthenticatedUser(): FactoryProvi
           | UsersListPublicEmailsForAuthenticatedUserParams
           | (() => UsersListPublicEmailsForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<UsersListPublicEmailsForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/public_emails`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<UsersListPublicEmailsForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/public_emails`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

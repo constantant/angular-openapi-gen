@@ -29,15 +29,18 @@ export function provideOrgsListAppInstallations(): FactoryProvider {
           | OrgsListAppInstallationsParams
           | (() => OrgsListAppInstallationsParams | undefined),
       ) =>
-        httpResource<OrgsListAppInstallationsResponse>(() => ({
-          url: `${base}/orgs/${org}/installations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsListAppInstallationsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/installations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

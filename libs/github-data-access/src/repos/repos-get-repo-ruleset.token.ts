@@ -33,15 +33,18 @@ export function provideReposGetRepoRuleset(): FactoryProvider {
           | ReposGetRepoRulesetParams
           | (() => ReposGetRepoRulesetParams | undefined),
       ) =>
-        httpResource<ReposGetRepoRulesetResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetRepoRulesetResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -27,15 +27,18 @@ export function provideGistsListStarred(): FactoryProvider {
           | GistsListStarredParams
           | (() => GistsListStarredParams | undefined),
       ) =>
-        httpResource<GistsListStarredResponse>(() => ({
-          url: `${base}/gists/starred`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<GistsListStarredResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/gists/starred`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

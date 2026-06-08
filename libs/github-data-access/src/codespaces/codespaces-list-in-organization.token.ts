@@ -29,15 +29,18 @@ export function provideCodespacesListInOrganization(): FactoryProvider {
           | CodespacesListInOrganizationParams
           | (() => CodespacesListInOrganizationParams | undefined),
       ) =>
-        httpResource<CodespacesListInOrganizationResponse>(() => ({
-          url: `${base}/orgs/${org}/codespaces`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<CodespacesListInOrganizationResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/codespaces`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

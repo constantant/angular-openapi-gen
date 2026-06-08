@@ -7,13 +7,16 @@ export type OrgsReviewPatGrantRequestsInBulkBody = NonNullable<
   paths['/orgs/{org}/personal-access-token-requests']['post']['requestBody']
 >['content']['application/json'];
 
+export type OrgsReviewPatGrantRequestsInBulkResponse =
+  paths['/orgs/{org}/personal-access-token-requests']['post']['responses']['202']['content']['application/json'];
+
 export const ORGS_REVIEW_PAT_GRANT_REQUESTS_IN_BULK = new InjectionToken<
   (
     org: string,
     body:
       | OrgsReviewPatGrantRequestsInBulkBody
       | Signal<OrgsReviewPatGrantRequestsInBulkBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<OrgsReviewPatGrantRequestsInBulkResponse>>
 >('ORGS_REVIEW_PAT_GRANT_REQUESTS_IN_BULK');
 
 export function provideOrgsReviewPatGrantRequestsInBulk(): FactoryProvider {
@@ -27,7 +30,7 @@ export function provideOrgsReviewPatGrantRequestsInBulk(): FactoryProvider {
           | OrgsReviewPatGrantRequestsInBulkBody
           | Signal<OrgsReviewPatGrantRequestsInBulkBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<OrgsReviewPatGrantRequestsInBulkResponse>(() => ({
           url: `${base}/orgs/${org}/personal-access-token-requests`,
           method: 'POST',
           body,

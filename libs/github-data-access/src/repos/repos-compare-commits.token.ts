@@ -33,15 +33,18 @@ export function provideReposCompareCommits(): FactoryProvider {
           | ReposCompareCommitsParams
           | (() => ReposCompareCommitsParams | undefined),
       ) =>
-        httpResource<ReposCompareCommitsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/compare/${basehead}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposCompareCommitsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/compare/${basehead}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

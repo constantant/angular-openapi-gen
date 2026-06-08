@@ -7,12 +7,15 @@ export type ReposTransferBody = NonNullable<
   paths['/repos/{owner}/{repo}/transfer']['post']['requestBody']
 >['content']['application/json'];
 
+export type ReposTransferResponse =
+  paths['/repos/{owner}/{repo}/transfer']['post']['responses']['202']['content']['application/json'];
+
 export const REPOS_TRANSFER = new InjectionToken<
   (
     owner: string,
     repo: string,
     body: ReposTransferBody | Signal<ReposTransferBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<ReposTransferResponse>>
 >('REPOS_TRANSFER');
 
 export function provideReposTransfer(): FactoryProvider {
@@ -25,7 +28,7 @@ export function provideReposTransfer(): FactoryProvider {
         repo: string,
         body: ReposTransferBody | Signal<ReposTransferBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<ReposTransferResponse>(() => ({
           url: `${base}/repos/${owner}/${repo}/transfer`,
           method: 'POST',
           body,

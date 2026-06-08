@@ -27,20 +27,23 @@ export function provideFindPetsByTags(): FactoryProvider {
           | FindPetsByTagsParams
           | (() => FindPetsByTagsParams | undefined),
       ) =>
-        httpResource<FindPetsByTagsResponse>(() => ({
-          url: `${base}/pet/findByTags`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-          headers: {
-            ...(petstoreAuth?.() != null
-              ? { Authorization: `Bearer ${petstoreAuth()}` }
-              : {}),
-          },
-        }));
+        httpResource<FindPetsByTagsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/pet/findByTags`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+            headers: {
+              ...(petstoreAuth?.() != null
+                ? { Authorization: `Bearer ${petstoreAuth()}` }
+                : {}),
+            },
+          };
+        });
     },
   };
 }

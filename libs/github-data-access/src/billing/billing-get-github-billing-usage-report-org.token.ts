@@ -31,15 +31,18 @@ export function provideBillingGetGithubBillingUsageReportOrg(): FactoryProvider 
           | BillingGetGithubBillingUsageReportOrgParams
           | (() => BillingGetGithubBillingUsageReportOrgParams | undefined),
       ) =>
-        httpResource<BillingGetGithubBillingUsageReportOrgResponse>(() => ({
-          url: `${base}/organizations/${org}/settings/billing/usage`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<BillingGetGithubBillingUsageReportOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/organizations/${org}/settings/billing/usage`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -29,15 +29,18 @@ export function provideCopilotSpacesListForUser(): FactoryProvider {
           | CopilotSpacesListForUserParams
           | (() => CopilotSpacesListForUserParams | undefined),
       ) =>
-        httpResource<CopilotSpacesListForUserResponse>(() => ({
-          url: `${base}/users/${username}/copilot-spaces`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<CopilotSpacesListForUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/copilot-spaces`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

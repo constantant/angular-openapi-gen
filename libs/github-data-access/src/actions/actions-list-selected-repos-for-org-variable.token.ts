@@ -33,15 +33,18 @@ export function provideActionsListSelectedReposForOrgVariable(): FactoryProvider
           | ActionsListSelectedReposForOrgVariableParams
           | (() => ActionsListSelectedReposForOrgVariableParams | undefined),
       ) =>
-        httpResource<ActionsListSelectedReposForOrgVariableResponse>(() => ({
-          url: `${base}/orgs/${org}/actions/variables/${name}/repositories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListSelectedReposForOrgVariableResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/actions/variables/${name}/repositories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

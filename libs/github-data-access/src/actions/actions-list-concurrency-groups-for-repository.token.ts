@@ -34,15 +34,18 @@ export function provideActionsListConcurrencyGroupsForRepository(): FactoryProvi
           | ActionsListConcurrencyGroupsForRepositoryParams
           | (() => ActionsListConcurrencyGroupsForRepositoryParams | undefined),
       ) =>
-        httpResource<ActionsListConcurrencyGroupsForRepositoryResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/actions/concurrency_groups`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListConcurrencyGroupsForRepositoryResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/actions/concurrency_groups`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

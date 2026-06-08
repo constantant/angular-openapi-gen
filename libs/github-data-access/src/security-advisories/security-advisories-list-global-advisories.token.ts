@@ -29,15 +29,18 @@ export function provideSecurityAdvisoriesListGlobalAdvisories(): FactoryProvider
           | SecurityAdvisoriesListGlobalAdvisoriesParams
           | (() => SecurityAdvisoriesListGlobalAdvisoriesParams | undefined),
       ) =>
-        httpResource<SecurityAdvisoriesListGlobalAdvisoriesResponse>(() => ({
-          url: `${base}/advisories`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<SecurityAdvisoriesListGlobalAdvisoriesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/advisories`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

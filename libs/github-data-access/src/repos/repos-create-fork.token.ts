@@ -7,12 +7,15 @@ export type ReposCreateForkBody = NonNullable<
   paths['/repos/{owner}/{repo}/forks']['post']['requestBody']
 >['content']['application/json'];
 
+export type ReposCreateForkResponse =
+  paths['/repos/{owner}/{repo}/forks']['post']['responses']['202']['content']['application/json'];
+
 export const REPOS_CREATE_FORK = new InjectionToken<
   (
     owner: string,
     repo: string,
     body: ReposCreateForkBody | Signal<ReposCreateForkBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<ReposCreateForkResponse>>
 >('REPOS_CREATE_FORK');
 
 export function provideReposCreateFork(): FactoryProvider {
@@ -25,7 +28,7 @@ export function provideReposCreateFork(): FactoryProvider {
         repo: string,
         body: ReposCreateForkBody | Signal<ReposCreateForkBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<ReposCreateForkResponse>(() => ({
           url: `${base}/repos/${owner}/${repo}/forks`,
           method: 'POST',
           body,

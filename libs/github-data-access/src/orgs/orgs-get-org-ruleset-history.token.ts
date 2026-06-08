@@ -31,15 +31,18 @@ export function provideOrgsGetOrgRulesetHistory(): FactoryProvider {
           | OrgsGetOrgRulesetHistoryParams
           | (() => OrgsGetOrgRulesetHistoryParams | undefined),
       ) =>
-        httpResource<OrgsGetOrgRulesetHistoryResponse>(() => ({
-          url: `${base}/orgs/${org}/rulesets/${rulesetId}/history`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<OrgsGetOrgRulesetHistoryResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/rulesets/${rulesetId}/history`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

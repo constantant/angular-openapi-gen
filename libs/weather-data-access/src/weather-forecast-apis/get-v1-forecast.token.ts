@@ -23,15 +23,18 @@ export function provideGetV1Forecast(): FactoryProvider {
       return (
         params?: GetV1ForecastParams | (() => GetV1ForecastParams | undefined),
       ) =>
-        httpResource<GetV1ForecastResponse>(() => ({
-          url: `${base}/v1/forecast`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<GetV1ForecastResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/v1/forecast`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

@@ -29,15 +29,18 @@ export function provideUsersListEmailsForAuthenticatedUser(): FactoryProvider {
           | UsersListEmailsForAuthenticatedUserParams
           | (() => UsersListEmailsForAuthenticatedUserParams | undefined),
       ) =>
-        httpResource<UsersListEmailsForAuthenticatedUserResponse>(() => ({
-          url: `${base}/user/emails`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<UsersListEmailsForAuthenticatedUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/user/emails`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

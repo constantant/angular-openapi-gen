@@ -33,15 +33,18 @@ export function provideCodeScanningListAlertInstances(): FactoryProvider {
           | CodeScanningListAlertInstancesParams
           | (() => CodeScanningListAlertInstancesParams | undefined),
       ) =>
-        httpResource<CodeScanningListAlertInstancesResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/code-scanning/alerts/${alertNumber}/instances`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<CodeScanningListAlertInstancesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/code-scanning/alerts/${alertNumber}/instances`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

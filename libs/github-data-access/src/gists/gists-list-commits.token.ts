@@ -29,15 +29,18 @@ export function provideGistsListCommits(): FactoryProvider {
           | GistsListCommitsParams
           | (() => GistsListCommitsParams | undefined),
       ) =>
-        httpResource<GistsListCommitsResponse>(() => ({
-          url: `${base}/gists/${gistId}/commits`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<GistsListCommitsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/gists/${gistId}/commits`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

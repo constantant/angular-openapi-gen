@@ -7,11 +7,14 @@ export type OrgsUpdatePatAccessesBody = NonNullable<
   paths['/orgs/{org}/personal-access-tokens']['post']['requestBody']
 >['content']['application/json'];
 
+export type OrgsUpdatePatAccessesResponse =
+  paths['/orgs/{org}/personal-access-tokens']['post']['responses']['202']['content']['application/json'];
+
 export const ORGS_UPDATE_PAT_ACCESSES = new InjectionToken<
   (
     org: string,
     body: OrgsUpdatePatAccessesBody | Signal<OrgsUpdatePatAccessesBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<OrgsUpdatePatAccessesResponse>>
 >('ORGS_UPDATE_PAT_ACCESSES');
 
 export function provideOrgsUpdatePatAccesses(): FactoryProvider {
@@ -23,7 +26,7 @@ export function provideOrgsUpdatePatAccesses(): FactoryProvider {
         org: string,
         body: OrgsUpdatePatAccessesBody | Signal<OrgsUpdatePatAccessesBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<OrgsUpdatePatAccessesResponse>(() => ({
           url: `${base}/orgs/${org}/personal-access-tokens`,
           method: 'POST',
           body,

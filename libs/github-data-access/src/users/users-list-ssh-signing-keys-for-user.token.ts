@@ -29,15 +29,18 @@ export function provideUsersListSshSigningKeysForUser(): FactoryProvider {
           | UsersListSshSigningKeysForUserParams
           | (() => UsersListSshSigningKeysForUserParams | undefined),
       ) =>
-        httpResource<UsersListSshSigningKeysForUserResponse>(() => ({
-          url: `${base}/users/${username}/ssh_signing_keys`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<UsersListSshSigningKeysForUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/ssh_signing_keys`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

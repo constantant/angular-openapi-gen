@@ -29,15 +29,18 @@ export function provideAgentsListOrgVariables(): FactoryProvider {
           | AgentsListOrgVariablesParams
           | (() => AgentsListOrgVariablesParams | undefined),
       ) =>
-        httpResource<AgentsListOrgVariablesResponse>(() => ({
-          url: `${base}/orgs/${org}/agents/variables`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AgentsListOrgVariablesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/agents/variables`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

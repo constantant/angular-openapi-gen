@@ -31,15 +31,18 @@ export function provideIssuesListForRepo(): FactoryProvider {
           | IssuesListForRepoParams
           | (() => IssuesListForRepoParams | undefined),
       ) =>
-        httpResource<IssuesListForRepoResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/issues`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<IssuesListForRepoResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/issues`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

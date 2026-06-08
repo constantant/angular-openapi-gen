@@ -27,15 +27,18 @@ export function provideGistsListForks(): FactoryProvider {
           | GistsListForksParams
           | (() => GistsListForksParams | undefined),
       ) =>
-        httpResource<GistsListForksResponse>(() => ({
-          url: `${base}/gists/${gistId}/forks`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<GistsListForksResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/gists/${gistId}/forks`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

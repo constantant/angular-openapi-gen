@@ -29,15 +29,18 @@ export function provideActionsListOrgSecrets(): FactoryProvider {
           | ActionsListOrgSecretsParams
           | (() => ActionsListOrgSecretsParams | undefined),
       ) =>
-        httpResource<ActionsListOrgSecretsResponse>(() => ({
-          url: `${base}/orgs/${org}/actions/secrets`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListOrgSecretsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/actions/secrets`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

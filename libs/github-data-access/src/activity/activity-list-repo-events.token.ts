@@ -31,15 +31,18 @@ export function provideActivityListRepoEvents(): FactoryProvider {
           | ActivityListRepoEventsParams
           | (() => ActivityListRepoEventsParams | undefined),
       ) =>
-        httpResource<ActivityListRepoEventsResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/events`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActivityListRepoEventsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/events`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

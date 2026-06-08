@@ -20,15 +20,18 @@ export function provideUsersList(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (params?: UsersListParams | (() => UsersListParams | undefined)) =>
-        httpResource<UsersListResponse>(() => ({
-          url: `${base}/users`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<UsersListResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

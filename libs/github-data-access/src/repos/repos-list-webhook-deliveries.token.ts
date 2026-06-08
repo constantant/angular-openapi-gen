@@ -33,15 +33,18 @@ export function provideReposListWebhookDeliveries(): FactoryProvider {
           | ReposListWebhookDeliveriesParams
           | (() => ReposListWebhookDeliveriesParams | undefined),
       ) =>
-        httpResource<ReposListWebhookDeliveriesResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/deliveries`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListWebhookDeliveriesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/deliveries`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

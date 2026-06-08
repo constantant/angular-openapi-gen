@@ -7,6 +7,9 @@ export type CodeSecurityAttachEnterpriseConfigurationBody = NonNullable<
   paths['/enterprises/{enterprise}/code-security/configurations/{configuration_id}/attach']['post']['requestBody']
 >['content']['application/json'];
 
+export type CodeSecurityAttachEnterpriseConfigurationResponse =
+  paths['/enterprises/{enterprise}/code-security/configurations/{configuration_id}/attach']['post']['responses']['202']['content']['application/json'];
+
 export const CODE_SECURITY_ATTACH_ENTERPRISE_CONFIGURATION = new InjectionToken<
   (
     enterprise: string,
@@ -14,7 +17,9 @@ export const CODE_SECURITY_ATTACH_ENTERPRISE_CONFIGURATION = new InjectionToken<
     body:
       | CodeSecurityAttachEnterpriseConfigurationBody
       | Signal<CodeSecurityAttachEnterpriseConfigurationBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<
+    typeof httpResource<CodeSecurityAttachEnterpriseConfigurationResponse>
+  >
 >('CODE_SECURITY_ATTACH_ENTERPRISE_CONFIGURATION');
 
 export function provideCodeSecurityAttachEnterpriseConfiguration(): FactoryProvider {
@@ -29,7 +34,7 @@ export function provideCodeSecurityAttachEnterpriseConfiguration(): FactoryProvi
           | CodeSecurityAttachEnterpriseConfigurationBody
           | Signal<CodeSecurityAttachEnterpriseConfigurationBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<CodeSecurityAttachEnterpriseConfigurationResponse>(() => ({
           url: `${base}/enterprises/${enterprise}/code-security/configurations/${configurationId}/attach`,
           method: 'POST',
           body,

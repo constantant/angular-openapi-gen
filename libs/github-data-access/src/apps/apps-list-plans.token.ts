@@ -23,15 +23,18 @@ export function provideAppsListPlans(): FactoryProvider {
       return (
         params?: AppsListPlansParams | (() => AppsListPlansParams | undefined),
       ) =>
-        httpResource<AppsListPlansResponse>(() => ({
-          url: `${base}/marketplace_listing/plans`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<AppsListPlansResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/marketplace_listing/plans`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

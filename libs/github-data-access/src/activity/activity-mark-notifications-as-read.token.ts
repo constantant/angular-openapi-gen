@@ -7,12 +7,15 @@ export type ActivityMarkNotificationsAsReadBody = NonNullable<
   paths['/notifications']['put']['requestBody']
 >['content']['application/json'];
 
+export type ActivityMarkNotificationsAsReadResponse =
+  paths['/notifications']['put']['responses']['202']['content']['application/json'];
+
 export const ACTIVITY_MARK_NOTIFICATIONS_AS_READ = new InjectionToken<
   (
     body:
       | ActivityMarkNotificationsAsReadBody
       | Signal<ActivityMarkNotificationsAsReadBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<ActivityMarkNotificationsAsReadResponse>>
 >('ACTIVITY_MARK_NOTIFICATIONS_AS_READ');
 
 export function provideActivityMarkNotificationsAsRead(): FactoryProvider {
@@ -25,7 +28,7 @@ export function provideActivityMarkNotificationsAsRead(): FactoryProvider {
           | ActivityMarkNotificationsAsReadBody
           | Signal<ActivityMarkNotificationsAsReadBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<ActivityMarkNotificationsAsReadResponse>(() => ({
           url: `${base}/notifications`,
           method: 'PUT',
           body,

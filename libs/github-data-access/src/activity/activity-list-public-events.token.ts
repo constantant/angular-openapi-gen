@@ -27,15 +27,18 @@ export function provideActivityListPublicEvents(): FactoryProvider {
           | ActivityListPublicEventsParams
           | (() => ActivityListPublicEventsParams | undefined),
       ) =>
-        httpResource<ActivityListPublicEventsResponse>(() => ({
-          url: `${base}/events`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActivityListPublicEventsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/events`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

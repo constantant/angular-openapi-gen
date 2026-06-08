@@ -31,15 +31,18 @@ export function provideProjectsListFieldsForUser(): FactoryProvider {
           | ProjectsListFieldsForUserParams
           | (() => ProjectsListFieldsForUserParams | undefined),
       ) =>
-        httpResource<ProjectsListFieldsForUserResponse>(() => ({
-          url: `${base}/users/${username}/projectsV2/${projectNumber}/fields`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ProjectsListFieldsForUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/projectsV2/${projectNumber}/fields`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

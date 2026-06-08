@@ -35,15 +35,21 @@ export function provideAppsListInstallationRequestsForAuthenticatedApp(): Factor
               | undefined),
       ) =>
         httpResource<AppsListInstallationRequestsForAuthenticatedAppResponse>(
-          () => ({
-            url: `${base}/app/installation-requests`,
-            params: (typeof params === 'function'
-              ? params()
-              : params) as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/app/installation-requests`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
         );
     },
   };

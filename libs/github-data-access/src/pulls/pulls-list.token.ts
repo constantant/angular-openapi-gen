@@ -27,15 +27,18 @@ export function providePullsList(): FactoryProvider {
         repo: string,
         params?: PullsListParams | (() => PullsListParams | undefined),
       ) =>
-        httpResource<PullsListResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/pulls`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<PullsListResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/pulls`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

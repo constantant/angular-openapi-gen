@@ -7,12 +7,15 @@ export type CodeScanningUploadSarifBody = NonNullable<
   paths['/repos/{owner}/{repo}/code-scanning/sarifs']['post']['requestBody']
 >['content']['application/json'];
 
+export type CodeScanningUploadSarifResponse =
+  paths['/repos/{owner}/{repo}/code-scanning/sarifs']['post']['responses']['202']['content']['application/json'];
+
 export const CODE_SCANNING_UPLOAD_SARIF = new InjectionToken<
   (
     owner: string,
     repo: string,
     body: CodeScanningUploadSarifBody | Signal<CodeScanningUploadSarifBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<CodeScanningUploadSarifResponse>>
 >('CODE_SCANNING_UPLOAD_SARIF');
 
 export function provideCodeScanningUploadSarif(): FactoryProvider {
@@ -25,7 +28,7 @@ export function provideCodeScanningUploadSarif(): FactoryProvider {
         repo: string,
         body: CodeScanningUploadSarifBody | Signal<CodeScanningUploadSarifBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<CodeScanningUploadSarifResponse>(() => ({
           url: `${base}/repos/${owner}/${repo}/code-scanning/sarifs`,
           method: 'POST',
           body,

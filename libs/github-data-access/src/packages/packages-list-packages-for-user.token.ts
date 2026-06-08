@@ -29,15 +29,18 @@ export function providePackagesListPackagesForUser(): FactoryProvider {
           | PackagesListPackagesForUserParams
           | (() => PackagesListPackagesForUserParams | undefined),
       ) =>
-        httpResource<PackagesListPackagesForUserResponse>(() => ({
-          url: `${base}/users/${username}/packages`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<PackagesListPackagesForUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/packages`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

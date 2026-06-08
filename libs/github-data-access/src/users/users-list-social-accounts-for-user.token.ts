@@ -29,15 +29,18 @@ export function provideUsersListSocialAccountsForUser(): FactoryProvider {
           | UsersListSocialAccountsForUserParams
           | (() => UsersListSocialAccountsForUserParams | undefined),
       ) =>
-        httpResource<UsersListSocialAccountsForUserResponse>(() => ({
-          url: `${base}/users/${username}/social_accounts`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<UsersListSocialAccountsForUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/social_accounts`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

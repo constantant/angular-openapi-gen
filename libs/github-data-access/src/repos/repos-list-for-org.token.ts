@@ -27,15 +27,18 @@ export function provideReposListForOrg(): FactoryProvider {
           | ReposListForOrgParams
           | (() => ReposListForOrgParams | undefined),
       ) =>
-        httpResource<ReposListForOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/repos`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposListForOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/repos`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

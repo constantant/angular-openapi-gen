@@ -3,8 +3,15 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type CodespacesDeleteForAuthenticatedUserResponse =
+  paths['/user/codespaces/{codespace_name}']['delete']['responses']['202']['content']['application/json'];
+
 export const CODESPACES_DELETE_FOR_AUTHENTICATED_USER = new InjectionToken<
-  (codespaceName: string) => ReturnType<typeof httpResource<unknown>>
+  (
+    codespaceName: string,
+  ) => ReturnType<
+    typeof httpResource<CodespacesDeleteForAuthenticatedUserResponse>
+  >
 >('CODESPACES_DELETE_FOR_AUTHENTICATED_USER');
 
 export function provideCodespacesDeleteForAuthenticatedUser(): FactoryProvider {
@@ -13,7 +20,7 @@ export function provideCodespacesDeleteForAuthenticatedUser(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (codespaceName: string) =>
-        httpResource<unknown>(() => ({
+        httpResource<CodespacesDeleteForAuthenticatedUserResponse>(() => ({
           url: `${base}/user/codespaces/${codespaceName}`,
           method: 'DELETE',
         }));

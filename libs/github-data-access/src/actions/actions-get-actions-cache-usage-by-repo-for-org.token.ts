@@ -32,15 +32,18 @@ export function provideActionsGetActionsCacheUsageByRepoForOrg(): FactoryProvide
           | ActionsGetActionsCacheUsageByRepoForOrgParams
           | (() => ActionsGetActionsCacheUsageByRepoForOrgParams | undefined),
       ) =>
-        httpResource<ActionsGetActionsCacheUsageByRepoForOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/actions/cache/usage-by-repository`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsGetActionsCacheUsageByRepoForOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/actions/cache/usage-by-repository`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

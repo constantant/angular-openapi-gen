@@ -3,12 +3,15 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type CodespacesDeleteFromOrganizationResponse =
+  paths['/orgs/{org}/members/{username}/codespaces/{codespace_name}']['delete']['responses']['202']['content']['application/json'];
+
 export const CODESPACES_DELETE_FROM_ORGANIZATION = new InjectionToken<
   (
     org: string,
     username: string,
     codespaceName: string,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<CodespacesDeleteFromOrganizationResponse>>
 >('CODESPACES_DELETE_FROM_ORGANIZATION');
 
 export function provideCodespacesDeleteFromOrganization(): FactoryProvider {
@@ -17,7 +20,7 @@ export function provideCodespacesDeleteFromOrganization(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string, username: string, codespaceName: string) =>
-        httpResource<unknown>(() => ({
+        httpResource<CodespacesDeleteFromOrganizationResponse>(() => ({
           url: `${base}/orgs/${org}/members/${username}/codespaces/${codespaceName}`,
           method: 'DELETE',
         }));

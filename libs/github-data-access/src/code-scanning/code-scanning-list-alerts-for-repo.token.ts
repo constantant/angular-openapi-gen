@@ -31,15 +31,18 @@ export function provideCodeScanningListAlertsForRepo(): FactoryProvider {
           | CodeScanningListAlertsForRepoParams
           | (() => CodeScanningListAlertsForRepoParams | undefined),
       ) =>
-        httpResource<CodeScanningListAlertsForRepoResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/code-scanning/alerts`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<CodeScanningListAlertsForRepoResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/code-scanning/alerts`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

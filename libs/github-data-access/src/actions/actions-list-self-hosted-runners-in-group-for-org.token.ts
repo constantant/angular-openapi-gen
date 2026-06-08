@@ -34,15 +34,18 @@ export function provideActionsListSelfHostedRunnersInGroupForOrg(): FactoryProvi
           | ActionsListSelfHostedRunnersInGroupForOrgParams
           | (() => ActionsListSelfHostedRunnersInGroupForOrgParams | undefined),
       ) =>
-        httpResource<ActionsListSelfHostedRunnersInGroupForOrgResponse>(() => ({
-          url: `${base}/orgs/${org}/actions/runner-groups/${runnerGroupId}/runners`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ActionsListSelfHostedRunnersInGroupForOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/actions/runner-groups/${runnerGroupId}/runners`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

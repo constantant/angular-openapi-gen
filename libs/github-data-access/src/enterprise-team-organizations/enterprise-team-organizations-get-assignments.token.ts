@@ -33,15 +33,18 @@ export function provideEnterpriseTeamOrganizationsGetAssignments(): FactoryProvi
           | EnterpriseTeamOrganizationsGetAssignmentsParams
           | (() => EnterpriseTeamOrganizationsGetAssignmentsParams | undefined),
       ) =>
-        httpResource<EnterpriseTeamOrganizationsGetAssignmentsResponse>(() => ({
-          url: `${base}/enterprises/${enterprise}/teams/${enterpriseTeam}/organizations`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<EnterpriseTeamOrganizationsGetAssignmentsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/enterprises/${enterprise}/teams/${enterpriseTeam}/organizations`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

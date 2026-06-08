@@ -7,6 +7,9 @@ export type ActivityMarkRepoNotificationsAsReadBody = NonNullable<
   paths['/repos/{owner}/{repo}/notifications']['put']['requestBody']
 >['content']['application/json'];
 
+export type ActivityMarkRepoNotificationsAsReadResponse =
+  paths['/repos/{owner}/{repo}/notifications']['put']['responses']['202']['content']['application/json'];
+
 export const ACTIVITY_MARK_REPO_NOTIFICATIONS_AS_READ = new InjectionToken<
   (
     owner: string,
@@ -14,7 +17,9 @@ export const ACTIVITY_MARK_REPO_NOTIFICATIONS_AS_READ = new InjectionToken<
     body:
       | ActivityMarkRepoNotificationsAsReadBody
       | Signal<ActivityMarkRepoNotificationsAsReadBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<
+    typeof httpResource<ActivityMarkRepoNotificationsAsReadResponse>
+  >
 >('ACTIVITY_MARK_REPO_NOTIFICATIONS_AS_READ');
 
 export function provideActivityMarkRepoNotificationsAsRead(): FactoryProvider {
@@ -29,7 +34,7 @@ export function provideActivityMarkRepoNotificationsAsRead(): FactoryProvider {
           | ActivityMarkRepoNotificationsAsReadBody
           | Signal<ActivityMarkRepoNotificationsAsReadBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<ActivityMarkRepoNotificationsAsReadResponse>(() => ({
           url: `${base}/repos/${owner}/${repo}/notifications`,
           method: 'PUT',
           body,

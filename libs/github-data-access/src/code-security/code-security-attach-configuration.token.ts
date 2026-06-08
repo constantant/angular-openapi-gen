@@ -7,6 +7,9 @@ export type CodeSecurityAttachConfigurationBody = NonNullable<
   paths['/orgs/{org}/code-security/configurations/{configuration_id}/attach']['post']['requestBody']
 >['content']['application/json'];
 
+export type CodeSecurityAttachConfigurationResponse =
+  paths['/orgs/{org}/code-security/configurations/{configuration_id}/attach']['post']['responses']['202']['content']['application/json'];
+
 export const CODE_SECURITY_ATTACH_CONFIGURATION = new InjectionToken<
   (
     org: string,
@@ -14,7 +17,7 @@ export const CODE_SECURITY_ATTACH_CONFIGURATION = new InjectionToken<
     body:
       | CodeSecurityAttachConfigurationBody
       | Signal<CodeSecurityAttachConfigurationBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  ) => ReturnType<typeof httpResource<CodeSecurityAttachConfigurationResponse>>
 >('CODE_SECURITY_ATTACH_CONFIGURATION');
 
 export function provideCodeSecurityAttachConfiguration(): FactoryProvider {
@@ -29,7 +32,7 @@ export function provideCodeSecurityAttachConfiguration(): FactoryProvider {
           | CodeSecurityAttachConfigurationBody
           | Signal<CodeSecurityAttachConfigurationBody>,
       ) =>
-        httpResource<unknown>(() => ({
+        httpResource<CodeSecurityAttachConfigurationResponse>(() => ({
           url: `${base}/orgs/${org}/code-security/configurations/${configurationId}/attach`,
           method: 'POST',
           body,

@@ -29,15 +29,18 @@ export function provideProjectsListForUser(): FactoryProvider {
           | ProjectsListForUserParams
           | (() => ProjectsListForUserParams | undefined),
       ) =>
-        httpResource<ProjectsListForUserResponse>(() => ({
-          url: `${base}/users/${username}/projectsV2`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ProjectsListForUserResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/users/${username}/projectsV2`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }

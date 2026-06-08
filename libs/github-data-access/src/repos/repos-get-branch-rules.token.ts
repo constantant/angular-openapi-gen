@@ -33,15 +33,18 @@ export function provideReposGetBranchRules(): FactoryProvider {
           | ReposGetBranchRulesParams
           | (() => ReposGetBranchRulesParams | undefined),
       ) =>
-        httpResource<ReposGetBranchRulesResponse>(() => ({
-          url: `${base}/repos/${owner}/${repo}/rules/branches/${branch}`,
-          params: (typeof params === 'function'
-            ? params()
-            : params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-        }));
+        httpResource<ReposGetBranchRulesResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/repos/${owner}/${repo}/rules/branches/${branch}`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
     },
   };
 }
