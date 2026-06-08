@@ -10,7 +10,6 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { appRoutes } from './app.routes';
 import { provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { TokenValue } from '@constantant/openapi-resource-mocks';
 import {
   USERS_GET_BY_USERNAME,
   REPOS_LIST_FOR_USER,
@@ -33,7 +32,7 @@ export const appConfig: ApplicationConfig = {
     provideMockResourceBus(),
 
     provideMockResource(USERS_GET_BY_USERNAME, 'USERS_GET_BY_USERNAME', {
-      value: { login: 'angular', name: 'Angular', public_repos: 300 } as TokenValue<typeof USERS_GET_BY_USERNAME>,
+      value: { login: 'angular', name: 'Angular', public_repos: 300 },
     }),
 
     provideMockResource(REPOS_LIST_FOR_USER, 'REPOS_LIST_FOR_USER', {
@@ -41,7 +40,7 @@ export const appConfig: ApplicationConfig = {
         { id: 1, name: 'angular', description: 'Deliver web apps with confidence', stargazers_count: 93400 },
         { id: 2, name: 'angular-cli', description: 'CLI tool for Angular', stargazers_count: 26300 },
         { id: 3, name: 'components', description: 'Material Design components for Angular', stargazers_count: 24100 },
-      ] as TokenValue<typeof REPOS_LIST_FOR_USER>,
+      ],
     }),
 
     provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', {
@@ -49,7 +48,7 @@ export const appConfig: ApplicationConfig = {
         { id: 1, name: 'Rex', status: 'available', photoUrls: [] },
         { id: 2, name: 'Luna', status: 'available', photoUrls: [] },
         { id: 3, name: 'Buddy', status: 'available', photoUrls: [] },
-      ] as TokenValue<typeof FIND_PETS_BY_STATUS>,
+      ],
     }),
 
     provideMockResource(GET_V1_FORECAST, 'GET_V1_FORECAST', {
@@ -63,7 +62,7 @@ export const appConfig: ApplicationConfig = {
           temperature_2m_min: [13, 15, 11],
           precipitation_sum: [0, 0.5, 8],
         },
-      } as TokenValue<typeof GET_V1_FORECAST>,
+      },
     }),
 
     provideMockResource(YOUTUBE_SEARCH_LIST, 'YOUTUBE_SEARCH_LIST', {
@@ -96,7 +95,7 @@ export const appConfig: ApplicationConfig = {
             },
           },
         ],
-      } as TokenValue<typeof YOUTUBE_SEARCH_LIST>,
+      },
     }),
   ],
 };
