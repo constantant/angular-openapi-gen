@@ -191,6 +191,80 @@ headers: {
 The factory returns `(body: BodyType | Signal<BodyType>) => httpResource(...)`.
 The resource config receives `method: 'POST'` (etc.) and `body` automatically.
 
+#### JSON body
+
+The common case. Pass a plain object or a signal — `HttpClient` serialises it automatically:
+
+```typescript
+const addPet = inject(ADD_PET);
+
+readonly newPet = signal<AddPetBody>({ name: 'Rex', status: 'available' });
+readonly result = addPet(this.newPet); // re-posts whenever newPet() changes
+```
+
+#### `multipart/form-data` body
+
+The generated `${pascal}Body` type is derived from the OpenAPI schema, which
+describes the *shape* of the form fields. At runtime the actual value must be a
+`FormData` object — Angular's `HttpClient` does not encode plain objects as
+multipart. Cast is required at the call site:
+
+```typescript
+// Generated (example from Petstore's POST /pet/{petId}/uploadImage):
+//
+//   export type UploadFileBody =
+//     NonNullable<paths['/pet/{petId}/uploadImage']['post']['requestBody']>
+//       ['content']['multipart/form-data'];
+//                    // → { additionalMetadata?: string; file?: Blob }
+//
+//   export const UPLOAD_FILE = new InjectionToken<
+//     (petId: string, body: UploadFileBody | Signal<UploadFileBody>)
+//       => ReturnType<typeof httpResource<UploadFileResponse>>
+//   >('UPLOAD_FILE');
+
+@Component({ ... })
+export class UploadComponent {
+  private uploadFile = inject(UPLOAD_FILE);
+
+  readonly selectedFile = signal<File | null>(null);
+  readonly notes = signal('');
+
+  // Build FormData reactively; cast to the spec type so the token accepts it.
+  // FormData is the required runtime representation for multipart/form-data —
+  // the spec type only describes the field names and shapes, not the encoding.
+  private readonly formData = computed(() => {
+    const file = this.selectedFile();
+    if (!file) return null;
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('additionalMetadata', this.notes());
+    return fd as unknown as UploadFileBody;
+  });
+
+  readonly upload = this.uploadFile(
+    '42',                    // petId (path param)
+    () => this.formData(),   // thunk: resource stays idle when formData() is null
+  );
+}
+```
+
+> **Why the cast?** The OpenAPI schema types `multipart/form-data` bodies as a
+> plain object (e.g. `{ file?: Blob; additionalMetadata?: string }`). This is
+> accurate for type-checking field names and shapes, but `HttpClient` requires
+> an actual `FormData` instance for multipart encoding. The `as unknown as
+> UploadFileBody` cast bridges that gap without losing the field-name safety you
+> get from the spec type.
+
+#### `application/x-www-form-urlencoded` body
+
+Pass a plain object. Angular's `HttpClient` URL-encodes it automatically — no
+`URLSearchParams` wrapping needed:
+
+```typescript
+const submitForm = inject(SUBMIT_FORM);
+readonly result = submitForm({ username: 'alice', password: 's3cr3t' });
+```
+
 ### Security schemes
 
 The generator emits one file per security scheme. Two patterns are used depending on the
@@ -381,6 +455,53 @@ import type { FindPetsByStatusParams } from '@angular-openapi-gen/petstore-data-
 
 type PetStatus = FindPetsByStatusParams['status']; // 'available' | 'pending' | 'sold'
 ```
+
+---
+
+## Sharing a resource across components
+
+Each call to the injected factory function creates an **independent `httpResource` instance**.
+Two components that both call `this.findPetsByStatus(...)` will fire two separate HTTP requests.
+
+This is intentional — resources are reactive computations tied to a component's lifetime, and
+`httpResource` does not have a built-in shared cache. For data that should be fetched once and
+shared, hoist the resource call to a root-scoped service:
+
+```typescript
+// pets.store.ts  (not generated — write this yourself)
+@Service()  // Angular 22 shorthand for @Injectable({ providedIn: 'root' })
+export class PetsStore {
+  private findPetsByStatus = inject(FIND_PETS_BY_STATUS);
+
+  readonly status = signal<'available' | 'pending' | 'sold'>('available');
+
+  // One httpResource instance, shared across any component that injects PetsStore
+  readonly pets = this.findPetsByStatus(() => ({ status: this.status() }));
+}
+```
+
+```typescript
+// Component A and Component B both inject the same PetsStore singleton —
+// only one HTTP request fires.
+@Component({ ... })
+export class PetsPageComponent {
+  readonly store = inject(PetsStore);
+}
+```
+
+For per-route isolation, create the resource inside a route-level provider instead:
+
+```typescript
+// In the route definition
+{
+  path: 'pets',
+  component: PetsShellComponent,
+  providers: [PetsStore, provideFindPetsByStatus()],
+}
+```
+
+This scopes the resource to the route's injector — a new instance is created on
+navigation in and destroyed on navigation out, with no cross-route state leakage.
 
 ---
 
