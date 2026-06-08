@@ -113,19 +113,19 @@ console.log(mock.progress()); // { type: 'upload', loaded: 1_000_000, total: 4_0
 ```typescript
 // Animate upload progress then resolve
 await page.evaluate(() =>
-  window.__openApiMocks__['UPLOAD_FILE'].simulateProgress('upload', 4_000_000, 2000, { id: 'abc123' }),
+  openApiMock('UPLOAD_FILE').simulateProgress('upload', 4_000_000, 2000, { id: 'abc123' }),
 );
 await expect(page.locator('[data-testid="progress-bar"]')).toBeVisible();
 
 // Manual steps
 await page.evaluate(() =>
-  window.__openApiMocks__['UPLOAD_FILE'].setProgress('upload', 1_000_000, 4_000_000),
+  openApiMock('UPLOAD_FILE').setProgress('upload', 1_000_000, 4_000_000),
 );
 await expect(page.locator('[data-testid="progress-bar"]')).toHaveAttribute('aria-valuenow', '25');
 
 // Fail mid-upload
-await page.evaluate(() => window.__openApiMocks__['UPLOAD_FILE'].fail(new Error('timeout')));
-const state = await page.evaluate(() => window.__openApiMocks__['UPLOAD_FILE'].getState());
+await page.evaluate(() => openApiMock('UPLOAD_FILE').fail(new Error('timeout')));
+const state = await page.evaluate(() => openApiMock('UPLOAD_FILE').getState());
 console.log(state.progress); // { type: 'upload', loaded: 1_000_000, total: 4_000_000 }
 ```
 
@@ -155,33 +155,143 @@ document.dispatchEvent(new CustomEvent('openapi-mock-control', {
 
 ## E2E tests (Playwright)
 
+### Setup
+
+Serve the app with mock providers on a separate port so real and mock E2E suites never collide.
+
+**1. Mock app configuration** — swap the real providers for mock ones:
+
+```typescript
+// app.config.mock.ts
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
+import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
+import { appRoutes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(appRoutes),
+    provideMockResourceBus(),
+    provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', {
+      value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
+      delay: 500,
+    }),
+  ],
+};
+```
+
+**2. Separate Playwright config** — points to port 4201 and scopes `testDir` to the mock specs folder:
+
+```typescript
+// playwright.mock.config.ts
+import { defineConfig, devices } from '@playwright/test';
+import { nxE2EPreset } from '@nx/playwright/preset';
+import { workspaceRoot } from '@nx/devkit';
+
+export default defineConfig({
+  ...nxE2EPreset(__filename, { testDir: './src/mock' }),
+  use: {
+    baseURL: 'http://localhost:4201',
+    trace: 'on-first-retry',
+  },
+  webServer: {
+    command: 'npx nx run myapp:serve --configuration=mock-e2e',
+    url: 'http://localhost:4201',
+    reuseExistingServer: true,
+    cwd: workspaceRoot,
+  },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+});
+```
+
+**3. Exclude mock specs from the main config** — prevents mock specs from running against the real app:
+
+```typescript
+// playwright.config.ts  (existing main config)
+export default defineConfig({
+  ...nxE2EPreset(__filename, { testDir: './src' }),
+  testIgnore: ['**/mock/**'],
+  // ...
+});
+```
+
+**4. TypeScript ambient declarations** — required for `openApiMock(key)` to typecheck inside `page.evaluate()` function bodies:
+
+```typescript
+// src/global.d.ts
+interface MockEntry {
+  resolve(value: unknown): void;
+  resolveAfter(ms: number, value: unknown): void;
+  setLoading(): void;
+  fail(error: unknown): void;
+  reset(): void;
+  getState(): { status: string; value: unknown; error: unknown; progress: unknown };
+  getHistory(): Array<{ type: string; args: unknown[]; ts: number }>;
+}
+
+interface Window {
+  __openApiMocks__: Record<string, MockEntry>;
+  openApiMock: (key: string) => MockEntry;
+}
+
+// Needed for unqualified openApiMock('KEY') calls inside page.evaluate(() => ...)
+declare function openApiMock(key: string): MockEntry;
+```
+
+Also add `"types": ["node"]` to `tsconfig.json` if you use `__filename` in the Playwright config.
+
+### Writing specs
+
+Always wait for a page landmark in `beforeEach` before running assertions — this guarantees Angular has bootstrapped and the mock factories have been called:
+
+```typescript
+test.beforeEach(async ({ page }) => {
+  await page.goto('/pets');
+  await expect(page.getByRole('heading', { name: 'Pets' })).toBeVisible();
+});
+```
+
+Without this guard, assertions like `toBeHidden()` and `toHaveCount(0)` can pass immediately (before any elements render), and subsequent `page.evaluate()` calls will throw `openApiMock is not defined`.
+
+### Controlling state
+
 ```typescript
 // Resolve with data
 await page.evaluate(() =>
-  window.__openApiMocks__['FIND_PETS_BY_STATUS'].resolve([
-    { id: 1, name: 'Rex', status: 'available' },
-  ]),
+  openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 1, name: 'Rex', status: 'available' }]),
 );
 await expect(page.locator('mat-row')).toHaveCount(1);
 
 // Test loading skeleton
-await page.evaluate(() => window.__openApiMocks__['FIND_PETS_BY_STATUS'].setLoading());
+await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').setLoading());
 await expect(page.locator('mat-progress-bar')).toBeVisible();
 
 // Simulate slow network
-await page.evaluate(() =>
-  window.__openApiMocks__['FIND_PETS_BY_STATUS'].resolveAfter(1000, []),
-);
+await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolveAfter(1000, []));
 
 // Inspect current state (includes progress if active)
-const state = await page.evaluate(() =>
-  window.__openApiMocks__['FIND_PETS_BY_STATUS'].getState(),
-);
+const state = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getState());
 
 // Full event history (requests + responses + progress ticks)
-const history = await page.evaluate(() =>
-  window.__openApiMocks__['FIND_PETS_BY_STATUS'].getHistory(),
-);
+const history = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getHistory());
+```
+
+### Asserting request params
+
+`getHistory()` records every factory invocation as a `request` entry. Function args (reactive lambdas) are resolved at call time, so `args` contains plain JSON values:
+
+```typescript
+const history = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getHistory());
+const req = history.find((e) => e.type === 'request');
+expect(req?.args[0]).toEqual({ status: 'available' });
+```
+
+For tokens whose factory receives a reactive lambda (e.g. `() => query() ? { q: query() } : undefined`), `args[0]` will be the resolved value at mount time — `undefined` when suppressed, or the plain params object when active:
+
+```typescript
+// Confirms the resource was suppressed on init (query was empty)
+expect(req?.args[0]).toBeUndefined();
 ```
 
 ---
