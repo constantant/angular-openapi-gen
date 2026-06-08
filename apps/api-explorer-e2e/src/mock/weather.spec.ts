@@ -20,7 +20,7 @@ test.describe('Weather page (mock)', () => {
   }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
     const history = await page.evaluate(() =>
-      window.__openApiMocks__['GET_V1_FORECAST'].getHistory(),
+      openApiMock('GET_V1_FORECAST').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
@@ -35,7 +35,7 @@ test.describe('Weather page (mock)', () => {
 
   test('shows error message when mock fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
-    await page.evaluate(() => window.__openApiMocks__['GET_V1_FORECAST'].fail(new Error('503')));
+    await page.evaluate(() => openApiMock('GET_V1_FORECAST').fail(new Error('503')));
     await expect(page.getByText('Failed to load forecast')).toBeVisible();
   });
 });

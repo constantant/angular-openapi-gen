@@ -10,4 +10,7 @@ interface MockEntry {
 
 interface Window {
   __openApiMocks__: Record<string, MockEntry>;
+  openApiMock: (key: string) => MockEntry;
 }
+
+declare function openApiMock(key: string): MockEntry;

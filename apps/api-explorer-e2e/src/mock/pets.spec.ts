@@ -19,7 +19,7 @@ test.describe('Pets page (mock)', () => {
   }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
     const history = await page.evaluate(() =>
-      window.__openApiMocks__['FIND_PETS_BY_STATUS'].getHistory(),
+      openApiMock('FIND_PETS_BY_STATUS').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
@@ -36,7 +36,7 @@ test.describe('Pets page (mock)', () => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
 
     await page.evaluate(() =>
-      window.__openApiMocks__['FIND_PETS_BY_STATUS'].resolve([
+      openApiMock('FIND_PETS_BY_STATUS').resolve([
         { id: 10, name: 'Shadow', status: 'pending', photoUrls: [] },
         { id: 11, name: 'Ghost', status: 'pending', photoUrls: [] },
       ]),
@@ -49,13 +49,13 @@ test.describe('Pets page (mock)', () => {
 
   test('shows loading state when mock is set to loading', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
-    await page.evaluate(() => window.__openApiMocks__['FIND_PETS_BY_STATUS'].setLoading());
+    await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').setLoading());
     await expect(page.locator('mat-progress-bar')).toBeVisible();
   });
 
   test('shows error message when mock fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
-    await page.evaluate(() => window.__openApiMocks__['FIND_PETS_BY_STATUS'].fail(new Error('500')));
+    await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').fail(new Error('500')));
     await expect(page.getByText('Failed to load pets')).toBeVisible();
   });
 });

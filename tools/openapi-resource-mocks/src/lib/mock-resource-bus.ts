@@ -24,6 +24,7 @@ export interface WindowMockEntry {
 declare global {
   interface Window {
     __openApiMocks__?: Record<string, WindowMockEntry>;
+    openApiMock?: (key: string) => WindowMockEntry;
   }
 }
 
@@ -42,6 +43,7 @@ export class MockResourceBus {
 
   private exposeToWindow<T>(key: string, ref: MockResourceRefInternal<T>): void {
     window.__openApiMocks__ ??= {};
+    window.openApiMock ??= (k: string) => window.__openApiMocks__![k];
     const history: MockEvent[] = [];
     const listeners = new Set<(e: MockEvent) => void>();
 

@@ -11,7 +11,7 @@ test.describe('YouTube page (mock)', () => {
     // query() starts as '' — the component's lambda returns undefined to suppress the resource.
     // Asserting undefined here confirms the suppression logic is wired correctly.
     const history = await page.evaluate(() =>
-      window.__openApiMocks__['YOUTUBE_SEARCH_LIST'].getHistory(),
+      openApiMock('YOUTUBE_SEARCH_LIST').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
@@ -47,7 +47,7 @@ test.describe('YouTube page (mock)', () => {
     await page.getByRole('button', { name: 'Search' }).click();
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
     await page.evaluate(() =>
-      window.__openApiMocks__['YOUTUBE_SEARCH_LIST'].fail({ message: 'API quota exceeded' }),
+      openApiMock('YOUTUBE_SEARCH_LIST').fail({ message: 'API quota exceeded' }),
     );
     await expect(page.getByText('API quota exceeded')).toBeVisible();
   });

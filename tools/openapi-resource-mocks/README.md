@@ -287,6 +287,16 @@ interface MockProgress {
 }
 ```
 
+### `openApiMock(key)` / `window.__openApiMocks__[key]`
+
+`openApiMock` is a shorthand exposed on `window` by `MockResourceBus` — equivalent to `window.__openApiMocks__[key]` but terser in `page.evaluate()` calls:
+
+```typescript
+// Playwright
+const history = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getHistory());
+await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolve([...]));
+```
+
 ### `window.__openApiMocks__[key]`
 
 | Member | Description |

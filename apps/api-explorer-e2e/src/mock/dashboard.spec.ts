@@ -18,7 +18,7 @@ test.describe('Dashboard (mock)', () => {
   test('FIND_PETS_BY_STATUS is called with status "available"', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
     const history = await page.evaluate(() =>
-      window.__openApiMocks__['FIND_PETS_BY_STATUS'].getHistory(),
+      openApiMock('FIND_PETS_BY_STATUS').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
@@ -28,7 +28,7 @@ test.describe('Dashboard (mock)', () => {
   test('USERS_GET_BY_USERNAME is called with username "angular"', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
     const history = await page.evaluate(() =>
-      window.__openApiMocks__['USERS_GET_BY_USERNAME'].getHistory(),
+      openApiMock('USERS_GET_BY_USERNAME').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
@@ -37,7 +37,7 @@ test.describe('Dashboard (mock)', () => {
 
   test('shows API error when GitHub mock fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
-    await page.evaluate(() => window.__openApiMocks__['USERS_GET_BY_USERNAME'].fail(new Error('401')));
+    await page.evaluate(() => openApiMock('USERS_GET_BY_USERNAME').fail(new Error('401')));
     await expect(page.getByText('API error').first()).toBeVisible();
   });
 });

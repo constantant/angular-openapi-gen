@@ -26,7 +26,7 @@ test.describe('Repos page (mock)', () => {
   test('USERS_GET_BY_USERNAME is called with username "angular"', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
     const history = await page.evaluate(() =>
-      window.__openApiMocks__['USERS_GET_BY_USERNAME'].getHistory(),
+      openApiMock('USERS_GET_BY_USERNAME').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
@@ -36,7 +36,7 @@ test.describe('Repos page (mock)', () => {
   test('REPOS_LIST_FOR_USER is called with username "angular"', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
     const history = await page.evaluate(() =>
-      window.__openApiMocks__['REPOS_LIST_FOR_USER'].getHistory(),
+      openApiMock('REPOS_LIST_FOR_USER').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
@@ -45,7 +45,7 @@ test.describe('Repos page (mock)', () => {
 
   test('shows error message when mock fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).not.toBeVisible();
-    await page.evaluate(() => window.__openApiMocks__['REPOS_LIST_FOR_USER'].fail(new Error('500')));
+    await page.evaluate(() => openApiMock('REPOS_LIST_FOR_USER').fail(new Error('500')));
     await expect(page.getByText('Failed to load repos')).toBeVisible();
   });
 });
