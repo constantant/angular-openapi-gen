@@ -9,14 +9,14 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { appRoutes } from './app.routes';
-import { provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
 import {
-  USERS_GET_BY_USERNAME,
-  REPOS_LIST_FOR_USER,
+  provideUsersGetByUsernameMock,
+  provideReposListForUserMock,
 } from '@angular-openapi-gen/github-data-access';
-import { FIND_PETS_BY_STATUS } from '@angular-openapi-gen/petstore-data-access';
-import { GET_V1_FORECAST } from '@angular-openapi-gen/weather-data-access';
-import { YOUTUBE_SEARCH_LIST } from '@angular-openapi-gen/youtube-data-access';
+import { provideFindPetsByStatusMock } from '@angular-openapi-gen/petstore-data-access';
+import { provideGetV1ForecastMock } from '@angular-openapi-gen/weather-data-access';
+import { provideYoutubeSearchListMock } from '@angular-openapi-gen/youtube-data-access';
 
 export const YOUTUBE_API_KEY = new InjectionToken<WritableSignal<string | null>>(
   'YOUTUBE_API_KEY',
@@ -31,12 +31,12 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideMockResourceBus(),
 
-    provideMockResource(USERS_GET_BY_USERNAME, 'USERS_GET_BY_USERNAME', {
+    provideUsersGetByUsernameMock({
       value: { login: 'angular', name: 'Angular', public_repos: 300 },
       delay: 500,
     }),
 
-    provideMockResource(REPOS_LIST_FOR_USER, 'REPOS_LIST_FOR_USER', {
+    provideReposListForUserMock({
       value: [
         { id: 1, name: 'angular', description: 'Deliver web apps with confidence', stargazers_count: 93400 },
         { id: 2, name: 'angular-cli', description: 'CLI tool for Angular', stargazers_count: 26300 },
@@ -45,7 +45,7 @@ export const appConfig: ApplicationConfig = {
       delay: 500,
     }),
 
-    provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', {
+    provideFindPetsByStatusMock({
       value: [
         { id: 1, name: 'Rex', status: 'available', photoUrls: [] },
         { id: 2, name: 'Luna', status: 'available', photoUrls: [] },
@@ -54,7 +54,7 @@ export const appConfig: ApplicationConfig = {
       delay: 500,
     }),
 
-    provideMockResource(GET_V1_FORECAST, 'GET_V1_FORECAST', {
+    provideGetV1ForecastMock({
       value: {
         latitude: 52.374,
         longitude: 4.89,
@@ -69,7 +69,7 @@ export const appConfig: ApplicationConfig = {
       delay: 500,
     }),
 
-    provideMockResource(YOUTUBE_SEARCH_LIST, 'YOUTUBE_SEARCH_LIST', {
+    provideYoutubeSearchListMock({
       value: {
         kind: 'youtube#searchListResponse',
         pageInfo: { totalResults: 3, resultsPerPage: 12 },
