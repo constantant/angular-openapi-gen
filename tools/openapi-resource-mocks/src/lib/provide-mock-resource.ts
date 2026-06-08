@@ -23,28 +23,28 @@ export function provideMockResource<T>(
     provide: token,
     useFactory: () => {
       const bus = inject(MockResourceBus);
-      const ref = createMockResourceRef<T>();
-      bus.register(key, ref);
-      if (initialBehavior) {
-        if ('value' in initialBehavior) {
-          if (initialBehavior.delay) {
-            ref.resolveAfter(initialBehavior.delay, initialBehavior.value as T);
-          } else {
-            ref.resolve(initialBehavior.value as T);
-          }
-        } else if ('error' in initialBehavior) {
-          if (initialBehavior.delay) {
-            ref.setLoading();
-            setTimeout(() => ref.fail(initialBehavior.error), initialBehavior.delay);
-          } else {
-            ref.fail(initialBehavior.error);
-          }
-        } else {
-          ref.setLoading();
-        }
-      }
       return (...args: unknown[]): ReturnType<typeof httpResource<T>> => {
+        const ref = createMockResourceRef<T>();
+        bus.register(key, ref);
         (ref as MockResourceRefInternal<T>)._notifyRequest(args);
+        if (initialBehavior) {
+          if ('value' in initialBehavior) {
+            if (initialBehavior.delay) {
+              ref.resolveAfter(initialBehavior.delay, initialBehavior.value as T);
+            } else {
+              ref.resolve(initialBehavior.value as T);
+            }
+          } else if ('error' in initialBehavior) {
+            if (initialBehavior.delay) {
+              ref.setLoading();
+              setTimeout(() => ref.fail(initialBehavior.error), initialBehavior.delay);
+            } else {
+              ref.fail(initialBehavior.error);
+            }
+          } else {
+            ref.setLoading();
+          }
+        }
         return ref as unknown as ReturnType<typeof httpResource<T>>;
       };
     },
