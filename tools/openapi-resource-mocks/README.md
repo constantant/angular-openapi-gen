@@ -49,21 +49,27 @@ export const mockProviders = [
 ```typescript
 import { TestBed } from '@angular/core/testing';
 import { injectMockResource, provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { FindPetsByStatusResponse } from '@myapp/petstore-data-access';
 
 TestBed.configureTestingModule({
+  imports: [PetsComponent],
   providers: [
     provideMockResourceBus(),
     provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS'),
   ],
 });
 
+// Render the component first — this calls the token factory and registers the ref
+const fixture = TestBed.createComponent(PetsComponent);
+fixture.detectChanges();
+
+// Now the ref is in the bus
 const mock = TestBed.runInInjectionContext(() =>
-  injectMockResource<FindPetsByStatusResponse>('FIND_PETS_BY_STATUS'),
+  injectMockResource('FIND_PETS_BY_STATUS'),
 );
 
-// Preset states
 mock.resolve([{ id: 1, name: 'Rex', status: 'available' }]);
+fixture.detectChanges();
+
 mock.setLoading();
 mock.fail(new Error('network'));
 mock.reset();
@@ -215,9 +221,9 @@ Returns `EnvironmentProviders`. Call once in your root providers or TestBed setu
 
 ### `provideMockResource(token, key, initialBehavior?)`
 
-Returns `FactoryProvider`. Registers `token` in the bus under `key`.
+Returns `FactoryProvider`. Each time a component invokes the factory function, a fresh ref is created, registered in the bus under `key`, and `initialBehavior` is applied — simulating the full request lifecycle on every mount.
 
-`initialBehavior` controls the starting state of the mock:
+`initialBehavior` controls how the mock behaves on each invocation:
 
 | Shape | Effect |
 |-------|--------|
@@ -229,7 +235,7 @@ Returns `FactoryProvider`. Registers `token` in the bus under `key`.
 
 ### `injectMockResource<T>(key)`
 
-Must be called inside an injection context (e.g. `TestBed.runInInjectionContext`). Returns `MockResourceRef<T>`.
+Must be called inside an injection context (e.g. `TestBed.runInInjectionContext`) and after the component has rendered — the ref is registered when the component first invokes the factory function, not at DI setup time. Returns `MockResourceRef<T>`.
 
 ### `TokenValue<Token>`
 
@@ -247,7 +253,7 @@ const mockPets: TokenValue<typeof FIND_PETS_BY_STATUS> = [
 
 ### `createMockResourceRef<T>(initialState?)`
 
-Creates a standalone ref without the bus — useful when passing the ref to `provideMockResource` yourself for fine-grained test setup.
+Creates a standalone ref without the bus — useful for Storybook decorators, custom test harnesses, or any scenario where you need a `MockResourceRef` outside of Angular DI.
 
 ### `MockResourceRef<T>`
 
