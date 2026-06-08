@@ -3,13 +3,13 @@ import { httpResource } from '@angular/common/http';
 import { MockResourceBus } from './mock-resource-bus';
 import { createMockResourceRef, type MockResourceRefInternal } from './mock-resource-ref';
 
-type DeepPartial<T> = T extends Array<infer E>
+export type DeepPartial<T> = T extends Array<infer E>
   ? DeepPartial<E>[]
   : T extends object
     ? { [K in keyof T]?: DeepPartial<T[K]> }
     : T;
 
-type ProviderInitialBehavior<T> =
+export type ProviderInitialBehavior<T> =
   | { value: DeepPartial<T>; delay?: number }
   | { loading: true }
   | { error: unknown; delay?: number };

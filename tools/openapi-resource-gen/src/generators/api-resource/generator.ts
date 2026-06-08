@@ -23,6 +23,7 @@ import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
 import { buildEndpoints, parseSecuritySchemes } from './parse-spec';
 import { renderTokenFile, renderSecurityTokenFile } from './render-token';
+import { renderMockFile } from './render-mock-file';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
@@ -32,6 +33,7 @@ export interface ApiResourceGeneratorSchema {
   tagFilter?: string;
   namingConvention?: 'camel' | 'kebab';
   providedIn?: 'root' | 'none';
+  includeMocks?: boolean;
 }
 
 /** Replace $ref values that point to non-YAML/JSON files with {} so
@@ -109,7 +111,19 @@ export async function apiResourceGenerator(
     tagFilter,
     namingConvention = 'kebab',
     providedIn = 'none',
+    includeMocks = false,
   } = options;
+
+  if (includeMocks) {
+    try {
+      require.resolve('@constantant/openapi-resource-mocks');
+    } catch {
+      throw new Error(
+        'includeMocks requires @constantant/openapi-resource-mocks to be installed.\n' +
+        'Run: npm install -D @constantant/openapi-resource-mocks',
+      );
+    }
+  }
 
   const allowedTags = tagFilter
     ? tagFilter
@@ -118,12 +132,15 @@ export async function apiResourceGenerator(
         .filter(Boolean)
     : null;
 
-  // Snapshot which token/security files already exist so we can delete stale
+  // Snapshot which token/security/mock files already exist so we can delete stale
   // ones that this run no longer produces.
   const preExistingFiles = new Set(
     collectTreeFiles(tree, outputDir).filter(
-      (f) => f.endsWith('.token.ts') || f.endsWith('.security-token.ts')
-    )
+      (f) =>
+        f.endsWith('.token.ts') ||
+        f.endsWith('.security-token.ts') ||
+        f.endsWith('.mock.ts'),
+    ),
   );
 
   const isUrl =
@@ -243,6 +260,12 @@ export async function apiResourceGenerator(
         const filePath = joinPathFragments(tagDir, `${ep.fileName}.token.ts`);
         tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName));
         writtenFiles.add(filePath);
+
+        if (includeMocks) {
+          const mockPath = joinPathFragments(tagDir, `${ep.fileName}.mock.ts`);
+          tree.write(mockPath, renderMockFile(ep));
+          writtenFiles.add(mockPath);
+        }
       }
 
       const tagBarrel =
@@ -250,6 +273,16 @@ export async function apiResourceGenerator(
           .map((ep) => `export * from './${ep.fileName}.token';`)
           .join('\n') + '\n';
       tree.write(joinPathFragments(tagDir, 'index.ts'), tagBarrel);
+
+      if (includeMocks) {
+        const mockBarrelPath = joinPathFragments(tagDir, 'index.mock.ts');
+        const mockBarrel =
+          tagEndpoints
+            .map((ep) => `export * from './${ep.fileName}.mock';`)
+            .join('\n') + '\n';
+        tree.write(mockBarrelPath, mockBarrel);
+        writtenFiles.add(mockBarrelPath);
+      }
     }
 
     // 8. Root barrel index
@@ -258,6 +291,13 @@ export async function apiResourceGenerator(
       securitySchemes.map((s) => `export * from './${s.fileName}';\n`).join('') +
       [...byTag.keys()].map((tag) => `export * from './${tag}';\n`).join('');
     tree.write(joinPathFragments(outputDir, 'index.ts'), rootBarrel);
+
+    if (includeMocks) {
+      const rootMockBarrel =
+        [...byTag.keys()].map((tag) => `export * from './${tag}/index.mock';\n`).join('');
+      tree.write(joinPathFragments(outputDir, 'index.mock.ts'), rootMockBarrel);
+      writtenFiles.add(joinPathFragments(outputDir, 'index.mock.ts'));
+    }
 
     // 9. Delete stale token/security files from previous runs that this run
     //    no longer produces (e.g. removed endpoints, changed tagFilter).

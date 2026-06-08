@@ -34,6 +34,11 @@
       "enum": ["root", "none"],
       "default": "none",
       "description": "none: token has no factory; a provide{Name}() helper is exported for explicit scoped provision. root: token self-registers at root (tree-shakeable singleton, no multi-context support)"
+    },
+    "includeMocks": {
+      "type": "boolean",
+      "default": false,
+      "description": "Generate a .mock.ts file per endpoint (and index.mock.ts barrels) using @constantant/openapi-resource-mocks. Requires the package to be installed."
     }
   },
   "required": ["specPath", "outputDir"]

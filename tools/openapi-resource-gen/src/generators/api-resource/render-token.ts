@@ -1,6 +1,6 @@
 import type { EndpointModel, SecuritySchemeModel } from './endpoint-model';
 
-function toPascalCase(str: string): string {
+export function toPascalCase(str: string): string {
   return str
     .replace(/\//g, '-')
     .split(/[-_.\s]+/)
