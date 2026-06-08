@@ -86,6 +86,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `tagFilter` | no | all tags | Comma-separated list of OpenAPI tags to include |
 | `namingConvention` | no | `kebab` | `kebab` → `find-pets-by-status.token.ts`; `camel` → `findPetsByStatus.token.ts` |
 | `providedIn` | no | `none` | `none` or `root` — see table above |
+| `includeMocks` | no | `false` | Emit a `.mock.ts` per endpoint plus `index.mock.ts` barrels — requires [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) |
 
 ---
 
@@ -97,12 +98,107 @@ Re-run the same command whenever your spec changes — the generator overwrites 
   api-base-url.token.ts             # InjectionToken<string> for the API root URL
   {scheme}.security-token.ts        # one per security scheme (if any)
   index.ts                          # re-exports all tag barrels + base-url + security tokens
+  index.mock.ts                     # (--includeMocks) re-exports all tag mock barrels
   {tag}/
     index.ts                        # re-exports all token files in this tag folder
+    index.mock.ts                   # (--includeMocks) re-exports all mock files in this tag
     {operation-id}.token.ts         # one file per endpoint
+    {operation-id}.mock.ts          # (--includeMocks) typed mock provider per endpoint
 ```
 
 Tags map to subfolders; untagged operations go into `default/`.
+
+---
+
+## Mock providers (`--includeMocks`)
+
+Pass `--includeMocks` to co-generate a typed `provide{Operation}Mock()` wrapper
+alongside every `.token.ts` file. This requires
+[`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)
+to be installed:
+
+```bash
+npm install -D @constantant/openapi-resource-mocks
+
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=specs/petstore.yaml \
+  --outputDir=libs/petstore-data-access/src \
+  --baseUrlToken=PETSTORE_BASE_URL \
+  --includeMocks
+```
+
+### Generated mock file
+
+Each `.mock.ts` file exports a single `provide{Operation}Mock(initialBehavior?)` function.
+`initialBehavior` is fully typed against the operation's response type — no hand-written interfaces:
+
+```typescript
+// pet/find-pets-by-status.mock.ts  (generated)
+import { FactoryProvider } from '@angular/core';
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import { FIND_PETS_BY_STATUS } from './find-pets-by-status.token';
+import type { FindPetsByStatusResponse } from './find-pets-by-status.token';
+
+export function provideFindPetsByStatusMock(
+  initialBehavior?: ProviderInitialBehavior<FindPetsByStatusResponse>,
+): FactoryProvider {
+  return provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', initialBehavior);
+}
+```
+
+The token name string key is always in sync — renaming an operation in the spec and
+regenerating updates both the token constant and its key automatically.
+
+### Usage in app.config.mock.ts
+
+```typescript
+// Before — hand-written key strings, no type safety on seed data
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
+
+provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', {
+  value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
+  delay: 500,
+})
+
+// After — generated wrapper, fully typed initialBehavior
+import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access';
+
+provideFindPetsByStatusMock({
+  value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
+  delay: 500,
+})
+```
+
+`initialBehavior` supports:
+
+| Shape | Effect |
+|-------|--------|
+| `{ value: T }` | Resolves immediately |
+| `{ value: T, delay: ms }` | Loading for `ms` ms, then resolves |
+| `{ loading: true }` | Stays loading indefinitely |
+| `{ error: unknown }` | Fails immediately |
+| `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
+
+### Barrel imports
+
+All mock providers for a tag are re-exported from `{tag}/index.mock.ts`; the root
+`index.mock.ts` re-exports all tag barrels. Import from the root barrel:
+
+```typescript
+import {
+  provideFindPetsByStatusMock,
+  provideAddPetMock,
+} from '@myapp/petstore-data-access/mock';
+// or from the same barrel as the tokens:
+import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access';
+```
+
+### Stale cleanup
+
+Re-running the generator without `--includeMocks` deletes any `.mock.ts` files from
+the previous run. Removing an endpoint from the spec also removes its `.mock.ts`.
 
 ---
 
@@ -373,7 +469,8 @@ your lib's `project.json` using the bundled executor:
       "options": {
         "specPath": "https://petstore3.swagger.io/api/v3/openapi.yaml",
         "outputDir": "libs/petstore-data-access/src",
-        "baseUrlToken": "PETSTORE_BASE_URL"
+        "baseUrlToken": "PETSTORE_BASE_URL",
+        "includeMocks": true
       }
     }
   }
