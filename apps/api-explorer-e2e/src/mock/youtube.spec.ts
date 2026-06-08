@@ -1,11 +1,21 @@
 import { test, expect } from '@playwright/test';
 
-// YOUTUBE_SEARCH_LIST receives a reactive lambda (() => params | undefined),
-// which is not JSON-serializable — request params are not asserted here.
-
 test.describe('YouTube page (mock)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/youtube');
+  });
+
+  test('YOUTUBE_SEARCH_LIST initial request resolves lambda to undefined (query not yet set)', async ({
+    page,
+  }) => {
+    // query() starts as '' — the component's lambda returns undefined to suppress the resource.
+    // Asserting undefined here confirms the suppression logic is wired correctly.
+    const history = await page.evaluate(() =>
+      window.__openApiMocks__['YOUTUBE_SEARCH_LIST'].getHistory(),
+    );
+    const req = history.find((e) => e.type === 'request');
+    expect(req).toBeTruthy();
+    expect(req!.args[0]).toBeUndefined();
   });
 
   test('shows Connected hint because API key is pre-set in mock config', async ({ page }) => {

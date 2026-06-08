@@ -130,7 +130,10 @@ export function createMockResourceRef<T>(
       requestListeners.add(cb);
       return () => requestListeners.delete(cb);
     },
-    _notifyRequest: (args) => {
+    _notifyRequest: (rawArgs) => {
+      const args = rawArgs.map((arg) =>
+        typeof arg === 'function' ? (arg as () => unknown)() : arg,
+      );
       requestListeners.forEach((cb) => cb(args));
     },
   };

@@ -1,8 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-// FIND_PETS_BY_STATUS on the pets page receives a reactive lambda (() => ({status})),
-// which is not JSON-serializable — request params are not asserted here.
-
 test.describe('Pets page (mock)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/pets');
@@ -15,6 +12,18 @@ test.describe('Pets page (mock)', () => {
     await expect(page.getByText('Rex')).toBeVisible();
     await expect(page.getByText('Luna')).toBeVisible();
     await expect(page.getByText('Buddy')).toBeVisible();
+  });
+
+  test('FIND_PETS_BY_STATUS initial request resolves lambda to default status "available"', async ({
+    page,
+  }) => {
+    await expect(page.locator('mat-progress-bar')).not.toBeVisible();
+    const history = await page.evaluate(() =>
+      window.__openApiMocks__['FIND_PETS_BY_STATUS'].getHistory(),
+    );
+    const req = history.find((e) => e.type === 'request');
+    expect(req).toBeTruthy();
+    expect(req!.args[0]).toEqual({ status: 'available' });
   });
 
   test('status filter chips are rendered', async ({ page }) => {
