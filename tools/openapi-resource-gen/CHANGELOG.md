@@ -1,3 +1,20 @@
+## 1.3.2 (2026-06-08)
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** track api-base-url.token.ts in writtenFiles to prevent stale cleanup deletion ([4b63f2c](https://github.com/constantant/angular-openapi-gen/commit/4b63f2c))
+- **openapi-resource-gen:** pass file URL to openapiTS for v7 compat ([27baeab](https://github.com/constantant/angular-openapi-gen/commit/27baeab))
+- **openapi-resource-gen:** handle openapi-typescript v7 export shape change ([d5fb642](https://github.com/constantant/angular-openapi-gen/commit/d5fb642))
+
+### 🏡 Chore
+
+- bump openapi-typescript from 6.7.6 to 7.13.0 ([89926d0](https://github.com/constantant/angular-openapi-gen/commit/89926d0))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.3.1 (2026-06-07)
 
 ### 🩹 Fixes
