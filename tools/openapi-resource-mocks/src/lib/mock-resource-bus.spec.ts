@@ -157,6 +157,50 @@ describe('MockResourceBus', () => {
     });
   });
 
+  describe('progress', () => {
+    it('setProgress() updates ref and appears in history', () => {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      window.__openApiMocks__!['MY_TOKEN'].setProgress('upload', 512, 1024);
+      expect(ref.progress()).toEqual({ type: 'upload', loaded: 512, total: 1024 });
+      const history = window.__openApiMocks__!['MY_TOKEN'].getHistory();
+      const ev = history.find((e) => e.type === 'progress') as any;
+      expect(ev).toBeDefined();
+      expect(ev.progressType).toBe('upload');
+      expect(ev.loaded).toBe(512);
+      expect(ev.total).toBe(1024);
+    });
+
+    it('setProgress() fires openapi-mock-event DOM event', () => {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      const events: CustomEvent[] = [];
+      document.addEventListener('openapi-mock-event', (e) => events.push(e as CustomEvent));
+      window.__openApiMocks__!['MY_TOKEN'].setProgress('download', 200);
+      expect(events).toHaveLength(1);
+      expect(events[0].detail.event.type).toBe('progress');
+    });
+
+    it('getState() includes progress', () => {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      window.__openApiMocks__!['MY_TOKEN'].setProgress('upload', 300, 1000);
+      const state = window.__openApiMocks__!['MY_TOKEN'].getState();
+      expect((state.progress as any)?.loaded).toBe(300);
+    });
+
+    it('applies setProgress from openapi-mock-control event', () => {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      document.dispatchEvent(
+        new CustomEvent('openapi-mock-control', {
+          detail: { key: 'MY_TOKEN', action: 'setProgress', progressType: 'download', loaded: 750, total: 1000 },
+        }),
+      );
+      expect(ref.progress()).toEqual({ type: 'download', loaded: 750, total: 1000 });
+    });
+  });
+
   describe('request capture', () => {
     it('emits request event to window history when factory is invoked', () => {
       const ref = createMockResourceRef();

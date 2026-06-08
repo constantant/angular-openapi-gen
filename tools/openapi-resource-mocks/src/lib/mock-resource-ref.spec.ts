@@ -128,6 +128,75 @@ describe('createMockResourceRef', () => {
     });
   });
 
+  describe('progress', () => {
+    it('starts undefined', () => {
+      const ref = createMockResourceRef();
+      expect(ref.progress()).toBeUndefined();
+    });
+
+    it('setProgress() sets progress and status → loading', () => {
+      const ref = createMockResourceRef<string>();
+      ref.setProgress('upload', 512, 1024);
+      expect(ref.progress()).toEqual({ type: 'upload', loaded: 512, total: 1024 });
+      expect(ref.isLoading()).toBe(true);
+    });
+
+    it('setProgress() works without total (streaming download)', () => {
+      const ref = createMockResourceRef<string>();
+      ref.setProgress('download', 4096);
+      expect(ref.progress()).toEqual({ type: 'download', loaded: 4096, total: undefined });
+    });
+
+    it('resolve() clears progress', () => {
+      const ref = createMockResourceRef<string>({ loading: true });
+      ref.setProgress('upload', 800, 1024);
+      ref.resolve('done');
+      expect(ref.progress()).toBeUndefined();
+      expect(ref.status()).toBe('resolved');
+    });
+
+    it('fail() keeps progress (shows where transfer stopped)', () => {
+      const ref = createMockResourceRef<string>({ loading: true });
+      ref.setProgress('upload', 300, 1024);
+      ref.fail(new Error('timeout'));
+      expect(ref.progress()).toEqual({ type: 'upload', loaded: 300, total: 1024 });
+      expect(ref.status()).toBe('error');
+    });
+
+    it('reset() clears progress', () => {
+      const ref = createMockResourceRef<string>({ loading: true });
+      ref.setProgress('download', 200, 500);
+      ref.reset();
+      expect(ref.progress()).toBeUndefined();
+    });
+
+    it('simulateProgress() animates through steps then resolves', async () => {
+      vi.useFakeTimers();
+      const ref = createMockResourceRef<string>();
+      const progressValues: number[] = [];
+      // observe progress changes via polling after each timer advance
+      ref.simulateProgress('upload', 1000, 500, 'done', 5);
+
+      expect(ref.isLoading()).toBe(true);
+      expect(ref.progress()).toBeUndefined(); // no progress yet — first step fires at 100ms
+
+      vi.advanceTimersByTime(100);
+      progressValues.push(ref.progress()?.loaded ?? -1);
+
+      vi.advanceTimersByTime(400); // advance through remaining 4 steps
+      expect(ref.progress()?.loaded).toBe(1000);
+
+      vi.advanceTimersByTime(100); // resolve fires after durationMs + stepDelay
+      expect(ref.status()).toBe('resolved');
+      expect(ref.value()).toBe('done');
+      expect(ref.progress()).toBeUndefined();
+
+      expect(progressValues[0]).toBe(200); // first step: 1000/5 * 1
+
+      vi.useRealTimers();
+    });
+  });
+
   describe('ResourceRef interface compliance', () => {
     it('reload() returns false (no-op)', () => {
       const ref = createMockResourceRef();

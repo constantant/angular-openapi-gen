@@ -8,7 +8,15 @@ export interface WindowMockEntry {
   setLoading(): void;
   fail(error: unknown): void;
   reset(): void;
-  getState(): { status: string; value: unknown; error: unknown };
+  setProgress(type: 'upload' | 'download', loaded: number, total?: number): void;
+  simulateProgress(
+    type: 'upload' | 'download',
+    totalBytes: number,
+    durationMs: number,
+    finalValue: unknown,
+    steps?: number,
+  ): void;
+  getState(): { status: string; value: unknown; error: unknown; progress: unknown };
   getHistory(): MockEvent[];
   onEvent(cb: (event: MockEvent) => void): () => void;
 }
@@ -46,14 +54,26 @@ export class MockResourceBus {
     ref.onRequest((args) => emit({ type: 'request', args, ts: Date.now() }));
 
     window.__openApiMocks__[key] = {
-      resolve:      (v)     => { ref.resolve(v as T); emit({ type: 'resolve', value: v, ts: Date.now() }); },
-      resolveAfter: (ms, v) => { ref.resolveAfter(ms, v as T); },
-      setLoading:   ()      => { ref.setLoading();    emit({ type: 'loading', ts: Date.now() }); },
-      fail:         (e)     => { ref.fail(e);         emit({ type: 'error', error: e, ts: Date.now() }); },
-      reset:        ()      => { ref.reset();         emit({ type: 'reset', ts: Date.now() }); },
-      getState:     ()      => ({ status: String(ref.status()), value: ref.value(), error: ref.error() }),
-      getHistory:   ()      => [...history],
-      onEvent:      (cb)    => { listeners.add(cb); return () => listeners.delete(cb); },
+      resolve:      (v)        => { ref.resolve(v as T); emit({ type: 'resolve', value: v, ts: Date.now() }); },
+      resolveAfter: (ms, v)    => { ref.resolveAfter(ms, v as T); },
+      setLoading:   ()         => { ref.setLoading();   emit({ type: 'loading', ts: Date.now() }); },
+      fail:         (e)        => { ref.fail(e);        emit({ type: 'error', error: e, ts: Date.now() }); },
+      reset:        ()         => { ref.reset();        emit({ type: 'reset', ts: Date.now() }); },
+      setProgress:  (pt, l, t) => {
+        ref.setProgress(pt, l, t);
+        emit({ type: 'progress', progressType: pt, loaded: l, total: t, ts: Date.now() });
+      },
+      simulateProgress: (pt, total, dur, v, steps) => {
+        ref.simulateProgress(pt, total, dur, v as T, steps);
+      },
+      getState:  () => ({
+        status: String(ref.status()),
+        value: ref.value(),
+        error: ref.error(),
+        progress: ref.progress(),
+      }),
+      getHistory: ()  => [...history],
+      onEvent:    (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
     };
   }
 
@@ -67,17 +87,34 @@ export class MockResourceBus {
   constructor() {
     if (typeof document === 'undefined') return;
     document.addEventListener('openapi-mock-control', (e: Event) => {
-      const { key, action, value, delayMs } = (
-        e as CustomEvent<{ key: string; action: string; value?: unknown; delayMs?: number }>
+      const detail = (
+        e as CustomEvent<{
+          key: string;
+          action: string;
+          value?: unknown;
+          delayMs?: number;
+          progressType?: 'upload' | 'download';
+          loaded?: number;
+          total?: number;
+          steps?: number;
+        }>
       ).detail;
-      const ref = this.refs.get(key);
+      const ref = this.refs.get(detail.key);
       if (!ref) return;
-      switch (action) {
-        case 'resolve':      ref.resolve(value);                    break;
-        case 'resolveAfter': ref.resolveAfter(delayMs ?? 0, value); break;
-        case 'setLoading':   ref.setLoading();                      break;
-        case 'fail':         ref.fail(value);                       break;
-        case 'reset':        ref.reset();                           break;
+      switch (detail.action) {
+        case 'resolve':          ref.resolve(detail.value);                              break;
+        case 'resolveAfter':     ref.resolveAfter(detail.delayMs ?? 0, detail.value);    break;
+        case 'setLoading':       ref.setLoading();                                       break;
+        case 'fail':             ref.fail(detail.value);                                 break;
+        case 'reset':            ref.reset();                                            break;
+        case 'setProgress':      ref.setProgress(detail.progressType!, detail.loaded!, detail.total); break;
+        case 'simulateProgress': ref.simulateProgress(
+                                   detail.progressType!,
+                                   detail.total!,
+                                   detail.delayMs ?? 1000,
+                                   detail.value,
+                                   detail.steps,
+                                 );                                                      break;
       }
     });
   }

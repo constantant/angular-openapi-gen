@@ -1,5 +1,6 @@
 import { signal, computed, Signal } from '@angular/core';
 import type { ResourceStatus } from '@angular/core';
+import type { MockProgress } from './mock-events';
 
 export type MockResourceState<T> =
   | { value: T }
@@ -11,6 +12,7 @@ export interface MockResourceRef<T> {
   readonly status: Signal<ResourceStatus>;
   readonly error: Signal<unknown>;
   readonly isLoading: Signal<boolean>;
+  readonly progress: Signal<MockProgress | undefined>;
   hasValue(): boolean;
   reload(): boolean;
   destroy(): void;
@@ -22,6 +24,14 @@ export interface MockResourceRef<T> {
   setLoading(): void;
   fail(error: unknown): void;
   reset(): void;
+  setProgress(type: 'upload' | 'download', loaded: number, total?: number): void;
+  simulateProgress(
+    type: 'upload' | 'download',
+    totalBytes: number,
+    durationMs: number,
+    finalValue: T,
+    steps?: number,
+  ): void;
   onRequest(cb: (args: unknown[]) => void): () => void;
 }
 
@@ -35,6 +45,7 @@ export function createMockResourceRef<T>(
   const _status = signal<ResourceStatus>('idle');
   const _value = signal<T | undefined>(undefined);
   const _error = signal<unknown>(undefined);
+  const _progress = signal<MockProgress | undefined>(undefined);
   const requestListeners = new Set<(args: unknown[]) => void>();
 
   if (initialState) {
@@ -53,6 +64,7 @@ export function createMockResourceRef<T>(
     value: _value.asReadonly(),
     status: _status.asReadonly(),
     error: _error.asReadonly(),
+    progress: _progress.asReadonly(),
     isLoading: computed(
       () => _status() === 'loading' || _status() === 'reloading',
     ),
@@ -61,6 +73,7 @@ export function createMockResourceRef<T>(
     resolve(v: T): void {
       _value.set(v);
       _error.set(undefined);
+      _progress.set(undefined);
       _status.set('resolved');
     },
     resolveAfter(ms: number, v: T): void {
@@ -73,11 +86,13 @@ export function createMockResourceRef<T>(
     },
     fail(e: unknown): void {
       _error.set(e);
+      // progress intentionally kept — shows where transfer was when it failed
       _status.set('error');
     },
     reset(): void {
       _value.set(undefined);
       _error.set(undefined);
+      _progress.set(undefined);
       _status.set('idle');
     },
     set(v: T): void {
@@ -87,6 +102,26 @@ export function createMockResourceRef<T>(
     update(fn: (v: T | undefined) => T): void {
       _value.update(fn);
       _status.set('local');
+    },
+    setProgress(type: 'upload' | 'download', loaded: number, total?: number): void {
+      _progress.set({ type, loaded, total });
+      _status.set('loading');
+    },
+    simulateProgress(
+      type: 'upload' | 'download',
+      totalBytes: number,
+      durationMs: number,
+      finalValue: T,
+      steps = 10,
+    ): void {
+      ref.setLoading();
+      const stepDelay = durationMs / steps;
+      for (let i = 1; i <= steps; i++) {
+        setTimeout(() => {
+          ref.setProgress(type, Math.round((totalBytes / steps) * i), totalBytes);
+        }, stepDelay * i);
+      }
+      setTimeout(() => ref.resolve(finalValue), durationMs + stepDelay);
     },
     reload: () => false,
     destroy: () => {},
