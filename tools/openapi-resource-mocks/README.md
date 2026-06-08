@@ -213,11 +213,19 @@ document.addEventListener('openapi-mock-event', (e) => {
 
 Returns `EnvironmentProviders`. Call once in your root providers or TestBed setup.
 
-### `provideMockResource(token, key, initialState?)`
+### `provideMockResource(token, key, initialBehavior?)`
 
 Returns `FactoryProvider`. Registers `token` in the bus under `key`.
 
-`initialState` can be `{ value: T }`, `{ loading: true }`, or `{ error: unknown }`.
+`initialBehavior` controls the starting state of the mock:
+
+| Shape | Effect |
+|-------|--------|
+| `{ value: T }` | Resolves immediately with value |
+| `{ value: T, delay: ms }` | Loading for `ms` ms, then resolves |
+| `{ loading: true }` | Stays loading indefinitely |
+| `{ error: unknown }` | Fails immediately |
+| `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
 
 ### `injectMockResource<T>(key)`
 

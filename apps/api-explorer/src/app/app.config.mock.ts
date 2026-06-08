@@ -33,6 +33,7 @@ export const appConfig: ApplicationConfig = {
 
     provideMockResource(USERS_GET_BY_USERNAME, 'USERS_GET_BY_USERNAME', {
       value: { login: 'angular', name: 'Angular', public_repos: 300 },
+      delay: 500,
     }),
 
     provideMockResource(REPOS_LIST_FOR_USER, 'REPOS_LIST_FOR_USER', {
@@ -41,6 +42,7 @@ export const appConfig: ApplicationConfig = {
         { id: 2, name: 'angular-cli', description: 'CLI tool for Angular', stargazers_count: 26300 },
         { id: 3, name: 'components', description: 'Material Design components for Angular', stargazers_count: 24100 },
       ],
+      delay: 500,
     }),
 
     provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', {
@@ -49,6 +51,7 @@ export const appConfig: ApplicationConfig = {
         { id: 2, name: 'Luna', status: 'available', photoUrls: [] },
         { id: 3, name: 'Buddy', status: 'available', photoUrls: [] },
       ],
+      delay: 500,
     }),
 
     provideMockResource(GET_V1_FORECAST, 'GET_V1_FORECAST', {
@@ -63,6 +66,7 @@ export const appConfig: ApplicationConfig = {
           precipitation_sum: [0, 0.5, 8],
         },
       },
+      delay: 500,
     }),
 
     provideMockResource(YOUTUBE_SEARCH_LIST, 'YOUTUBE_SEARCH_LIST', {
@@ -96,6 +100,7 @@ export const appConfig: ApplicationConfig = {
           },
         ],
       },
+      delay: 500,
     }),
   ],
 };

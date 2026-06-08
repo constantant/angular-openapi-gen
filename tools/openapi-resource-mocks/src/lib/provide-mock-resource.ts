@@ -1,11 +1,7 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { MockResourceBus } from './mock-resource-bus';
-import {
-  createMockResourceRef,
-  type MockResourceState,
-  type MockResourceRefInternal,
-} from './mock-resource-ref';
+import { createMockResourceRef, type MockResourceRefInternal } from './mock-resource-ref';
 
 type DeepPartial<T> = T extends Array<infer E>
   ? DeepPartial<E>[]
@@ -13,22 +9,40 @@ type DeepPartial<T> = T extends Array<infer E>
     ? { [K in keyof T]?: DeepPartial<T[K]> }
     : T;
 
-type ProviderInitialState<T> =
-  | { value: DeepPartial<T> }
+type ProviderInitialBehavior<T> =
+  | { value: DeepPartial<T>; delay?: number }
   | { loading: true }
-  | { error: unknown };
+  | { error: unknown; delay?: number };
 
 export function provideMockResource<T>(
   token: InjectionToken<(...args: unknown[]) => ReturnType<typeof httpResource<T>>>,
   key: string,
-  initialState?: ProviderInitialState<T>,
+  initialBehavior?: ProviderInitialBehavior<T>,
 ): FactoryProvider {
   return {
     provide: token,
     useFactory: () => {
       const bus = inject(MockResourceBus);
-      const ref = createMockResourceRef<T>(initialState as MockResourceState<T>);
+      const ref = createMockResourceRef<T>();
       bus.register(key, ref);
+      if (initialBehavior) {
+        if ('value' in initialBehavior) {
+          if (initialBehavior.delay) {
+            ref.resolveAfter(initialBehavior.delay, initialBehavior.value as T);
+          } else {
+            ref.resolve(initialBehavior.value as T);
+          }
+        } else if ('error' in initialBehavior) {
+          if (initialBehavior.delay) {
+            ref.setLoading();
+            setTimeout(() => ref.fail(initialBehavior.error), initialBehavior.delay);
+          } else {
+            ref.fail(initialBehavior.error);
+          }
+        } else {
+          ref.setLoading();
+        }
+      }
       return (...args: unknown[]): ReturnType<typeof httpResource<T>> => {
         (ref as MockResourceRefInternal<T>)._notifyRequest(args);
         return ref as unknown as ReturnType<typeof httpResource<T>>;
