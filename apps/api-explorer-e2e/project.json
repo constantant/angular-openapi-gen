@@ -5,5 +5,18 @@
   "sourceRoot": "apps/api-explorer-e2e/src",
   "implicitDependencies": ["api-explorer"],
   "// targets": "to see all targets run: nx show project api-explorer-e2e --web",
-  "targets": {}
+  "targets": {
+    "e2e-mock": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "playwright test --config=playwright.mock.config.ts",
+        "cwd": "{projectRoot}"
+      },
+      "configurations": {
+        "ci": {
+          "command": "playwright test --config=playwright.mock.config.ts --reporter=blob"
+        }
+      }
+    }
+  }
 }

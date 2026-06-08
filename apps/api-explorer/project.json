@@ -73,6 +73,10 @@
         },
         "mock": {
           "buildTarget": "api-explorer:build:mock"
+        },
+        "mock-e2e": {
+          "buildTarget": "api-explorer:build:mock",
+          "port": 4201
         }
       },
       "defaultConfiguration": "development"
