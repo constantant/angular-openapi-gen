@@ -33,11 +33,12 @@ Add `provideMockResourceBus()` once, then one `provideMockResource()` per token:
 ```typescript
 // app.config.mock.ts (used in tests / E2E variant)
 import { provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
-import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
+import { FIND_PETS_BY_STATUS, UPLOAD_FILE } from '@myapp/petstore-data-access';
 
 export const mockProviders = [
   provideMockResourceBus(),
   provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS'),
+  provideMockResource(UPLOAD_FILE, 'UPLOAD_FILE'),
 ];
 ```
 
@@ -75,10 +76,81 @@ Types come from the generated lib — no hand-written interfaces needed.
 
 ---
 
+## File upload / download progress
+
+### In-process (unit tests / Storybook)
+
+```typescript
+const mock = TestBed.runInInjectionContext(() =>
+  injectMockResource<UploadResponse>('UPLOAD_FILE'),
+);
+
+// Animate through 10 steps over 2 s, then resolve
+mock.simulateProgress('upload', 4_000_000, 2000, { id: 'abc123' });
+
+// Or drive progress manually for precise test control
+mock.setProgress('upload', 1_000_000, 4_000_000); // 25 %
+mock.setProgress('upload', 4_000_000, 4_000_000); // 100 %
+mock.resolve({ id: 'abc123' });
+
+// Download progress (total unknown — streaming)
+mock.setProgress('download', 16_384);
+
+// Simulate failure mid-upload — progress is preserved so the UI can show "failed at 25%"
+mock.setProgress('upload', 1_000_000, 4_000_000);
+mock.fail(new Error('connection reset'));
+console.log(mock.progress()); // { type: 'upload', loaded: 1_000_000, total: 4_000_000 }
+```
+
+### E2E (Playwright)
+
+```typescript
+// Animate upload progress then resolve
+await page.evaluate(() =>
+  window.__openApiMocks__['UPLOAD_FILE'].simulateProgress('upload', 4_000_000, 2000, { id: 'abc123' }),
+);
+await expect(page.locator('[data-testid="progress-bar"]')).toBeVisible();
+
+// Manual steps
+await page.evaluate(() =>
+  window.__openApiMocks__['UPLOAD_FILE'].setProgress('upload', 1_000_000, 4_000_000),
+);
+await expect(page.locator('[data-testid="progress-bar"]')).toHaveAttribute('aria-valuenow', '25');
+
+// Fail mid-upload
+await page.evaluate(() => window.__openApiMocks__['UPLOAD_FILE'].fail(new Error('timeout')));
+const state = await page.evaluate(() => window.__openApiMocks__['UPLOAD_FILE'].getState());
+console.log(state.progress); // { type: 'upload', loaded: 1_000_000, total: 4_000_000 }
+```
+
+### Chrome Extension → app
+
+```javascript
+// Animate upload
+document.dispatchEvent(new CustomEvent('openapi-mock-control', {
+  detail: {
+    key: 'UPLOAD_FILE',
+    action: 'simulateProgress',
+    progressType: 'upload',
+    total: 4_000_000,
+    delayMs: 2000,
+    value: { id: 'abc123' },
+    steps: 20,        // optional, default 10
+  },
+}));
+
+// Single progress step
+document.dispatchEvent(new CustomEvent('openapi-mock-control', {
+  detail: { key: 'UPLOAD_FILE', action: 'setProgress', progressType: 'download', loaded: 512, total: 1024 },
+}));
+```
+
+---
+
 ## E2E tests (Playwright)
 
 ```typescript
-// Playwright test
+// Resolve with data
 await page.evaluate(() =>
   window.__openApiMocks__['FIND_PETS_BY_STATUS'].resolve([
     { id: 1, name: 'Rex', status: 'available' },
@@ -95,12 +167,12 @@ await page.evaluate(() =>
   window.__openApiMocks__['FIND_PETS_BY_STATUS'].resolveAfter(1000, []),
 );
 
-// Inspect current state
+// Inspect current state (includes progress if active)
 const state = await page.evaluate(() =>
   window.__openApiMocks__['FIND_PETS_BY_STATUS'].getState(),
 );
 
-// Full event history (requests + responses)
+// Full event history (requests + responses + progress ticks)
 const history = await page.evaluate(() =>
   window.__openApiMocks__['FIND_PETS_BY_STATUS'].getHistory(),
 );
@@ -117,7 +189,10 @@ document.dispatchEvent(new CustomEvent('openapi-mock-control', {
   detail: { key: 'FIND_PETS_BY_STATUS', action: 'resolve', value: [...] },
 }));
 // actions: resolve | resolveAfter | setLoading | fail | reset
-// resolveAfter also takes: delayMs: number
+//          setProgress | simulateProgress
+// resolveAfter:     delayMs: number
+// setProgress:      progressType: 'upload'|'download', loaded: number, total?: number
+// simulateProgress: progressType, total: number, delayMs: number, value, steps?: number
 ```
 
 **App → extension (observe):**
@@ -125,7 +200,7 @@ document.dispatchEvent(new CustomEvent('openapi-mock-control', {
 ```javascript
 document.addEventListener('openapi-mock-event', (e) => {
   const { key, event } = e.detail;
-  // event: { type, value?, error?, args?, ts }
+  // event.type: 'request' | 'resolve' | 'loading' | 'error' | 'reset' | 'progress'
   devtoolsPanel.update(key, event);
 });
 ```
@@ -150,49 +225,65 @@ Must be called inside an injection context (e.g. `TestBed.runInInjectionContext`
 
 ### `createMockResourceRef<T>(initialState?)`
 
-Creates a standalone ref without the bus — useful when you want to pass the ref to `provideMockResource` yourself for more fine-grained test setup.
+Creates a standalone ref without the bus — useful when passing the ref to `provideMockResource` yourself for fine-grained test setup.
 
 ### `MockResourceRef<T>`
 
 | Member | Description |
 |--------|-------------|
 | `value: Signal<T \| undefined>` | Current response data |
-| `status: Signal<ResourceStatus>` | Angular `ResourceStatus` enum value |
+| `status: Signal<ResourceStatus>` | `'idle' \| 'loading' \| 'reloading' \| 'resolved' \| 'error' \| 'local'` |
 | `error: Signal<unknown>` | Current error, if any |
-| `isLoading: Signal<boolean>` | `true` while Loading or Refreshing |
+| `isLoading: Signal<boolean>` | `true` while status is `'loading'` or `'reloading'` |
+| `progress: Signal<MockProgress \| undefined>` | Current transfer progress, if active |
 | `hasValue(): boolean` | `true` when value is set |
-| `resolve(value: T)` | Set value, clear error → Resolved |
-| `resolveAfter(ms, value)` | Loading immediately, resolve after delay |
-| `setLoading()` | Clear error → Loading |
-| `fail(error)` | Set error → Error |
-| `reset()` | Clear all → Idle |
-| `set(value)` | Local mutation → Local (ResourceRef interface) |
-| `update(fn)` | Local update → Local (ResourceRef interface) |
+| `resolve(value: T)` | Set value, clear error and progress → `'resolved'` |
+| `resolveAfter(ms, value)` | Set loading immediately, resolve after delay |
+| `setLoading()` | Clear error → `'loading'` |
+| `fail(error)` | Set error → `'error'` (progress preserved) |
+| `reset()` | Clear all including progress → `'idle'` |
+| `setProgress(type, loaded, total?)` | Set progress and status → `'loading'` |
+| `simulateProgress(type, totalBytes, durationMs, finalValue, steps?)` | Animate incremental progress over `durationMs` ms then resolve |
+| `set(value)` | Local mutation → `'local'` (ResourceRef interface) |
+| `update(fn)` | Local update → `'local'` (ResourceRef interface) |
 | `onRequest(cb)` | Subscribe to factory invocations; returns unsubscribe fn |
 | `reload()` | No-op, returns `false` |
+
+### `MockProgress`
+
+```typescript
+interface MockProgress {
+  type: 'upload' | 'download';
+  loaded: number;   // bytes transferred
+  total?: number;   // total bytes (undefined for streaming / unknown-length responses)
+}
+```
 
 ### `window.__openApiMocks__[key]`
 
 | Member | Description |
 |--------|-------------|
-| `resolve(value)` | Set value (serializable) |
+| `resolve(value)` | Set value (JSON-serializable) |
 | `resolveAfter(ms, value)` | Delayed resolve |
 | `setLoading()` | Start loading state |
 | `fail(error)` | Set error state |
-| `reset()` | Return to Idle |
-| `getState()` | `{ status, value, error }` snapshot |
-| `getHistory()` | Array of all `MockEvent` entries |
-| `onEvent(cb)` | Subscribe to events; returns unsubscribe fn |
+| `reset()` | Return to idle |
+| `setProgress(type, loaded, total?)` | Set transfer progress |
+| `simulateProgress(type, totalBytes, durationMs, finalValue, steps?)` | Animate progress then resolve |
+| `getState()` | `{ status, value, error, progress }` snapshot |
+| `getHistory()` | Array of all `MockEvent` entries (requests, responses, progress ticks) |
+| `onEvent(cb)` | Subscribe to all events; returns unsubscribe fn |
 
 ### `MockEvent` types
 
 ```typescript
 type MockEvent =
-  | { type: 'request'; args: unknown[]; ts: number }  // factory called by component
-  | { type: 'resolve'; value: unknown; ts: number }
-  | { type: 'loading'; ts: number }
-  | { type: 'error'; error: unknown; ts: number }
-  | { type: 'reset'; ts: number };
+  | { type: 'request';  args: unknown[]; ts: number }   // factory called by component
+  | { type: 'resolve';  value: unknown; ts: number }
+  | { type: 'loading';  ts: number }
+  | { type: 'error';    error: unknown; ts: number }
+  | { type: 'reset';    ts: number }
+  | { type: 'progress'; progressType: 'upload' | 'download'; loaded: number; total?: number; ts: number };
 ```
 
 ---
