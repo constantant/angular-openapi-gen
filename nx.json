@@ -58,7 +58,7 @@
     }
   },
   "release": {
-    "projects": ["openapi-resource-gen"],
+    "projects": ["openapi-resource-gen", "openapi-resource-mocks"],
     "projectsRelationship": "independent",
     "git": {
       "commit": true,

@@ -71,7 +71,15 @@ jobs:
         if: ${{ !inputs.dryRun }}
         run: git push --follow-tags origin master
 
-      - name: Create GitHub Release
+      # Build after the version bump so the dist package.json carries the new version.
+      # --skip-nx-cache ensures the build always runs fresh (no stale cached output).
+      - name: Build openapi-resource-gen
+        run: npx nx build openapi-resource-gen --skip-nx-cache
+
+      - name: Build openapi-resource-mocks
+        run: npx nx build openapi-resource-mocks --skip-nx-cache
+
+      - name: Create GitHub Release for openapi-resource-gen
         if: ${{ !inputs.dryRun }}
         run: |
           VERSION=$(node -p "require('./tools/openapi-resource-gen/package.json').version")
@@ -88,21 +96,51 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build after the version bump so the dist package.json carries the new version.
-      # --skip-nx-cache ensures the build always runs fresh (no stale cached output).
-      - name: Build
-        run: npx nx build openapi-resource-gen --skip-nx-cache
+      - name: Create GitHub Release for openapi-resource-mocks
+        if: ${{ !inputs.dryRun }}
+        run: |
+          VERSION=$(node -p "require('./tools/openapi-resource-mocks/package.json').version")
+          TAG="openapi-resource-mocks@${VERSION}"
+          NOTES=$(awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
+            tools/openapi-resource-mocks/CHANGELOG.md)
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — skipping."
+          else
+            gh release create "$TAG" \
+              --title "@constantant/openapi-resource-mocks@${VERSION}" \
+              --notes "${NOTES:-No changelog entries for this version.}"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Pre-release versions (1.2.0-beta.1) are published under the "next" dist-tag
       # so that `npm install @constantant/openapi-resource-gen` still gets the stable release.
       # --provenance attaches a signed OIDC provenance attestation (supply-chain security).
-      - name: Publish to npm
+      - name: Publish openapi-resource-gen to npm
         if: ${{ !inputs.dryRun }}
-        id: publish
+        id: publish-gen
         working-directory: dist/tools/openapi-resource-gen
         run: |
           VERSION=$(node -p "require('./package.json').version")
           if npm view "@constantant/openapi-resource-gen@${VERSION}" version 2>/dev/null | grep -q .; then
+            echo "Version ${VERSION} already published — nothing to do."
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          else
+            NPM_TAG=$(echo "$VERSION" | grep -q '-' && echo "next" || echo "latest")
+            npm publish --access public --tag "$NPM_TAG"
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish openapi-resource-mocks to npm
+        if: ${{ !inputs.dryRun }}
+        id: publish-mocks
+        working-directory: dist/tools/openapi-resource-mocks
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "@constantant/openapi-resource-mocks@${VERSION}" version 2>/dev/null | grep -q .; then
             echo "Version ${VERSION} already published — nothing to do."
             echo "published=false" >> "$GITHUB_OUTPUT"
           else
@@ -120,19 +158,33 @@ jobs:
           if [[ "${{ inputs.dryRun }}" == "true" ]]; then
             echo "## 🔍 Dry run — no changes were pushed or published" >> "$GITHUB_STEP_SUMMARY"
           else
-            VERSION="${{ steps.publish.outputs.version }}"
-            PUBLISHED="${{ steps.publish.outputs.published }}"
             {
-              if [[ "$PUBLISHED" == "true" ]]; then
-                echo "## ✅ Published \`@constantant/openapi-resource-gen@${VERSION}\`"
+              GEN_VERSION="${{ steps.publish-gen.outputs.version }}"
+              GEN_PUBLISHED="${{ steps.publish-gen.outputs.published }}"
+              if [[ "$GEN_PUBLISHED" == "true" ]]; then
+                echo "## ✅ Published \`@constantant/openapi-resource-gen@${GEN_VERSION}\`"
                 echo ""
-                echo "**npm:** https://www.npmjs.com/package/@constantant/openapi-resource-gen/v/${VERSION}"
+                echo "**npm:** https://www.npmjs.com/package/@constantant/openapi-resource-gen/v/${GEN_VERSION}"
                 echo ""
                 echo "### Changelog"
-                awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
+                awk "/^## ${GEN_VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
                   tools/openapi-resource-gen/CHANGELOG.md
               else
-                echo "## ℹ️ No new version — \`@constantant/openapi-resource-gen@${VERSION}\` already on npm"
+                echo "## ℹ️ No new version — \`@constantant/openapi-resource-gen@${GEN_VERSION}\` already on npm"
+              fi
+              echo ""
+              MOCKS_VERSION="${{ steps.publish-mocks.outputs.version }}"
+              MOCKS_PUBLISHED="${{ steps.publish-mocks.outputs.published }}"
+              if [[ "$MOCKS_PUBLISHED" == "true" ]]; then
+                echo "## ✅ Published \`@constantant/openapi-resource-mocks@${MOCKS_VERSION}\`"
+                echo ""
+                echo "**npm:** https://www.npmjs.com/package/@constantant/openapi-resource-mocks/v/${MOCKS_VERSION}"
+                echo ""
+                echo "### Changelog"
+                awk "/^## ${MOCKS_VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
+                  tools/openapi-resource-mocks/CHANGELOG.md
+              else
+                echo "## ℹ️ No new version — \`@constantant/openapi-resource-mocks@${MOCKS_VERSION}\` already on npm"
               fi
             } >> "$GITHUB_STEP_SUMMARY"
           fi

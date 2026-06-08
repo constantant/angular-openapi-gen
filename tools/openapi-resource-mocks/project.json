@@ -1,0 +1,42 @@
+{
+  "name": "openapi-resource-mocks",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/openapi-resource-mocks/src",
+  "projectType": "library",
+  "tags": ["scope:tools", "type:mocks"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/tools/openapi-resource-mocks",
+        "main": "tools/openapi-resource-mocks/src/index.ts",
+        "tsConfig": "tools/openapi-resource-mocks/tsconfig.lib.json",
+        "assets": [
+          {
+            "input": "tools/openapi-resource-mocks",
+            "glob": "package.json",
+            "output": "."
+          },
+          {
+            "input": "tools/openapi-resource-mocks",
+            "glob": "README.md",
+            "output": "."
+          },
+          {
+            "input": "tools/openapi-resource-mocks",
+            "glob": "CHANGELOG.md",
+            "output": "."
+          }
+        ]
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx vitest run --config tools/openapi-resource-mocks/vitest.config.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}
