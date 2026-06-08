@@ -1,6 +1,7 @@
 import {
   ApplicationConfig,
   InjectionToken,
+  ResourceRef,
   WritableSignal,
   provideBrowserGlobalErrorListeners,
   signal,
@@ -18,6 +19,12 @@ import { FIND_PETS_BY_STATUS } from '@angular-openapi-gen/petstore-data-access';
 import { GET_V1_FORECAST } from '@angular-openapi-gen/weather-data-access';
 import { YOUTUBE_SEARCH_LIST } from '@angular-openapi-gen/youtube-data-access';
 
+/** Extracts the response type T from an InjectionToken<(...args) => ResourceRef<T>>. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TokenValue<Token extends InjectionToken<any>> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Token extends InjectionToken<(...args: any[]) => ResourceRef<infer V>> ? V : never;
+
 export const YOUTUBE_API_KEY = new InjectionToken<WritableSignal<string | null>>(
   'YOUTUBE_API_KEY',
   { providedIn: 'root', factory: () => signal('mock-api-key') },
@@ -32,8 +39,7 @@ export const appConfig: ApplicationConfig = {
     provideMockResourceBus(),
 
     provideMockResource(USERS_GET_BY_USERNAME, 'USERS_GET_BY_USERNAME', {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      value: { login: 'angular', name: 'Angular', public_repos: 300 } as any,
+      value: { login: 'angular', name: 'Angular', public_repos: 300 } as TokenValue<typeof USERS_GET_BY_USERNAME>,
     }),
 
     provideMockResource(REPOS_LIST_FOR_USER, 'REPOS_LIST_FOR_USER', {
@@ -41,8 +47,7 @@ export const appConfig: ApplicationConfig = {
         { id: 1, name: 'angular', description: 'Deliver web apps with confidence', stargazers_count: 93400 },
         { id: 2, name: 'angular-cli', description: 'CLI tool for Angular', stargazers_count: 26300 },
         { id: 3, name: 'components', description: 'Material Design components for Angular', stargazers_count: 24100 },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ] as any,
+      ] as TokenValue<typeof REPOS_LIST_FOR_USER>,
     }),
 
     provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', {
@@ -50,8 +55,7 @@ export const appConfig: ApplicationConfig = {
         { id: 1, name: 'Rex', status: 'available', photoUrls: [] },
         { id: 2, name: 'Luna', status: 'available', photoUrls: [] },
         { id: 3, name: 'Buddy', status: 'available', photoUrls: [] },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ] as any,
+      ] as TokenValue<typeof FIND_PETS_BY_STATUS>,
     }),
 
     provideMockResource(GET_V1_FORECAST, 'GET_V1_FORECAST', {
@@ -65,8 +69,7 @@ export const appConfig: ApplicationConfig = {
           temperature_2m_min: [13, 15, 11],
           precipitation_sum: [0, 0.5, 8],
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+      } as TokenValue<typeof GET_V1_FORECAST>,
     }),
 
     provideMockResource(YOUTUBE_SEARCH_LIST, 'YOUTUBE_SEARCH_LIST', {
@@ -99,8 +102,7 @@ export const appConfig: ApplicationConfig = {
             },
           },
         ],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
+      } as TokenValue<typeof YOUTUBE_SEARCH_LIST>,
     }),
   ],
 };
