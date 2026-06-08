@@ -9,4 +9,3 @@
 - Claude Sonnet 4.6
 - kk
 
-# Changelog
