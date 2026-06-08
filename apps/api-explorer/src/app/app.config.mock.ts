@@ -1,7 +1,6 @@
 import {
   ApplicationConfig,
   InjectionToken,
-  ResourceRef,
   WritableSignal,
   provideBrowserGlobalErrorListeners,
   signal,
@@ -11,6 +10,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { appRoutes } from './app.routes';
 import { provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
+import type { TokenValue } from '@constantant/openapi-resource-mocks';
 import {
   USERS_GET_BY_USERNAME,
   REPOS_LIST_FOR_USER,
@@ -18,12 +18,6 @@ import {
 import { FIND_PETS_BY_STATUS } from '@angular-openapi-gen/petstore-data-access';
 import { GET_V1_FORECAST } from '@angular-openapi-gen/weather-data-access';
 import { YOUTUBE_SEARCH_LIST } from '@angular-openapi-gen/youtube-data-access';
-
-/** Extracts the response type T from an InjectionToken<(...args) => ResourceRef<T>>. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TokenValue<Token extends InjectionToken<any>> =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Token extends InjectionToken<(...args: any[]) => ResourceRef<infer V>> ? V : never;
 
 export const YOUTUBE_API_KEY = new InjectionToken<WritableSignal<string | null>>(
   'YOUTUBE_API_KEY',

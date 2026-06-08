@@ -223,6 +223,20 @@ Returns `FactoryProvider`. Registers `token` in the bus under `key`.
 
 Must be called inside an injection context (e.g. `TestBed.runInInjectionContext`). Returns `MockResourceRef<T>`.
 
+### `TokenValue<Token>`
+
+Utility type that extracts the response type `T` from a generated `InjectionToken<(...args) => ResourceRef<T>>`. Use it to type seed data without importing the response type by name:
+
+```typescript
+import type { TokenValue } from '@constantant/openapi-resource-mocks';
+import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
+
+// type is FindPetsByStatusResponse — inferred from the token
+const mockPets: TokenValue<typeof FIND_PETS_BY_STATUS> = [
+  { id: 1, name: 'Rex', status: 'available', photoUrls: [] },
+];
+```
+
 ### `createMockResourceRef<T>(initialState?)`
 
 Creates a standalone ref without the bus — useful when passing the ref to `provideMockResource` yourself for fine-grained test setup.

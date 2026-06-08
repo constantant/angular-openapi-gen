@@ -5,3 +5,4 @@ export type { WindowMockEntry } from './lib/mock-resource-bus';
 export { provideMockResource } from './lib/provide-mock-resource';
 export { injectMockResource } from './lib/inject-mock-resource';
 export type { MockEvent, MockProgress } from './lib/mock-events';
+export type { TokenValue } from './lib/token-value';
