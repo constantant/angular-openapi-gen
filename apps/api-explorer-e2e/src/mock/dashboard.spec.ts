@@ -3,11 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('Dashboard (mock)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/dashboard');
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
   });
 
   test('shows all three summary cards after loading', async ({ page }) => {
     await expect(page.locator('mat-progress-bar').first()).toBeVisible();
-    await expect(page.locator('mat-progress-bar')).not.toBeVisible();
+    await expect(page.locator('mat-progress-bar')).toHaveCount(0);
 
     await expect(page.getByText('angular · 300 repos')).toBeVisible();
     await expect(page.getByText('3 repos loaded')).toBeVisible();
@@ -16,27 +17,27 @@ test.describe('Dashboard (mock)', () => {
   });
 
   test('FIND_PETS_BY_STATUS is called with status "available"', async ({ page }) => {
-    await expect(page.locator('mat-progress-bar')).not.toBeVisible();
+    await expect(page.locator('mat-progress-bar')).toHaveCount(0);
     const history = await page.evaluate(() =>
       openApiMock('FIND_PETS_BY_STATUS').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
-    expect(req!.args[0]).toEqual({ status: 'available' });
+    expect(req?.args[0]).toEqual({ status: 'available' });
   });
 
   test('USERS_GET_BY_USERNAME is called with username "angular"', async ({ page }) => {
-    await expect(page.locator('mat-progress-bar')).not.toBeVisible();
+    await expect(page.locator('mat-progress-bar')).toHaveCount(0);
     const history = await page.evaluate(() =>
       openApiMock('USERS_GET_BY_USERNAME').getHistory(),
     );
     const req = history.find((e) => e.type === 'request');
     expect(req).toBeTruthy();
-    expect(req!.args[0]).toBe('angular');
+    expect(req?.args[0]).toBe('angular');
   });
 
   test('shows API error when GitHub mock fails', async ({ page }) => {
-    await expect(page.locator('mat-progress-bar')).not.toBeVisible();
+    await expect(page.locator('mat-progress-bar')).toHaveCount(0);
     await page.evaluate(() => openApiMock('USERS_GET_BY_USERNAME').fail(new Error('401')));
     await expect(page.getByText('API error').first()).toBeVisible();
   });
