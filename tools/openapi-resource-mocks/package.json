@@ -1,6 +1,6 @@
 {
   "name": "@constantant/openapi-resource-mocks",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Mock bus for @constantant/openapi-resource-gen tokens — unit tests, E2E, and Chrome Extension devtools",
   "license": "MIT",
   "main": "src/index.js",

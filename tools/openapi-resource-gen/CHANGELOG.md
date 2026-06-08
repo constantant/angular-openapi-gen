@@ -1,3 +1,14 @@
+## 1.4.0 (2026-06-08)
+
+### 📖 Documentation
+
+- **openapi-resource-gen:** document caching boundary and multipart/form-data mutation pattern ([88211a4](https://github.com/constantant/angular-openapi-gen/commit/88211a4))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.3.2 (2026-06-08)
 
 ### 🩹 Fixes
