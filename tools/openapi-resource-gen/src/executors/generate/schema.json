@@ -32,6 +32,11 @@
       "enum": ["root", "none"],
       "default": "none",
       "description": "none: export provideX() helpers for scoped provision. root: self-registering singleton."
+    },
+    "includeMocks": {
+      "type": "boolean",
+      "default": false,
+      "description": "Generate a .mock.ts file per endpoint using @constantant/openapi-resource-mocks. Requires the package to be installed."
     }
   },
   "required": ["specPath", "outputDir"]
