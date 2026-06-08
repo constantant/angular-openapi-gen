@@ -124,7 +124,7 @@ export function createMockResourceRef<T>(
       setTimeout(() => ref.resolve(finalValue), durationMs + stepDelay);
     },
     reload: () => false,
-    destroy: () => {},
+    destroy: () => { /* no-op: signals are not subscriptions */ },
     asReadonly: () => ref,
     onRequest: (cb) => {
       requestListeners.add(cb);
