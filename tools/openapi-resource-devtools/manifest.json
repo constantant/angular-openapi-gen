@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "OpenAPI Resource Mocks",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Inspect and control @constantant/openapi-resource-mocks tokens in Angular apps",
   "devtools_page": "devtools.html",
   "background": {
@@ -9,11 +9,20 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
-  "permissions": ["tabs", "scripting"],
-  "host_permissions": ["<all_urls>"]
+  "permissions": [
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
 }
