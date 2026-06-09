@@ -1,20 +1,29 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { App } from './app';
-import { NxWelcome } from './nx-welcome';
+import { MOCK_BRIDGE } from './mock-bridge.token';
+
+const mockBridge = {
+  mocks: signal(new Map()),
+  selectedKey: signal(null),
+  sendControl: () => {},
+  setCatchMode: () => {},
+  refresh: () => {},
+  clearAll: () => {},
+  resetAll: () => {},
+  clearHistory: () => {},
+};
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App, NxWelcome],
+      imports: [App],
+      providers: [{ provide: MOCK_BRIDGE, useValue: mockBridge }],
     }).compileComponents();
   });
 
-  it('should render title', async () => {
+  it('should create', () => {
     const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain(
-      'Welcome devtools-panel',
-    );
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });
