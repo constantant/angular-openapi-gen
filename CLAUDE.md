@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI specs via `httpResource`.
 
-> **Implementation status**: Core generator is built and published to npm as `@constantant/openapi-resource-gen` (v1.2.0). Data-access libs: `github`, `petstore`, `weather`, `youtube`. `apps/api-explorer` is wired up with routes and Angular Material UI.
+> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen` (v1.5.0), `@constantant/openapi-resource-mocks` (v0.2.0), Chrome Extension `openapi-resource-mocks-devtools` (v0.3.2, in CWS review). Data-access libs: `github`, `petstore`, `weather`, `youtube`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
 
 ---
 
@@ -24,6 +24,8 @@ real-world APIs but ships only the endpoints it actually injects.
 ```
 apps/
   api-explorer/               # Angular 22 standalone app, zoneless, OnPush default
+  devtools-panel/             # Angular 22 panel app — bundled inside the Chrome Extension
+  devtools-panel-e2e/         # Playwright E2E tests for devtools-panel (port 4202)
 
 libs/
   github-data-access/         # generated — github/rest-api-description
@@ -50,6 +52,19 @@ tools/
         generate/
           schema.json
           executor.ts         # wraps the generator for nx run project:generate
+
+  openapi-resource-mocks/     # published as @constantant/openapi-resource-mocks
+                              # mock bus: window API, DOM events, Chrome Extension bridge
+
+  openapi-resource-devtools/  # Chrome Extension shell (manifest, content script, service worker,
+                              # devtools page). Panel UI lives in apps/devtools-panel/.
+    src/
+      background/sw.ts        # service worker — routes messages between content scripts and panel
+      content/content.ts      # content script — bridges window DOM events ↔ background SW
+      devtools/devtools.ts    # creates the DevTools panel page
+    manifest.json             # version source of truth for the extension
+    CHANGELOG.md
+    scripts/release.mjs       # standalone release script (bumps manifest, writes changelog, tags)
 ```
 
 ---
@@ -274,14 +289,18 @@ curl -L https://raw.githubusercontent.com/APIs-guru/openapi-directory/main/APIs/
 ```bash
 # Development
 npx nx serve api-explorer                  # Dev server on http://localhost:4200
+npx nx serve devtools-panel               # Panel dev server on http://localhost:4200 (or specify port)
 
 # Build
 npx nx build api-explorer                  # Production build
 npx nx build api-explorer --stats-json     # Include esbuild bundle stats
+npx nx run openapi-resource-devtools:build # Build Chrome Extension → dist/tools/openapi-resource-devtools/
 
 # Test
 npx nx test api-explorer                   # Run unit tests (Vitest)
-npx nx e2e api-explorer-e2e               # Run Playwright E2E tests
+npx nx test devtools-panel                 # Run panel unit tests (Vitest)
+npx nx e2e api-explorer-e2e               # Run Playwright E2E tests (port 4200)
+npx nx e2e devtools-panel-e2e             # Run Playwright E2E tests (port 4202)
 npx nx test openapi-resource-gen           # Run generator unit tests
 
 # Lint / format
@@ -352,6 +371,61 @@ npx nx g @nx/angular:service <name> --project=<project> --no-interactive
 - Imports: always import from the barrel `index.ts` of a lib, never from internal paths.
 - Do not add `console.log` to committed code.
 - Commit messages: `feat:`, `fix:`, `chore:`, `docs:` prefixes.
+
+---
+
+## Chrome DevTools Extension
+
+### Architecture
+
+```
+page (Angular app with @constantant/openapi-resource-mocks)
+  │  window.__openApiMocks__          (MockResourceBus)
+  │  DOM events: openapi-mock-event / openapi-mock-control
+  ▼
+content script (tools/openapi-resource-devtools/src/content/content.ts)
+  │  chrome.runtime.sendMessage / chrome.runtime.onMessage
+  ▼
+background service worker (tools/openapi-resource-devtools/src/background/sw.ts)
+  │  chrome.runtime.Port (named "devtools-<tabId>")
+  ▼
+devtools panel (apps/devtools-panel/) — Angular 22 app
+  MOCK_BRIDGE InjectionToken  ←→  port.postMessage / port.onMessage
+```
+
+The panel app (`apps/devtools-panel/`) is a standalone Angular 22 app that runs inside
+the Chrome DevTools panel page. It communicates with the inspected page via the
+background service worker using named ports.
+
+### MOCK_BRIDGE token
+
+`apps/devtools-panel/src/app/mock-bridge.token.ts` — the core DI bridge. Its factory:
+- When running inside Chrome DevTools (`chrome.devtools` is defined): creates a port,
+  connects to the background SW, and returns a live `MockBridge` that drives the panel.
+- When running outside Chrome DevTools (dev server, E2E, Vitest): returns a no-op stub
+  bridge. Guard: `typeof chrome === 'undefined' || !chrome.devtools`.
+
+Never provide `MOCK_BRIDGE` via `@Injectable` — it must always be the token factory.
+
+### Releasing the extension
+
+Releases go through `.github/workflows/release-extension.yml` (triggered manually via
+`gh workflow run release-extension.yml`). Required GitHub secrets:
+
+| Secret | Purpose |
+|--------|---------|
+| `GH_PAT` | Admin PAT — bypasses branch protection to push version bump commit + tag |
+| `CHROME_EXTENSION_ID` | CWS extension ID |
+| `CHROME_PUBLISHER_ID` | Publisher account ID (from CWS developer console URL) |
+| `CHROME_CLIENT_ID` | OAuth2 client ID |
+| `CHROME_CLIENT_SECRET` | OAuth2 client secret |
+| `CHROME_REFRESH_TOKEN` | OAuth2 refresh token |
+
+The release script (`tools/openapi-resource-devtools/scripts/release.mjs`) bumps
+`manifest.json`, writes CHANGELOG.md, creates an **annotated** git tag
+(`git tag -a openapi-resource-devtools@<version>`). The workflow then pushes the tag
+explicitly (`git push origin "refs/tags/<tag>"`) — `git push --follow-tags` skips
+lightweight tags, so explicit push is required.
 
 ---
 

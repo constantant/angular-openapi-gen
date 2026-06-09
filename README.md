@@ -21,6 +21,9 @@ Because esbuild tree-shakes at file boundaries, any token you never `inject()` c
 | Path | Type | Description |
 |------|------|-------------|
 | `tools/openapi-resource-gen/` | Nx generator · npm package | Reads an OpenAPI spec, emits one token file per endpoint |
+| `tools/openapi-resource-mocks/` | npm package | Zero-HTTP mock bus for generated tokens — Playwright E2E + Chrome Extension integration |
+| `tools/openapi-resource-devtools/` | Chrome Extension shell | Manifest, content script, service worker, devtools page |
+| `apps/devtools-panel/` | Angular 22 app | Panel UI bundled inside the Chrome Extension |
 | `libs/github-data-access/` | Generated data-access lib | GitHub REST API (~38 endpoints used) |
 | `libs/petstore-data-access/` | Generated data-access lib | OAI Petstore v3 (12 endpoints) |
 | `libs/weather-data-access/` | Generated data-access lib | Open-Meteo forecast API |
@@ -32,7 +35,7 @@ Because esbuild tree-shakes at file boundaries, any token you never `inject()` c
 ## The generator — `@constantant/openapi-resource-gen`
 
 Published on npm: **[`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen)**  
-Current version: **1.3.1**
+Current version: **1.5.0**
 
 ### Quick start
 
@@ -238,6 +241,40 @@ npx nx run petstore-data-access:generate
 
 ---
 
+## Mock bus — `@constantant/openapi-resource-mocks`
+
+Published on npm: **[`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)**  
+Current version: **0.2.0**
+
+A companion package that provides zero-HTTP, pure-DI mocks for generated tokens. Key features:
+
+- `provideMockResourceBus()` — registers the bus; exposes `window.__openApiMocks__` and `openApiMock(key)` for Playwright
+- `provideMockResource(token, key, initialBehavior?)` — replaces a token's factory with a mock
+- DOM event bridge (`openapi-mock-event` / `openapi-mock-control`) — lets a Chrome Extension observe and control mocks in real time
+- `MockResourceRef<T>` — `resolve()`, `setLoading()`, `fail()`, `reset()`, `simulateProgress()`, `getHistory()`
+
+See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/README.md) for full documentation.
+
+---
+
+## Chrome DevTools Extension — OpenAPI Resource Mocks DevTools
+
+Current version: **0.3.2** | Status: pending Chrome Web Store review
+
+A Chrome DevTools panel that connects to any Angular app running `@constantant/openapi-resource-mocks`. It lists every registered mock token, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code.
+
+### Install
+
+> **Chrome Web Store:** pending review — use **Load unpacked** for now.
+
+1. Clone the repo and install dependencies: `npm ci`
+2. Build the extension: `npx nx run openapi-resource-devtools:build`
+3. Open `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select `dist/tools/openapi-resource-devtools/`
+
+See [`tools/openapi-resource-devtools/README.md`](tools/openapi-resource-devtools/README.md) for full documentation.
+
+---
+
 ## Release workflow
 
 The generator is released via the **Release** GitHub Actions workflow (`.github/workflows/release.yml`), triggered manually from the Actions tab.
@@ -254,6 +291,8 @@ The workflow is idempotent — if the current version is already on npm it skips
 **Note on nx release commit detection**: nx release counts only commits that touch files within `tools/openapi-resource-gen/`. Workflow-only changes (e.g. editing `.github/`) do not trigger a version bump.
 
 **Note on branch protection**: `master` is protected (PRs require CI + a code-owner review, linear history). The release workflow checks out with `GH_PAT` (a repo admin PAT stored in GitHub secrets) instead of `GITHUB_TOKEN` — `GITHUB_TOKEN` cannot bypass branch protection's required status checks even with `enforce_admins: off`, so the version-bump commit and tag push would fail without a PAT.
+
+The Chrome Extension is released via a separate **Release Extension** workflow (`.github/workflows/release-extension.yml`). It bumps `manifest.json`, builds and zips the extension, creates a GitHub Release, and uploads to the Chrome Web Store. Required secrets: `GH_PAT`, `CHROME_EXTENSION_ID`, `CHROME_PUBLISHER_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`.
 
 ---
 

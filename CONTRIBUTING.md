@@ -18,7 +18,10 @@ By participating you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md)
 | Path | What it is | Edit by hand? |
 |------|-----------|---------------|
 | `tools/openapi-resource-gen/` | The Nx generator — the published npm package. **This is where fixes go.** | ✅ Yes |
+| `tools/openapi-resource-mocks/` | Mock bus package — `@constantant/openapi-resource-mocks` | ✅ Yes |
+| `tools/openapi-resource-devtools/` | Chrome Extension shell (manifest, content script, SW, devtools page) | ✅ Yes |
 | `apps/api-explorer/` | Angular 22 demo app that consumes the generated libs | ✅ Yes |
+| `apps/devtools-panel/` | Angular 22 panel app bundled inside the Chrome Extension | ✅ Yes |
 | `libs/*/src/` | Data-access libraries **generated** from OpenAPI specs | ❌ **Never** |
 | `specs/` | OpenAPI specs the demo libs are generated from | ✅ Yes |
 
@@ -55,8 +58,18 @@ npx playwright install --with-deps   # needed for e2e
 # Run the demo app
 npx nx serve api-explorer
 
+# Run the DevTools panel (Angular app inside the Chrome Extension)
+npx nx serve devtools-panel
+
+# Build the Chrome Extension
+npx nx run openapi-resource-devtools:build
+# Then: chrome://extensions → Load unpacked → dist/tools/openapi-resource-devtools/
+
 # Generator unit tests (run these for any generator change)
 npx nx test openapi-resource-gen
+
+# Panel unit tests (run these for any devtools-panel change)
+npx nx test devtools-panel
 
 # The full gate CI runs on every PR — make sure it's green before pushing:
 npx nx run-many -t lint test build e2e
@@ -70,10 +83,15 @@ This repo uses [Conventional Commits](https://www.conventionalcommits.org/):
 - `fix:` — a bug fix (→ **patch** version bump)
 - `chore:`, `docs:`, `refactor:`, `test:`, `ci:` — no version bump
 
-The release version is derived automatically by `nx release` from commits that
-touch `tools/openapi-resource-gen/`. Changes outside that folder (e.g. demo app,
-docs, workflows) do **not** trigger a version bump. Please use a
-conventional-commit-style **PR title** — it becomes the squash-merge commit.
+The npm package release version is derived automatically by `nx release` from commits that
+touch `tools/openapi-resource-gen/` or `tools/openapi-resource-mocks/`. Changes outside those
+folders (e.g. demo app, docs, workflows) do **not** trigger a version bump.
+
+The Chrome Extension version is managed separately by `tools/openapi-resource-devtools/scripts/release.mjs`
+(run via the **Release Extension** GitHub Actions workflow). It derives the bump from commits
+touching `tools/openapi-resource-devtools/` or `apps/devtools-panel/`.
+
+Please use a conventional-commit-style **PR title** — it becomes the squash-merge commit.
 
 ## Pull request checklist
 

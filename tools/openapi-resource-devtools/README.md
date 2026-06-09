@@ -146,7 +146,18 @@ Releases are created via the **Release Extension** GitHub Actions workflow (`wor
 2. Prepends a changelog entry to `CHANGELOG.md`
 3. Builds the extension and packages it as a `.zip`
 4. Creates a GitHub Release with the zip attached
-5. Uploads to the Chrome Web Store if `CHROME_EXTENSION_ID` and OAuth secrets are configured
+5. Uploads to the Chrome Web Store if the CWS secrets are configured
+
+Required GitHub secrets:
+
+| Secret | Description |
+|--------|-------------|
+| `GH_PAT` | Admin PAT — bypasses branch protection for the version-bump push |
+| `CHROME_EXTENSION_ID` | CWS extension ID |
+| `CHROME_PUBLISHER_ID` | Publisher account ID — from the CWS developer console URL (`chrome.google.com/webstore/devconsole/<id>`) |
+| `CHROME_CLIENT_ID` | OAuth2 client ID |
+| `CHROME_CLIENT_SECRET` | OAuth2 client secret |
+| `CHROME_REFRESH_TOKEN` | OAuth2 refresh token — obtain with `npx chrome-webstore-upload-cli@4 fetch-token` |
 
 See [`.github/workflows/release-extension.yml`](../../.github/workflows/release-extension.yml).
 
