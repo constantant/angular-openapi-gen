@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1 (2026-06-09)
+
+### 🩹 Bug Fixes
+
+- **devtools-panel:** guard chrome.devtools access — return stub bridge when not in DevTools context (fixes E2E) ([cd51564](https://github.com/constantant/angular-openapi-gen/commit/cd515647c838117a274f5ca5791a763f20af5bde))
+- **devtools-panel:** replace empty-function stubs with vi.fn(); add noop comments to satisfy no-empty-function ([9d3bebd](https://github.com/constantant/angular-openapi-gen/commit/9d3bebdedf5be70baa7fe7942f6dfc5d3391b77b))
+- **devtools-panel:** fix test suite — provide MOCK_BRIDGE mock and add chrome types to spec tsconfig ([57fe0c9](https://github.com/constantant/angular-openapi-gen/commit/57fe0c95578e13a237b0351a5d1a8548f523119f))
+- **release-extension:** push tag explicitly — --follow-tags skips lightweight tags; switch to annotated ([ef52caa](https://github.com/constantant/angular-openapi-gen/commit/ef52caa67a8a2f0f2fe1394458b8962f75bc5266))
+
 ## 0.3.0 (2026-06-09)
 
 ### 🚀 Features
