@@ -85,7 +85,9 @@ jobs:
 
       - name: Push version commit and tag
         if: ${{ !inputs.dryRun }}
-        run: git push --follow-tags origin master
+        run: |
+          git push origin master
+          git push origin "refs/tags/${{ steps.version.outputs.tag }}"
 
       - name: Create GitHub Release
         if: ${{ !inputs.dryRun }}

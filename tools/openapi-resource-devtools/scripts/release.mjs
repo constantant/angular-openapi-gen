@@ -147,7 +147,7 @@ exec(
 exec(
   `git commit -m "chore(release): openapi-resource-devtools@${newVersion}"`,
 );
-exec(`git tag openapi-resource-devtools@${newVersion}`);
+exec(`git tag -a openapi-resource-devtools@${newVersion} -m "openapi-resource-devtools@${newVersion}"`);
 
 console.log(`\n✓  openapi-resource-devtools@${newVersion} ready.`);
 console.log(`   Tag: openapi-resource-devtools@${newVersion}`);
