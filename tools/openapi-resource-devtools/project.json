@@ -1,0 +1,17 @@
+{
+  "name": "openapi-resource-devtools",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tools/openapi-resource-devtools/src",
+  "projectType": "application",
+  "tags": ["scope:tools", "type:devtools"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/tools/openapi-resource-devtools"],
+      "options": {
+        "command": "node tools/openapi-resource-devtools/scripts/build.mjs",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

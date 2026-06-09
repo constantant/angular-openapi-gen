@@ -46,6 +46,7 @@
     "@swc-node/register": "~1.11.1",
     "@swc/core": "~1.15.5",
     "@swc/helpers": "~0.5.18",
+    "@types/chrome": "^0.0.305",
     "@types/express": "^5.0.6",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "25.9.2",
@@ -63,6 +64,7 @@
     "tslib": "^2.3.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.40.0",
+    "preact": "^10.24.0",
     "vitest": "^4.0.8"
   }
 }
