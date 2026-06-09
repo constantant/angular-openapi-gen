@@ -3,6 +3,7 @@ import {
   formatFiles,
   generateFiles,
   joinPathFragments,
+  updateJson,
 } from '@nx/devkit';
 import * as fs from 'fs';
 import * as https from 'https';
@@ -82,6 +83,32 @@ function fetchSpecUrl(url: string, destPath: string): Promise<void> {
         fs.unlink(destPath, () => undefined);
         reject(new Error(`Failed to fetch spec from ${url}: ${err.message}`));
       });
+  });
+}
+
+/** Add a /{lib}/mock path alias to tsconfig.base.json alongside the existing /{lib} alias. */
+function addMockPathAlias(tree: Tree, outputDir: string): void {
+  const tsconfigPath = 'tsconfig.base.json';
+  if (!tree.exists(tsconfigPath)) return;
+
+  const normalizedDir = outputDir.replace(/\\/g, '/').replace(/\/$/, '');
+  const indexTsValue = `${normalizedDir}/index.ts`;
+  const indexMockTsValue = `${normalizedDir}/index.mock.ts`;
+
+  updateJson(tree, tsconfigPath, (json) => {
+    const paths = json?.compilerOptions?.paths as Record<string, string[]> | undefined;
+    if (!paths) return json;
+
+    const existingKey = Object.keys(paths).find((key) =>
+      paths[key].some((v) => v.replace(/\\/g, '/') === indexTsValue),
+    );
+    if (!existingKey) return json;
+
+    const mockKey = `${existingKey}/mock`;
+    if (!paths[mockKey]) {
+      paths[mockKey] = [indexMockTsValue];
+    }
+    return json;
   });
 }
 
@@ -297,6 +324,7 @@ export async function apiResourceGenerator(
         [...byTag.keys()].map((tag) => `export * from './${tag}/index.mock';\n`).join('');
       tree.write(joinPathFragments(outputDir, 'index.mock.ts'), rootMockBarrel);
       writtenFiles.add(joinPathFragments(outputDir, 'index.mock.ts'));
+      addMockPathAlias(tree, outputDir);
     }
 
     // 9. Delete stale token/security files from previous runs that this run

@@ -30,6 +30,18 @@
       ],
       "@constantant/openapi-resource-mocks": [
         "tools/openapi-resource-mocks/src/index.ts"
+      ],
+      "@angular-openapi-gen/petstore-data-access/mock": [
+        "libs/petstore-data-access/src/index.mock.ts"
+      ],
+      "@angular-openapi-gen/weather-data-access/mock": [
+        "libs/weather-data-access/src/index.mock.ts"
+      ],
+      "@angular-openapi-gen/youtube-data-access/mock": [
+        "libs/youtube-data-access/src/index.mock.ts"
+      ],
+      "@angular-openapi-gen/github-data-access/mock": [
+        "libs/github-data-access/src/index.mock.ts"
       ]
     }
   },

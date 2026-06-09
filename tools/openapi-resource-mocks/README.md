@@ -28,10 +28,26 @@ Each mock token is registered in a `MockResourceBus`. The bus:
 
 ## Setup
 
-Add `provideMockResourceBus()` once, then one `provideMockResource()` per token:
+Add `provideMockResourceBus()` once, then one mock provider per token.
+
+**With `--includeMocks` (recommended)** — the generator emits a typed `provide{Operation}Mock()` wrapper per endpoint. Import from the `/mock` subpath so mock utilities stay out of your production bundle:
 
 ```typescript
 // app.config.mock.ts (used in tests / E2E variant)
+import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
+import { provideFindPetsByStatusMock, provideUploadFileMock } from '@myapp/petstore-data-access/mock';
+
+export const mockProviders = [
+  provideMockResourceBus(),
+  provideFindPetsByStatusMock(),
+  provideUploadFileMock(),
+];
+```
+
+**Without `--includeMocks`** — use `provideMockResource()` directly with the raw token:
+
+```typescript
+// app.config.mock.ts
 import { provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
 import { FIND_PETS_BY_STATUS, UPLOAD_FILE } from '@myapp/petstore-data-access';
 
@@ -165,21 +181,23 @@ Serve the app with mock providers on a separate port so real and mock E2E suites
 // app.config.mock.ts
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
-import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
+import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
+import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access/mock';
 import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes),
     provideMockResourceBus(),
-    provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', {
+    provideFindPetsByStatusMock({
       value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
       delay: 500,
     }),
   ],
 };
 ```
+
+If you didn't use `--includeMocks`, replace the wrapper with `provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', { ... })` imported from `@constantant/openapi-resource-mocks`.
 
 **2. Separate Playwright config** — points to port 4201 and scopes `testDir` to the mock specs folder:
 
@@ -346,6 +364,22 @@ Returns `FactoryProvider`. Each time a component invokes the factory function, a
 ### `injectMockResource<T>(key)`
 
 Must be called inside an injection context (e.g. `TestBed.runInInjectionContext`) and after the component has rendered — the ref is registered when the component first invokes the factory function, not at DI setup time. Returns `MockResourceRef<T>`.
+
+### `ProviderInitialBehavior<T>`
+
+Union type accepted by `provideMockResource()` and generated `provide{Operation}Mock()` wrappers. Describes the mock's state immediately after each factory invocation:
+
+| Shape | Effect |
+|-------|--------|
+| `{ value: DeepPartial<T> }` | Resolves immediately with value |
+| `{ value: DeepPartial<T>, delay: ms }` | Loading for `ms` ms, then resolves |
+| `{ loading: true }` | Stays loading indefinitely |
+| `{ error: unknown }` | Fails immediately |
+| `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
+
+### `DeepPartial<T>`
+
+Recursively marks all properties of `T` as optional. Used as the value type in `ProviderInitialBehavior<T>` so you can provide partial seed data without satisfying every nested field.
 
 ### `TokenValue<Token>`
 

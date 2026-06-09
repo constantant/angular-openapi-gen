@@ -184,16 +184,25 @@ provideFindPetsByStatusMock({
 ### Barrel imports
 
 All mock providers for a tag are re-exported from `{tag}/index.mock.ts`; the root
-`index.mock.ts` re-exports all tag barrels. Import from the root barrel:
+`index.mock.ts` re-exports all tag barrels. The generator automatically registers a
+`/mock` subpath alias in `tsconfig.base.json` alongside the main path alias, so you
+can import from the mock barrel directly:
 
 ```typescript
 import {
   provideFindPetsByStatusMock,
   provideAddPetMock,
 } from '@myapp/petstore-data-access/mock';
-// or from the same barrel as the tokens:
-import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access';
 ```
+
+The registered alias looks like:
+
+```json
+"@myapp/petstore-data-access/mock": ["libs/petstore-data-access/src/index.mock.ts"]
+```
+
+Mock providers are intentionally kept out of the main `index.ts` barrel so they
+are never accidentally bundled into a production build.
 
 ### Stale cleanup
 
@@ -616,6 +625,10 @@ navigation in and destroyed on navigation out, with no cross-route state leakage
    ```json
    "@angular-openapi-gen/myapi-data-access": ["libs/myapi-data-access/src/index.ts"]
    ```
+   If you used `--includeMocks`, the generator adds the `/mock` subpath alias automatically. If you added the main alias manually, add the mock alias too:
+   ```json
+   "@angular-openapi-gen/myapi-data-access/mock": ["libs/myapi-data-access/src/index.mock.ts"]
+   ```
 
 3. Add base URL provider and token providers to `app.config.ts`.
 
@@ -631,7 +644,7 @@ navigation in and destroyed on navigation out, with no cross-route state leakage
 | Type generation | `openapi-typescript` programmatic API | Emit `schema.d.ts` — the single source of truth for all request/response types |
 | Spec dereferencing | `@apidevtools/swagger-parser` | Resolve all `$ref` chains for endpoint extraction |
 | Security parsing | `parseSecuritySchemes(api)` | Extract scheme definitions; resolve per-operation overrides |
-| Code generation | `renderTokenFile()` / `renderSecurityTokenFile()` | Direct string assembly for all token files |
+| Code generation | `renderTokenFile()` / `renderSecurityTokenFile()` / `renderMockFile()` | Direct string assembly for token and mock files |
 | Formatting | `@nx/devkit` `formatFiles()` | Runs Prettier over all written files |
 
 Hyphenated path parameter names (e.g. `{enterprise-team}` in the GitHub spec)

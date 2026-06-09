@@ -13,10 +13,10 @@ import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
 import {
   provideUsersGetByUsernameMock,
   provideReposListForUserMock,
-} from '@angular-openapi-gen/github-data-access';
-import { provideFindPetsByStatusMock } from '@angular-openapi-gen/petstore-data-access';
-import { provideGetV1ForecastMock } from '@angular-openapi-gen/weather-data-access';
-import { provideYoutubeSearchListMock } from '@angular-openapi-gen/youtube-data-access';
+} from '@angular-openapi-gen/github-data-access/mock';
+import { provideFindPetsByStatusMock } from '@angular-openapi-gen/petstore-data-access/mock';
+import { provideGetV1ForecastMock } from '@angular-openapi-gen/weather-data-access/mock';
+import { provideYoutubeSearchListMock } from '@angular-openapi-gen/youtube-data-access/mock';
 
 export const YOUTUBE_API_KEY = new InjectionToken<WritableSignal<string | null>>(
   'YOUTUBE_API_KEY',
