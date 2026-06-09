@@ -46,8 +46,18 @@
     }
   },
   "plugins": [
-    { "plugin": "@nx/playwright/plugin", "options": { "targetName": "e2e" } },
-    { "plugin": "@nx/eslint/plugin", "options": { "targetName": "lint" } }
+    {
+      "plugin": "@nx/playwright/plugin",
+      "options": {
+        "targetName": "e2e"
+      }
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    }
   ],
   "generators": {
     "@nx/angular:application": {
@@ -55,6 +65,9 @@
       "linter": "eslint",
       "style": "less",
       "unitTestRunner": "vitest-angular"
+    },
+    "@nx/angular:component": {
+      "style": "css"
     }
   },
   "release": {
@@ -68,16 +81,36 @@
     "conventionalCommits": {
       "useCommitScope": false,
       "types": {
-        "feat": { "semverBump": "minor" },
-        "fix": { "semverBump": "patch" },
-        "perf": { "semverBump": "patch" },
-        "docs": { "semverBump": "none" },
-        "chore": { "semverBump": "none" },
-        "ci": { "semverBump": "none" },
-        "refactor": { "semverBump": "none" },
-        "test": { "semverBump": "none" },
-        "style": { "semverBump": "none" },
-        "build": { "semverBump": "none" }
+        "feat": {
+          "semverBump": "minor"
+        },
+        "fix": {
+          "semverBump": "patch"
+        },
+        "perf": {
+          "semverBump": "patch"
+        },
+        "docs": {
+          "semverBump": "none"
+        },
+        "chore": {
+          "semverBump": "none"
+        },
+        "ci": {
+          "semverBump": "none"
+        },
+        "refactor": {
+          "semverBump": "none"
+        },
+        "test": {
+          "semverBump": "none"
+        },
+        "style": {
+          "semverBump": "none"
+        },
+        "build": {
+          "semverBump": "none"
+        }
       }
     },
     "version": {

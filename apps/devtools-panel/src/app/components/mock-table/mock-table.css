@@ -1,0 +1,81 @@
+:host {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  display: block;
+}
+
+.table-wrap {
+  height: 100%;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  font-size: 12px;
+  table-layout: fixed;
+}
+
+.mat-mdc-header-row { height: 34px; }
+.mat-mdc-row {
+  height: 32px;
+  cursor: pointer;
+}
+.mat-mdc-row:hover { background: rgba(255,255,255,0.04); }
+.mat-mdc-row.selected { background: rgba(9,71,113,0.55); }
+
+.mat-column-key       { width: 36%; }
+.mat-column-status    { width: 14%; }
+.mat-column-lastEvent { width: 36%; }
+.mat-column-actions   { width: 14%; }
+
+.key-cell {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #9cdcfe;
+}
+
+.muted-cell {
+  color: rgba(255,255,255,0.45);
+  font-size: 11px;
+}
+
+.actions-cell {
+  text-align: right;
+  padding-right: 4px;
+
+  button { width: 28px; height: 28px; font-size: 13px; }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.status-idle      { color: #858585; }
+.status-loading,
+.status-reloading { color: #4fc3f7; }
+.status-resolved  { color: #4ec994; }
+.status-error     { color: #f44747; }
+.status-local     { color: #c586c0; }
+
+.empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  line-height: 1.8;
+
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.08);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+}

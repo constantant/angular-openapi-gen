@@ -1,28 +1,41 @@
 import { build } from 'esbuild';
-import { cpSync, mkdirSync } from 'fs';
-import { resolve, dirname, join } from 'path';
+import { cpSync, mkdirSync, readdirSync, rmSync } from 'fs';
+import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '../../..');
-const src = resolve(__dirname, '../src');
-const out = resolve(root, 'dist/tools/openapi-resource-devtools');
+const src  = resolve(__dirname, '../src');
+const out  = resolve(root, 'dist/tools/openapi-resource-devtools');
 
+rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
+// 1. Build the Angular panel (development = no content hashing, source maps, fast)
+console.log('Building Angular panel (devtools-panel)…');
+execSync('npx nx build devtools-panel --configuration=development', {
+  cwd: root,
+  stdio: 'inherit',
+});
+
+// 2. Copy Angular output into the extension folder
+const panelDist = resolve(root, 'dist/apps/devtools-panel/browser');
+for (const name of readdirSync(panelDist)) {
+  cpSync(join(panelDist, name), join(out, name), { recursive: true });
+}
+
+// 3. Bundle the three extension scripts (content, SW, devtools page)
 await build({
   entryPoints: {
     devtools: join(src, 'devtools.ts'),
-    sw: join(src, 'background/sw.ts'),
-    content: join(src, 'content/content.ts'),
-    panel: join(src, 'panel/panel.tsx'),
+    sw:       join(src, 'background/sw.ts'),
+    content:  join(src, 'content/content.ts'),
   },
   bundle: true,
   outdir: out,
   format: 'iife',
   platform: 'browser',
-  jsx: 'automatic',
-  jsxImportSource: 'preact',
   treeShaking: true,
   minify: false,
   sourcemap: 'inline',
@@ -30,16 +43,9 @@ await build({
   logLevel: 'info',
 });
 
-const statics = [
-  ['manifest.json',          'manifest.json'],
-  ['src/devtools.html',      'devtools.html'],
-  ['src/panel/panel.html',   'panel.html'],
-  ['src/panel/panel.css',    'panel.css'],
-];
-
-for (const [from, to] of statics) {
-  cpSync(join(__dirname, '..', from), join(out, to));
-}
+// 4. Copy manifest and devtools.html (panel.html comes from Angular build above)
+cpSync(join(__dirname, '../manifest.json'),  join(out, 'manifest.json'));
+cpSync(join(src, 'devtools.html'),           join(out, 'devtools.html'));
 
 console.log(`\nExtension ready → ${out}`);
-console.log('Load it in Chrome: chrome://extensions → "Load unpacked" → select that folder\n');
+console.log('Load in Chrome: chrome://extensions → "Load unpacked" → select that folder\n');

@@ -1,0 +1,89 @@
+{
+  "name": "devtools-panel",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/devtools-panel/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/devtools-panel",
+        "browser": "apps/devtools-panel/src/main.ts",
+        "tsConfig": "apps/devtools-panel/tsconfig.app.json",
+        "inlineStyleLanguage": "less",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/devtools-panel/public"
+          }
+        ],
+        "index": {
+          "input": "apps/devtools-panel/src/index.html",
+          "output": "panel.html"
+        },
+        "styles": [
+          "apps/devtools-panel/src/theme.scss",
+          "apps/devtools-panel/src/styles.less"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "devtools-panel:build:production"
+        },
+        "development": {
+          "buildTarget": "devtools-panel:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "watch": false
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "devtools-panel:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/devtools-panel/browser",
+        "spa": true
+      }
+    }
+  }
+}

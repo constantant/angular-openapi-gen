@@ -1,0 +1,57 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.toolbar {
+  flex-shrink: 0;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 6px;
+  gap: 2px;
+  font-size: 12px;
+
+  .brand {
+    font-weight: 600;
+    font-size: 13px;
+    margin-right: 6px;
+  }
+
+  .count {
+    font-size: 11px;
+    opacity: 0.55;
+    min-width: 60px;
+  }
+
+  button[mat-button] {
+    font-size: 11px;
+    min-width: 0;
+    padding: 0 8px;
+    height: 28px;
+    line-height: 28px;
+  }
+
+  .filter-field {
+    margin-left: auto;
+    width: 180px;
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      height: 30px;
+    }
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 30px;
+    }
+    ::ng-deep input.mat-mdc-input-element {
+      font-size: 12px;
+    }
+  }
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}

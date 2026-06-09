@@ -1,0 +1,9 @@
+{
+  "name": "devtools-panel-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/devtools-panel-e2e/src",
+  "implicitDependencies": ["devtools-panel"],
+  "// targets": "to see all targets run: nx show project devtools-panel-e2e --web",
+  "targets": {}
+}

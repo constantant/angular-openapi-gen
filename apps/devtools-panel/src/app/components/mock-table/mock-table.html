@@ -1,0 +1,54 @@
+@if (entries().length === 0) {
+  <div class="empty-state">
+    <p>No mocks registered yet.</p>
+    <p>
+      Make sure your app calls <code>provideMockResourceBus()</code> and at least
+      one component with <code>provideMockResource()</code> has rendered.
+    </p>
+  </div>
+} @else {
+  <div class="table-wrap">
+    <table mat-table [dataSource]="entries()">
+
+      <ng-container matColumnDef="key">
+        <th mat-header-cell *matHeaderCellDef>Key</th>
+        <td mat-cell *matCellDef="let row" class="key-cell" [title]="row.key">{{ row.key }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="status-badge status-{{ row.state.status }}">{{ row.state.status }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="lastEvent">
+        <th mat-header-cell *matHeaderCellDef>Last event</th>
+        <td mat-cell *matCellDef="let row" class="muted-cell">
+          @if (row.lastEventType && row.lastEventTs) {
+            {{ row.lastEventType }} · {{ ago(row.lastEventTs) }}
+          } @else { — }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row" class="actions-cell"
+            (click)="$event.stopPropagation()">
+          <button mat-icon-button matTooltip="Set loading"
+                  (click)="bridge.sendControl(row.key, 'setLoading')">⏳</button>
+          <button mat-icon-button matTooltip="Fail"
+                  (click)="bridge.sendControl(row.key, 'fail', { value: 'Error' })">✗</button>
+          <button mat-icon-button matTooltip="Reset"
+                  (click)="bridge.sendControl(row.key, 'reset')">↺</button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: cols;"
+          [class.selected]="bridge.selectedKey() === row.key"
+          (click)="bridge.selectedKey.set(row.key)"></tr>
+
+    </table>
+  </div>
+}

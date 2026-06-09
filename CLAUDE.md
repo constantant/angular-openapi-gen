@@ -303,6 +303,32 @@ npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
 
 ---
 
+## Nx workspace conventions
+
+> **CRITICAL — always use Nx generators to scaffold new apps, libs, and components.**
+> Never hand-craft `project.json`, `tsconfig.json`, or `angular.json` files from scratch.
+> Use the appropriate generator and then make minimal edits to the generated output only
+> where strictly necessary. This keeps the workspace consistent and ensures all Nx cache
+> inputs, lint rules, and build targets are wired up correctly.
+
+Key generators for this workspace:
+
+```bash
+# New Angular app
+npx nx g @nx/angular:application <name> --directory=apps/<name> --style=less --routing=false --standalone --no-interactive
+
+# New Angular library
+npx nx g @nx/angular:library <name> --directory=libs/<name> --standalone --no-interactive
+
+# New standalone component inside an existing project
+npx nx g @nx/angular:component <name> --project=<project> --standalone --no-interactive
+
+# New service inside an existing project
+npx nx g @nx/angular:service <name> --project=<project> --no-interactive
+```
+
+---
+
 ## Coding conventions
 
 > **CRITICAL — generated code is read-only.**
@@ -317,7 +343,11 @@ npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
 - Change detection: `OnPush` is the default — do NOT set it explicitly unless overriding.
 - Signals: prefer `signal()` + `computed()` over RxJS for local state.
 - `httpResource` for all HTTP reads. For mutations, use `httpResource` with `method` set.
-- No services for data fetching — inject tokens directly in components.
+- **No `@Injectable` services — ever.** All shared state and behaviour must be expressed as
+  `InjectionToken` with a `factory` (using `inject()` internally). This applies to everything
+  that would classically be a service: state containers, bridge objects, utilities, etc.
+  Use `providedIn: 'root'` on the token factory for singletons, or return a `FactoryProvider`
+  function (e.g. `provideXxx()`) when the caller must opt in explicitly.
 - Template syntax: use `@if`, `@for`, `@switch` (Angular 17+ control flow). No `*ngIf`.
 - Imports: always import from the barrel `index.ts` of a lib, never from internal paths.
 - Do not add `console.log` to committed code.

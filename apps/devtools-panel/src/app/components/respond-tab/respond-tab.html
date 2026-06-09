@@ -1,0 +1,35 @@
+@if (selectedEntry(); as entry) {
+  <div class="respond-header">
+    <span class="key-label" [title]="entry.key">{{ entry.key }}</span>
+  </div>
+
+  <div class="respond-body">
+    <mat-form-field appearance="outline" class="json-field">
+      <mat-label>Value (JSON)</mat-label>
+      <textarea matInput
+                [value]="json()"
+                (input)="onJsonInput($any($event.target).value)"
+                rows="8"
+                spellcheck="false"
+                placeholder="null"
+                class="json-textarea"></textarea>
+      @if (jsonError()) {
+        <mat-error>{{ jsonError() }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="delay-field">
+      <mat-label>Delay (ms)</mat-label>
+      <input matInput type="number" min="0" placeholder="0"
+             [value]="delay()"
+             (input)="delay.set($any($event.target).value)" />
+    </mat-form-field>
+
+    <div class="action-row">
+      <button mat-flat-button (click)="resolve()" [disabled]="!!jsonError()">Resolve</button>
+      <button mat-stroked-button (click)="bridge.sendControl(entry.key, 'setLoading')">Loading</button>
+      <button mat-stroked-button color="warn" (click)="fail()">Fail</button>
+      <button mat-stroked-button (click)="bridge.sendControl(entry.key, 'reset')">Reset</button>
+    </div>
+  </div>
+}
