@@ -1,28 +1,37 @@
-// ── Page → panel: relay live state-change events ────────────────────────────
-// CustomEvent.detail is structured-cloned across the isolation boundary, so
-// this listener receives the full event payload from the Angular app.
-document.addEventListener('openapi-mock-event', (e: Event) => {
+// Guard every chrome.runtime call: when the extension reloads, the old content
+// script becomes orphaned (context invalidated) but its DOM listeners survive.
+// send() detects this and tears down the listeners so no further errors fire.
+function send(msg: unknown): void {
+  try {
+    chrome.runtime.sendMessage(msg).catch(() => {});
+  } catch {
+    // Context invalidated — remove all listeners and stop discovery.
+    document.removeEventListener('openapi-mock-event', onMockEvent);
+    document.removeEventListener('__oarm_discovery__', onDiscovery);
+    attempts = 20; // stop tryDiscover loop
+  }
+}
+
+// ── Page → panel: relay live state-change events ─────────────────────────────
+function onMockEvent(e: Event): void {
   const { key, event } = (e as CustomEvent<{ key: string; event: unknown }>).detail;
-  chrome.runtime.sendMessage({ type: 'mock-event', key, event }).catch(() => {});
-});
+  send({ type: 'mock-event', key, event });
+}
+document.addEventListener('openapi-mock-event', onMockEvent);
 
 // ── MAIN-world injection results → panel ─────────────────────────────────────
-// The SW injects a script into the page's MAIN world (window.__openApiMocks__
-// is not visible from the isolated content-script world). The injected script
-// dispatches this DOM event, which crosses the isolation boundary.
-document.addEventListener('__oarm_discovery__', (e: Event) => {
+function onDiscovery(e: Event): void {
   const { keys, states } = (
     e as CustomEvent<{ keys: string[]; states: Record<string, unknown> }>
   ).detail;
-  chrome.runtime.sendMessage({ type: 'mock-keys', keys }).catch(() => {});
+  send({ type: 'mock-keys', keys });
   for (const [key, state] of Object.entries(states)) {
-    chrome.runtime.sendMessage({ type: 'mock-state', key, state }).catch(() => {});
+    send({ type: 'mock-state', key, state });
   }
-});
+}
+document.addEventListener('__oarm_discovery__', onDiscovery);
 
 // ── Panel → page: relay control actions ──────────────────────────────────────
-// DOM events dispatched by a content script ARE received by the page's own
-// event listeners, so this correctly reaches MockResourceBus.
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === 'control') {
     document.dispatchEvent(
@@ -32,12 +41,9 @@ chrome.runtime.onMessage.addListener((msg) => {
 });
 
 // ── Initial discovery ─────────────────────────────────────────────────────────
-// Angular bootstraps asynchronously; ask the SW to inject discovery until mocks
-// appear. The SW calls chrome.scripting.executeScript({ world: 'MAIN' }) which
-// reads window.__openApiMocks__ and fires __oarm_discovery__ above.
 let attempts = 0;
 function tryDiscover(): void {
-  chrome.runtime.sendMessage({ type: 'request-discovery' }).catch(() => {});
+  send({ type: 'request-discovery' });
   if (++attempts < 20) setTimeout(tryDiscover, 300);
 }
 tryDiscover();

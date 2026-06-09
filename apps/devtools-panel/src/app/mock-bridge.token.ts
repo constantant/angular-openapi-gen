@@ -15,11 +15,11 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
   factory: () => {
     const mocks = signal<Map<string, MockEntry>>(new Map());
     const selectedKey = signal<string | null>(null);
-
     const tabId = chrome.devtools.inspectedWindow.tabId;
-    const port = chrome.runtime.connect({ name: `devtools-${tabId}` });
 
-    port.onMessage.addListener((msg: PanelMessage) => {
+    let port: chrome.runtime.Port;
+
+    function onMessage(msg: PanelMessage): void {
       mocks.update((prev) => {
         const next = new Map(prev);
         if (msg.type === 'mock-keys') {
@@ -35,20 +35,38 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         }
         return next;
       });
-    });
+    }
 
-    port.postMessage({ type: 'get-keys' });
+    function connect(): void {
+      port = chrome.runtime.connect({ name: `devtools-${tabId}` });
+      port.onMessage.addListener(onMessage);
+      // SW suspended by Chrome → port disconnects. Reconnect transparently.
+      port.onDisconnect.addListener(() => connect());
+      port.postMessage({ type: 'get-keys' });
+    }
+
+    connect();
+
+    function post(msg: unknown): void {
+      try {
+        port.postMessage(msg);
+      } catch {
+        // Port was disconnected mid-flight; reconnect and retry once.
+        connect();
+        try { port.postMessage(msg); } catch { /* give up */ }
+      }
+    }
 
     function sendControl(key: string, action: string, extra?: Record<string, unknown>): void {
-      port.postMessage({ type: 'control', detail: { key, action, ...extra } });
-      setTimeout(() => port.postMessage({ type: 'get-state', key }), 120);
+      post({ type: 'control', detail: { key, action, ...extra } });
+      setTimeout(() => post({ type: 'get-state', key }), 120);
     }
 
     return {
       mocks: mocks.asReadonly(),
       selectedKey,
       sendControl,
-      refresh: () => port.postMessage({ type: 'get-keys' }),
+      refresh: () => post({ type: 'get-keys' }),
       clearAll: () => { mocks.set(new Map()); selectedKey.set(null); },
       resetAll: () => { for (const k of mocks().keys()) sendControl(k, 'reset'); },
     };
