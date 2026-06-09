@@ -1,13 +1,14 @@
-# Release @constantant/openapi-resource-gen
+# Release
 
-Execute a full release of the npm package. Follow every step below in order — do not skip any.
+Execute a full release of `@constantant/openapi-resource-gen` and `@constantant/openapi-resource-mocks`. Follow every step in order — do not skip any.
 
 ## Step 1 — pre-flight checks
 
 Run these in parallel:
 - `git status` — confirm no uncommitted changes (warn the user if there are any)
 - `git log --oneline -5` — show recent commits for context
-- `git log openapi-resource-gen@$(node -p "require('./tools/openapi-resource-gen/package.json').version")..HEAD --oneline -- tools/openapi-resource-gen/` — show which generator commits are unreleased
+- `git log openapi-resource-gen@$(node -p "require('./tools/openapi-resource-gen/package.json').version")..HEAD --oneline -- tools/openapi-resource-gen/` — unreleased generator commits
+- `git log openapi-resource-mocks@$(node -p "require('./tools/openapi-resource-mocks/package.json').version")..HEAD --oneline -- tools/openapi-resource-mocks/` — unreleased mocks commits
 
 If there are uncommitted changes, stop and tell the user to commit or stash them first.
 
@@ -16,14 +17,14 @@ If there are uncommitted changes, stop and tell the user to commit or stash them
 Run: `npx nx release --dry-run 2>&1`
 
 Show the user:
-- The resolved version bump (patch / minor / major) and why
-- The new version number
+- The resolved version bump for each package (patch / minor / major) and why
+- The new version numbers
 - The CHANGELOG entries that would be generated
 
 ## Step 3 — confirm with the user
 
 Ask the user:
-1. Is the auto-detected version bump correct, or do they want to override it?
+1. Are the auto-detected version bumps correct, or do they want to override?
    - If override: which specifier? (patch / minor / major / premajor / preminor / prepatch / prerelease)
    - If prerelease: which preid? (alpha / beta / rc)
 2. Dry run only, or publish for real?
@@ -39,44 +40,41 @@ Flags to pass:
 - `--field preid=<value>` — only if a preid was specified
 - `--field dryRun=true` — only if the user asked for dry run
 
-Example for an auto minor release:
-```
+Examples:
+```bash
+# Auto-detected bump (most common)
 gh workflow run release.yml
-```
 
-Example for a forced patch with no publish:
-```
-gh workflow run release.yml --field specifier=patch --field dryRun=true
-```
+# Force a specific bump
+gh workflow run release.yml --field specifier=patch
 
-Example for a beta pre-release:
-```
+# Pre-release beta
 gh workflow run release.yml --field specifier=prerelease --field preid=beta
+
+# Dry run preview only
+gh workflow run release.yml --field dryRun=true
 ```
 
 ## Step 5 — monitor the run
 
-After triggering, wait a moment and then get the run ID:
-```
+Get the run ID and watch it:
+```bash
 gh run list --workflow=release.yml --limit=1 --json databaseId --jq '.[0].databaseId'
-```
-
-Then watch it:
-```
 gh run watch <run-id> --exit-status
 ```
 
 ## Step 6 — report the result
 
-On success: show the published version, npm URL, and the GitHub Release URL.
-On failure: show the failed step and its logs — run `gh run view <run-id> --log-failed`.
+On success: show both published versions, their npm URLs, and the GitHub Release URLs.
+On failure: show the failed step and its logs — `gh run view <run-id> --log-failed`.
 
-## Key facts to keep in mind
+---
 
-- The package is `@constantant/openapi-resource-gen`, published to npm under the `constantant` scope.
-- Tags follow the pattern `openapi-resource-gen@<version>` (e.g. `openapi-resource-gen@1.2.0`).
-- `feat:` commits → minor bump; `fix:`/`perf:` → patch; `docs:`/`chore:`/`ci:` → no bump.
-- `useCommitScope: false` in nx.json means ALL commits count regardless of scope — `feat(generator):` correctly triggers a minor bump.
+## Key facts
+
+- Two packages are released independently: `@constantant/openapi-resource-gen` and `@constantant/openapi-resource-mocks`. Each gets its own version bump based on its own commit history (`projectsRelationship: "independent"` in nx.json).
+- Tags: `openapi-resource-gen@<version>` and `openapi-resource-mocks@<version>`.
+- Bump rules: `feat:` → minor; `fix:`/`perf:` → patch; `docs:`/`chore:`/`ci:` → no bump. `useCommitScope: false` means all commits count regardless of scope.
 - Pre-release versions (containing `-`) are published under the `next` dist-tag automatically.
-- The workflow creates the GitHub Release itself via `GITHUB_TOKEN` — do not run `gh release create` separately.
-- Never manually edit files under `libs/*/src/` — those are generated. Generator bugs go through `tools/openapi-resource-gen/`.
+- The workflow creates GitHub Releases and publishes to npm — never do these manually.
+- Never run `nx release` locally before triggering the workflow — the workflow does the full pipeline.
