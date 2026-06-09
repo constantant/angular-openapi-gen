@@ -16,6 +16,7 @@ export interface WindowMockEntry {
     finalValue: unknown,
     steps?: number,
   ): void;
+  setCatchMode(enabled: boolean): void;
   getState(): { status: string; value: unknown; error: unknown; progress: unknown };
   getHistory(): MockEvent[];
   onEvent(cb: (event: MockEvent) => void): () => void;
@@ -30,6 +31,8 @@ declare global {
 
 export class MockResourceBus {
   private readonly refs = new Map<string, MockResourceRefInternal<unknown>>();
+  private readonly catchModeKeys = new Set<string>();
+  private _reqCount = 0;
 
   register<T>(key: string, ref: MockResourceRef<T>): void {
     const internal = ref as MockResourceRefInternal<T>;
@@ -39,6 +42,23 @@ export class MockResourceBus {
 
   get<T>(key: string): MockResourceRef<T> | undefined {
     return this.refs.get(key) as MockResourceRef<T> | undefined;
+  }
+
+  setCatchMode(key: string, enabled: boolean): void {
+    if (enabled) {
+      this.catchModeKeys.add(key);
+      const ref = this.refs.get(key);
+      if (ref) {
+        ref.setLoading();
+        this.dispatchDomEvent(key, { type: 'caught', args: [], requestId: this.nextReqId(), ts: Date.now() });
+      }
+    } else {
+      this.catchModeKeys.delete(key);
+    }
+  }
+
+  private nextReqId(): string {
+    return `req-${++this._reqCount}`;
   }
 
   private exposeToWindow<T>(key: string, ref: MockResourceRefInternal<T>): void {
@@ -53,7 +73,13 @@ export class MockResourceBus {
       this.dispatchDomEvent(key, e);
     };
 
-    ref.onRequest((args) => emit({ type: 'request', args, ts: Date.now() }));
+    ref.onRequest((args) => {
+      emit({ type: 'request', args, ts: Date.now() });
+      if (this.catchModeKeys.has(key)) {
+        ref.setLoading();
+        emit({ type: 'caught', args, requestId: this.nextReqId(), ts: Date.now() });
+      }
+    });
 
     window.__openApiMocks__[key] = {
       resolve:      (v)        => { ref.resolve(v as T); emit({ type: 'resolve', value: v, ts: Date.now() }); },
@@ -68,6 +94,7 @@ export class MockResourceBus {
       simulateProgress: (pt, total, dur, v, steps) => {
         ref.simulateProgress(pt, total, dur, v as T, steps);
       },
+      setCatchMode: (enabled) => this.setCatchMode(key, enabled),
       getState:  () => ({
         status: String(ref.status()),
         value: ref.value(),
@@ -102,13 +129,27 @@ export class MockResourceBus {
         }>
       ).detail;
       const ref = this.refs.get(detail.key);
+      switch (detail.action) {
+        case 'setCatchMode':   this.setCatchMode(detail.key, true);  return;
+        case 'clearCatchMode': this.setCatchMode(detail.key, false); return;
+      }
       if (!ref) return;
       switch (detail.action) {
         case 'resolve':          ref.resolve(detail.value);                              break;
         case 'resolveAfter':     ref.resolveAfter(detail.delayMs ?? 0, detail.value);    break;
         case 'setLoading':       ref.setLoading();                                       break;
         case 'fail':             ref.fail(detail.value);                                 break;
-        case 'reset':            ref.reset();                                            break;
+        case 'reset': {
+          ref.reset();
+          // If catch mode is still on, immediately re-intercept the resource.
+          if (this.catchModeKeys.has(detail.key)) {
+            ref.setLoading();
+            this.dispatchDomEvent(detail.key, {
+              type: 'caught', args: [], requestId: this.nextReqId(), ts: Date.now(),
+            });
+          }
+          break;
+        }
         case 'setProgress':      ref.setProgress(detail.progressType!, detail.loaded!, detail.total); break;
         case 'simulateProgress': ref.simulateProgress(
                                    detail.progressType!,

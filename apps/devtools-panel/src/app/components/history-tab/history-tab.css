@@ -1,0 +1,104 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.hist-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container);
+}
+
+.hist-count {
+  flex: 1;
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 24px;
+  line-height: 1.6;
+}
+
+.event-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.event-row {
+  display: grid;
+  grid-template-columns: 90px 72px 1fr;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent);
+  font-size: 11px;
+  cursor: default;
+
+  &:hover {
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent);
+  }
+}
+
+.ev-ts {
+  font-family: var(--app-font-mono), monospace;
+  font-size: 10px;
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+}
+
+.ev-type {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  color: var(--mat-sys-on-surface-variant);
+
+  &.ev-resolve   {
+    background: color-mix(in srgb, var(--app-color-resolved) 20%, transparent);
+    color: var(--app-color-resolved);
+  }
+  &.ev-loading,
+  &.ev-reloading {
+    background: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent);
+    color: var(--mat-sys-primary);
+  }
+  &.ev-error     {
+    background: color-mix(in srgb, var(--mat-sys-error) 20%, transparent);
+    color: var(--mat-sys-error);
+  }
+  &.ev-reset     {
+    background: color-mix(in srgb, var(--app-color-key) 15%, transparent);
+    color: var(--app-color-key);
+  }
+  &.ev-caught    {
+    background: color-mix(in srgb, var(--app-color-catch) 20%, transparent);
+    color: var(--app-color-catch);
+  }
+}
+
+.ev-preview {
+  font-family: var(--app-font-mono), monospace;
+  font-size: 10px;
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

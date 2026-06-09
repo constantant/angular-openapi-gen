@@ -5,6 +5,10 @@
     @else { {{ mockCount() }} mock{{ mockCount() === 1 ? '' : 's' }} }
   </span>
   <button mat-button (click)="bridge.refresh()">↺ Refresh</button>
+  <button mat-button
+          [class.catch-all-active]="catchAllActive()"
+          [matTooltip]="catchAllActive() ? 'Disable catch mode on all mocks' : 'Enable catch mode on all mocks'"
+          (click)="toggleCatchAll()">⏸ Catch All</button>
   <button mat-button (click)="bridge.clearAll()">Clear</button>
   <button mat-button (click)="bridge.resetAll()">Reset All</button>
   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filter-field">
@@ -16,7 +20,22 @@
 
 <div class="main">
   <app-mock-table [filter]="filter()" />
+
   @if (selectedEntry()) {
-    <app-respond-tab />
+    <div class="right-panel">
+      <div class="tab-bar">
+        <button class="tab-btn" [class.active]="rightTab() === 'respond'"
+                (click)="rightTab.set('respond')">Respond</button>
+        <button class="tab-btn" [class.active]="rightTab() === 'history'"
+                (click)="rightTab.set('history')">History</button>
+      </div>
+      <div class="tab-body">
+        @if (rightTab() === 'respond') {
+          <app-respond-tab />
+        } @else {
+          <app-history-tab />
+        }
+      </div>
+    </div>
   }
 </div>

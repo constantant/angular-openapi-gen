@@ -5,9 +5,11 @@ export interface MockBridge {
   readonly mocks: Signal<ReadonlyMap<string, MockEntry>>;
   readonly selectedKey: WritableSignal<string | null>;
   sendControl(key: string, action: string, extra?: Record<string, unknown>): void;
+  setCatchMode(key: string, enabled: boolean): void;
   refresh(): void;
   clearAll(): void;
   resetAll(): void;
+  clearHistory(key: string): void;
 }
 
 export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
@@ -66,9 +68,28 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
       mocks: mocks.asReadonly(),
       selectedKey,
       sendControl,
+      setCatchMode: (key: string, enabled: boolean) => {
+        mocks.update((prev) => {
+          const entry = prev.get(key);
+          if (!entry) return prev;
+          const next = new Map(prev);
+          next.set(key, { ...entry, catchMode: enabled, pendingRequest: enabled ? entry.pendingRequest : null });
+          return next;
+        });
+        post({ type: 'control', detail: { key, action: enabled ? 'setCatchMode' : 'clearCatchMode' } });
+      },
       refresh: () => post({ type: 'get-keys' }),
       clearAll: () => { mocks.set(new Map()); selectedKey.set(null); },
       resetAll: () => { for (const k of mocks().keys()) sendControl(k, 'reset'); },
+      clearHistory: (key: string) => {
+        mocks.update((prev) => {
+          const entry = prev.get(key);
+          if (!entry) return prev;
+          const next = new Map(prev);
+          next.set(key, { ...entry, history: [] });
+          return next;
+        });
+      },
     };
   },
 });

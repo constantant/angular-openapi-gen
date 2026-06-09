@@ -1,0 +1,22 @@
+@if (selectedEntry(); as entry) {
+  <div class="hist-header">
+    <span class="hist-count">{{ entry.history.length }} event{{ entry.history.length === 1 ? '' : 's' }}</span>
+    @if (entry.history.length > 0) {
+      <button mat-button (click)="bridge.clearHistory(entry.key)">Clear</button>
+    }
+  </div>
+
+  @if (entry.history.length === 0) {
+    <div class="empty">No events yet.<br>Trigger a mock action to see history.</div>
+  } @else {
+    <div class="event-list">
+      @for (ev of entry.history; track ev.id) {
+        <div class="event-row" [matTooltip]="preview(ev)" matTooltipShowDelay="600">
+          <span class="ev-ts">{{ timestamp(ev.ts) }}</span>
+          <span class="ev-type ev-{{ ev.type }}">{{ ev.type }}</span>
+          <span class="ev-preview">{{ preview(ev) }}</span>
+        </div>
+      }
+    </div>
+  }
+}

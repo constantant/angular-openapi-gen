@@ -1,23 +1,62 @@
 :host {
-  width: 320px;
-  flex-shrink: 0;
-  border-left: 1px solid rgba(255,255,255,0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  height: 100%;
 }
 
 .respond-header {
   flex-shrink: 0;
   padding: 6px 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.catch-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--app-color-catch);
+  border: 1px solid var(--app-color-catch);
+  border-radius: 3px;
+  padding: 1px 4px;
+  flex-shrink: 0;
+}
+
+.caught-section {
+  flex-shrink: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--app-color-catch) 30%, transparent);
+  background: color-mix(in srgb, var(--app-color-catch) 6%, transparent);
+  padding: 8px 12px;
+}
+
+.caught-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-color-catch);
+  margin-bottom: 4px;
+}
+
+.caught-args {
+  margin: 0;
+  font-family: var(--app-font-mono), monospace;
+  font-size: 11px;
+  color: var(--mat-sys-on-surface);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 80px;
+  overflow-y: auto;
 }
 
 .key-label {
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: var(--app-font-mono), monospace;
   font-size: 11px;
-  color: #9cdcfe;
+  color: var(--app-color-key);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -37,7 +76,7 @@
   width: 100%;
 
   textarea.json-textarea {
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--app-font-mono), monospace;
     font-size: 12px;
     resize: vertical;
     min-height: 80px;

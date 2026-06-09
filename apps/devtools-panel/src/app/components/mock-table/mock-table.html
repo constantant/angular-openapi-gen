@@ -18,7 +18,11 @@
       <ng-container matColumnDef="status">
         <th mat-header-cell *matHeaderCellDef>Status</th>
         <td mat-cell *matCellDef="let row">
-          <span class="status-badge status-{{ row.state.status }}">{{ row.state.status }}</span>
+          @if (row.pendingRequest) {
+            <span class="status-badge status-caught">CAUGHT</span>
+          } @else {
+            <span class="status-badge status-{{ row.state.status }}">{{ row.state.status }}</span>
+          }
         </td>
       </ng-container>
 
@@ -35,6 +39,10 @@
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let row" class="actions-cell"
             (click)="$event.stopPropagation()">
+          <button mat-icon-button
+                  [class.catch-active]="row.catchMode"
+                  [matTooltip]="row.catchMode ? 'Catch mode on — click to disable' : 'Enable catch mode'"
+                  (click)="bridge.setCatchMode(row.key, !row.catchMode)">⏸</button>
           <button mat-icon-button matTooltip="Set loading"
                   (click)="bridge.sendControl(row.key, 'setLoading')">⏳</button>
           <button mat-icon-button matTooltip="Fail"
@@ -47,6 +55,7 @@
       <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: cols;"
           [class.selected]="bridge.selectedKey() === row.key"
+          [class.catching]="row.catchMode"
           (click)="bridge.selectedKey.set(row.key)"></tr>
 
     </table>

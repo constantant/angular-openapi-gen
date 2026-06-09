@@ -12,6 +12,13 @@ html {
     density: -2,
   ));
 
-  background-color: #1e1e1e;
+  // App-level semantic tokens — no M3 equivalent exists for these
+  --app-color-catch:    #f5a623;  // warning / intercept amber
+  --app-color-resolved: #4ec994;  // success green
+  --app-color-local:    #c586c0;  // optimistic local write
+  --app-color-key:      #9cdcfe;  // VS Code identifier blue
+  --app-font-mono: 'Consolas', 'Courier New', monospace;
+
+  background-color: var(--mat-sys-background);
   font-size: 12px;
 }

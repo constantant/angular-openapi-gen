@@ -22,6 +22,14 @@ export class RespondTab {
     return key ? (this.bridge.mocks().get(key) ?? null) : null;
   });
 
+  protected readonly pendingArgsJson = computed(() => {
+    const entry = this.selectedEntry();
+    if (!entry?.pendingRequest?.args.length) return null;
+    const args = entry.pendingRequest.args;
+    const val = args.length === 1 ? args[0] : args;
+    try { return JSON.stringify(val, null, 2); } catch { return String(val); }
+  });
+
   constructor() {
     // Re-populate the JSON editor only when the selected KEY changes,
     // not on every value update (so in-progress edits aren't overwritten).

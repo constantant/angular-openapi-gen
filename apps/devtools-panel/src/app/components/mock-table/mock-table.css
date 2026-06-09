@@ -21,25 +21,26 @@ table {
   height: 32px;
   cursor: pointer;
 }
-.mat-mdc-row:hover { background: rgba(255,255,255,0.04); }
-.mat-mdc-row.selected { background: rgba(9,71,113,0.55); }
+.mat-mdc-row:hover    { background: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent); }
+.mat-mdc-row.selected { background: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent); }
+.mat-mdc-row.catching { border-left: 2px solid var(--app-color-catch); }
 
-.mat-column-key       { width: 36%; }
-.mat-column-status    { width: 14%; }
-.mat-column-lastEvent { width: 36%; }
-.mat-column-actions   { width: 14%; }
+.mat-column-key       { width: 32%; }
+.mat-column-status    { width: 13%; }
+.mat-column-lastEvent { width: 28%; }
+.mat-column-actions   { width: 27%; }
 
 .key-cell {
-  font-family: 'Consolas', 'Courier New', monospace;
+  font-family: var(--app-font-mono), monospace;
   font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #9cdcfe;
+  color: var(--app-color-key);
 }
 
 .muted-cell {
-  color: rgba(255,255,255,0.45);
+  color: var(--mat-sys-on-surface-variant);
   font-size: 11px;
 }
 
@@ -47,7 +48,15 @@ table {
   text-align: right;
   padding-right: 4px;
 
-  button { width: 28px; height: 28px; font-size: 13px; }
+  button {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  button.catch-active {
+    color: var(--app-color-catch);
+  }
 }
 
 .status-badge {
@@ -57,24 +66,29 @@ table {
   font-size: 11px;
   font-weight: 500;
 }
-.status-idle      { color: #858585; }
+.status-idle      { color: var(--mat-sys-on-surface-variant); }
 .status-loading,
-.status-reloading { color: #4fc3f7; }
-.status-resolved  { color: #4ec994; }
-.status-error     { color: #f44747; }
-.status-local     { color: #c586c0; }
+.status-reloading { color: var(--mat-sys-primary); }
+.status-resolved  { color: var(--app-color-resolved); }
+.status-error     { color: var(--mat-sys-error); }
+.status-local     { color: var(--app-color-local); }
+.status-caught    {
+  color: var(--app-color-catch);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
 
 .empty-state {
   padding: 32px 16px;
   text-align: center;
-  color: rgba(255,255,255,0.45);
+  color: var(--mat-sys-on-surface-variant);
   font-size: 12px;
   line-height: 1.8;
 
   code {
-    font-family: 'Consolas', 'Courier New', monospace;
+    font-family: var(--app-font-mono), monospace;
     font-size: 11px;
-    background: rgba(255,255,255,0.08);
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
     padding: 1px 5px;
     border-radius: 3px;
   }

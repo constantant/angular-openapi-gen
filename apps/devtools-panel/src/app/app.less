@@ -21,7 +21,7 @@
 
   .count {
     font-size: 11px;
-    opacity: 0.55;
+    color: var(--mat-sys-on-surface-variant);
     min-width: 60px;
   }
 
@@ -31,6 +31,10 @@
     padding: 0 8px;
     height: 28px;
     line-height: 28px;
+
+    &.catch-all-active {
+      color: var(--app-color-catch);
+    }
   }
 
   .filter-field {
@@ -38,10 +42,16 @@
     width: 180px;
 
     ::ng-deep .mat-mdc-text-field-wrapper {
-      height: 30px;
+      padding-top: 0;
+      padding-bottom: 0;
     }
     ::ng-deep .mat-mdc-form-field-flex {
+      align-items: center;
       height: 30px;
+    }
+    ::ng-deep .mat-mdc-floating-label {
+      top: 50%;
+      transform: translateY(-50%);
     }
     ::ng-deep input.mat-mdc-input-element {
       font-size: 12px;
@@ -54,4 +64,49 @@
   flex: 1;
   overflow: hidden;
   min-height: 0;
+}
+
+.right-panel {
+  width: 320px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--mat-sys-outline-variant);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tab-bar {
+  flex-shrink: 0;
+  display: flex;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container);
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--mat-sys-on-surface-variant);
+  cursor: pointer;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 5px 0;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: var(--mat-sys-on-surface);
+  }
+
+  &.active {
+    color: var(--mat-sys-on-surface);
+    border-bottom-color: var(--mat-sys-primary);
+  }
+}
+
+.tab-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
