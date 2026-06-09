@@ -1,3 +1,27 @@
+## 1.5.0 (2026-06-09)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** add includeMocks to executor schema ([7f2052d](https://github.com/constantant/angular-openapi-gen/commit/7f2052d))
+- **openapi-resource-gen:** add includeMocks option to co-generate .mock.ts files ([8ebddd4](https://github.com/constantant/angular-openapi-gen/commit/8ebddd4))
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** auto-register /mock path alias and fix app.config.mock.ts imports ([c65e6a6](https://github.com/constantant/angular-openapi-gen/commit/c65e6a6))
+
+### 📖 Documentation
+
+- **openapi-resource-gen:** document includeMocks option ([99aaf8b](https://github.com/constantant/angular-openapi-gen/commit/99aaf8b))
+
+### 🧱 Updated Dependencies
+
+- Updated openapi-resource-mocks to 0.2.0
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.4.0 (2026-06-08)
 
 ### 📖 Documentation
