@@ -17,6 +17,20 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
   factory: () => {
     const mocks = signal<Map<string, MockEntry>>(new Map());
     const selectedKey = signal<string | null>(null);
+
+    // Outside a Chrome DevTools panel (e.g. dev server, E2E) — return a passive stub.
+    if (typeof chrome === 'undefined' || !chrome.devtools) {
+      return {
+        mocks: mocks.asReadonly(), selectedKey,
+        sendControl: () => { /* noop */ },
+        setCatchMode: () => { /* noop */ },
+        refresh: () => { /* noop */ },
+        clearAll: () => { /* noop */ },
+        resetAll: () => { /* noop */ },
+        clearHistory: () => { /* noop */ },
+      };
+    }
+
     const tabId = chrome.devtools.inspectedWindow.tabId;
 
     let port: chrome.runtime.Port;
