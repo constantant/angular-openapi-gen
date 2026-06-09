@@ -105,22 +105,24 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Publish to Chrome Web Store if the CHROME_EXTENSION_ID secret is configured.
-      # Required secrets: CHROME_EXTENSION_ID, CHROME_CLIENT_ID,
+      # Required secrets: CHROME_EXTENSION_ID, CHROME_PUBLISHER_ID, CHROME_CLIENT_ID,
       #                   CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN
+      # CHROME_PUBLISHER_ID: developer dashboard URL → chrome.google.com/webstore/devconsole/<id>
       # Obtain refresh token: CLIENT_ID=… CLIENT_SECRET=… npx chrome-webstore-upload-cli@4 fetch-token
       - name: Publish to Chrome Web Store
         if: ${{ !inputs.dryRun }}
         env:
           # chrome-webstore-upload-cli@4 reads these exact env var names
-          EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-          CLIENT_ID:    ${{ secrets.CHROME_CLIENT_ID }}
+          EXTENSION_ID:  ${{ secrets.CHROME_EXTENSION_ID }}
+          PUBLISHER_ID:  ${{ secrets.CHROME_PUBLISHER_ID }}
+          CLIENT_ID:     ${{ secrets.CHROME_CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
         run: |
           if [[ -z "$EXTENSION_ID" ]]; then
             echo "CHROME_EXTENSION_ID secret not configured — skipping Chrome Web Store upload."
-            echo "To enable: add CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET,"
-            echo "and CHROME_REFRESH_TOKEN to repository secrets."
+            echo "To enable: add CHROME_EXTENSION_ID, CHROME_PUBLISHER_ID, CHROME_CLIENT_ID,"
+            echo "CHROME_CLIENT_SECRET, and CHROME_REFRESH_TOKEN to repository secrets."
             exit 0
           fi
           npx chrome-webstore-upload-cli@4 upload \
