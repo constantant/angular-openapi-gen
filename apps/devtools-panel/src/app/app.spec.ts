@@ -1,17 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
+import { vi } from 'vitest';
 import { App } from './app';
 import { MOCK_BRIDGE } from './mock-bridge.token';
 
 const mockBridge = {
   mocks: signal(new Map()),
   selectedKey: signal(null),
-  sendControl: () => {},
-  setCatchMode: () => {},
-  refresh: () => {},
-  clearAll: () => {},
-  resetAll: () => {},
-  clearHistory: () => {},
+  sendControl: vi.fn(),
+  setCatchMode: vi.fn(),
+  refresh: vi.fn(),
+  clearAll: vi.fn(),
+  resetAll: vi.fn(),
+  clearHistory: vi.fn(),
 };
 
 describe('App', () => {

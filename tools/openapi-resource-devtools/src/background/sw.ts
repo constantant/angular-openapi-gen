@@ -43,7 +43,7 @@ chrome.runtime.onConnect.addListener((port) => {
       injectDiscovery(tabId);
       return;
     }
-    chrome.tabs.sendMessage(tabId, msg).catch(() => {});
+    chrome.tabs.sendMessage(tabId, msg).catch(() => { /* swallow — tab may have navigated */ });
   });
 
   port.onDisconnect.addListener(() => ports.delete(tabId));

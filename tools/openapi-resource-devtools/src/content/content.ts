@@ -3,7 +3,7 @@
 // send() detects this and tears down the listeners so no further errors fire.
 function send(msg: unknown): void {
   try {
-    chrome.runtime.sendMessage(msg).catch(() => {});
+    chrome.runtime.sendMessage(msg).catch(() => { /* swallow — panel may be closed */ });
   } catch {
     // Context invalidated — remove all listeners and stop discovery.
     document.removeEventListener('openapi-mock-event', onMockEvent);
