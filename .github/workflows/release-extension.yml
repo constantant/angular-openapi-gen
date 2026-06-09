@@ -105,16 +105,17 @@ jobs:
       # Publish to Chrome Web Store if the CHROME_EXTENSION_ID secret is configured.
       # Required secrets: CHROME_EXTENSION_ID, CHROME_CLIENT_ID,
       #                   CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN
-      # How to obtain them: https://github.com/nicedoc/chrome-webstore-upload-cli#getting-cli-credentials
+      # Obtain refresh token: CLIENT_ID=… CLIENT_SECRET=… npx chrome-webstore-upload-cli@4 fetch-token
       - name: Publish to Chrome Web Store
         if: ${{ !inputs.dryRun }}
         env:
-          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-          CLIENT_ID:           ${{ secrets.CHROME_CLIENT_ID }}
-          CLIENT_SECRET:       ${{ secrets.CHROME_CLIENT_SECRET }}
-          REFRESH_TOKEN:       ${{ secrets.CHROME_REFRESH_TOKEN }}
+          # chrome-webstore-upload-cli@4 reads these exact env var names
+          EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CLIENT_ID:    ${{ secrets.CHROME_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
         run: |
-          if [[ -z "$CHROME_EXTENSION_ID" ]]; then
+          if [[ -z "$EXTENSION_ID" ]]; then
             echo "CHROME_EXTENSION_ID secret not configured — skipping Chrome Web Store upload."
             echo "To enable: add CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET,"
             echo "and CHROME_REFRESH_TOKEN to repository secrets."
@@ -122,7 +123,6 @@ jobs:
           fi
           npx chrome-webstore-upload-cli@4 upload \
             --source openapi-resource-mocks-devtools.zip \
-            --extension-id "$CHROME_EXTENSION_ID" \
             --auto-publish
 
       - name: Write job summary
