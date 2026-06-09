@@ -23,19 +23,19 @@
 
   @if (selectedEntry()) {
     <div class="right-panel">
-      <div class="tab-bar">
-        <button class="tab-btn" [class.active]="rightTab() === 'respond'"
+      <nav mat-tab-nav-bar [tabPanel]="tabPanel" mat-stretch-tabs>
+        <button mat-tab-link [active]="rightTab() === 'respond'"
                 (click)="rightTab.set('respond')">Respond</button>
-        <button class="tab-btn" [class.active]="rightTab() === 'history'"
+        <button mat-tab-link [active]="rightTab() === 'history'"
                 (click)="rightTab.set('history')">History</button>
-      </div>
-      <div class="tab-body">
+      </nav>
+      <mat-tab-nav-panel #tabPanel class="tab-body">
         @if (rightTab() === 'respond') {
           <app-respond-tab />
         } @else {
           <app-history-tab />
         }
-      </div>
+      </mat-tab-nav-panel>
     </div>
   }
 </div>

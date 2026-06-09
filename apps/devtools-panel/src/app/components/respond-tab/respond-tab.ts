@@ -2,11 +2,12 @@ import { Component, computed, effect, inject, signal, untracked } from '@angular
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatToolbar } from '@angular/material/toolbar';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
 
 @Component({
   selector: 'app-respond-tab',
-  imports: [MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [MatButtonModule, MatFormFieldModule, MatInputModule, MatToolbar],
   templateUrl: './respond-tab.html',
   styleUrl: './respond-tab.css',
 })

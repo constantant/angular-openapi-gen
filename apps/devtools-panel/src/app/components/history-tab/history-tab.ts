@@ -1,12 +1,13 @@
 import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatToolbar } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
 import type { HistoryEvent } from '../../mock-entry';
 
 @Component({
   selector: 'app-history-tab',
-  imports: [MatButtonModule, MatTooltipModule],
+  imports: [MatButtonModule, MatToolbar, MatTooltipModule],
   templateUrl: './history-tab.html',
   styleUrl: './history-tab.css',
 })

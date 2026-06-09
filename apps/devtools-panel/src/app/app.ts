@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatTabNav, MatTabLink, MatTabNavPanel } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MOCK_BRIDGE } from './mock-bridge.token';
@@ -16,6 +17,7 @@ import { HistoryTab } from './components/history-tab/history-tab';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatTabNav, MatTabLink, MatTabNavPanel,
     MatTooltipModule,
     MockTable,
     RespondTab,

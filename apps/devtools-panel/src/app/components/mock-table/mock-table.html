@@ -54,6 +54,7 @@
 
       <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: cols;"
+          style="cursor: pointer"
           [class.selected]="bridge.selectedKey() === row.key"
           [class.catching]="row.catchMode"
           (click)="bridge.selectedKey.set(row.key)"></tr>

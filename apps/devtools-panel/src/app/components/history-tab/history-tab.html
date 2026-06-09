@@ -1,10 +1,11 @@
 @if (selectedEntry(); as entry) {
-  <div class="hist-header">
+  <mat-toolbar class="panel-header">
     <span class="hist-count">{{ entry.history.length }} event{{ entry.history.length === 1 ? '' : 's' }}</span>
+    <span class="spacer"></span>
     @if (entry.history.length > 0) {
       <button mat-button (click)="bridge.clearHistory(entry.key)">Clear</button>
     }
-  </div>
+  </mat-toolbar>
 
   @if (entry.history.length === 0) {
     <div class="empty">No events yet.<br>Trigger a mock action to see history.</div>

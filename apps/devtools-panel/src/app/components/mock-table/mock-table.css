@@ -17,10 +17,7 @@ table {
 }
 
 .mat-mdc-header-row { height: 34px; }
-.mat-mdc-row {
-  height: 32px;
-  cursor: pointer;
-}
+.mat-mdc-row { height: 32px; }
 .mat-mdc-row:hover    { background: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent); }
 .mat-mdc-row.selected { background: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent); }
 .mat-mdc-row.catching { border-left: 2px solid var(--app-color-catch); }

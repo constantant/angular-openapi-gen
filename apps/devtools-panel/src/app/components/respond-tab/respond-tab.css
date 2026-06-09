@@ -5,15 +5,17 @@
   height: 100%;
 }
 
-.respond-header {
+mat-toolbar.panel-header {
+  --mat-toolbar-standard-height: 36px;
+  --mat-toolbar-mobile-height: 36px;
   flex-shrink: 0;
-  padding: 6px 12px;
+  padding: 0 12px;
+  font-size: 12px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   background: var(--mat-sys-surface-container);
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
+
+.spacer { flex: 1; }
 
 .catch-badge {
   font-size: 9px;

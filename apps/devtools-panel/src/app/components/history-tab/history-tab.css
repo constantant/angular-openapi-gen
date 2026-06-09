@@ -5,18 +5,19 @@
   height: 100%;
 }
 
-.hist-header {
+mat-toolbar.panel-header {
+  --mat-toolbar-standard-height: 32px;
+  --mat-toolbar-mobile-height: 32px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  padding: 4px 12px;
+  padding: 0 12px;
+  font-size: 11px;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
   background: var(--mat-sys-surface-container);
 }
 
+.spacer { flex: 1; }
+
 .hist-count {
-  flex: 1;
-  font-size: 11px;
   color: var(--mat-sys-on-surface-variant);
 }
 
