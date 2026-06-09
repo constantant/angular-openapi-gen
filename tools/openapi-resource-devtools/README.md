@@ -1,0 +1,157 @@
+# OpenAPI Resource Mocks — DevTools Extension
+
+A Chrome DevTools panel for inspecting and controlling Angular mock tokens registered via [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks).
+
+---
+
+## Prerequisites
+
+Your Angular app must use `@constantant/openapi-resource-mocks`:
+
+```typescript
+// app.config.ts
+import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(),
+    provideMockResourceBus(),   // ← registers the mock bus
+  ],
+};
+```
+
+```typescript
+// in a component's providers array
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+
+providers: [
+  provideMockResource(FIND_PETS_BY_STATUS, 'findPetsByStatus', { loading: true }),
+]
+```
+
+---
+
+## Installation
+
+### Chrome Web Store _(recommended)_
+
+> _Not yet published. Use manual loading below._
+
+### Load unpacked (development / local build)
+
+1. Clone the repository and install dependencies:
+   ```bash
+   git clone https://github.com/constantant/angular-openapi-gen.git
+   cd angular-openapi-gen
+   npm install
+   ```
+2. Build the extension:
+   ```bash
+   npx nx run openapi-resource-devtools:build
+   ```
+3. Open `chrome://extensions` and enable **Developer mode**.
+4. Click **Load unpacked** and select `dist/tools/openapi-resource-devtools/`.
+
+---
+
+## Panel overview
+
+Open Chrome DevTools (`F12`) on any page running `provideMockResourceBus()`. The **API Mocks** tab appears in the DevTools tab bar.
+
+### Mock table
+
+The left pane lists every registered mock with its current status:
+
+| Column | Description |
+|--------|-------------|
+| Key | The token key passed to `provideMockResource()` |
+| Status | `idle` / `loading` / `resolved` / `error` / `local` / **CAUGHT** |
+| Last event | Type and age of the most recent state change |
+| Actions | ⏸ Catch · ⏳ Loading · ✗ Fail · ↺ Reset |
+
+Click any row to open the **Respond** and **History** tabs on the right.
+
+### Respond tab
+
+Manually resolve, fail, or control the selected mock:
+
+- **Response (JSON)** — the value to resolve with; leave empty for `undefined`
+- **Delay (ms)** — adds a simulated latency before resolving
+- **Resolve** — transitions the resource to `resolved` with the given value
+- **Loading** — forces the resource back to `loading`
+- **Fail** — transitions to `error` with the given value as the error object
+- **Reset** — returns the resource to `idle`
+
+### History tab
+
+Reverse-chronological event log for the selected mock (up to 200 entries). Each row shows the timestamp, event type badge, and a truncated JSON preview of the value or error. A **Clear** button wipes the log.
+
+---
+
+## Catch mode
+
+Catch mode intercepts requests before they resolve, holding the resource in `loading` until you explicitly release it. This is useful for:
+
+- Testing loading states without hardcoding delays
+- Inspecting what params/args the component sent
+- Deciding the response on a per-request basis
+
+### Enable per mock
+
+Click the **⏸** button in the row's Actions column. The row gains an amber left-border and the status cell shows **CAUGHT**.
+
+### Enable for all mocks
+
+Click **⏸ Catch All** in the toolbar. All currently registered mocks are intercepted at once.
+
+### Responding to a caught request
+
+When a mock is caught, the Respond tab shows a **Caught request args** section with the params the component passed to the token factory. Fill in a response JSON and click **Release → Resolve** or **Release → Fail**.
+
+After each release, if catch mode is still on, the resource is immediately re-intercepted when the next request fires or when Reset is called.
+
+---
+
+## Toolbar actions
+
+| Button | Action |
+|--------|--------|
+| ↺ Refresh | Re-queries all mock states from the page |
+| ⏸ Catch All | Toggles catch mode on every registered mock |
+| Clear | Removes all mocks from the panel (does not affect the page) |
+| Reset All | Calls `reset()` on every mock, returning them to `idle` |
+| Filter… | Filters the mock table by key name |
+
+---
+
+## Local development
+
+```bash
+# Build and watch (manual rebuild — no watch mode yet)
+npx nx run openapi-resource-devtools:build
+
+# After each build, reload the extension in Chrome:
+# chrome://extensions → click the ↺ reload icon
+```
+
+The Angular panel lives in `apps/devtools-panel/`. The extension shell (manifest, content script, service worker, devtools page) lives in `tools/openapi-resource-devtools/src/`. See [ARCHITECTURE.md](../../CONTRIBUTING.md) for the message-flow diagram.
+
+---
+
+## Releasing
+
+Releases are created via the **Release Extension** GitHub Actions workflow (`workflow_dispatch`). It:
+
+1. Bumps `manifest.json` version (auto-detected from conventional commits, or explicit `patch`/`minor`/`major`)
+2. Prepends a changelog entry to `CHANGELOG.md`
+3. Builds the extension and packages it as a `.zip`
+4. Creates a GitHub Release with the zip attached
+5. Uploads to the Chrome Web Store if `CHROME_EXTENSION_ID` and OAuth secrets are configured
+
+See [`.github/workflows/release-extension.yml`](../../.github/workflows/release-extension.yml).
+
+---
+
+## License
+
+MIT — see [LICENSE](../../LICENSE).

@@ -1,0 +1,151 @@
+name: Release Extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      specifier:
+        description: 'Version bump (empty = auto from conventional commits)'
+        type: choice
+        options: ['', 'patch', 'minor', 'major']
+        default: ''
+      dryRun:
+        description: 'Dry run — skip push, GitHub Release, and CWS upload'
+        type: boolean
+        default: false
+
+# contents: write → create commits, tags, GitHub Releases, upload assets
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0   # full history so the release script can scan all commits
+          # GH_PAT (admin PAT, Contents: write) bypasses branch protection on push
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Bumps manifest.json, writes CHANGELOG.md entry, commits + tags.
+      - name: Bump version and generate changelog
+        run: node tools/openapi-resource-devtools/scripts/release.mjs ${{ inputs.specifier }}
+
+      # Read the new version from the just-bumped manifest.json.
+      - name: Read new version
+        id: version
+        run: |
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('tools/openapi-resource-devtools/manifest.json','utf8')).version")
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=openapi-resource-devtools@${VERSION}" >> "$GITHUB_OUTPUT"
+
+      # Extract the changelog section for this version to use as release notes.
+      - name: Read changelog entry
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          NOTES=$(awk "/^## ${VERSION}/{found=1; next} found && /^## /{exit} found{print}" \
+            tools/openapi-resource-devtools/CHANGELOG.md)
+          EOF=$(openssl rand -hex 8)
+          {
+            echo "notes<<${EOF}"
+            echo "${NOTES}"
+            echo "${EOF}"
+          } >> "$GITHUB_OUTPUT"
+
+      # Build must run after the version bump so the manifest in the dist zip
+      # carries the new version number.
+      - name: Build extension
+        run: npx nx run openapi-resource-devtools:build --skip-nx-cache
+
+      # Package the entire dist/ into a zip ready for Chrome Web Store upload.
+      - name: Package extension zip
+        run: |
+          cd dist/tools/openapi-resource-devtools
+          zip -r ../../../openapi-resource-mocks-devtools.zip .
+          echo "Zip size: $(du -sh ../../../openapi-resource-mocks-devtools.zip | cut -f1)"
+
+      # ── Dry-run stops here; everything below touches the remote or the CWS ──
+
+      - name: Push version commit and tag
+        if: ${{ !inputs.dryRun }}
+        run: git push --follow-tags origin master
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dryRun }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" &>/dev/null; then
+            echo "Release $TAG already exists — skipping."
+          else
+            gh release create "$TAG" \
+              --title "OpenAPI Resource Mocks DevTools ${{ steps.version.outputs.version }}" \
+              --notes "${{ steps.changelog.outputs.notes }}" \
+              "openapi-resource-mocks-devtools.zip#openapi-resource-mocks-devtools.zip"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Publish to Chrome Web Store if the CHROME_EXTENSION_ID secret is configured.
+      # Required secrets: CHROME_EXTENSION_ID, CHROME_CLIENT_ID,
+      #                   CHROME_CLIENT_SECRET, CHROME_REFRESH_TOKEN
+      # How to obtain them: https://github.com/nicedoc/chrome-webstore-upload-cli#getting-cli-credentials
+      - name: Publish to Chrome Web Store
+        if: ${{ !inputs.dryRun }}
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CLIENT_ID:           ${{ secrets.CHROME_CLIENT_ID }}
+          CLIENT_SECRET:       ${{ secrets.CHROME_CLIENT_SECRET }}
+          REFRESH_TOKEN:       ${{ secrets.CHROME_REFRESH_TOKEN }}
+        run: |
+          if [[ -z "$CHROME_EXTENSION_ID" ]]; then
+            echo "CHROME_EXTENSION_ID secret not configured — skipping Chrome Web Store upload."
+            echo "To enable: add CHROME_EXTENSION_ID, CHROME_CLIENT_ID, CHROME_CLIENT_SECRET,"
+            echo "and CHROME_REFRESH_TOKEN to repository secrets."
+            exit 0
+          fi
+          npx chrome-webstore-upload-cli@4 upload \
+            --source openapi-resource-mocks-devtools.zip \
+            --extension-id "$CHROME_EXTENSION_ID" \
+            --auto-publish
+
+      - name: Write job summary
+        if: always()
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          if [[ "${{ inputs.dryRun }}" == "true" ]]; then
+            {
+              echo "## 🔍 Dry run — no changes pushed or published"
+              echo ""
+              echo "Would release: \`${TAG}\`"
+              echo ""
+              echo "### Changelog preview"
+              echo "${{ steps.changelog.outputs.notes }}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## ✅ Released OpenAPI Resource Mocks DevTools \`${VERSION}\`"
+              echo ""
+              echo "**GitHub Release:** ${{ github.server_url }}/${{ github.repository }}/releases/tag/${TAG}"
+              echo ""
+              echo "### Changelog"
+              echo "${{ steps.changelog.outputs.notes }}"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
