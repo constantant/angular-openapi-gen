@@ -9,7 +9,7 @@ html {
       theme-type: dark,
     ),
     typography: Roboto,
-    density: -2,
+    density: -4,
   ));
 
   // App-level semantic tokens — no M3 equivalent exists for these
@@ -20,5 +20,4 @@ html {
   --app-font-mono: 'Consolas', 'Courier New', monospace;
 
   background-color: var(--mat-sys-background);
-  font-size: 12px;
 }
