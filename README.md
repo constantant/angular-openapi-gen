@@ -92,6 +92,8 @@ Re-run the generator command whenever your spec changes — it overwrites genera
 | `tagFilter` | no | all tags | Comma-separated list of tags to include |
 | `namingConvention` | no | `kebab` | `kebab` or `camel` — controls file names |
 | `providedIn` | no | `none` | `none` (use `provideX()` helpers) or `root` (self-registering) |
+| `includeMocks` | no | `false` | Co-generate `.mock.ts` providers, `index.mock.ts` barrels, and `mocks.manifest.json` — requires `@constantant/openapi-resource-mocks` |
+| `specId` | no | derived | Identifier embedded in `MockResourceMeta` and `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match when importing into the DevTools panel. |
 
 See [`tools/openapi-resource-gen/README.md`](tools/openapi-resource-gen/README.md) for full documentation.
 
@@ -249,8 +251,8 @@ Current version: **0.2.0**
 A companion package that provides zero-HTTP, pure-DI mocks for generated tokens. Key features:
 
 - `provideMockResourceBus()` — registers the bus; exposes `window.__openApiMocks__` and `openApiMock(key)` for Playwright
-- `provideMockResource(token, key, initialBehavior?)` — replaces a token's factory with a mock
-- DOM event bridge (`openapi-mock-event` / `openapi-mock-control`) — lets a Chrome Extension observe and control mocks in real time
+- `provideMockResource(token, key, initialBehavior?, meta?)` — replaces a token's factory with a mock; the optional `meta` (`MockResourceMeta`) is embedded automatically in generated `.mock.ts` files and used by the DevTools panel to resolve response schemas
+- DOM event bridge (`openapi-mock-event` / `openapi-mock-control`) — lets the Chrome Extension DevTools panel observe and control mocks in real time
 - `MockResourceRef<T>` — `resolve()`, `setLoading()`, `fail()`, `reset()`, `simulateProgress()`, `getHistory()`
 
 See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/README.md) for full documentation.
@@ -261,7 +263,7 @@ See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/READ
 
 Current version: **0.3.2** | Status: pending Chrome Web Store review
 
-A Chrome DevTools panel that connects to any Angular app running `@constantant/openapi-resource-mocks`. It lists every registered mock token, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code.
+A Chrome DevTools panel that connects to any Angular app running `@constantant/openapi-resource-mocks`. It lists every registered mock token, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code. The **Specs** tab lets you import a `mocks.manifest.json` or full OpenAPI spec to enable schema-aware features in the Respond tab: auto-generated example payloads (⚡ Example) and JSON schema validation (✓ Validate).
 
 ### Install
 

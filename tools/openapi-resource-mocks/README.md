@@ -21,8 +21,8 @@ Peer dependencies: `@angular/core >=22`, `@angular/common >=22`.
 Each mock token is registered in a `MockResourceBus`. The bus:
 
 - Exposes `window.__openApiMocks__` — a plain object keyed by token name, accessible from Playwright's `page.evaluate()` or a Chrome Extension content script.
-- Emits DOM events (`openapi-mock-event`) on every state change so the extension can observe in real time.
-- Listens for DOM events (`openapi-mock-control`) so the extension can push data into the app.
+- Emits DOM events (`openapi-mock-event`) on every state change so the Chrome Extension DevTools panel can observe in real time.
+- Listens for DOM events (`openapi-mock-control`) so the DevTools panel can push data into the app.
 
 ---
 
@@ -347,9 +347,11 @@ document.addEventListener('openapi-mock-event', (e) => {
 
 Returns `EnvironmentProviders`. Call once in your root providers or TestBed setup.
 
-### `provideMockResource(token, key, initialBehavior?)`
+### `provideMockResource(token, key, initialBehavior?, meta?)`
 
 Returns `FactoryProvider`. Each time a component invokes the factory function, a fresh ref is created, registered in the bus under `key`, and `initialBehavior` is applied — simulating the full request lifecycle on every mount.
+
+The optional `meta` argument is a `MockResourceMeta` object. When provided, the DevTools panel uses it to look up response schemas and pre-populate the Respond tab's schema display. Generated `.mock.ts` files embed this automatically — you only need to pass it manually when using `provideMockResource()` directly.
 
 `initialBehavior` controls how the mock behaves on each invocation:
 
@@ -376,6 +378,22 @@ Union type accepted by `provideMockResource()` and generated `provide{Operation}
 | `{ loading: true }` | Stays loading indefinitely |
 | `{ error: unknown }` | Fails immediately |
 | `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
+
+### `MockResourceMeta`
+
+Metadata embedded in generated `.mock.ts` files and read by the DevTools panel to show response schemas, generate example payloads, and validate responses:
+
+```typescript
+interface MockResourceMeta {
+  specId: string;       // matches the --specId generator option (default: derived from baseUrlToken)
+  operationId: string;  // OpenAPI operationId
+  path: string;         // API path, e.g. '/pet/findByStatus'
+  method: string;       // HTTP method, lowercase
+  tag?: string;         // OpenAPI tag (omitted for untagged operations)
+}
+```
+
+The DevTools panel resolves the response schema by looking up `specId` in its Specs store and then matching `operationId`. Import the spec (or its `mocks.manifest.json`) in the panel's **Specs** tab to enable schema-aware features.
 
 ### `DeepPartial<T>`
 

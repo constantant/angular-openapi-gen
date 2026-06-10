@@ -86,7 +86,8 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `tagFilter` | no | all tags | Comma-separated list of OpenAPI tags to include |
 | `namingConvention` | no | `kebab` | `kebab` → `find-pets-by-status.token.ts`; `camel` → `findPetsByStatus.token.ts` |
 | `providedIn` | no | `none` | `none` or `root` — see table above |
-| `includeMocks` | no | `false` | Emit a `.mock.ts` per endpoint plus `index.mock.ts` barrels — requires [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) |
+| `includeMocks` | no | `false` | Emit a `.mock.ts` per endpoint plus `index.mock.ts` barrels and a `mocks.manifest.json` — requires [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) |
+| `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
 
 ---
 
@@ -99,6 +100,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
   {scheme}.security-token.ts        # one per security scheme (if any)
   index.ts                          # re-exports all tag barrels + base-url + security tokens
   index.mock.ts                     # (--includeMocks) re-exports all tag mock barrels
+  mocks.manifest.json               # (--includeMocks) machine-readable endpoint list + specId for the DevTools panel
   {tag}/
     index.ts                        # re-exports all token files in this tag folder
     index.mock.ts                   # (--includeMocks) re-exports all mock files in this tag
@@ -136,16 +138,26 @@ Each `.mock.ts` file exports a single `provide{Operation}Mock(initialBehavior?)`
 // pet/find-pets-by-status.mock.ts  (generated)
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type { ProviderInitialBehavior, MockResourceMeta } from '@constantant/openapi-resource-mocks';
 import { FIND_PETS_BY_STATUS } from './find-pets-by-status.token';
 import type { FindPetsByStatusResponse } from './find-pets-by-status.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'petstore',
+  operationId: 'findPetsByStatus',
+  path: '/pet/findByStatus',
+  method: 'get',
+  tag: 'pet',
+};
 
 export function provideFindPetsByStatusMock(
   initialBehavior?: ProviderInitialBehavior<FindPetsByStatusResponse>,
 ): FactoryProvider {
-  return provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', initialBehavior);
+  return provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', initialBehavior, _meta);
 }
 ```
+
+Each mock file also embeds a `MockResourceMeta` const with `specId`, `operationId`, `path`, `method`, and `tag`. The DevTools panel reads this metadata to pre-populate the Respond tab's schema display — no manual configuration needed.
 
 The token name string key is always in sync — renaming an operation in the spec and
 regenerating updates both the token constant and its key automatically.
