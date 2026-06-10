@@ -39,11 +39,32 @@
   }
 }
 
+.page-nav {
+  flex-shrink: 0;
+  --mat-tab-header-height: 28px;
+  --mdc-secondary-navigation-tab-container-height: 28px;
+  font-size: 11px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.page-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.specs-page {
+  flex: 1;
+}
+
 .main {
   display: flex;
   flex: 1;
   overflow: hidden;
   min-height: 0;
+  height: 100%;
 }
 
 .right-panel {

@@ -1,5 +1,6 @@
-import { InjectionToken, Signal, WritableSignal, signal } from '@angular/core';
+import { InjectionToken, Signal, WritableSignal, inject, signal } from '@angular/core';
 import { MockEntry, MockState, PanelMessage, applyEvent, blankEntry } from './mock-entry';
+import { SPEC_STORE } from './spec-store.token';
 
 export interface MockBridge {
   readonly mocks: Signal<ReadonlyMap<string, MockEntry>>;
@@ -32,6 +33,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
     }
 
     const tabId = chrome.devtools.inspectedWindow.tabId;
+    const specStore = inject(SPEC_STORE);
 
     let port: chrome.runtime.Port;
 
@@ -40,11 +42,12 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         const next = new Map(prev);
         if (msg.type === 'mock-keys') {
           for (const key of msg.keys) {
-            const meta = msg.metas?.[key] ?? null;
+            // Runtime meta (Phase 1) takes priority; fall back to SPEC_STORE (Phase 3).
+            const runtimeMeta = msg.metas?.[key] ?? null;
+            const meta = runtimeMeta ?? specStore.findMock(key) ?? null;
             if (!next.has(key)) {
               next.set(key, { ...blankEntry(key), meta });
             } else if (meta) {
-              // Bus is authoritative — update meta whenever it provides one.
               const existing = next.get(key);
               if (existing) next.set(key, { ...existing, meta });
             }

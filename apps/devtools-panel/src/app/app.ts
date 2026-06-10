@@ -9,6 +9,7 @@ import { MOCK_BRIDGE } from './mock-bridge.token';
 import { MockTable } from './components/mock-table/mock-table';
 import { RespondTab } from './components/respond-tab/respond-tab';
 import { HistoryTab } from './components/history-tab/history-tab';
+import { SpecsTab } from './components/specs-tab/specs-tab';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,7 @@ import { HistoryTab } from './components/history-tab/history-tab';
     MockTable,
     RespondTab,
     HistoryTab,
+    SpecsTab,
   ],
   templateUrl: './app.html',
   styleUrl: './app.less',
@@ -29,6 +31,7 @@ import { HistoryTab } from './components/history-tab/history-tab';
 export class App {
   protected readonly bridge = inject(MOCK_BRIDGE);
   protected readonly filter = signal('');
+  protected readonly page = signal<'mocks' | 'specs'>('mocks');
   protected readonly rightTab = signal<'respond' | 'history'>('respond');
 
   protected readonly mockCount = computed(() => this.bridge.mocks().size);

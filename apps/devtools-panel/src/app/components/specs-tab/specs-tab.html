@@ -1,0 +1,49 @@
+<div class="specs-header">
+  <span class="specs-title">Registered Specs</span>
+  <div class="specs-actions">
+    <button mat-stroked-button (click)="openFilePicker()">+ File</button>
+    <button mat-stroked-button [class.active]="urlMode()" (click)="toggleUrlMode()">+ URL</button>
+  </div>
+</div>
+
+@if (urlMode()) {
+  <div class="url-row">
+    <input class="url-input"
+           placeholder="https://…/mocks.manifest.json"
+           [value]="urlInput()"
+           (input)="urlInput.set($any($event.target).value)"
+           (keydown.enter)="fetchFromUrl()" />
+    <button mat-flat-button [disabled]="loading()" (click)="fetchFromUrl()">
+      {{ loading() ? '…' : 'Fetch' }}
+    </button>
+  </div>
+}
+
+@if (error()) {
+  <div class="error-row">{{ error() }}</div>
+}
+
+@if (specList().length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">⚡</div>
+    <p>No specs registered.</p>
+    <p>Upload a <code>mocks.manifest.json</code> to enable schema-aware mocks.</p>
+  </div>
+} @else {
+  <ul class="spec-list">
+    @for (spec of specList(); track spec.specId) {
+      <li class="spec-row">
+        <div class="spec-info">
+          <span class="spec-id">{{ spec.specId }}</span>
+          <span class="spec-meta">
+            {{ spec.mocks.length }} endpoint{{ spec.mocks.length === 1 ? '' : 's' }}
+            &nbsp;·&nbsp;
+            {{ formatDate(spec.addedAt) }}
+          </span>
+        </div>
+        <button mat-stroked-button color="warn" class="remove-btn"
+                (click)="remove(spec.specId)">Remove</button>
+      </li>
+    }
+  </ul>
+}
