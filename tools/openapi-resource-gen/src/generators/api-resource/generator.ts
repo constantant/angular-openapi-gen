@@ -35,6 +35,16 @@ export interface ApiResourceGeneratorSchema {
   namingConvention?: 'camel' | 'kebab';
   providedIn?: 'root' | 'none';
   includeMocks?: boolean;
+  /** Identifier embedded in MockResourceMeta and mocks.manifest.json. */
+  specId?: string;
+}
+
+/** Derive a specId from the baseUrlToken: PETSTORE_BASE_URL → petstore */
+function deriveSpecId(baseUrlToken: string): string {
+  return baseUrlToken
+    .replace(/_BASE_URL$/i, '')
+    .toLowerCase()
+    .replace(/_/g, '-');
 }
 
 /** Replace $ref values that point to non-YAML/JSON files with {} so
@@ -141,6 +151,8 @@ export async function apiResourceGenerator(
     includeMocks = false,
   } = options;
 
+  const specId = options.specId ?? deriveSpecId(baseUrlToken);
+
   if (includeMocks) {
     try {
       require.resolve('@constantant/openapi-resource-mocks');
@@ -166,7 +178,8 @@ export async function apiResourceGenerator(
       (f) =>
         f.endsWith('.token.ts') ||
         f.endsWith('.security-token.ts') ||
-        f.endsWith('.mock.ts'),
+        f.endsWith('.mock.ts') ||
+        f.endsWith('mocks.manifest.json'),
     ),
   );
 
@@ -290,7 +303,7 @@ export async function apiResourceGenerator(
 
         if (includeMocks) {
           const mockPath = joinPathFragments(tagDir, `${ep.fileName}.mock.ts`);
-          tree.write(mockPath, renderMockFile(ep));
+          tree.write(mockPath, renderMockFile(ep, specId));
           writtenFiles.add(mockPath);
         }
       }
@@ -325,6 +338,20 @@ export async function apiResourceGenerator(
       tree.write(joinPathFragments(outputDir, 'index.mock.ts'), rootMockBarrel);
       writtenFiles.add(joinPathFragments(outputDir, 'index.mock.ts'));
       addMockPathAlias(tree, outputDir);
+
+      const manifestMocks = endpoints.map((ep) => ({
+        tokenName: ep.tokenName,
+        operationId: ep.operationId,
+        path: ep.apiPath,
+        method: ep.method,
+        ...(ep.tag !== 'default' ? { tag: ep.tag } : {}),
+      }));
+      const manifestPath = joinPathFragments(outputDir, 'mocks.manifest.json');
+      tree.write(
+        manifestPath,
+        JSON.stringify({ specId, mocks: manifestMocks }, null, 2) + '\n',
+      );
+      writtenFiles.add(manifestPath);
     }
 
     // 9. Delete stale token/security files from previous runs that this run

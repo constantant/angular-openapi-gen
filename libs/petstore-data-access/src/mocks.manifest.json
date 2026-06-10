@@ -1,0 +1,138 @@
+{
+  "specId": "petstore",
+  "mocks": [
+    {
+      "tokenName": "ADD_PET",
+      "operationId": "addPet",
+      "path": "/pet",
+      "method": "post",
+      "tag": "pet"
+    },
+    {
+      "tokenName": "UPDATE_PET",
+      "operationId": "updatePet",
+      "path": "/pet",
+      "method": "put",
+      "tag": "pet"
+    },
+    {
+      "tokenName": "FIND_PETS_BY_STATUS",
+      "operationId": "findPetsByStatus",
+      "path": "/pet/findByStatus",
+      "method": "get",
+      "tag": "pet"
+    },
+    {
+      "tokenName": "FIND_PETS_BY_TAGS",
+      "operationId": "findPetsByTags",
+      "path": "/pet/findByTags",
+      "method": "get",
+      "tag": "pet"
+    },
+    {
+      "tokenName": "GET_PET_BY_ID",
+      "operationId": "getPetById",
+      "path": "/pet/{petId}",
+      "method": "get",
+      "tag": "pet"
+    },
+    {
+      "tokenName": "UPDATE_PET_WITH_FORM",
+      "operationId": "updatePetWithForm",
+      "path": "/pet/{petId}",
+      "method": "post",
+      "tag": "pet"
+    },
+    {
+      "tokenName": "DELETE_PET",
+      "operationId": "deletePet",
+      "path": "/pet/{petId}",
+      "method": "delete",
+      "tag": "pet"
+    },
+    {
+      "tokenName": "UPLOAD_FILE",
+      "operationId": "uploadFile",
+      "path": "/pet/{petId}/uploadImage",
+      "method": "post",
+      "tag": "pet"
+    },
+    {
+      "tokenName": "GET_INVENTORY",
+      "operationId": "getInventory",
+      "path": "/store/inventory",
+      "method": "get",
+      "tag": "store"
+    },
+    {
+      "tokenName": "PLACE_ORDER",
+      "operationId": "placeOrder",
+      "path": "/store/order",
+      "method": "post",
+      "tag": "store"
+    },
+    {
+      "tokenName": "GET_ORDER_BY_ID",
+      "operationId": "getOrderById",
+      "path": "/store/order/{orderId}",
+      "method": "get",
+      "tag": "store"
+    },
+    {
+      "tokenName": "DELETE_ORDER",
+      "operationId": "deleteOrder",
+      "path": "/store/order/{orderId}",
+      "method": "delete",
+      "tag": "store"
+    },
+    {
+      "tokenName": "CREATE_USER",
+      "operationId": "createUser",
+      "path": "/user",
+      "method": "post",
+      "tag": "user"
+    },
+    {
+      "tokenName": "CREATE_USERS_WITH_LIST_INPUT",
+      "operationId": "createUsersWithListInput",
+      "path": "/user/createWithList",
+      "method": "post",
+      "tag": "user"
+    },
+    {
+      "tokenName": "LOGIN_USER",
+      "operationId": "loginUser",
+      "path": "/user/login",
+      "method": "get",
+      "tag": "user"
+    },
+    {
+      "tokenName": "LOGOUT_USER",
+      "operationId": "logoutUser",
+      "path": "/user/logout",
+      "method": "get",
+      "tag": "user"
+    },
+    {
+      "tokenName": "GET_USER_BY_NAME",
+      "operationId": "getUserByName",
+      "path": "/user/{username}",
+      "method": "get",
+      "tag": "user"
+    },
+    {
+      "tokenName": "UPDATE_USER",
+      "operationId": "updateUser",
+      "path": "/user/{username}",
+      "method": "put",
+      "tag": "user"
+    },
+    {
+      "tokenName": "DELETE_USER",
+      "operationId": "deleteUser",
+      "path": "/user/{username}",
+      "method": "delete",
+      "tag": "user"
+    }
+  ]
+}

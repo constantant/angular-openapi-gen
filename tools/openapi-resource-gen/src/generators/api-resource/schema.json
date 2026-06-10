@@ -39,6 +39,10 @@
       "type": "boolean",
       "default": false,
       "description": "Generate a .mock.ts file per endpoint (and index.mock.ts barrels) using @constantant/openapi-resource-mocks. Requires the package to be installed."
+    },
+    "specId": {
+      "type": "string",
+      "description": "Identifier for this API spec, embedded in MockResourceMeta and mocks.manifest.json. Defaults to baseUrlToken lowercased with _BASE_URL stripped (e.g. PETSTORE_BASE_URL → petstore)."
     }
   },
   "required": ["specPath", "outputDir"]
