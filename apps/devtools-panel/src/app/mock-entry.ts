@@ -1,3 +1,7 @@
+import type { MockResourceMeta } from '@constantant/openapi-resource-mocks';
+
+export type { MockResourceMeta };
+
 export type ResourceStatus = 'idle' | 'loading' | 'reloading' | 'resolved' | 'error' | 'local';
 
 export interface MockState {
@@ -29,10 +33,11 @@ export interface MockEntry {
   history: HistoryEvent[];
   catchMode: boolean;
   pendingRequest: PendingRequest | null;
+  meta: MockResourceMeta | null;
 }
 
 export type PanelMessage =
-  | { type: 'mock-keys'; keys: string[] }
+  | { type: 'mock-keys'; keys: string[]; metas?: Record<string, MockResourceMeta | null> }
   | { type: 'mock-state'; key: string; state: MockState }
   | { type: 'mock-event'; key: string; event: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; ts: number } };
 
@@ -48,6 +53,7 @@ export function blankEntry(key: string): MockEntry {
     history: [],
     catchMode: false,
     pendingRequest: null,
+    meta: null,
   };
 }
 

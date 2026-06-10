@@ -7,6 +7,13 @@
     }
   </mat-toolbar>
 
+  @if (entry.meta) {
+    <div class="meta-row">
+      <span class="method-badge method-{{ entry.meta.method }}">{{ entry.meta.method.toUpperCase() }}</span>
+      <span class="meta-path" [title]="entry.meta.path">{{ entry.meta.path }}</span>
+    </div>
+  }
+
   @if (pendingArgsJson()) {
     <div class="caught-section">
       <div class="caught-label">Caught request args</div>

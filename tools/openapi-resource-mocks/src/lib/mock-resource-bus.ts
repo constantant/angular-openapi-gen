@@ -1,6 +1,7 @@
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import type { MockResourceRef, MockResourceRefInternal } from './mock-resource-ref';
 import type { MockEvent } from './mock-events';
+import type { MockResourceMeta } from './mock-resource-meta';
 
 export interface WindowMockEntry {
   resolve(value: unknown): void;
@@ -18,6 +19,7 @@ export interface WindowMockEntry {
   ): void;
   setCatchMode(enabled: boolean): void;
   getState(): { status: string; value: unknown; error: unknown; progress: unknown };
+  getMeta(): MockResourceMeta | undefined;
   getHistory(): MockEvent[];
   onEvent(cb: (event: MockEvent) => void): () => void;
 }
@@ -31,17 +33,23 @@ declare global {
 
 export class MockResourceBus {
   private readonly refs = new Map<string, MockResourceRefInternal<unknown>>();
+  private readonly metas = new Map<string, MockResourceMeta>();
   private readonly catchModeKeys = new Set<string>();
   private _reqCount = 0;
 
-  register<T>(key: string, ref: MockResourceRef<T>): void {
+  register<T>(key: string, ref: MockResourceRef<T>, meta?: MockResourceMeta): void {
     const internal = ref as MockResourceRefInternal<T>;
     this.refs.set(key, internal as MockResourceRefInternal<unknown>);
+    if (meta) this.metas.set(key, meta);
     this.exposeToWindow(key, internal);
   }
 
   get<T>(key: string): MockResourceRef<T> | undefined {
     return this.refs.get(key) as MockResourceRef<T> | undefined;
+  }
+
+  getMeta(key: string): MockResourceMeta | undefined {
+    return this.metas.get(key);
   }
 
   isCatchMode(key: string): boolean {
@@ -100,6 +108,7 @@ export class MockResourceBus {
         ref.simulateProgress(pt, total, dur, v as T, steps);
       },
       setCatchMode: (enabled) => this.setCatchMode(key, enabled),
+      getMeta:   () => this.getMeta(key),
       getState:  () => ({
         status: String(ref.status()),
         value: ref.value(),

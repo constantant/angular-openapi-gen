@@ -21,10 +21,10 @@ document.addEventListener('openapi-mock-event', onMockEvent);
 
 // ── MAIN-world injection results → panel ─────────────────────────────────────
 function onDiscovery(e: Event): void {
-  const { keys, states } = (
-    e as CustomEvent<{ keys: string[]; states: Record<string, unknown> }>
+  const { keys, states, metas } = (
+    e as CustomEvent<{ keys: string[]; states: Record<string, unknown>; metas: Record<string, unknown> }>
   ).detail;
-  send({ type: 'mock-keys', keys });
+  send({ type: 'mock-keys', keys, metas });
   for (const [key, state] of Object.entries(states)) {
     send({ type: 'mock-state', key, state });
   }

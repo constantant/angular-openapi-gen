@@ -40,7 +40,14 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         const next = new Map(prev);
         if (msg.type === 'mock-keys') {
           for (const key of msg.keys) {
-            if (!next.has(key)) next.set(key, blankEntry(key));
+            const meta = msg.metas?.[key] ?? null;
+            if (!next.has(key)) {
+              next.set(key, { ...blankEntry(key), meta });
+            } else if (meta) {
+              // Bus is authoritative — update meta whenever it provides one.
+              const existing = next.get(key);
+              if (existing) next.set(key, { ...existing, meta });
+            }
           }
         } else if (msg.type === 'mock-state') {
           const existing = next.get(msg.key) ?? blankEntry(msg.key);

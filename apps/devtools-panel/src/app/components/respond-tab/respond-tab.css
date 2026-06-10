@@ -28,6 +28,42 @@ mat-toolbar.panel-header {
   flex-shrink: 0;
 }
 
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 60%, transparent);
+}
+
+.method-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.method-get    { background: color-mix(in srgb, #4fc3f7 18%, transparent); color: #4fc3f7; }
+.method-post   { background: color-mix(in srgb, #81c784 18%, transparent); color: #81c784; }
+.method-put    { background: color-mix(in srgb, #ffb74d 18%, transparent); color: #ffb74d; }
+.method-patch  { background: color-mix(in srgb, #ffd54f 18%, transparent); color: #ffd54f; }
+.method-delete { background: color-mix(in srgb, #e57373 18%, transparent); color: #e57373; }
+.method-head,
+.method-options { background: color-mix(in srgb, #ba68c8 18%, transparent); color: #ba68c8; }
+
+.meta-path {
+  font-family: var(--app-font-mono), monospace;
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
 .caught-section {
   flex-shrink: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--app-color-catch) 30%, transparent);

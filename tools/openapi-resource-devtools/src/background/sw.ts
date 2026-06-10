@@ -13,15 +13,19 @@ function injectDiscovery(tabId: number): void {
       target: { tabId },
       world: 'MAIN',
       func: () => {
-        const m = (window as unknown as Record<string, Record<string, { getState(): unknown }>>)
+        const m = (window as unknown as Record<string, Record<string, { getState(): unknown; getMeta(): unknown }>>)
           .__openApiMocks__;
         if (!m) return;
         const keys = Object.keys(m);
         if (!keys.length) return;
         const states: Record<string, unknown> = {};
-        for (const k of keys) states[k] = m[k].getState();
+        const metas: Record<string, unknown> = {};
+        for (const k of keys) {
+          states[k] = m[k].getState();
+          metas[k] = m[k].getMeta() ?? null;
+        }
         document.dispatchEvent(
-          new CustomEvent('__oarm_discovery__', { detail: { keys, states } }),
+          new CustomEvent('__oarm_discovery__', { detail: { keys, states, metas } }),
         );
       },
     })

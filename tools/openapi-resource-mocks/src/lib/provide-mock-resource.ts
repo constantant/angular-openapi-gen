@@ -2,6 +2,7 @@ import { InjectionToken, inject, effect, untracked, FactoryProvider } from '@ang
 import { httpResource } from '@angular/common/http';
 import { MockResourceBus } from './mock-resource-bus';
 import { createMockResourceRef, type MockResourceRef, type MockResourceRefInternal } from './mock-resource-ref';
+import type { MockResourceMeta } from './mock-resource-meta';
 
 export type DeepPartial<T> = T extends Array<infer E>
   ? DeepPartial<E>[]
@@ -37,6 +38,7 @@ export function provideMockResource<T>(
   token: InjectionToken<(...args: unknown[]) => ReturnType<typeof httpResource<T>>>,
   key: string,
   initialBehavior?: ProviderInitialBehavior<T>,
+  meta?: MockResourceMeta,
 ): FactoryProvider {
   return {
     provide: token,
@@ -44,7 +46,7 @@ export function provideMockResource<T>(
       const bus = inject(MockResourceBus);
       return (...args: unknown[]): ReturnType<typeof httpResource<T>> => {
         const ref = createMockResourceRef<T>();
-        bus.register(key, ref);
+        bus.register(key, ref, meta);
         const internal = ref as MockResourceRefInternal<T>;
 
         // untracked() prevents thunk signal-reads from leaking into the outer reactive
