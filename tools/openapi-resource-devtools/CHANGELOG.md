@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.0 (2026-06-10)
+
+### 🚀 Features
+
+- **devtools-panel:** explore specs and catch endpoints from Specs tab ([b0be0d2](https://github.com/constantant/angular-openapi-gen/commit/b0be0d2d644ec1af08b7bae5af893bc8957bd1a7))
+- **devtools-panel:** phase 4 spec-aware mocks — example generation + schema validation ([1a3a26d](https://github.com/constantant/angular-openapi-gen/commit/1a3a26dae18be9777da337d95df774d630e9a5ad))
+- **devtools-panel:** phase 3 spec-aware mocks — SPEC_STORE, Specs tab, pre-population ([30537ac](https://github.com/constantant/angular-openapi-gen/commit/30537ac8d016b6df81f71e7b90fedf4c5f85bcd1))
+- **mocks:** phase 1 spec-aware mocks — MockResourceMeta through the stack ([e3a9520](https://github.com/constantant/angular-openapi-gen/commit/e3a95201e7bf293df589e96c319127a4c58e7c1b))
+- **openapi-resource-mocks:** persistent catch-mode watch list and timing fixes ([1d63b36](https://github.com/constantant/angular-openapi-gen/commit/1d63b36a57ffe6824052cdefcb32d72571c0b79e))
+
+### 📖 Documentation
+
+- align all docs with spec-aware mocks (phases 2-4) ([e7c4374](https://github.com/constantant/angular-openapi-gen/commit/e7c4374afd2e7757556f448b4ef40a38dd40c29b))
+- add devtools extension, mocks package, and extension release to all docs ([108a577](https://github.com/constantant/angular-openapi-gen/commit/108a577fb51f3b979b1c2b7a47470e75e97c7645))
+
+### 🔧 Refactoring
+
+- **devtools-panel:** replace custom tab/header CSS with Angular Material components ([d1ef4d3](https://github.com/constantant/angular-openapi-gen/commit/d1ef4d349e10b31a6860b8449cbeeba54e4afc00))
+
 ## 0.3.2 (2026-06-09)
 
 _No user-facing changes._
