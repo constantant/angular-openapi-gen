@@ -44,8 +44,13 @@ export class MockResourceBus {
     return this.refs.get(key) as MockResourceRef<T> | undefined;
   }
 
+  isCatchMode(key: string): boolean {
+    return this.catchModeKeys.has(key);
+  }
+
   setCatchMode(key: string, enabled: boolean): void {
     if (enabled) {
+      if (this.catchModeKeys.has(key)) return; // idempotent — avoids duplicate caught events
       this.catchModeKeys.add(key);
       const ref = this.refs.get(key);
       if (ref) {

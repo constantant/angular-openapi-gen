@@ -44,13 +44,32 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
           }
         } else if (msg.type === 'mock-state') {
           const existing = next.get(msg.key) ?? blankEntry(msg.key);
-          next.set(msg.key, { ...existing, state: msg.state as MockState });
+          const newState = msg.state as MockState;
+          // When the mock is no longer loading the user has responded — clear the
+          // pending-request indicator so the CAUGHT badge goes away.
+          const pendingRequest =
+            newState.status === 'loading' || newState.status === 'reloading'
+              ? existing.pendingRequest
+              : null;
+          next.set(msg.key, { ...existing, state: newState, pendingRequest });
         } else if (msg.type === 'mock-event') {
           const existing = next.get(msg.key);
           if (existing) next.set(msg.key, applyEvent(existing, msg.event));
         }
         return next;
       });
+
+      // The page (and its MockResourceBus) reloads but the panel does not.
+      // When the bus re-registers keys, re-send setCatchMode for every key the
+      // panel was already watching — the fresh bus has an empty catchModeKeys set
+      // and needs to be told which keys to intercept.
+      if (msg.type === 'mock-keys') {
+        for (const key of msg.keys) {
+          if (mocks().get(key)?.catchMode) {
+            post({ type: 'control', detail: { key, action: 'setCatchMode' } });
+          }
+        }
+      }
     }
 
     function connect(): void {

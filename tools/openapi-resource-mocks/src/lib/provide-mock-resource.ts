@@ -47,9 +47,14 @@ export function provideMockResource<T>(
         bus.register(key, ref);
         const internal = ref as MockResourceRefInternal<T>;
 
-        // Synchronous initial notification — preserves existing test/E2E behaviour.
-        internal._notifyRequest(args);
-        if (initialBehavior) applyBehavior(ref, initialBehavior);
+        // untracked() prevents thunk signal-reads from leaking into the outer reactive
+        // context — component field initializers run during Angular change detection.
+        untracked(() => {
+          internal._notifyRequest(args);
+          // Skip initialBehavior when the bus caught the request: catch mode takes
+          // precedence and the response must come from the DevTools panel.
+          if (initialBehavior && !bus.isCatchMode(key)) applyBehavior(ref, initialBehavior);
+        });
 
         // When any arg is a reactive thunk, track signal changes so each new set of
         // params fires a new request event (mirroring how httpResource re-fires on
@@ -63,7 +68,7 @@ export function provideMockResource<T>(
             untracked(() => {
               if (first) { first = false; return; } // first run already handled above
               internal._notifyRequest(resolved);
-              if (initialBehavior) applyBehavior(ref, initialBehavior);
+              if (initialBehavior && !bus.isCatchMode(key)) applyBehavior(ref, initialBehavior);
             });
           });
         }

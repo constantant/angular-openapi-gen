@@ -30,6 +30,30 @@ function injectDiscovery(tabId: number): void {
     });
 }
 
+/**
+ * Read the state of a single mock key by injecting a function into the MAIN world
+ * and posting the result directly to the panel port — no `mock-keys` broadcast,
+ * no re-watch side-effects.
+ */
+function injectStateOnly(tabId: number, key: string, port: chrome.runtime.Port): void {
+  chrome.scripting
+    .executeScript({
+      target: { tabId },
+      world: 'MAIN',
+      func: (k: string) => {
+        const m = (window as unknown as { __openApiMocks__?: Record<string, { getState(): unknown }> })
+          .__openApiMocks__;
+        return m?.[k]?.getState() ?? null;
+      },
+      args: [key],
+    })
+    .then((results) => {
+      const state = results?.[0]?.result;
+      if (state) port.postMessage({ type: 'mock-state', key, state });
+    })
+    .catch(() => { /* tab may have navigated */ });
+}
+
 chrome.runtime.onConnect.addListener((port) => {
   const m = port.name.match(/^devtools-(\d+)$/);
   if (!m) return;
@@ -38,9 +62,14 @@ chrome.runtime.onConnect.addListener((port) => {
 
   // Relay: panel → content script (or handle locally if it requires MAIN-world access)
   port.onMessage.addListener((msg) => {
-    if (msg.type === 'get-keys' || msg.type === 'get-state') {
-      // These require reading window.__openApiMocks__ — inject into MAIN world directly.
+    if (msg.type === 'get-keys') {
       injectDiscovery(tabId);
+      return;
+    }
+    if (msg.type === 'get-state') {
+      // Targeted single-key state read — avoids triggering mock-keys and the
+      // watch-list re-enable logic in the panel for every sendControl call.
+      injectStateOnly(tabId, msg.key, port);
       return;
     }
     chrome.tabs.sendMessage(tabId, msg).catch(() => { /* swallow — tab may have navigated */ });
