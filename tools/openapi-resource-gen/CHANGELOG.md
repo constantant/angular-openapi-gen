@@ -1,3 +1,22 @@
+## 1.6.0 (2026-06-10)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** phase 2 spec-aware mocks — specId + MockResourceMeta in generated files ([1b11b01](https://github.com/constantant/angular-openapi-gen/commit/1b11b01))
+
+### 📖 Documentation
+
+- align all docs with spec-aware mocks (phases 2-4) ([e7c4374](https://github.com/constantant/angular-openapi-gen/commit/e7c4374))
+
+### 🧱 Updated Dependencies
+
+- Updated openapi-resource-mocks to 0.3.0
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.5.0 (2026-06-09)
 
 ### 🚀 Features

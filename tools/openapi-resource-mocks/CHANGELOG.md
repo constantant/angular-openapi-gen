@@ -1,3 +1,24 @@
+## 0.3.0 (2026-06-10)
+
+### 🚀 Features
+
+- **mocks:** phase 1 spec-aware mocks — MockResourceMeta through the stack ([e3a9520](https://github.com/constantant/angular-openapi-gen/commit/e3a9520))
+- **openapi-resource-mocks:** persistent catch-mode watch list and timing fixes ([1d63b36](https://github.com/constantant/angular-openapi-gen/commit/1d63b36))
+- **devtools-panel:** add history tab, catch mode, and CSS token migration ([d4151bc](https://github.com/constantant/angular-openapi-gen/commit/d4151bc))
+
+### 🩹 Fixes
+
+- **openapi-resource-mocks:** re-fire _notifyRequest when reactive thunk args change ([708a71e](https://github.com/constantant/angular-openapi-gen/commit/708a71e))
+
+### 📖 Documentation
+
+- align all docs with spec-aware mocks (phases 2-4) ([e7c4374](https://github.com/constantant/angular-openapi-gen/commit/e7c4374))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 0.2.0 (2026-06-09)
 
 ### 🚀 Features
