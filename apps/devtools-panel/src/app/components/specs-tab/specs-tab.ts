@@ -1,5 +1,7 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, WritableSignal, computed, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MOCK_BRIDGE } from '../../mock-bridge.token';
 import { SPEC_STORE, SpecEntry, extractFromOpenApiSpec, isOpenApiSpec } from '../../spec-store.token';
 
 interface PendingSpec {
@@ -11,19 +13,54 @@ interface PendingSpec {
 
 @Component({
   selector: 'app-specs-tab',
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, MatTooltipModule],
   templateUrl: './specs-tab.html',
   styleUrl: './specs-tab.css',
 })
 export class SpecsTab {
   protected readonly store = inject(SPEC_STORE);
+  protected readonly bridge = inject(MOCK_BRIDGE);
+
+  readonly page = input<WritableSignal<'mocks' | 'specs'>>();
+
   protected readonly urlMode = signal(false);
   protected readonly urlInput = signal('');
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly pendingSpec = signal<PendingSpec | null>(null);
+  protected readonly expandedSpecs = signal(new Set<string>());
 
   protected readonly specList = computed<SpecEntry[]>(() => [...this.store.specs().values()]);
+
+  protected isExpanded(specId: string): boolean {
+    return this.expandedSpecs().has(specId);
+  }
+
+  protected toggleExpand(specId: string): void {
+    this.expandedSpecs.update((s) => {
+      const next = new Set(s);
+      if (next.has(specId)) next.delete(specId); else next.add(specId);
+      return next;
+    });
+  }
+
+  protected isRegistered(tokenName: string): boolean {
+    return this.bridge.mocks().has(tokenName);
+  }
+
+  protected isCatching(tokenName: string): boolean {
+    return this.bridge.mocks().get(tokenName)?.catchMode ?? false;
+  }
+
+  protected catchEndpoint(tokenName: string): void {
+    if (this.isCatching(tokenName)) {
+      this.bridge.setCatchMode(tokenName, false);
+    } else {
+      this.bridge.setCatchMode(tokenName, true);
+      this.bridge.selectedKey.set(tokenName);
+      this.page()?.set('mocks');
+    }
+  }
 
   protected openFilePicker(): void {
     const input = document.createElement('input');

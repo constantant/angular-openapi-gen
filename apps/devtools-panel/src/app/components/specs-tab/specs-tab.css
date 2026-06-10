@@ -164,14 +164,35 @@
   padding: 0;
 }
 
+.spec-item {
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &:last-child { border-bottom: none; }
+}
+
 .spec-row {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  cursor: pointer;
+  user-select: none;
 
-  &:last-child { border-bottom: none; }
+  &:hover {
+    background: color-mix(in srgb, var(--mat-sys-surface-container) 80%, transparent);
+  }
+}
+
+.expand-toggle {
+  font-size: 8px;
+  color: var(--mat-sys-on-surface-variant);
+  transition: transform 0.15s ease;
+  display: inline-block;
+  flex-shrink: 0;
+  width: 12px;
+  text-align: center;
+
+  &.expanded { transform: rotate(90deg); }
 }
 
 .spec-info {
@@ -200,4 +221,78 @@
   line-height: 24px;
   padding: 0 8px;
   flex-shrink: 0;
+}
+
+/* ── Endpoint list ──────────────────────────────────────────────────────────── */
+
+.endpoint-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 35%, transparent);
+}
+
+.endpoint-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 28px;
+  border-bottom: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent);
+
+  &:last-child { border-bottom: none; }
+
+  &.unregistered { opacity: 0.45; }
+}
+
+.method-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.method-get     { background: color-mix(in srgb, #4fc3f7 18%, transparent); color: #4fc3f7; }
+.method-post    { background: color-mix(in srgb, #81c784 18%, transparent); color: #81c784; }
+.method-put     { background: color-mix(in srgb, #ffb74d 18%, transparent); color: #ffb74d; }
+.method-patch   { background: color-mix(in srgb, #ffd54f 18%, transparent); color: #ffd54f; }
+.method-delete  { background: color-mix(in srgb, #e57373 18%, transparent); color: #e57373; }
+.method-head,
+.method-options { background: color-mix(in srgb, #ba68c8 18%, transparent); color: #ba68c8; }
+
+.endpoint-path {
+  font-family: var(--app-font-mono), monospace;
+  font-size: 11px;
+  color: var(--mat-sys-on-surface);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.endpoint-token {
+  font-family: var(--app-font-mono), monospace;
+  font-size: 9px;
+  color: var(--mat-sys-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+  flex-shrink: 0;
+}
+
+.catch-btn {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 12px !important;
+  line-height: 24px !important;
+  flex-shrink: 0;
+
+  &.catch-active {
+    color: var(--app-color-catch) !important;
+  }
 }

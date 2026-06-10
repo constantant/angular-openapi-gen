@@ -53,19 +53,44 @@
 } @else {
   <ul class="spec-list">
     @for (spec of specList(); track spec.specId) {
-      <li class="spec-row">
-        <div class="spec-info">
-          <span class="spec-id">{{ spec.specId }}</span>
-          <span class="spec-meta">
-            {{ spec.mocks.length }} endpoint{{ spec.mocks.length === 1 ? '' : 's' }}
-            @if (spec.responseSchemas) {
-              · {{ objectKeys(spec.responseSchemas).length }} schema{{ objectKeys(spec.responseSchemas).length === 1 ? '' : 's' }}
-            }
-            &nbsp;·&nbsp;{{ formatDate(spec.addedAt) }}
-          </span>
+      <li class="spec-item">
+        <div class="spec-row" (click)="toggleExpand(spec.specId)">
+          <span class="expand-toggle" [class.expanded]="isExpanded(spec.specId)">▶</span>
+          <div class="spec-info">
+            <span class="spec-id">{{ spec.specId }}</span>
+            <span class="spec-meta">
+              {{ spec.mocks.length }} endpoint{{ spec.mocks.length === 1 ? '' : 's' }}
+              @if (spec.responseSchemas) {
+                · {{ objectKeys(spec.responseSchemas).length }} schema{{ objectKeys(spec.responseSchemas).length === 1 ? '' : 's' }}
+              }
+              &nbsp;·&nbsp;{{ formatDate(spec.addedAt) }}
+            </span>
+          </div>
+          <button mat-stroked-button color="warn" class="remove-btn"
+                  (click)="$event.stopPropagation(); remove(spec.specId)">Remove</button>
         </div>
-        <button mat-stroked-button color="warn" class="remove-btn"
-                (click)="remove(spec.specId)">Remove</button>
+
+        @if (isExpanded(spec.specId)) {
+          <ul class="endpoint-list">
+            @for (mock of spec.mocks; track mock.tokenName) {
+              <li class="endpoint-row" [class.unregistered]="!isRegistered(mock.tokenName)">
+                <span class="method-badge method-{{ mock.method }}">{{ mock.method.toUpperCase() }}</span>
+                <span class="endpoint-path" [title]="mock.path">{{ mock.path }}</span>
+                <span class="endpoint-token" [title]="mock.tokenName">{{ mock.tokenName }}</span>
+                <button mat-icon-button
+                        class="catch-btn"
+                        [class.catch-active]="isCatching(mock.tokenName)"
+                        [disabled]="!isRegistered(mock.tokenName)"
+                        [matTooltip]="!isRegistered(mock.tokenName)
+                          ? 'Not registered in app — add provideMockResource() to your config'
+                          : isCatching(mock.tokenName)
+                          ? 'Catch mode on — click to disable'
+                          : 'Enable catch mode and go to Mocks tab'"
+                        (click)="catchEndpoint(mock.tokenName)">⏸</button>
+              </li>
+            }
+          </ul>
+        }
       </li>
     }
   </ul>
