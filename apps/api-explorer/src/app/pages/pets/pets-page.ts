@@ -11,6 +11,7 @@ type PetStatus = FindPetsByStatusParams['status'];
   selector: 'app-pets-page',
   imports: [MatChipsModule, MatListModule, MatProgressBarModule, MatBadgeModule],
   templateUrl: './pets-page.html',
+  styleUrl: './pets-page.less',
 })
 export class PetsPageComponent {
   private findPetsByStatus = inject(FIND_PETS_BY_STATUS);

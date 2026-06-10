@@ -12,6 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
   selector: 'app-repos-page',
   imports: [MatCardModule, MatListModule, MatProgressBarModule, MatChipsModule],
   templateUrl: './repos-page.html',
+  styleUrl: './repos-page.less',
 })
 export class ReposPageComponent {
   private getUser = inject(USERS_GET_BY_USERNAME);

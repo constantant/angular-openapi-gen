@@ -3,3 +3,19 @@ html, body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
+
+// Shared page layout — applied globally because page components use router-outlet
+// and cannot receive styles from the App shell component due to view encapsulation.
+.page {
+  padding: 24px;
+
+  h1 { margin: 0 0 20px; }
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.error { color: var(--mat-sys-error); }

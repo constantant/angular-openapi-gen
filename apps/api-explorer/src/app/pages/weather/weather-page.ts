@@ -8,6 +8,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
   selector: 'app-weather-page',
   imports: [JsonPipe, MatCardModule, MatProgressBarModule],
   templateUrl: './weather-page.html',
+  styleUrl: './weather-page.less',
 })
 export class WeatherPageComponent {
   private getForecast = inject(GET_V1_FORECAST);
