@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bgGlow" cx="35%" cy="22%" r="95%">
+      <stop offset="0%" stop-color="#1F1133"/>
+      <stop offset="100%" stop-color="#140A21"/>
+    </radialGradient>
+    <linearGradient id="ng" x1="0" y1="0" x2="0.55" y2="1">
+      <stop offset="0%" stop-color="#F637E3"/>
+      <stop offset="100%" stop-color="#8514F5"/>
+    </linearGradient>
+    <linearGradient id="ngFrag" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#F637E3"/>
+      <stop offset="100%" stop-color="#B044F8"/>
+    </linearGradient>
+  </defs>
+  
+  
+  <g>
+    <defs>
+    <linearGradient id="ngU" gradientUnits="userSpaceOnUse" x1="232" y1="58" x2="340" y2="446">
+      <stop offset="0%" stop-color="#F637E3"/>
+      <stop offset="100%" stop-color="#8514F5"/>
+    </linearGradient></defs>
+    <polygon points="66,430 232,58 331.1,280 254.3,280 232,224 150,430" fill="url(#ngU)"/>
+    <polygon points="347.1,316 398,430 314,430 268.6,316" fill="url(#ngU)" transform="translate(42,16)"/>
+  </g>
+</svg>

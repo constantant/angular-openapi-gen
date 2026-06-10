@@ -43,9 +43,10 @@ await build({
   logLevel: 'info',
 });
 
-// 4. Copy manifest and devtools.html (panel.html comes from Angular build above)
+// 4. Copy manifest, devtools.html, and icons
 cpSync(join(__dirname, '../manifest.json'),  join(out, 'manifest.json'));
 cpSync(join(src, 'devtools.html'),           join(out, 'devtools.html'));
+cpSync(join(__dirname, '../icons'),          join(out, 'icons'), { recursive: true });
 
 console.log(`\nExtension ready → ${out}`);
 console.log('Load in Chrome: chrome://extensions → "Load unpacked" → select that folder\n');
