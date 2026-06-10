@@ -36,6 +36,38 @@
       }
     </mat-form-field>
 
+    @if (schema()) {
+      <div class="schema-section">
+        <div class="schema-toolbar">
+          <span class="schema-label">Response schema</span>
+          <button mat-stroked-button [disabled]="exampleLoading()" (click)="generateExample()">
+            {{ exampleLoading() ? '…' : '⚡ Example' }}
+          </button>
+          <button mat-stroked-button
+                  [disabled]="validateLoading() || !!jsonError() || !json().trim()"
+                  (click)="validateJson()">
+            {{ validateLoading() ? '…' : '✓ Validate' }}
+          </button>
+          <button mat-button class="schema-toggle"
+                  (click)="schemaExpanded.update(v => !v)">{{ schemaExpanded() ? '▲' : '▼' }}</button>
+        </div>
+        @if (validationErrors() !== null) {
+          @if (validationErrors()!.length === 0) {
+            <div class="validation-ok">✓ Valid</div>
+          } @else {
+            <ul class="validation-errors">
+              @for (err of validationErrors()!; track $index) {
+                <li>{{ err }}</li>
+              }
+            </ul>
+          }
+        }
+        @if (schemaExpanded()) {
+          <pre class="schema-json">{{ schemaJson() }}</pre>
+        }
+      </div>
+    }
+
     <mat-form-field appearance="outline" subscriptSizing="dynamic" class="delay-field">
       <mat-label>Delay (ms)</mat-label>
       <input matInput type="number" min="0" placeholder="0"

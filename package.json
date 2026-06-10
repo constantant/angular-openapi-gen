@@ -21,7 +21,10 @@
     "@angular/platform-server": "~22.0.0",
     "@angular/router": "~22.0.0",
     "@angular/ssr": "~22.0.0",
+    "@faker-js/faker": "^10.4.0",
+    "ajv": "^8.20.0",
     "express": "^5.2.1",
+    "json-schema-faker": "^0.6.2",
     "rxjs": "~7.8.0"
   },
   "devDependencies": {

@@ -122,6 +122,70 @@ mat-toolbar.panel-header {
   }
 }
 
+.schema-section {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.schema-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 60%, transparent);
+
+  button {
+    font-size: 11px;
+    height: 24px;
+    line-height: 24px;
+    padding: 0 6px;
+    min-width: 0;
+  }
+}
+
+.schema-label {
+  flex: 1;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.schema-toggle {
+  padding: 0 4px !important;
+}
+
+.validation-ok {
+  font-size: 11px;
+  color: var(--mat-sys-primary);
+  padding: 4px 8px;
+}
+
+.validation-errors {
+  margin: 0;
+  padding: 4px 8px 4px 24px;
+  font-size: 11px;
+  color: var(--mat-sys-error);
+
+  li { margin: 1px 0; }
+}
+
+.schema-json {
+  margin: 0;
+  padding: 6px 8px;
+  font-family: var(--app-font-mono), monospace;
+  font-size: 10px;
+  color: var(--mat-sys-on-surface-variant);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 120px;
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 40%, transparent);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
 .delay-field { width: 100%; }
 
 .action-row {

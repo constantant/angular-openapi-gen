@@ -42,6 +42,52 @@
   }
 }
 
+.import-form {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--mat-sys-primary) 5%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.import-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.import-preview {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.import-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: 4px;
+}
+
+.import-hint {
+  font-weight: 400;
+  font-style: italic;
+}
+
+.import-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+
+  button {
+    font-size: 11px;
+    height: 26px;
+    line-height: 26px;
+    padding: 0 10px;
+  }
+}
+
 .url-row {
   display: flex;
   align-items: center;

@@ -4,6 +4,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
+import { SPEC_STORE } from '../../spec-store.token';
 
 @Component({
   selector: 'app-respond-tab',
@@ -13,10 +14,15 @@ import { MOCK_BRIDGE } from '../../mock-bridge.token';
 })
 export class RespondTab {
   protected readonly bridge = inject(MOCK_BRIDGE);
+  protected readonly specStore = inject(SPEC_STORE);
 
   protected readonly json = signal('');
   protected readonly delay = signal('');
   protected readonly jsonError = signal<string | null>(null);
+  protected readonly schemaExpanded = signal(false);
+  protected readonly validationErrors = signal<string[] | null>(null);
+  protected readonly exampleLoading = signal(false);
+  protected readonly validateLoading = signal(false);
 
   protected readonly selectedEntry = computed(() => {
     const key = this.bridge.selectedKey();
@@ -31,9 +37,19 @@ export class RespondTab {
     try { return JSON.stringify(val, null, 2); } catch { return String(val); }
   });
 
+  protected readonly schema = computed(() => {
+    const entry = this.selectedEntry();
+    if (!entry?.meta) return null;
+    return this.specStore.findSchema(entry.meta.specId, entry.meta.operationId) ?? null;
+  });
+
+  protected readonly schemaJson = computed(() => {
+    const s = this.schema();
+    if (!s) return '';
+    try { return JSON.stringify(s, null, 2); } catch { return ''; }
+  });
+
   constructor() {
-    // Re-populate the JSON editor only when the selected KEY changes,
-    // not on every value update (so in-progress edits aren't overwritten).
     effect(() => {
       const key = this.bridge.selectedKey();
       const entry = untracked(() => (key ? this.bridge.mocks().get(key) : null));
@@ -43,11 +59,14 @@ export class RespondTab {
           : '',
       );
       this.jsonError.set(null);
+      this.validationErrors.set(null);
+      this.schemaExpanded.set(false);
     });
   }
 
   protected onJsonInput(value: string): void {
     this.json.set(value);
+    this.validationErrors.set(null);
     if (!value.trim()) { this.jsonError.set(null); return; }
     try { JSON.parse(value); this.jsonError.set(null); }
     catch (e) { this.jsonError.set(e instanceof Error ? e.message : 'Invalid JSON'); }
@@ -75,5 +94,46 @@ export class RespondTab {
       try { error = JSON.parse(jsonStr); } catch { /* keep default */ }
     }
     this.bridge.sendControl(key, 'fail', { value: error });
+  }
+
+  protected async generateExample(): Promise<void> {
+    const schema = this.schema();
+    if (!schema) return;
+    this.exampleLoading.set(true);
+    this.validationErrors.set(null);
+    try {
+      const { generate } = await import('json-schema-faker');
+      const example = await generate(schema as Parameters<typeof generate>[0]);
+      this.json.set(JSON.stringify(example, null, 2));
+      this.jsonError.set(null);
+    } catch (e) {
+      this.jsonError.set((e as Error).message);
+    } finally {
+      this.exampleLoading.set(false);
+    }
+  }
+
+  protected async validateJson(): Promise<void> {
+    const schema = this.schema();
+    const jsonStr = this.json().trim();
+    if (!schema || !jsonStr || this.jsonError()) return;
+    this.validateLoading.set(true);
+    try {
+      const { default: Ajv } = await import('ajv');
+      const ajv = new Ajv({ strict: false, allErrors: true });
+      const validate = ajv.compile(schema);
+      const valid = validate(JSON.parse(jsonStr));
+      this.validationErrors.set(
+        valid
+          ? []
+          : (validate.errors ?? []).map(
+              (e) => `${e.instancePath || '(root)'} ${e.message ?? 'invalid'}`,
+            ),
+      );
+    } catch (e) {
+      this.validationErrors.set([(e as Error).message]);
+    } finally {
+      this.validateLoading.set(false);
+    }
   }
 }

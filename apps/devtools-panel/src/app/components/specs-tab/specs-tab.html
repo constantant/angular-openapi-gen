@@ -6,10 +6,31 @@
   </div>
 </div>
 
+@if (pendingSpec()) {
+  <div class="import-form">
+    <div class="import-title">Import OpenAPI Spec</div>
+    <div class="import-preview">
+      {{ pendingSpec()!.mockCount }} endpoints
+      @if (pendingSpec()!.schemaCount > 0) {
+        · {{ pendingSpec()!.schemaCount }} with schemas
+      }
+    </div>
+    <label class="import-label">Spec ID <span class="import-hint">(must match --specId used when generating mocks)</span></label>
+    <input class="url-input"
+           [value]="pendingSpec()!.specId"
+           (input)="updatePendingSpecId($event)"
+           placeholder="my-api" />
+    <div class="import-actions">
+      <button mat-flat-button [disabled]="!pendingSpec()!.specId.trim()" (click)="confirmImport()">Import</button>
+      <button mat-button (click)="pendingSpec.set(null); error.set(null)">Cancel</button>
+    </div>
+  </div>
+}
+
 @if (urlMode()) {
   <div class="url-row">
     <input class="url-input"
-           placeholder="https://…/mocks.manifest.json"
+           placeholder="https://…/openapi.json or mocks.manifest.json"
            [value]="urlInput()"
            (input)="urlInput.set($any($event.target).value)"
            (keydown.enter)="fetchFromUrl()" />
@@ -27,7 +48,7 @@
   <div class="empty-state">
     <div class="empty-icon">⚡</div>
     <p>No specs registered.</p>
-    <p>Upload a <code>mocks.manifest.json</code> to enable schema-aware mocks.</p>
+    <p>Upload a <code>mocks.manifest.json</code> or full <code>openapi.json</code>.</p>
   </div>
 } @else {
   <ul class="spec-list">
@@ -37,8 +58,10 @@
           <span class="spec-id">{{ spec.specId }}</span>
           <span class="spec-meta">
             {{ spec.mocks.length }} endpoint{{ spec.mocks.length === 1 ? '' : 's' }}
-            &nbsp;·&nbsp;
-            {{ formatDate(spec.addedAt) }}
+            @if (spec.responseSchemas) {
+              · {{ objectKeys(spec.responseSchemas).length }} schema{{ objectKeys(spec.responseSchemas).length === 1 ? '' : 's' }}
+            }
+            &nbsp;·&nbsp;{{ formatDate(spec.addedAt) }}
           </span>
         </div>
         <button mat-stroked-button color="warn" class="remove-btn"
