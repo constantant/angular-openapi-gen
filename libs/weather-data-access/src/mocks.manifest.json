@@ -1,0 +1,12 @@
+{
+  "specId": "weather",
+  "mocks": [
+    {
+      "tokenName": "GET_V1_FORECAST",
+      "operationId": "get_v1_forecast",
+      "path": "/v1/forecast",
+      "method": "get",
+      "tag": "weather-forecast-apis"
+    }
+  ]
+}

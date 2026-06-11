@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { REPOS_REQUEST_PAGES_BUILD } from './repos-request-pages-build.token';
 import type { ReposRequestPagesBuildResponse } from './repos-request-pages-build.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'repos/request-pages-build',
+  path: '/repos/{owner}/{repo}/pages/builds',
+  method: 'post',
+  tag: 'repos',
+};
 
 export function provideReposRequestPagesBuildMock(
   initialBehavior?: ProviderInitialBehavior<ReposRequestPagesBuildResponse>,
@@ -11,5 +22,6 @@ export function provideReposRequestPagesBuildMock(
     REPOS_REQUEST_PAGES_BUILD,
     'REPOS_REQUEST_PAGES_BUILD',
     initialBehavior,
+    _meta,
   );
 }

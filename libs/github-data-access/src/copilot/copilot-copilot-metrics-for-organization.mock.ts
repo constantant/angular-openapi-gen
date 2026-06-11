@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { COPILOT_COPILOT_METRICS_FOR_ORGANIZATION } from './copilot-copilot-metrics-for-organization.token';
 import type { CopilotCopilotMetricsForOrganizationResponse } from './copilot-copilot-metrics-for-organization.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'copilot/copilot-metrics-for-organization',
+  path: '/orgs/{org}/copilot/metrics',
+  method: 'get',
+  tag: 'copilot',
+};
 
 export function provideCopilotCopilotMetricsForOrganizationMock(
   initialBehavior?: ProviderInitialBehavior<CopilotCopilotMetricsForOrganizationResponse>,
@@ -11,5 +22,6 @@ export function provideCopilotCopilotMetricsForOrganizationMock(
     COPILOT_COPILOT_METRICS_FOR_ORGANIZATION,
     'COPILOT_COPILOT_METRICS_FOR_ORGANIZATION',
     initialBehavior,
+    _meta,
   );
 }

@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { MIGRATIONS_GET_STATUS_FOR_AUTHENTICATED_USER } from './migrations-get-status-for-authenticated-user.token';
 import type { MigrationsGetStatusForAuthenticatedUserResponse } from './migrations-get-status-for-authenticated-user.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'migrations/get-status-for-authenticated-user',
+  path: '/user/migrations/{migration_id}',
+  method: 'get',
+  tag: 'migrations',
+};
 
 export function provideMigrationsGetStatusForAuthenticatedUserMock(
   initialBehavior?: ProviderInitialBehavior<MigrationsGetStatusForAuthenticatedUserResponse>,
@@ -11,5 +22,6 @@ export function provideMigrationsGetStatusForAuthenticatedUserMock(
     MIGRATIONS_GET_STATUS_FOR_AUTHENTICATED_USER,
     'MIGRATIONS_GET_STATUS_FOR_AUTHENTICATED_USER',
     initialBehavior,
+    _meta,
   );
 }

@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_I18N_REGIONS_LIST } from './youtube-i18n-regions-list.token';
 import type { YoutubeI18nRegionsListResponse } from './youtube-i18n-regions-list.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'youtube',
+  operationId: 'youtube.i18nRegions.list',
+  path: '/youtube/v3/i18nRegions',
+  method: 'get',
+  tag: 'i18n-regions',
+};
 
 export function provideYoutubeI18nRegionsListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeI18nRegionsListResponse>,
@@ -11,5 +22,6 @@ export function provideYoutubeI18nRegionsListMock(
     YOUTUBE_I18N_REGIONS_LIST,
     'YOUTUBE_I18N_REGIONS_LIST',
     initialBehavior,
+    _meta,
   );
 }

@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { GISTS_LIST_PUBLIC } from './gists-list-public.token';
 import type { GistsListPublicResponse } from './gists-list-public.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'gists/list-public',
+  path: '/gists/public',
+  method: 'get',
+  tag: 'gists',
+};
 
 export function provideGistsListPublicMock(
   initialBehavior?: ProviderInitialBehavior<GistsListPublicResponse>,
@@ -11,5 +22,6 @@ export function provideGistsListPublicMock(
     GISTS_LIST_PUBLIC,
     'GISTS_LIST_PUBLIC',
     initialBehavior,
+    _meta,
   );
 }

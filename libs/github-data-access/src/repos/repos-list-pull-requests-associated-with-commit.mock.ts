@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT } from './repos-list-pull-requests-associated-with-commit.token';
 import type { ReposListPullRequestsAssociatedWithCommitResponse } from './repos-list-pull-requests-associated-with-commit.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'repos/list-pull-requests-associated-with-commit',
+  path: '/repos/{owner}/{repo}/commits/{commit_sha}/pulls',
+  method: 'get',
+  tag: 'repos',
+};
 
 export function provideReposListPullRequestsAssociatedWithCommitMock(
   initialBehavior?: ProviderInitialBehavior<ReposListPullRequestsAssociatedWithCommitResponse>,
@@ -11,5 +22,6 @@ export function provideReposListPullRequestsAssociatedWithCommitMock(
     REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT,
     'REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT',
     initialBehavior,
+    _meta,
   );
 }

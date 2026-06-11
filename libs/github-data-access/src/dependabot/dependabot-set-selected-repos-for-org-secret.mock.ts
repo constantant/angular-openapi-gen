@@ -1,7 +1,18 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { DEPENDABOT_SET_SELECTED_REPOS_FOR_ORG_SECRET } from './dependabot-set-selected-repos-for-org-secret.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'dependabot/set-selected-repos-for-org-secret',
+  path: '/orgs/{org}/dependabot/secrets/{secret_name}/repositories',
+  method: 'put',
+  tag: 'dependabot',
+};
 
 export function provideDependabotSetSelectedReposForOrgSecretMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
@@ -10,5 +21,6 @@ export function provideDependabotSetSelectedReposForOrgSecretMock(
     DEPENDABOT_SET_SELECTED_REPOS_FOR_ORG_SECRET,
     'DEPENDABOT_SET_SELECTED_REPOS_FOR_ORG_SECRET',
     initialBehavior,
+    _meta,
   );
 }

@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ENTERPRISE } from './oidc-create-oidc-custom-property-inclusion-for-enterprise.token';
 import type { OidcCreateOidcCustomPropertyInclusionForEnterpriseResponse } from './oidc-create-oidc-custom-property-inclusion-for-enterprise.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'oidc/create-oidc-custom-property-inclusion-for-enterprise',
+  path: '/enterprises/{enterprise}/actions/oidc/customization/properties/repo',
+  method: 'post',
+  tag: 'oidc',
+};
 
 export function provideOidcCreateOidcCustomPropertyInclusionForEnterpriseMock(
   initialBehavior?: ProviderInitialBehavior<OidcCreateOidcCustomPropertyInclusionForEnterpriseResponse>,
@@ -11,5 +22,6 @@ export function provideOidcCreateOidcCustomPropertyInclusionForEnterpriseMock(
     OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ENTERPRISE,
     'OIDC_CREATE_OIDC_CUSTOM_PROPERTY_INCLUSION_FOR_ENTERPRISE',
     initialBehavior,
+    _meta,
   );
 }

@@ -1,7 +1,18 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_VIDEOS_REPORT_ABUSE } from './youtube-videos-report-abuse.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'youtube',
+  operationId: 'youtube.videos.reportAbuse',
+  path: '/youtube/v3/videos/reportAbuse',
+  method: 'post',
+  tag: 'videos',
+};
 
 export function provideYoutubeVideosReportAbuseMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
@@ -10,5 +21,6 @@ export function provideYoutubeVideosReportAbuseMock(
     YOUTUBE_VIDEOS_REPORT_ABUSE,
     'YOUTUBE_VIDEOS_REPORT_ABUSE',
     initialBehavior,
+    _meta,
   );
 }

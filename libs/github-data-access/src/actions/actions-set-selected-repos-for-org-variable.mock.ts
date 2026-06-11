@@ -1,7 +1,18 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { ACTIONS_SET_SELECTED_REPOS_FOR_ORG_VARIABLE } from './actions-set-selected-repos-for-org-variable.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'actions/set-selected-repos-for-org-variable',
+  path: '/orgs/{org}/actions/variables/{name}/repositories',
+  method: 'put',
+  tag: 'actions',
+};
 
 export function provideActionsSetSelectedReposForOrgVariableMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
@@ -10,5 +21,6 @@ export function provideActionsSetSelectedReposForOrgVariableMock(
     ACTIONS_SET_SELECTED_REPOS_FOR_ORG_VARIABLE,
     'ACTIONS_SET_SELECTED_REPOS_FOR_ORG_VARIABLE',
     initialBehavior,
+    _meta,
   );
 }

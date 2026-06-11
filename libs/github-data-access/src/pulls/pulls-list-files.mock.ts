@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { PULLS_LIST_FILES } from './pulls-list-files.token';
 import type { PullsListFilesResponse } from './pulls-list-files.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'pulls/list-files',
+  path: '/repos/{owner}/{repo}/pulls/{pull_number}/files',
+  method: 'get',
+  tag: 'pulls',
+};
 
 export function providePullsListFilesMock(
   initialBehavior?: ProviderInitialBehavior<PullsListFilesResponse>,
@@ -11,5 +22,6 @@ export function providePullsListFilesMock(
     PULLS_LIST_FILES,
     'PULLS_LIST_FILES',
     initialBehavior,
+    _meta,
   );
 }

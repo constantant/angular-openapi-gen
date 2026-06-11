@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { ACTIONS_GET_ENVIRONMENT_SECRET } from './actions-get-environment-secret.token';
 import type { ActionsGetEnvironmentSecretResponse } from './actions-get-environment-secret.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'actions/get-environment-secret',
+  path: '/repos/{owner}/{repo}/environments/{environment_name}/secrets/{secret_name}',
+  method: 'get',
+  tag: 'actions',
+};
 
 export function provideActionsGetEnvironmentSecretMock(
   initialBehavior?: ProviderInitialBehavior<ActionsGetEnvironmentSecretResponse>,
@@ -11,5 +22,6 @@ export function provideActionsGetEnvironmentSecretMock(
     ACTIONS_GET_ENVIRONMENT_SECRET,
     'ACTIONS_GET_ENVIRONMENT_SECRET',
     initialBehavior,
+    _meta,
   );
 }

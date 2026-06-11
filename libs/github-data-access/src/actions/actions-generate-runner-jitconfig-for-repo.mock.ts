@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { ACTIONS_GENERATE_RUNNER_JITCONFIG_FOR_REPO } from './actions-generate-runner-jitconfig-for-repo.token';
 import type { ActionsGenerateRunnerJitconfigForRepoResponse } from './actions-generate-runner-jitconfig-for-repo.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'actions/generate-runner-jitconfig-for-repo',
+  path: '/repos/{owner}/{repo}/actions/runners/generate-jitconfig',
+  method: 'post',
+  tag: 'actions',
+};
 
 export function provideActionsGenerateRunnerJitconfigForRepoMock(
   initialBehavior?: ProviderInitialBehavior<ActionsGenerateRunnerJitconfigForRepoResponse>,
@@ -11,5 +22,6 @@ export function provideActionsGenerateRunnerJitconfigForRepoMock(
     ACTIONS_GENERATE_RUNNER_JITCONFIG_FOR_REPO,
     'ACTIONS_GENERATE_RUNNER_JITCONFIG_FOR_REPO',
     initialBehavior,
+    _meta,
   );
 }

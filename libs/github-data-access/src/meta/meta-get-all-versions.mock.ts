@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { META_GET_ALL_VERSIONS } from './meta-get-all-versions.token';
 import type { MetaGetAllVersionsResponse } from './meta-get-all-versions.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'meta/get-all-versions',
+  path: '/versions',
+  method: 'get',
+  tag: 'meta',
+};
 
 export function provideMetaGetAllVersionsMock(
   initialBehavior?: ProviderInitialBehavior<MetaGetAllVersionsResponse>,
@@ -11,5 +22,6 @@ export function provideMetaGetAllVersionsMock(
     META_GET_ALL_VERSIONS,
     'META_GET_ALL_VERSIONS',
     initialBehavior,
+    _meta,
   );
 }

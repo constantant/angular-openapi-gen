@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { USERS_LIST_PUBLIC_EMAILS_FOR_AUTHENTICATED_USER } from './users-list-public-emails-for-authenticated-user.token';
 import type { UsersListPublicEmailsForAuthenticatedUserResponse } from './users-list-public-emails-for-authenticated-user.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'users/list-public-emails-for-authenticated-user',
+  path: '/user/public_emails',
+  method: 'get',
+  tag: 'users',
+};
 
 export function provideUsersListPublicEmailsForAuthenticatedUserMock(
   initialBehavior?: ProviderInitialBehavior<UsersListPublicEmailsForAuthenticatedUserResponse>,
@@ -11,5 +22,6 @@ export function provideUsersListPublicEmailsForAuthenticatedUserMock(
     USERS_LIST_PUBLIC_EMAILS_FOR_AUTHENTICATED_USER,
     'USERS_LIST_PUBLIC_EMAILS_FOR_AUTHENTICATED_USER',
     initialBehavior,
+    _meta,
   );
 }

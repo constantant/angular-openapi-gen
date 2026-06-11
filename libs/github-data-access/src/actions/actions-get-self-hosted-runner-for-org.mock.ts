@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { ACTIONS_GET_SELF_HOSTED_RUNNER_FOR_ORG } from './actions-get-self-hosted-runner-for-org.token';
 import type { ActionsGetSelfHostedRunnerForOrgResponse } from './actions-get-self-hosted-runner-for-org.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'actions/get-self-hosted-runner-for-org',
+  path: '/orgs/{org}/actions/runners/{runner_id}',
+  method: 'get',
+  tag: 'actions',
+};
 
 export function provideActionsGetSelfHostedRunnerForOrgMock(
   initialBehavior?: ProviderInitialBehavior<ActionsGetSelfHostedRunnerForOrgResponse>,
@@ -11,5 +22,6 @@ export function provideActionsGetSelfHostedRunnerForOrgMock(
     ACTIONS_GET_SELF_HOSTED_RUNNER_FOR_ORG,
     'ACTIONS_GET_SELF_HOSTED_RUNNER_FOR_ORG',
     initialBehavior,
+    _meta,
   );
 }

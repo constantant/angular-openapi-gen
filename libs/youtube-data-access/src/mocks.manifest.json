@@ -1,0 +1,537 @@
+{
+  "specId": "youtube",
+  "mocks": [
+    {
+      "tokenName": "YOUTUBE_ABUSE_REPORTS_INSERT",
+      "operationId": "youtube.abuseReports.insert",
+      "path": "/youtube/v3/abuseReports",
+      "method": "post",
+      "tag": "abuse-reports"
+    },
+    {
+      "tokenName": "YOUTUBE_ACTIVITIES_LIST",
+      "operationId": "youtube.activities.list",
+      "path": "/youtube/v3/activities",
+      "method": "get",
+      "tag": "activities"
+    },
+    {
+      "tokenName": "YOUTUBE_CAPTIONS_LIST",
+      "operationId": "youtube.captions.list",
+      "path": "/youtube/v3/captions",
+      "method": "get",
+      "tag": "captions"
+    },
+    {
+      "tokenName": "YOUTUBE_CAPTIONS_INSERT",
+      "operationId": "youtube.captions.insert",
+      "path": "/youtube/v3/captions",
+      "method": "post",
+      "tag": "captions"
+    },
+    {
+      "tokenName": "YOUTUBE_CAPTIONS_UPDATE",
+      "operationId": "youtube.captions.update",
+      "path": "/youtube/v3/captions",
+      "method": "put",
+      "tag": "captions"
+    },
+    {
+      "tokenName": "YOUTUBE_CAPTIONS_DELETE",
+      "operationId": "youtube.captions.delete",
+      "path": "/youtube/v3/captions",
+      "method": "delete",
+      "tag": "captions"
+    },
+    {
+      "tokenName": "YOUTUBE_CAPTIONS_DOWNLOAD",
+      "operationId": "youtube.captions.download",
+      "path": "/youtube/v3/captions/{id}",
+      "method": "get",
+      "tag": "captions"
+    },
+    {
+      "tokenName": "YOUTUBE_CHANNEL_BANNERS_INSERT",
+      "operationId": "youtube.channelBanners.insert",
+      "path": "/youtube/v3/channelBanners/insert",
+      "method": "post",
+      "tag": "channel-banners"
+    },
+    {
+      "tokenName": "YOUTUBE_CHANNEL_SECTIONS_LIST",
+      "operationId": "youtube.channelSections.list",
+      "path": "/youtube/v3/channelSections",
+      "method": "get",
+      "tag": "channel-sections"
+    },
+    {
+      "tokenName": "YOUTUBE_CHANNEL_SECTIONS_INSERT",
+      "operationId": "youtube.channelSections.insert",
+      "path": "/youtube/v3/channelSections",
+      "method": "post",
+      "tag": "channel-sections"
+    },
+    {
+      "tokenName": "YOUTUBE_CHANNEL_SECTIONS_UPDATE",
+      "operationId": "youtube.channelSections.update",
+      "path": "/youtube/v3/channelSections",
+      "method": "put",
+      "tag": "channel-sections"
+    },
+    {
+      "tokenName": "YOUTUBE_CHANNEL_SECTIONS_DELETE",
+      "operationId": "youtube.channelSections.delete",
+      "path": "/youtube/v3/channelSections",
+      "method": "delete",
+      "tag": "channel-sections"
+    },
+    {
+      "tokenName": "YOUTUBE_CHANNELS_LIST",
+      "operationId": "youtube.channels.list",
+      "path": "/youtube/v3/channels",
+      "method": "get",
+      "tag": "channels"
+    },
+    {
+      "tokenName": "YOUTUBE_CHANNELS_UPDATE",
+      "operationId": "youtube.channels.update",
+      "path": "/youtube/v3/channels",
+      "method": "put",
+      "tag": "channels"
+    },
+    {
+      "tokenName": "YOUTUBE_COMMENT_THREADS_LIST",
+      "operationId": "youtube.commentThreads.list",
+      "path": "/youtube/v3/commentThreads",
+      "method": "get",
+      "tag": "comment-threads"
+    },
+    {
+      "tokenName": "YOUTUBE_COMMENT_THREADS_INSERT",
+      "operationId": "youtube.commentThreads.insert",
+      "path": "/youtube/v3/commentThreads",
+      "method": "post",
+      "tag": "comment-threads"
+    },
+    {
+      "tokenName": "YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS",
+      "operationId": "youtube.youtube.v3.updateCommentThreads",
+      "path": "/youtube/v3/commentThreads",
+      "method": "put",
+      "tag": "youtube"
+    },
+    {
+      "tokenName": "YOUTUBE_COMMENTS_LIST",
+      "operationId": "youtube.comments.list",
+      "path": "/youtube/v3/comments",
+      "method": "get",
+      "tag": "comments"
+    },
+    {
+      "tokenName": "YOUTUBE_COMMENTS_INSERT",
+      "operationId": "youtube.comments.insert",
+      "path": "/youtube/v3/comments",
+      "method": "post",
+      "tag": "comments"
+    },
+    {
+      "tokenName": "YOUTUBE_COMMENTS_UPDATE",
+      "operationId": "youtube.comments.update",
+      "path": "/youtube/v3/comments",
+      "method": "put",
+      "tag": "comments"
+    },
+    {
+      "tokenName": "YOUTUBE_COMMENTS_DELETE",
+      "operationId": "youtube.comments.delete",
+      "path": "/youtube/v3/comments",
+      "method": "delete",
+      "tag": "comments"
+    },
+    {
+      "tokenName": "YOUTUBE_COMMENTS_MARK_AS_SPAM",
+      "operationId": "youtube.comments.markAsSpam",
+      "path": "/youtube/v3/comments/markAsSpam",
+      "method": "post",
+      "tag": "comments"
+    },
+    {
+      "tokenName": "YOUTUBE_COMMENTS_SET_MODERATION_STATUS",
+      "operationId": "youtube.comments.setModerationStatus",
+      "path": "/youtube/v3/comments/setModerationStatus",
+      "method": "post",
+      "tag": "comments"
+    },
+    {
+      "tokenName": "YOUTUBE_I18N_LANGUAGES_LIST",
+      "operationId": "youtube.i18nLanguages.list",
+      "path": "/youtube/v3/i18nLanguages",
+      "method": "get",
+      "tag": "i18n-languages"
+    },
+    {
+      "tokenName": "YOUTUBE_I18N_REGIONS_LIST",
+      "operationId": "youtube.i18nRegions.list",
+      "path": "/youtube/v3/i18nRegions",
+      "method": "get",
+      "tag": "i18n-regions"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_BROADCASTS_LIST",
+      "operationId": "youtube.liveBroadcasts.list",
+      "path": "/youtube/v3/liveBroadcasts",
+      "method": "get",
+      "tag": "live-broadcasts"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_BROADCASTS_INSERT",
+      "operationId": "youtube.liveBroadcasts.insert",
+      "path": "/youtube/v3/liveBroadcasts",
+      "method": "post",
+      "tag": "live-broadcasts"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_BROADCASTS_UPDATE",
+      "operationId": "youtube.liveBroadcasts.update",
+      "path": "/youtube/v3/liveBroadcasts",
+      "method": "put",
+      "tag": "live-broadcasts"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_BROADCASTS_DELETE",
+      "operationId": "youtube.liveBroadcasts.delete",
+      "path": "/youtube/v3/liveBroadcasts",
+      "method": "delete",
+      "tag": "live-broadcasts"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_BROADCASTS_BIND",
+      "operationId": "youtube.liveBroadcasts.bind",
+      "path": "/youtube/v3/liveBroadcasts/bind",
+      "method": "post",
+      "tag": "live-broadcasts"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_BROADCASTS_INSERT_CUEPOINT",
+      "operationId": "youtube.liveBroadcasts.insertCuepoint",
+      "path": "/youtube/v3/liveBroadcasts/cuepoint",
+      "method": "post",
+      "tag": "live-broadcasts"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_BROADCASTS_TRANSITION",
+      "operationId": "youtube.liveBroadcasts.transition",
+      "path": "/youtube/v3/liveBroadcasts/transition",
+      "method": "post",
+      "tag": "live-broadcasts"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_CHAT_BANS_INSERT",
+      "operationId": "youtube.liveChatBans.insert",
+      "path": "/youtube/v3/liveChat/bans",
+      "method": "post",
+      "tag": "live-chat-bans"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_CHAT_BANS_DELETE",
+      "operationId": "youtube.liveChatBans.delete",
+      "path": "/youtube/v3/liveChat/bans",
+      "method": "delete",
+      "tag": "live-chat-bans"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_CHAT_MESSAGES_LIST",
+      "operationId": "youtube.liveChatMessages.list",
+      "path": "/youtube/v3/liveChat/messages",
+      "method": "get",
+      "tag": "live-chat-messages"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_CHAT_MESSAGES_INSERT",
+      "operationId": "youtube.liveChatMessages.insert",
+      "path": "/youtube/v3/liveChat/messages",
+      "method": "post",
+      "tag": "live-chat-messages"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_CHAT_MESSAGES_DELETE",
+      "operationId": "youtube.liveChatMessages.delete",
+      "path": "/youtube/v3/liveChat/messages",
+      "method": "delete",
+      "tag": "live-chat-messages"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_CHAT_MODERATORS_LIST",
+      "operationId": "youtube.liveChatModerators.list",
+      "path": "/youtube/v3/liveChat/moderators",
+      "method": "get",
+      "tag": "live-chat-moderators"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_CHAT_MODERATORS_INSERT",
+      "operationId": "youtube.liveChatModerators.insert",
+      "path": "/youtube/v3/liveChat/moderators",
+      "method": "post",
+      "tag": "live-chat-moderators"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_CHAT_MODERATORS_DELETE",
+      "operationId": "youtube.liveChatModerators.delete",
+      "path": "/youtube/v3/liveChat/moderators",
+      "method": "delete",
+      "tag": "live-chat-moderators"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_STREAMS_LIST",
+      "operationId": "youtube.liveStreams.list",
+      "path": "/youtube/v3/liveStreams",
+      "method": "get",
+      "tag": "live-streams"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_STREAMS_INSERT",
+      "operationId": "youtube.liveStreams.insert",
+      "path": "/youtube/v3/liveStreams",
+      "method": "post",
+      "tag": "live-streams"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_STREAMS_UPDATE",
+      "operationId": "youtube.liveStreams.update",
+      "path": "/youtube/v3/liveStreams",
+      "method": "put",
+      "tag": "live-streams"
+    },
+    {
+      "tokenName": "YOUTUBE_LIVE_STREAMS_DELETE",
+      "operationId": "youtube.liveStreams.delete",
+      "path": "/youtube/v3/liveStreams",
+      "method": "delete",
+      "tag": "live-streams"
+    },
+    {
+      "tokenName": "YOUTUBE_MEMBERS_LIST",
+      "operationId": "youtube.members.list",
+      "path": "/youtube/v3/members",
+      "method": "get",
+      "tag": "members"
+    },
+    {
+      "tokenName": "YOUTUBE_MEMBERSHIPS_LEVELS_LIST",
+      "operationId": "youtube.membershipsLevels.list",
+      "path": "/youtube/v3/membershipsLevels",
+      "method": "get",
+      "tag": "memberships-levels"
+    },
+    {
+      "tokenName": "YOUTUBE_PLAYLIST_ITEMS_LIST",
+      "operationId": "youtube.playlistItems.list",
+      "path": "/youtube/v3/playlistItems",
+      "method": "get",
+      "tag": "playlist-items"
+    },
+    {
+      "tokenName": "YOUTUBE_PLAYLIST_ITEMS_INSERT",
+      "operationId": "youtube.playlistItems.insert",
+      "path": "/youtube/v3/playlistItems",
+      "method": "post",
+      "tag": "playlist-items"
+    },
+    {
+      "tokenName": "YOUTUBE_PLAYLIST_ITEMS_UPDATE",
+      "operationId": "youtube.playlistItems.update",
+      "path": "/youtube/v3/playlistItems",
+      "method": "put",
+      "tag": "playlist-items"
+    },
+    {
+      "tokenName": "YOUTUBE_PLAYLIST_ITEMS_DELETE",
+      "operationId": "youtube.playlistItems.delete",
+      "path": "/youtube/v3/playlistItems",
+      "method": "delete",
+      "tag": "playlist-items"
+    },
+    {
+      "tokenName": "YOUTUBE_PLAYLISTS_LIST",
+      "operationId": "youtube.playlists.list",
+      "path": "/youtube/v3/playlists",
+      "method": "get",
+      "tag": "playlists"
+    },
+    {
+      "tokenName": "YOUTUBE_PLAYLISTS_INSERT",
+      "operationId": "youtube.playlists.insert",
+      "path": "/youtube/v3/playlists",
+      "method": "post",
+      "tag": "playlists"
+    },
+    {
+      "tokenName": "YOUTUBE_PLAYLISTS_UPDATE",
+      "operationId": "youtube.playlists.update",
+      "path": "/youtube/v3/playlists",
+      "method": "put",
+      "tag": "playlists"
+    },
+    {
+      "tokenName": "YOUTUBE_PLAYLISTS_DELETE",
+      "operationId": "youtube.playlists.delete",
+      "path": "/youtube/v3/playlists",
+      "method": "delete",
+      "tag": "playlists"
+    },
+    {
+      "tokenName": "YOUTUBE_SEARCH_LIST",
+      "operationId": "youtube.search.list",
+      "path": "/youtube/v3/search",
+      "method": "get",
+      "tag": "search"
+    },
+    {
+      "tokenName": "YOUTUBE_SUBSCRIPTIONS_LIST",
+      "operationId": "youtube.subscriptions.list",
+      "path": "/youtube/v3/subscriptions",
+      "method": "get",
+      "tag": "subscriptions"
+    },
+    {
+      "tokenName": "YOUTUBE_SUBSCRIPTIONS_INSERT",
+      "operationId": "youtube.subscriptions.insert",
+      "path": "/youtube/v3/subscriptions",
+      "method": "post",
+      "tag": "subscriptions"
+    },
+    {
+      "tokenName": "YOUTUBE_SUBSCRIPTIONS_DELETE",
+      "operationId": "youtube.subscriptions.delete",
+      "path": "/youtube/v3/subscriptions",
+      "method": "delete",
+      "tag": "subscriptions"
+    },
+    {
+      "tokenName": "YOUTUBE_SUPER_CHAT_EVENTS_LIST",
+      "operationId": "youtube.superChatEvents.list",
+      "path": "/youtube/v3/superChatEvents",
+      "method": "get",
+      "tag": "super-chat-events"
+    },
+    {
+      "tokenName": "YOUTUBE_TESTS_INSERT",
+      "operationId": "youtube.tests.insert",
+      "path": "/youtube/v3/tests",
+      "method": "post",
+      "tag": "tests"
+    },
+    {
+      "tokenName": "YOUTUBE_THIRD_PARTY_LINKS_LIST",
+      "operationId": "youtube.thirdPartyLinks.list",
+      "path": "/youtube/v3/thirdPartyLinks",
+      "method": "get",
+      "tag": "third-party-links"
+    },
+    {
+      "tokenName": "YOUTUBE_THIRD_PARTY_LINKS_INSERT",
+      "operationId": "youtube.thirdPartyLinks.insert",
+      "path": "/youtube/v3/thirdPartyLinks",
+      "method": "post",
+      "tag": "third-party-links"
+    },
+    {
+      "tokenName": "YOUTUBE_THIRD_PARTY_LINKS_UPDATE",
+      "operationId": "youtube.thirdPartyLinks.update",
+      "path": "/youtube/v3/thirdPartyLinks",
+      "method": "put",
+      "tag": "third-party-links"
+    },
+    {
+      "tokenName": "YOUTUBE_THIRD_PARTY_LINKS_DELETE",
+      "operationId": "youtube.thirdPartyLinks.delete",
+      "path": "/youtube/v3/thirdPartyLinks",
+      "method": "delete",
+      "tag": "third-party-links"
+    },
+    {
+      "tokenName": "YOUTUBE_THUMBNAILS_SET",
+      "operationId": "youtube.thumbnails.set",
+      "path": "/youtube/v3/thumbnails/set",
+      "method": "post",
+      "tag": "thumbnails"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEO_ABUSE_REPORT_REASONS_LIST",
+      "operationId": "youtube.videoAbuseReportReasons.list",
+      "path": "/youtube/v3/videoAbuseReportReasons",
+      "method": "get",
+      "tag": "video-abuse-report-reasons"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEO_CATEGORIES_LIST",
+      "operationId": "youtube.videoCategories.list",
+      "path": "/youtube/v3/videoCategories",
+      "method": "get",
+      "tag": "video-categories"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEOS_LIST",
+      "operationId": "youtube.videos.list",
+      "path": "/youtube/v3/videos",
+      "method": "get",
+      "tag": "videos"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEOS_INSERT",
+      "operationId": "youtube.videos.insert",
+      "path": "/youtube/v3/videos",
+      "method": "post",
+      "tag": "videos"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEOS_UPDATE",
+      "operationId": "youtube.videos.update",
+      "path": "/youtube/v3/videos",
+      "method": "put",
+      "tag": "videos"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEOS_DELETE",
+      "operationId": "youtube.videos.delete",
+      "path": "/youtube/v3/videos",
+      "method": "delete",
+      "tag": "videos"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEOS_GET_RATING",
+      "operationId": "youtube.videos.getRating",
+      "path": "/youtube/v3/videos/getRating",
+      "method": "get",
+      "tag": "videos"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEOS_RATE",
+      "operationId": "youtube.videos.rate",
+      "path": "/youtube/v3/videos/rate",
+      "method": "post",
+      "tag": "videos"
+    },
+    {
+      "tokenName": "YOUTUBE_VIDEOS_REPORT_ABUSE",
+      "operationId": "youtube.videos.reportAbuse",
+      "path": "/youtube/v3/videos/reportAbuse",
+      "method": "post",
+      "tag": "videos"
+    },
+    {
+      "tokenName": "YOUTUBE_WATERMARKS_SET",
+      "operationId": "youtube.watermarks.set",
+      "path": "/youtube/v3/watermarks/set",
+      "method": "post",
+      "tag": "watermarks"
+    },
+    {
+      "tokenName": "YOUTUBE_WATERMARKS_UNSET",
+      "operationId": "youtube.watermarks.unset",
+      "path": "/youtube/v3/watermarks/unset",
+      "method": "post",
+      "tag": "watermarks"
+    }
+  ]
+}

@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { USERS_LIST_SSH_SIGNING_KEYS_FOR_AUTHENTICATED_USER } from './users-list-ssh-signing-keys-for-authenticated-user.token';
 import type { UsersListSshSigningKeysForAuthenticatedUserResponse } from './users-list-ssh-signing-keys-for-authenticated-user.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'users/list-ssh-signing-keys-for-authenticated-user',
+  path: '/user/ssh_signing_keys',
+  method: 'get',
+  tag: 'users',
+};
 
 export function provideUsersListSshSigningKeysForAuthenticatedUserMock(
   initialBehavior?: ProviderInitialBehavior<UsersListSshSigningKeysForAuthenticatedUserResponse>,
@@ -11,5 +22,6 @@ export function provideUsersListSshSigningKeysForAuthenticatedUserMock(
     USERS_LIST_SSH_SIGNING_KEYS_FOR_AUTHENTICATED_USER,
     'USERS_LIST_SSH_SIGNING_KEYS_FOR_AUTHENTICATED_USER',
     initialBehavior,
+    _meta,
   );
 }

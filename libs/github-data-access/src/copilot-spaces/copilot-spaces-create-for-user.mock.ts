@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { COPILOT_SPACES_CREATE_FOR_USER } from './copilot-spaces-create-for-user.token';
 import type { CopilotSpacesCreateForUserResponse } from './copilot-spaces-create-for-user.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'copilot-spaces/create-for-user',
+  path: '/users/{username}/copilot-spaces',
+  method: 'post',
+  tag: 'copilot-spaces',
+};
 
 export function provideCopilotSpacesCreateForUserMock(
   initialBehavior?: ProviderInitialBehavior<CopilotSpacesCreateForUserResponse>,
@@ -11,5 +22,6 @@ export function provideCopilotSpacesCreateForUserMock(
     COPILOT_SPACES_CREATE_FOR_USER,
     'COPILOT_SPACES_CREATE_FOR_USER',
     initialBehavior,
+    _meta,
   );
 }

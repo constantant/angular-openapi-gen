@@ -1,7 +1,18 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { ORGS_DELETE_ISSUE_TYPE } from './orgs-delete-issue-type.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'orgs/delete-issue-type',
+  path: '/orgs/{org}/issue-types/{issue_type_id}',
+  method: 'delete',
+  tag: 'orgs',
+};
 
 export function provideOrgsDeleteIssueTypeMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
@@ -10,5 +21,6 @@ export function provideOrgsDeleteIssueTypeMock(
     ORGS_DELETE_ISSUE_TYPE,
     'ORGS_DELETE_ISSUE_TYPE',
     initialBehavior,
+    _meta,
   );
 }

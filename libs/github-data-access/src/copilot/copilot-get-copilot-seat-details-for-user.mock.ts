@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { COPILOT_GET_COPILOT_SEAT_DETAILS_FOR_USER } from './copilot-get-copilot-seat-details-for-user.token';
 import type { CopilotGetCopilotSeatDetailsForUserResponse } from './copilot-get-copilot-seat-details-for-user.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'copilot/get-copilot-seat-details-for-user',
+  path: '/orgs/{org}/members/{username}/copilot',
+  method: 'get',
+  tag: 'copilot',
+};
 
 export function provideCopilotGetCopilotSeatDetailsForUserMock(
   initialBehavior?: ProviderInitialBehavior<CopilotGetCopilotSeatDetailsForUserResponse>,
@@ -11,5 +22,6 @@ export function provideCopilotGetCopilotSeatDetailsForUserMock(
     COPILOT_GET_COPILOT_SEAT_DETAILS_FOR_USER,
     'COPILOT_GET_COPILOT_SEAT_DETAILS_FOR_USER',
     initialBehavior,
+    _meta,
   );
 }

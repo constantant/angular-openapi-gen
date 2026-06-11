@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { ORGS_CREATE_INVITATION } from './orgs-create-invitation.token';
 import type { OrgsCreateInvitationResponse } from './orgs-create-invitation.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'orgs/create-invitation',
+  path: '/orgs/{org}/invitations',
+  method: 'post',
+  tag: 'orgs',
+};
 
 export function provideOrgsCreateInvitationMock(
   initialBehavior?: ProviderInitialBehavior<OrgsCreateInvitationResponse>,
@@ -11,5 +22,6 @@ export function provideOrgsCreateInvitationMock(
     ORGS_CREATE_INVITATION,
     'ORGS_CREATE_INVITATION',
     initialBehavior,
+    _meta,
   );
 }

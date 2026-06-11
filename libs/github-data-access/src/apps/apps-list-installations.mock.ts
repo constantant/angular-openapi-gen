@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { APPS_LIST_INSTALLATIONS } from './apps-list-installations.token';
 import type { AppsListInstallationsResponse } from './apps-list-installations.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'apps/list-installations',
+  path: '/app/installations',
+  method: 'get',
+  tag: 'apps',
+};
 
 export function provideAppsListInstallationsMock(
   initialBehavior?: ProviderInitialBehavior<AppsListInstallationsResponse>,
@@ -11,5 +22,6 @@ export function provideAppsListInstallationsMock(
     APPS_LIST_INSTALLATIONS,
     'APPS_LIST_INSTALLATIONS',
     initialBehavior,
+    _meta,
   );
 }

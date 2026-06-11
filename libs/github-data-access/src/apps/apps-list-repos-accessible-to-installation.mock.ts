@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { APPS_LIST_REPOS_ACCESSIBLE_TO_INSTALLATION } from './apps-list-repos-accessible-to-installation.token';
 import type { AppsListReposAccessibleToInstallationResponse } from './apps-list-repos-accessible-to-installation.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'apps/list-repos-accessible-to-installation',
+  path: '/installation/repositories',
+  method: 'get',
+  tag: 'apps',
+};
 
 export function provideAppsListReposAccessibleToInstallationMock(
   initialBehavior?: ProviderInitialBehavior<AppsListReposAccessibleToInstallationResponse>,
@@ -11,5 +22,6 @@ export function provideAppsListReposAccessibleToInstallationMock(
     APPS_LIST_REPOS_ACCESSIBLE_TO_INSTALLATION,
     'APPS_LIST_REPOS_ACCESSIBLE_TO_INSTALLATION',
     initialBehavior,
+    _meta,
   );
 }

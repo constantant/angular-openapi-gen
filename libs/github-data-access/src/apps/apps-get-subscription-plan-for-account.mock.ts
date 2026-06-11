@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { APPS_GET_SUBSCRIPTION_PLAN_FOR_ACCOUNT } from './apps-get-subscription-plan-for-account.token';
 import type { AppsGetSubscriptionPlanForAccountResponse } from './apps-get-subscription-plan-for-account.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'apps/get-subscription-plan-for-account',
+  path: '/marketplace_listing/accounts/{account_id}',
+  method: 'get',
+  tag: 'apps',
+};
 
 export function provideAppsGetSubscriptionPlanForAccountMock(
   initialBehavior?: ProviderInitialBehavior<AppsGetSubscriptionPlanForAccountResponse>,
@@ -11,5 +22,6 @@ export function provideAppsGetSubscriptionPlanForAccountMock(
     APPS_GET_SUBSCRIPTION_PLAN_FOR_ACCOUNT,
     'APPS_GET_SUBSCRIPTION_PLAN_FOR_ACCOUNT',
     initialBehavior,
+    _meta,
   );
 }

@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_CAPTIONS_LIST } from './youtube-captions-list.token';
 import type { YoutubeCaptionsListResponse } from './youtube-captions-list.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'youtube',
+  operationId: 'youtube.captions.list',
+  path: '/youtube/v3/captions',
+  method: 'get',
+  tag: 'captions',
+};
 
 export function provideYoutubeCaptionsListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeCaptionsListResponse>,
@@ -11,5 +22,6 @@ export function provideYoutubeCaptionsListMock(
     YOUTUBE_CAPTIONS_LIST,
     'YOUTUBE_CAPTIONS_LIST',
     initialBehavior,
+    _meta,
   );
 }

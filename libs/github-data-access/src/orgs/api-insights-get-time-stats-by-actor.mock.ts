@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { API_INSIGHTS_GET_TIME_STATS_BY_ACTOR } from './api-insights-get-time-stats-by-actor.token';
 import type { ApiInsightsGetTimeStatsByActorResponse } from './api-insights-get-time-stats-by-actor.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'api-insights/get-time-stats-by-actor',
+  path: '/orgs/{org}/insights/api/time-stats/{actor_type}/{actor_id}',
+  method: 'get',
+  tag: 'orgs',
+};
 
 export function provideApiInsightsGetTimeStatsByActorMock(
   initialBehavior?: ProviderInitialBehavior<ApiInsightsGetTimeStatsByActorResponse>,
@@ -11,5 +22,6 @@ export function provideApiInsightsGetTimeStatsByActorMock(
     API_INSIGHTS_GET_TIME_STATS_BY_ACTOR,
     'API_INSIGHTS_GET_TIME_STATS_BY_ACTOR',
     initialBehavior,
+    _meta,
   );
 }

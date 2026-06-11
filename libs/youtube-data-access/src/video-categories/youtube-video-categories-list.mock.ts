@@ -1,8 +1,19 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_VIDEO_CATEGORIES_LIST } from './youtube-video-categories-list.token';
 import type { YoutubeVideoCategoriesListResponse } from './youtube-video-categories-list.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'youtube',
+  operationId: 'youtube.videoCategories.list',
+  path: '/youtube/v3/videoCategories',
+  method: 'get',
+  tag: 'video-categories',
+};
 
 export function provideYoutubeVideoCategoriesListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeVideoCategoriesListResponse>,
@@ -11,5 +22,6 @@ export function provideYoutubeVideoCategoriesListMock(
     YOUTUBE_VIDEO_CATEGORIES_LIST,
     'YOUTUBE_VIDEO_CATEGORIES_LIST',
     initialBehavior,
+    _meta,
   );
 }

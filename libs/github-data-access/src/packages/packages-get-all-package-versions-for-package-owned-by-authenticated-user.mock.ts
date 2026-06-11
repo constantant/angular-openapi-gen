@@ -1,8 +1,20 @@
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
 import { PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_AUTHENTICATED_USER } from './packages-get-all-package-versions-for-package-owned-by-authenticated-user.token';
 import type { PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserResponse } from './packages-get-all-package-versions-for-package-owned-by-authenticated-user.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId:
+    'packages/get-all-package-versions-for-package-owned-by-authenticated-user',
+  path: '/user/packages/{package_type}/{package_name}/versions',
+  method: 'get',
+  tag: 'packages',
+};
 
 export function providePackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserMock(
   initialBehavior?: ProviderInitialBehavior<PackagesGetAllPackageVersionsForPackageOwnedByAuthenticatedUserResponse>,
@@ -11,5 +23,6 @@ export function providePackagesGetAllPackageVersionsForPackageOwnedByAuthenticat
     PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_AUTHENTICATED_USER,
     'PACKAGES_GET_ALL_PACKAGE_VERSIONS_FOR_PACKAGE_OWNED_BY_AUTHENTICATED_USER',
     initialBehavior,
+    _meta,
   );
 }
