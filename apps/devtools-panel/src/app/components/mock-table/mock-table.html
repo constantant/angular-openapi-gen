@@ -12,7 +12,16 @@
 
       <ng-container matColumnDef="key">
         <th mat-header-cell *matHeaderCellDef>Key</th>
-        <td mat-cell *matCellDef="let row" class="key-cell" [title]="row.key">{{ row.key }}</td>
+        <td mat-cell *matCellDef="let row" class="key-cell">
+          <span class="key-name" [title]="row.key">{{ row.key }}</span>
+          @if (row.meta) {
+            <span class="key-meta">
+              <span class="key-specid">{{ row.meta.specId }}</span>
+              <span class="key-method method-{{ row.meta.method }}">{{ row.meta.method.toUpperCase() }}</span>
+              <span class="key-path" [title]="row.meta.path">{{ row.meta.path }}</span>
+            </span>
+          }
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="status">

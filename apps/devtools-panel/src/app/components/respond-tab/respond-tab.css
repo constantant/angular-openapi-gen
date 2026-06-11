@@ -54,6 +54,16 @@ mat-toolbar.panel-header {
 .method-head,
 .method-options { background: color-mix(in srgb, #ba68c8 18%, transparent); color: #ba68c8; }
 
+.meta-pill {
+  font-size: 10px;
+  color: var(--mat-sys-on-surface-variant);
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  border-radius: 3px;
+  padding: 1px 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .meta-path {
   font-family: var(--app-font-mono), monospace;
   font-size: 11px;

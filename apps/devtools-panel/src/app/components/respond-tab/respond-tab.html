@@ -11,6 +11,11 @@
     <div class="meta-row">
       <span class="method-badge method-{{ entry.meta.method }}">{{ entry.meta.method.toUpperCase() }}</span>
       <span class="meta-path" [title]="entry.meta.path">{{ entry.meta.path }}</span>
+      <span class="meta-pill">{{ entry.meta.specId }}</span>
+      <span class="meta-pill">{{ entry.meta.operationId }}</span>
+      @if (entry.meta.tag) {
+        <span class="meta-pill">{{ entry.meta.tag }}</span>
+      }
     </div>
   }
 
