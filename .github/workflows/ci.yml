@@ -34,4 +34,30 @@ jobs:
 
       - run: npm ci
       - run: npx playwright install --with-deps
-      - run: npx nx run-many -t lint test build e2e
+
+      - name: Derive SHAs for Nx affected
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Detect affected projects
+        id: affected
+        run: |
+          PROJECTS=$(npx nx show projects --affected --base=$NX_BASE --head=$NX_HEAD --json)
+          echo "json=$PROJECTS" >> "$GITHUB_OUTPUT"
+
+      - name: Run CI tasks (affected only)
+        run: npx nx affected -t lint test build e2e
+
+      - name: Write job summary
+        if: always()
+        env:
+          AFFECTED_JSON: ${{ steps.affected.outputs.json }}
+        run: |
+          {
+            echo "## CI · lint · test · build · e2e"
+            echo ""
+            node -e '
+              const p = JSON.parse(process.env.AFFECTED_JSON || "[]");
+              if (!p.length) { console.log("_No affected projects._"); }
+              else { p.sort().forEach(n => console.log("- `" + n + "`")); }
+            '
+          } >> "$GITHUB_STEP_SUMMARY"
