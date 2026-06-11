@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.5.0 (2026-06-11)
+
+### 🚀 Features
+
+- **devtools-panel:** resizable right panel (respond/history tab) ([aff220f](https://github.com/constantant/angular-openapi-gen/commit/aff220f11d97b5a202ae7279af9e5e337c84716b))
+- **devtools-panel:** expose MockResourceMeta in mock table and respond tab ([c327801](https://github.com/constantant/angular-openapi-gen/commit/c32780190e6c45f2e015ae357177eae95e25c734))
+- **devtools-panel:** CodeMirror JSON editor and two-button example workflow ([a830d3a](https://github.com/constantant/angular-openapi-gen/commit/a830d3a284a08d7f1865bc1d1a5b96dd702e7bf6))
+
+### 🩹 Bug Fixes
+
+- **devtools-panel:** pin respond-footer, fix validate, two-row meta; update docs ([d95fdb1](https://github.com/constantant/angular-openapi-gen/commit/d95fdb17920c804fe8d6f42c34b5d5fe45eab5ed))
+- **devtools-panel:** fix hang when importing large specs (e.g. github.yaml) ([cee3c14](https://github.com/constantant/angular-openapi-gen/commit/cee3c14e75fa2484110e65e4e3111fb7ec829b9a))
+- **devtools-panel:** replace ajv with @cfworker/json-schema to fix CSP violation ([66ef48b](https://github.com/constantant/angular-openapi-gen/commit/66ef48b9373af150bc326985dbf4454c2dc378b2))
+- **devtools-panel:** add YAML support to spec import (file and URL) ([473fe94](https://github.com/constantant/angular-openapi-gen/commit/473fe94a0a52d37215672f1d48e85f53686b5d20))
+
+### 📖 Documentation
+
+- **devtools:** add privacy policy for Chrome Web Store ([98be5e1](https://github.com/constantant/angular-openapi-gen/commit/98be5e1eb892cd491ee88c35c8e1d4da3cbeb684))
+
 ## 0.4.0 (2026-06-10)
 
 ### 🚀 Features
