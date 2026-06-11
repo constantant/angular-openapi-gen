@@ -17,7 +17,7 @@
         · {{ pendingSpec()!.schemaCount }} with schemas
       }
     </div>
-    <label class="import-label">Spec ID <span class="import-hint">(must match --specId used when generating mocks)</span></label>
+    <span class="import-label">Spec ID <span class="import-hint">(must match --specId used when generating mocks)</span></span>
     <input class="url-input"
            [value]="pendingSpec()!.specId"
            (input)="updatePendingSpecId($event)"
@@ -56,7 +56,10 @@
   <ul class="spec-list">
     @for (spec of specList(); track spec.specId) {
       <li class="spec-item">
-        <div class="spec-row" (click)="toggleExpand(spec.specId)">
+        <div class="spec-row" role="button" tabindex="0"
+             (click)="toggleExpand(spec.specId)"
+             (keyup.enter)="toggleExpand(spec.specId)"
+             (keyup.space)="toggleExpand(spec.specId)">
           <span class="expand-toggle" [class.expanded]="isExpanded(spec.specId)">▶</span>
           <div class="spec-info">
             <span class="spec-id">{{ spec.specId }}</span>

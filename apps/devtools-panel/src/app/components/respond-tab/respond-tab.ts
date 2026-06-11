@@ -131,8 +131,8 @@ export class RespondTab {
     if (!schema || !jsonStr || this.jsonError()) return;
     this.validateLoading.set(true);
     try {
-      const { validate } = await import('@cfworker/json-schema');
-      const result = validate(schema, JSON.parse(jsonStr));
+      const { Validator } = await import('@cfworker/json-schema');
+      const result = new Validator(schema).validate(JSON.parse(jsonStr));
       this.validationErrors.set(
         result.valid
           ? []

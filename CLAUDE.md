@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI specs via `httpResource`.
 
-> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen` (v1.5.0), `@constantant/openapi-resource-mocks` (v0.2.0), Chrome Extension `openapi-resource-mocks-devtools` (v0.3.2, in CWS review). Data-access libs: `github`, `petstore`, `weather`, `youtube`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
+> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen` (v1.6.0), `@constantant/openapi-resource-mocks` (v0.3.0), Chrome Extension `openapi-resource-mocks-devtools` (v0.4.0). Data-access libs: `github`, `petstore`, `weather`, `youtube` — all generated with `--includeMocks=true --specId=<name>`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
 
 ---
 
@@ -221,7 +221,9 @@ provideHttpClient(withInterceptors([myapiDigestAuthInterceptor])),
   "baseUrlToken":    "optional: name of the base URL token (default: API_BASE_URL)",
   "tagFilter":       "optional: only generate tokens for these tags",
   "namingConvention":"camel | kebab (default: kebab for filenames, SCREAMING_SNAKE for token names)",
-  "providedIn":      "none | root (default: none)"
+  "providedIn":      "none | root (default: none)",
+  "includeMocks":    "true | false (default: false) — emit *.mock.ts alongside each *.token.ts",
+  "specId":          "string — embedded in MockResourceMeta._meta; must match the specId used when importing the spec into the DevTools panel"
 }
 ```
 
@@ -310,11 +312,13 @@ npx prettier --write apps/                 # Format code
 # Type-check all
 npx nx run-many -t typecheck
 
-# Generate a data-access lib from a spec
+# Generate a data-access lib from a spec (with mocks for DevTools panel)
 npx nx g @constantant/openapi-resource-gen:api-resource \
   --specPath=specs/youtube.yaml \
   --outputDir=libs/youtube-data-access/src \
-  --baseUrlToken=YOUTUBE_BASE_URL
+  --baseUrlToken=YOUTUBE_BASE_URL \
+  --includeMocks=true \
+  --specId=youtube
 
 # Inspect bundle after build with --stats-json
 npx webpack-bundle-analyzer dist/apps/api-explorer/browser/stats.json
@@ -407,6 +411,20 @@ background service worker using named ports.
 
 Never provide `MOCK_BRIDGE` via `@Injectable` — it must always be the token factory.
 
+### DevTools panel tech stack
+
+- **CodeMirror 6** — `apps/devtools-panel/src/app/components/json-editor/` — syntax-highlighted JSON editor in the Respond tab. Uses VS Code Dark+ colours. Bidirectional sync with Angular signals via a `skipSync` flag.
+- **json-schema-faker** — `⚡ Generate` button in Respond tab generates example JSON from the response schema.
+- **@cfworker/json-schema** — `✓ Validate` validates the editor content against the response schema.
+  **Critical**: the standalone `validate()` export is broken (always returns `{valid: true}`). Always use:
+  ```typescript
+  const { Validator } = await import('@cfworker/json-schema');
+  const result = new Validator(schema).validate(instance);
+  ```
+- **js-yaml** — `load as yamlLoad` — Specs tab accepts `.yaml`/`.yml` files and YAML URLs in addition to JSON.
+- **SPEC_STORE token** (`apps/devtools-panel/src/app/spec-store.token.ts`) — stores OpenAPI specs in `chrome.storage.local`. Uses a module-level `rewrittenDefsCache: Map<string, …>` to defer the expensive `rewriteRefs()` call on large `components/schemas` blobs (e.g. github.yaml) until the first `findSchema()` call, avoiding hangs on import.
+- **MockResourceMeta** — `{ specId, operationId, path, method, tag? }` — embedded in each generated mock file as `export const _meta: MockResourceMeta`. Passed to `provideMockResource()` so the panel can show operation info in the mock table and Respond tab.
+
 ### Releasing the extension
 
 Releases go through `.github/workflows/release-extension.yml` (triggered manually via
@@ -469,6 +487,10 @@ Conventional Commits PR title (it becomes the squash commit). See
 | Stale file cleanup | Before generation, snapshot existing `.token.ts`/`.security-token.ts` files; after generation, delete any that weren't produced this run | Prevents phantom exports when endpoints are removed or `tagFilter` narrows the output |
 | Nx executor | `@constantant/openapi-resource-gen:generate` executor wraps the generator so users can declare a `generate` target in `project.json` | `nx run mylib:generate` is easier to remember and can be wired into CI; uses `FsTree`+`flushChanges` from `nx/src/generators/tree` (not in `@nx/devkit` public API) |
 | Lint cache invalidation | `@nx/eslint:lint` has an `externalDependencies` input listing the ESLint plugin packages (`eslint`, `angular-eslint`, `typescript-eslint`, `@eslint/js`, …) in `nx.json` | A rule-strengthening dependency bump (e.g. an `angular-eslint` major) must re-lint against current source, not return a stale cached "pass". Without this, the angular-eslint 22 upgrade merged green while leaving `master` failing `prefer-on-push-component-change-detection` |
+| `includeMocks` + MockResourceMeta | Generator emits `*.mock.ts` alongside each `*.token.ts`; each mock file exports `_meta: MockResourceMeta` with `specId`, `operationId`, `path`, `method`, `tag` | DevTools panel needs this metadata to display operation info and match mock keys to spec entries |
+| Lazy definitions cache in SPEC_STORE | `rewrittenDefsCache: Map<string, Record<string, unknown>>` defers `rewriteRefs()` on `components/schemas` to first `findSchema()` call; separate `rawDefinitions` field in `SpecEntry` avoids embedding the full definitions blob into every per-operation schema | github.yaml has ~30MB of definitions; embedding them N times in storage caused hangs. Deferring to first use keeps import fast |
+| `@cfworker/json-schema` Validator class | Use `new Validator(schema).validate(instance)`, NOT the standalone `validate()` function | The standalone `validate` export is broken — always returns `{valid: true}`. The `Validator` class API works correctly and resolves `$ref`/`definitions` |
+| Respond tab pinned footer | `schema-section`, `delay-row`, and `action-row` moved out of the scrollable `.respond-body` into a `flex-shrink: 0` `.respond-footer` below it | When the editor grows tall, schema/delay/actions were scrolled off-screen. Pinning them ensures they are always reachable |
 
 ---
 

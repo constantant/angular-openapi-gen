@@ -9,13 +9,17 @@
 
   @if (entry.meta) {
     <div class="meta-row">
-      <span class="method-badge method-{{ entry.meta.method }}">{{ entry.meta.method.toUpperCase() }}</span>
-      <span class="meta-path" [title]="entry.meta.path">{{ entry.meta.path }}</span>
-      <span class="meta-pill">{{ entry.meta.specId }}</span>
-      <span class="meta-pill">{{ entry.meta.operationId }}</span>
-      @if (entry.meta.tag) {
-        <span class="meta-pill">{{ entry.meta.tag }}</span>
-      }
+      <div class="meta-main">
+        <span class="method-badge method-{{ entry.meta.method }}">{{ entry.meta.method.toUpperCase() }}</span>
+        <span class="meta-path" [title]="entry.meta.path">{{ entry.meta.path }}</span>
+      </div>
+      <div class="meta-pills">
+        <span class="meta-pill">{{ entry.meta.specId }}</span>
+        <span class="meta-pill">{{ entry.meta.operationId }}</span>
+        @if (entry.meta.tag) {
+          <span class="meta-pill">{{ entry.meta.tag }}</span>
+        }
+      </div>
     </div>
   }
 
@@ -38,7 +42,9 @@
         <div class="editor-error">{{ jsonError() }}</div>
       }
     </div>
+  </div>
 
+  <div class="respond-footer">
     @if (schema()) {
       <div class="schema-section">
         <div class="schema-toolbar">
@@ -75,7 +81,7 @@
     }
 
     <div class="delay-row">
-      <label class="delay-label">Delay (ms)</label>
+      <span class="delay-label">Delay (ms)</span>
       <input class="delay-input" type="number" min="0" placeholder="0"
              [value]="delay()"
              (input)="delay.set($any($event.target).value)" />
