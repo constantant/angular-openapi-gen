@@ -29,7 +29,8 @@
       <app-mock-table [filter]="filter()" />
 
       @if (selectedEntry()) {
-        <div class="right-panel">
+        <div class="resize-handle" (pointerdown)="startResize($event)"></div>
+        <div class="right-panel" [style.width.px]="rightPanelWidth()">
           <nav mat-tab-nav-bar [tabPanel]="tabPanel" mat-stretch-tabs>
             <button mat-tab-link [active]="rightTab() === 'respond'"
                     (click)="rightTab.set('respond')">Respond</button>
