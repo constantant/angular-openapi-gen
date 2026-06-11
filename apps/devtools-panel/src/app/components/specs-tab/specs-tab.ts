@@ -1,6 +1,7 @@
 import { Component, WritableSignal, computed, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { load as yamlLoad } from 'js-yaml';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
 import { SPEC_STORE, SpecEntry, extractFromOpenApiSpec, isOpenApiSpec } from '../../spec-store.token';
 
@@ -65,14 +66,15 @@ export class SpecsTab {
   protected openFilePicker(): void {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json';
+    input.accept = '.json,.yaml,.yml';
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
       this.error.set(null);
       try {
-        const json = JSON.parse(await file.text());
-        await this.handleJson(json);
+        const text = await file.text();
+        const parsed = /\.ya?ml$/i.test(file.name) ? yamlLoad(text) : JSON.parse(text);
+        await this.handleJson(parsed);
       } catch (e) {
         this.error.set((e as Error).message);
       }
@@ -93,7 +95,11 @@ export class SpecsTab {
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      await this.handleJson(await res.json());
+      const contentType = res.headers.get('content-type') ?? '';
+      const text = await res.text();
+      const isYaml = contentType.includes('yaml') || /\.ya?ml(\?|$)/i.test(url);
+      const parsed = isYaml ? yamlLoad(text) : JSON.parse(text);
+      await this.handleJson(parsed);
       this.urlInput.set('');
       this.urlMode.set(false);
     } catch (e) {
@@ -106,7 +112,7 @@ export class SpecsTab {
   private async handleJson(json: unknown): Promise<void> {
     if (isOpenApiSpec(json)) {
       const spec = json as Record<string, unknown>;
-      const { mocks, responseSchemas } = extractFromOpenApiSpec(spec);
+      const { mocks, responseSchemas } = extractFromOpenApiSpec(spec as Record<string, unknown>);
       const title = ((spec['info'] as Record<string, unknown> | undefined)?.['title'] as string) ?? '';
       const defaultId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'api';
       this.pendingSpec.set({
