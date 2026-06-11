@@ -71,12 +71,17 @@ export class SpecsTab {
       const file = input.files?.[0];
       if (!file) return;
       this.error.set(null);
+      this.loading.set(true);
+      // Yield to let Angular render the loading state before synchronous YAML parse.
+      await new Promise<void>((r) => setTimeout(r, 0));
       try {
         const text = await file.text();
         const parsed = /\.ya?ml$/i.test(file.name) ? yamlLoad(text) : JSON.parse(text);
         await this.handleJson(parsed);
       } catch (e) {
         this.error.set((e as Error).message);
+      } finally {
+        this.loading.set(false);
       }
     };
     input.click();

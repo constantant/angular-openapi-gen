@@ -1,7 +1,9 @@
 <div class="specs-header">
   <span class="specs-title">Registered Specs</span>
   <div class="specs-actions">
-    <button mat-stroked-button (click)="openFilePicker()">+ File</button>
+    <button mat-stroked-button [disabled]="loading()" (click)="openFilePicker()">
+      {{ loading() ? '…' : '+ File' }}
+    </button>
     <button mat-stroked-button [class.active]="urlMode()" (click)="toggleUrlMode()">+ URL</button>
   </div>
 </div>

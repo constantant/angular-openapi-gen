@@ -12,8 +12,14 @@ export interface SpecEntry {
   specId: string;
   addedAt: number;
   mocks: ManifestMock[];
-  /** Response JSON Schemas keyed by operationId. Present when imported from a full OpenAPI spec. */
+  /** Per-operation response schemas (no definitions embedded — kept small for storage). */
   responseSchemas?: Record<string, unknown>;
+  /**
+   * Raw components/schemas from the spec in original OpenAPI form (refs NOT rewritten).
+   * Stored once instead of being embedded into every operation schema.
+   * rewriteRefs() is deferred to first findSchema() call and cached in memory.
+   */
+  rawDefinitions?: Record<string, unknown>;
   /** Inline response examples keyed by operationId, extracted from the spec. */
   responseExamples?: Record<string, unknown>;
 }
@@ -98,18 +104,17 @@ function extractExample(jsonContent: Record<string, unknown>): unknown {
 
 export function extractFromOpenApiSpec(
   spec: Record<string, unknown>,
-): { mocks: ManifestMock[]; responseSchemas: Record<string, unknown>; responseExamples: Record<string, unknown> } {
+): { mocks: ManifestMock[]; responseSchemas: Record<string, unknown>; responseExamples: Record<string, unknown>; rawDefinitions: Record<string, unknown> | undefined } {
   const mocks: ManifestMock[] = [];
   const responseSchemas: Record<string, unknown> = {};
   const responseExamples: Record<string, unknown> = {};
 
-  const rawComponents = (spec['components'] as Record<string, unknown> | undefined)?.['schemas'];
-  const definitions = rawComponents
-    ? (rewriteRefs(rawComponents) as Record<string, unknown>)
-    : undefined;
+  // Keep raw components/schemas as-is — rewriteRefs is deferred to findSchema() to
+  // avoid blocking the main thread on large specs (e.g. github.yaml ~30MB).
+  const rawDefinitions = (spec['components'] as Record<string, unknown> | undefined)?.['schemas'] as Record<string, unknown> | undefined;
 
   const paths = spec['paths'] as Record<string, unknown> | undefined;
-  if (!paths) return { mocks, responseSchemas, responseExamples };
+  if (!paths) return { mocks, responseSchemas, responseExamples, rawDefinitions };
 
   const METHODS = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'];
   for (const [path, pathItem] of Object.entries(paths)) {
@@ -138,8 +143,8 @@ export function extractFromOpenApiSpec(
         const jsonContent = content?.['application/json'] as Record<string, unknown> | undefined;
         const rawSchema = jsonContent?.['schema'];
         if (rawSchema) {
-          const schema = rewriteRefs(rawSchema) as Record<string, unknown>;
-          responseSchemas[operationId] = definitions ? { ...schema, definitions } : schema;
+          // Only rewrite refs in the small per-operation schema, not in the full definitions blob.
+          responseSchemas[operationId] = rewriteRefs(rawSchema) as Record<string, unknown>;
         }
         if (jsonContent) {
           const ex = extractExample(jsonContent);
@@ -148,13 +153,28 @@ export function extractFromOpenApiSpec(
       }
     }
   }
-  return { mocks, responseSchemas, responseExamples };
+  return { mocks, responseSchemas, responseExamples, rawDefinitions };
 }
 
 export function isOpenApiSpec(json: unknown): boolean {
   if (!json || typeof json !== 'object') return false;
   const obj = json as Record<string, unknown>;
   return typeof obj['openapi'] === 'string' && obj['openapi'].startsWith('3') && 'paths' in obj;
+}
+
+// ── Lazy definitions cache ─────────────────────────────────────────────────────
+// rewriteRefs() on a large spec's components/schemas can be expensive. We defer
+// it to first use and cache the result in memory (not persisted to storage).
+const rewrittenDefsCache = new Map<string, Record<string, unknown>>();
+
+function getRewrittenDefs(entry: SpecEntry): Record<string, unknown> | undefined {
+  if (!entry.rawDefinitions) return undefined;
+  let defs = rewrittenDefsCache.get(entry.specId);
+  if (!defs) {
+    defs = rewriteRefs(entry.rawDefinitions) as Record<string, unknown>;
+    rewrittenDefsCache.set(entry.specId, defs);
+  }
+  return defs;
 }
 
 // ── Factory ────────────────────────────────────────────────────────────────────
@@ -177,7 +197,11 @@ function buildStore(
     specs: specsSignal.asReadonly(),
     get findMock() { return findMockComputed(); },
     findSchema(specId: string, operationId: string): unknown {
-      return specsSignal().get(specId)?.responseSchemas?.[operationId];
+      const entry = specsSignal().get(specId);
+      const schema = entry?.responseSchemas?.[operationId];
+      if (!schema || !entry) return undefined;
+      const defs = getRewrittenDefs(entry);
+      return defs ? { ...(schema as Record<string, unknown>), definitions: defs } : schema;
     },
     findExample(specId: string, operationId: string): unknown {
       return specsSignal().get(specId)?.responseExamples?.[operationId];
@@ -197,15 +221,17 @@ function buildStore(
       await persist(specsSignal());
     },
     async addFromOpenApiSpec(json: unknown, specId: string): Promise<void> {
-      const { mocks, responseSchemas, responseExamples } = extractFromOpenApiSpec(json as Record<string, unknown>);
+      const { mocks, responseSchemas, responseExamples, rawDefinitions } = extractFromOpenApiSpec(json as Record<string, unknown>);
+      rewrittenDefsCache.delete(specId); // clear stale cache on re-import
       specsSignal.update((prev) => {
         const next = new Map(prev);
-        next.set(specId, { specId, mocks, responseSchemas, responseExamples, addedAt: Date.now() });
+        next.set(specId, { specId, mocks, responseSchemas, responseExamples, rawDefinitions, addedAt: Date.now() });
         return next;
       });
       await persist(specsSignal());
     },
     async remove(specId: string): Promise<void> {
+      rewrittenDefsCache.delete(specId);
       specsSignal.update((prev) => {
         const next = new Map(prev);
         next.delete(specId);
