@@ -110,16 +110,45 @@ mat-toolbar.panel-header {
   gap: 10px;
 }
 
-.json-field {
-  width: 100%;
+.editor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-  textarea.json-textarea {
-    font-family: var(--app-font-mono), monospace;
-    font-size: 12px;
-    resize: vertical;
-    min-height: 80px;
-    line-height: 1.5;
-  }
+.editor-label {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.editor-error {
+  font-size: 11px;
+  color: var(--mat-sys-error);
+}
+
+.delay-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.delay-label {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+}
+
+.delay-input {
+  width: 80px;
+  background: transparent;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+  color: var(--mat-sys-on-surface);
+  font-size: 12px;
+  padding: 4px 6px;
+  outline: none;
+
+  &:focus { border-color: var(--mat-sys-primary); }
 }
 
 .schema-section {
@@ -185,8 +214,6 @@ mat-toolbar.panel-header {
   background: color-mix(in srgb, var(--mat-sys-surface-container) 40%, transparent);
   border-top: 1px solid var(--mat-sys-outline-variant);
 }
-
-.delay-field { width: 100%; }
 
 .action-row {
   display: flex;

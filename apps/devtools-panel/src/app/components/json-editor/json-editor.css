@@ -1,0 +1,21 @@
+:host {
+  display: block;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 150ms;
+  background: #1e1e1e;
+}
+
+:host:focus-within {
+  border-color: var(--mat-sys-primary);
+}
+
+.cm-editor {
+  min-height: 100px;
+}
+
+.cm-scroller {
+  min-height: 100px;
+  max-height: 260px;
+}

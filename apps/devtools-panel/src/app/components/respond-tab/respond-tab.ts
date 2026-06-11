@@ -1,14 +1,13 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatToolbar } from '@angular/material/toolbar';
+import { JsonEditorComponent } from '../json-editor/json-editor';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
 import { SPEC_STORE } from '../../spec-store.token';
 
 @Component({
   selector: 'app-respond-tab',
-  imports: [MatButtonModule, MatFormFieldModule, MatInputModule, MatToolbar],
+  imports: [MatButtonModule, MatToolbar, JsonEditorComponent],
   templateUrl: './respond-tab.html',
   styleUrl: './respond-tab.css',
 })
@@ -21,7 +20,7 @@ export class RespondTab {
   protected readonly jsonError = signal<string | null>(null);
   protected readonly schemaExpanded = signal(false);
   protected readonly validationErrors = signal<string[] | null>(null);
-  protected readonly exampleLoading = signal(false);
+  protected readonly generateLoading = signal(false);
   protected readonly validateLoading = signal(false);
 
   protected readonly selectedEntry = computed(() => {
@@ -41,6 +40,12 @@ export class RespondTab {
     const entry = this.selectedEntry();
     if (!entry?.meta) return null;
     return this.specStore.findSchema(entry.meta.specId, entry.meta.operationId) ?? null;
+  });
+
+  protected readonly hasExample = computed(() => {
+    const entry = this.selectedEntry();
+    if (!entry?.meta) return false;
+    return this.specStore.findExample(entry.meta.specId, entry.meta.operationId) !== undefined;
   });
 
   protected readonly schemaJson = computed(() => {
@@ -64,12 +69,19 @@ export class RespondTab {
     });
   }
 
-  protected onJsonInput(value: string): void {
+  protected onEditorChange(value: string): void {
     this.json.set(value);
     this.validationErrors.set(null);
-    if (!value.trim()) { this.jsonError.set(null); return; }
-    try { JSON.parse(value); this.jsonError.set(null); }
-    catch (e) { this.jsonError.set(e instanceof Error ? e.message : 'Invalid JSON'); }
+  }
+
+  protected useExample(): void {
+    const entry = this.selectedEntry();
+    if (!entry?.meta) return;
+    const ex = this.specStore.findExample(entry.meta.specId, entry.meta.operationId);
+    if (ex === undefined) return;
+    this.json.set(JSON.stringify(ex, null, 2));
+    this.jsonError.set(null);
+    this.validationErrors.set(null);
   }
 
   protected resolve(): void {
@@ -99,7 +111,7 @@ export class RespondTab {
   protected async generateExample(): Promise<void> {
     const schema = this.schema();
     if (!schema) return;
-    this.exampleLoading.set(true);
+    this.generateLoading.set(true);
     this.validationErrors.set(null);
     try {
       const { generate } = await import('json-schema-faker');
@@ -109,7 +121,7 @@ export class RespondTab {
     } catch (e) {
       this.jsonError.set((e as Error).message);
     } finally {
-      this.exampleLoading.set(false);
+      this.generateLoading.set(false);
     }
   }
 

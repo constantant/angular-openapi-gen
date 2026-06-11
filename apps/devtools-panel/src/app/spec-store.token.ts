@@ -14,6 +14,8 @@ export interface SpecEntry {
   mocks: ManifestMock[];
   /** Response JSON Schemas keyed by operationId. Present when imported from a full OpenAPI spec. */
   responseSchemas?: Record<string, unknown>;
+  /** Inline response examples keyed by operationId, extracted from the spec. */
+  responseExamples?: Record<string, unknown>;
 }
 
 export interface SpecStore {
@@ -22,6 +24,8 @@ export interface SpecStore {
   readonly findMock: (tokenName: string) => ManifestMock & { specId: string } | undefined;
   /** Get the response JSON Schema for a specific operation. */
   findSchema(specId: string, operationId: string): unknown;
+  /** Get the inline response example for a specific operation, if present in the spec. */
+  findExample(specId: string, operationId: string): unknown;
   addFromManifest(json: unknown): Promise<void>;
   addFromOpenApiSpec(json: unknown, specId: string): Promise<void>;
   remove(specId: string): Promise<void>;
@@ -80,11 +84,24 @@ function parseManifest(json: unknown): { specId: string; mocks: ManifestMock[] }
   return { specId: obj['specId'] as string, mocks };
 }
 
+function extractExample(jsonContent: Record<string, unknown>): unknown {
+  if ('example' in jsonContent) return jsonContent['example'];
+  const examples = jsonContent['examples'] as Record<string, unknown> | undefined;
+  if (examples) {
+    const first = Object.values(examples)[0] as Record<string, unknown> | undefined;
+    if (first && 'value' in first) return first['value'];
+  }
+  const schema = jsonContent['schema'] as Record<string, unknown> | undefined;
+  if (schema && 'example' in schema) return schema['example'];
+  return undefined;
+}
+
 export function extractFromOpenApiSpec(
   spec: Record<string, unknown>,
-): { mocks: ManifestMock[]; responseSchemas: Record<string, unknown> } {
+): { mocks: ManifestMock[]; responseSchemas: Record<string, unknown>; responseExamples: Record<string, unknown> } {
   const mocks: ManifestMock[] = [];
   const responseSchemas: Record<string, unknown> = {};
+  const responseExamples: Record<string, unknown> = {};
 
   const rawComponents = (spec['components'] as Record<string, unknown> | undefined)?.['schemas'];
   const definitions = rawComponents
@@ -92,7 +109,7 @@ export function extractFromOpenApiSpec(
     : undefined;
 
   const paths = spec['paths'] as Record<string, unknown> | undefined;
-  if (!paths) return { mocks, responseSchemas };
+  if (!paths) return { mocks, responseSchemas, responseExamples };
 
   const METHODS = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'];
   for (const [path, pathItem] of Object.entries(paths)) {
@@ -124,10 +141,14 @@ export function extractFromOpenApiSpec(
           const schema = rewriteRefs(rawSchema) as Record<string, unknown>;
           responseSchemas[operationId] = definitions ? { ...schema, definitions } : schema;
         }
+        if (jsonContent) {
+          const ex = extractExample(jsonContent);
+          if (ex !== undefined) responseExamples[operationId] = ex;
+        }
       }
     }
   }
-  return { mocks, responseSchemas };
+  return { mocks, responseSchemas, responseExamples };
 }
 
 export function isOpenApiSpec(json: unknown): boolean {
@@ -158,6 +179,9 @@ function buildStore(
     findSchema(specId: string, operationId: string): unknown {
       return specsSignal().get(specId)?.responseSchemas?.[operationId];
     },
+    findExample(specId: string, operationId: string): unknown {
+      return specsSignal().get(specId)?.responseExamples?.[operationId];
+    },
     async addFromManifest(json: unknown): Promise<void> {
       const { specId, mocks } = parseManifest(json);
       specsSignal.update((prev) => {
@@ -173,10 +197,10 @@ function buildStore(
       await persist(specsSignal());
     },
     async addFromOpenApiSpec(json: unknown, specId: string): Promise<void> {
-      const { mocks, responseSchemas } = extractFromOpenApiSpec(json as Record<string, unknown>);
+      const { mocks, responseSchemas, responseExamples } = extractFromOpenApiSpec(json as Record<string, unknown>);
       specsSignal.update((prev) => {
         const next = new Map(prev);
-        next.set(specId, { specId, mocks, responseSchemas, addedAt: Date.now() });
+        next.set(specId, { specId, mocks, responseSchemas, responseExamples, addedAt: Date.now() });
         return next;
       });
       await persist(specsSignal());

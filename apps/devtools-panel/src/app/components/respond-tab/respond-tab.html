@@ -22,26 +22,27 @@
   }
 
   <div class="respond-body">
-    <mat-form-field appearance="outline" class="json-field">
-      <mat-label>Response (JSON)</mat-label>
-      <textarea matInput
-                [value]="json()"
-                (input)="onJsonInput($any($event.target).value)"
-                rows="8"
-                spellcheck="false"
-                placeholder="null"
-                class="json-textarea"></textarea>
+    <div class="editor-section">
+      <div class="editor-label">Response (JSON)</div>
+      <app-json-editor
+        [value]="json()"
+        (valueChange)="onEditorChange($event)"
+        (errorChange)="jsonError.set($event)"
+      />
       @if (jsonError()) {
-        <mat-error>{{ jsonError() }}</mat-error>
+        <div class="editor-error">{{ jsonError() }}</div>
       }
-    </mat-form-field>
+    </div>
 
     @if (schema()) {
       <div class="schema-section">
         <div class="schema-toolbar">
           <span class="schema-label">Response schema</span>
-          <button mat-stroked-button [disabled]="exampleLoading()" (click)="generateExample()">
-            {{ exampleLoading() ? '…' : '⚡ Example' }}
+          @if (hasExample()) {
+            <button mat-stroked-button (click)="useExample()">Use example</button>
+          }
+          <button mat-stroked-button [disabled]="generateLoading()" (click)="generateExample()">
+            {{ generateLoading() ? '…' : '⚡ Generate' }}
           </button>
           <button mat-stroked-button
                   [disabled]="validateLoading() || !!jsonError() || !json().trim()"
@@ -68,12 +69,12 @@
       </div>
     }
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="delay-field">
-      <mat-label>Delay (ms)</mat-label>
-      <input matInput type="number" min="0" placeholder="0"
+    <div class="delay-row">
+      <label class="delay-label">Delay (ms)</label>
+      <input class="delay-input" type="number" min="0" placeholder="0"
              [value]="delay()"
              (input)="delay.set($any($event.target).value)" />
-    </mat-form-field>
+    </div>
 
     <div class="action-row">
       <button mat-flat-button (click)="resolve()" [disabled]="!!jsonError()">
