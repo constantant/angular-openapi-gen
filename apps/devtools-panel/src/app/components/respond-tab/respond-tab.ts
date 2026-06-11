@@ -131,16 +131,12 @@ export class RespondTab {
     if (!schema || !jsonStr || this.jsonError()) return;
     this.validateLoading.set(true);
     try {
-      const { default: Ajv } = await import('ajv');
-      const ajv = new Ajv({ strict: false, allErrors: true });
-      const validate = ajv.compile(schema);
-      const valid = validate(JSON.parse(jsonStr));
+      const { validate } = await import('@cfworker/json-schema');
+      const result = validate(schema, JSON.parse(jsonStr));
       this.validationErrors.set(
-        valid
+        result.valid
           ? []
-          : (validate.errors ?? []).map(
-              (e) => `${e.instancePath || '(root)'} ${e.message ?? 'invalid'}`,
-            ),
+          : result.errors.map((e) => `${e.instanceLocation || '(root)'} ${e.error ?? 'invalid'}`),
       );
     } catch (e) {
       this.validationErrors.set([(e as Error).message]);
