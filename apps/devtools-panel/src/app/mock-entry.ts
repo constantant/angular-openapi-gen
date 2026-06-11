@@ -17,6 +17,7 @@ export interface HistoryEvent {
   type: string;
   value?: unknown;
   error?: unknown;
+  args?: unknown[];
 }
 
 export interface PendingRequest {
@@ -64,6 +65,7 @@ export function applyEvent(
   const histEvent: HistoryEvent = { id: ++_histId, ts: ev.ts, type: ev.type };
   if (ev.value !== undefined) histEvent.value = ev.value;
   if (ev.error !== undefined) histEvent.error = ev.error;
+  if (ev.args?.length) histEvent.args = ev.args;
 
   const history = [histEvent, ...entry.history].slice(0, MAX_HISTORY);
   const next: MockEntry = { ...entry, lastEventType: ev.type, lastEventTs: ev.ts, history };

@@ -12,11 +12,28 @@
   } @else {
     <div class="event-list">
       @for (ev of entry.history; track ev.id) {
-        <div class="event-row" [matTooltip]="preview(ev)" matTooltipShowDelay="600">
+        <div class="event-row" [class.has-payload]="hasPayload(ev)"
+             [class.is-expanded]="expandedId() === ev.id"
+             (click)="toggleExpand(ev)"
+             (keyup.enter)="toggleExpand(ev)"
+             (keyup.space)="toggleExpand(ev)"
+             [attr.tabindex]="hasPayload(ev) ? 0 : null"
+             [attr.role]="hasPayload(ev) ? 'button' : null">
           <span class="ev-ts">{{ timestamp(ev.ts) }}</span>
           <span class="ev-type ev-{{ ev.type }}">{{ ev.type }}</span>
           <span class="ev-preview">{{ preview(ev) }}</span>
+          @if (hasPayload(ev)) {
+            <span class="ev-chevron">{{ expandedId() === ev.id ? '▾' : '▸' }}</span>
+          }
         </div>
+        @if (expandedId() === ev.id) {
+          <div class="event-detail">
+            @for (s of payloadSections(ev); track s.label) {
+              <div class="detail-label">{{ s.label }}</div>
+              <pre class="detail-json">{{ s.json }}</pre>
+            }
+          </div>
+        }
       }
     </div>
   }

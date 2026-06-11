@@ -40,7 +40,7 @@ mat-toolbar.panel-header {
 
 .event-row {
   display: grid;
-  grid-template-columns: 90px 72px 1fr;
+  grid-template-columns: 90px 72px 1fr 14px;
   align-items: baseline;
   gap: 6px;
   padding: 4px 10px;
@@ -48,8 +48,17 @@ mat-toolbar.panel-header {
   font-size: 11px;
   cursor: default;
 
+  &.has-payload {
+    cursor: pointer;
+  }
+
   &:hover {
     background: color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent);
+  }
+
+  &.is-expanded {
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 5%, transparent);
+    border-bottom-color: transparent;
   }
 }
 
@@ -102,4 +111,44 @@ mat-toolbar.panel-header {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.ev-chevron {
+  font-size: 10px;
+  color: var(--mat-sys-on-surface-variant);
+  text-align: right;
+  align-self: center;
+}
+
+// ── Expanded detail panel ────────────────────────────────────────────────────
+
+.event-detail {
+  background: color-mix(in srgb, var(--mat-sys-surface-container) 80%, transparent);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  padding: 6px 10px 8px;
+}
+
+.detail-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: 3px;
+
+  & + .detail-label {
+    margin-top: 8px;
+  }
+}
+
+.detail-json {
+  margin: 0;
+  font-family: var(--app-font-mono), monospace;
+  font-size: 10px;
+  color: var(--mat-sys-on-surface);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 180px;
+  overflow-y: auto;
+  line-height: 1.5;
 }
