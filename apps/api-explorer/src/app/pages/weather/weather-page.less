@@ -1,1 +1,119 @@
-.forecast-card { margin-top: 16px; }
+.page {
+  padding: 24px;
+  max-width: 700px;
+}
+
+h1 { margin-bottom: 24px; }
+
+.error { color: var(--mat-sys-error); }
+
+// ── Current conditions ──────────────────────────────────────────────────────
+
+.current-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--mat-sys-surface-container);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+}
+
+.current-emoji {
+  font-size: 64px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.current-temp {
+  font-size: 52px;
+  font-weight: 300;
+  color: var(--mat-sys-on-surface);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.current-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.current-condition {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--mat-sys-on-surface);
+}
+
+.current-wind {
+  font-size: 14px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// ── 3-day forecast grid ─────────────────────────────────────────────────────
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.forecast-day {
+  background: var(--mat-sys-surface-container);
+  border-radius: 16px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.day-label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mat-sys-on-surface);
+}
+
+.day-date {
+  font-size: 11px;
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: 4px;
+}
+
+.day-emoji {
+  font-size: 40px;
+  line-height: 1;
+  margin: 6px 0;
+}
+
+.day-condition {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: 6px;
+}
+
+.day-temps {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.temp-max { color: var(--mat-sys-on-surface); }
+
+.temp-sep {
+  font-size: 14px;
+  color: var(--mat-sys-outline);
+}
+
+.temp-min { color: var(--mat-sys-on-surface-variant); }
+
+.day-precip {
+  font-size: 11px;
+  color: var(--mat-sys-primary);
+  margin-top: 4px;
+}

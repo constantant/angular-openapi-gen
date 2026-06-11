@@ -6,27 +6,34 @@
   } @else if (forecast.error()) {
     <p class="mat-body-2 error">Failed to load forecast</p>
   } @else {
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>Current conditions</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <p class="mat-body-1">
-          Temperature: {{ $any(forecast.value())?.current?.temperature_2m }}°C
-        </p>
-        <p class="mat-body-1">
-          Wind: {{ $any(forecast.value())?.current?.wind_speed_10m }} km/h
-        </p>
-      </mat-card-content>
-    </mat-card>
+    @if (current(); as c) {
+      <div class="current-card">
+        <span class="current-emoji">{{ c.emoji }}</span>
+        <span class="current-temp">{{ c.temperature }}°C</span>
+        <div class="current-meta">
+          <span class="current-condition">{{ c.condition }}</span>
+          <span class="current-wind">💨 {{ c.windSpeed }} km/h</span>
+        </div>
+      </div>
+    }
 
-    <mat-card class="forecast-card">
-      <mat-card-header>
-        <mat-card-title>3-day forecast</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <pre>{{ $any(forecast.value())?.daily | json }}</pre>
-      </mat-card-content>
-    </mat-card>
+    <div class="forecast-grid">
+      @for (day of days(); track day.label) {
+        <div class="forecast-day">
+          <div class="day-label">{{ day.label }}</div>
+          <div class="day-date">{{ day.date }}</div>
+          <div class="day-emoji">{{ day.emoji }}</div>
+          <div class="day-condition">{{ day.condition }}</div>
+          <div class="day-temps">
+            <span class="temp-max">{{ day.tempMax }}°</span>
+            <span class="temp-sep">/</span>
+            <span class="temp-min">{{ day.tempMin }}°</span>
+          </div>
+          @if (day.precipitation > 0) {
+            <div class="day-precip">🌧 {{ day.precipitation }} mm</div>
+          }
+        </div>
+      }
+    </div>
   }
 </div>
