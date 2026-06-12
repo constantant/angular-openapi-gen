@@ -38,7 +38,7 @@ test.describe('Store page (mock)', () => {
   });
 
   test('place order section is visible', async ({ page }) => {
-    await expect(page.getByText('Place Order')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Place Order' })).toBeVisible();
     await expect(page.getByLabel('Pet ID')).toBeVisible();
     await expect(page.getByLabel('Quantity')).toBeVisible();
   });

@@ -47,7 +47,7 @@ test.describe('Pages', () => {
 
   test('user page loads with correct heading', async ({ page }) => {
     await page.goto('/user');
-    await expect(page.getByRole('heading', { name: 'User' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'User', exact: true })).toBeVisible();
   });
 
   test('weather page loads with correct heading', async ({ page }) => {

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('User page (mock)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/user');
-    await expect(page.getByRole('heading', { name: 'User' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'User', exact: true })).toBeVisible();
   });
 
   test('shows login form when not logged in', async ({ page }) => {
@@ -74,7 +74,7 @@ test.describe('User page (mock)', () => {
   });
 
   test('create user section is visible', async ({ page }) => {
-    await expect(page.getByText('Create User')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Create User' })).toBeVisible();
     await expect(page.getByLabel('Username *')).toBeVisible();
   });
 

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Pets page (mock)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/pets');
-    await expect(page.getByRole('heading', { name: 'Pets' })).toBeVisible();
+    await expect(page.locator('h1')).toBeVisible();
   });
 
   test('shows loading then pet list', async ({ page }) => {

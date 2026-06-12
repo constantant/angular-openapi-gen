@@ -10,10 +10,13 @@ test.describe('Weather page (mock)', () => {
     await expect(page.locator('mat-progress-bar')).toBeVisible();
     await expect(page.locator('mat-progress-bar')).toBeHidden();
 
-    await expect(page.getByText('Temperature: 18.5°C')).toBeVisible();
-    await expect(page.getByText('Wind: 12 km/h')).toBeVisible();
-    await expect(page.getByText('Current conditions')).toBeVisible();
-    await expect(page.getByText('3-day forecast')).toBeVisible();
+    // Temperature is Math.round(18.5) = 19°C; condition defaults to code 0 = 'Clear sky'
+    await expect(page.locator('.current-temp')).toContainText('19°C');
+    await expect(page.locator('.current-condition')).toContainText('Clear sky');
+    await expect(page.locator('.current-wind')).toContainText('12 km/h');
+    // Daily forecast: first entry is labelled 'Today'
+    await expect(page.getByText('Today')).toBeVisible();
+    await expect(page.getByText('Tomorrow')).toBeVisible();
   });
 
   test('GET_V1_FORECAST is called with Amsterdam coordinates and required fields', async ({
