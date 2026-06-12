@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 (2026-06-12)
+
+### 🚀 Features
+
+- **devtools-panel:** expand history rows to show request and response data ([721722a](https://github.com/constantant/angular-openapi-gen/commit/721722a6f3e58ab98b7f19e7c43295748bfc02db))
+
 ## 0.5.0 (2026-06-11)
 
 ### 🚀 Features
