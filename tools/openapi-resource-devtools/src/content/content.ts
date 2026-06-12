@@ -14,7 +14,11 @@ function send(msg: unknown): void {
 
 // ── Page → panel: relay live state-change events ─────────────────────────────
 function onMockEvent(e: Event): void {
-  const { key, event } = (e as CustomEvent<{ key: string; event: unknown }>).detail;
+  // detail is null when args contain a type that can't be structured-cloned across
+  // Chrome Extension worlds (e.g. FormData, File, Blob).
+  const detail = (e as CustomEvent<{ key: string; event: unknown } | null>).detail;
+  if (!detail) return;
+  const { key, event } = detail;
   send({ type: 'mock-event', key, event });
 }
 document.addEventListener('openapi-mock-event', onMockEvent);

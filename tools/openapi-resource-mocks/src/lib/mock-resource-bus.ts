@@ -120,10 +120,25 @@ export class MockResourceBus {
     };
   }
 
+  private sanitizeArg(arg: unknown): unknown {
+    if (typeof FormData !== 'undefined' && arg instanceof FormData) return '[FormData]';
+    if (typeof File !== 'undefined' && arg instanceof File) return `[File: ${(arg as File).name}]`;
+    if (typeof Blob !== 'undefined' && arg instanceof Blob) return '[Blob]';
+    if (typeof ArrayBuffer !== 'undefined' && arg instanceof ArrayBuffer) return '[ArrayBuffer]';
+    return arg;
+  }
+
+  private sanitizeEventForDom(event: MockEvent): MockEvent {
+    if (event.type === 'request' || event.type === 'caught') {
+      return { ...event, args: event.args.map(a => this.sanitizeArg(a)) };
+    }
+    return event;
+  }
+
   private dispatchDomEvent(key: string, event: MockEvent): void {
     if (typeof document === 'undefined') return;
     document.dispatchEvent(
-      new CustomEvent('openapi-mock-event', { detail: { key, event } }),
+      new CustomEvent('openapi-mock-event', { detail: { key, event: this.sanitizeEventForDom(event) } }),
     );
   }
 
