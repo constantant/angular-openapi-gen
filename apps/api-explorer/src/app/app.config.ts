@@ -41,7 +41,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     provideHttpClient(withFetch()),
     { provide: GITHUB_BASE_URL, useValue: 'https://api.github.com' },
-    { provide: PETSTORE_BASE_URL, useValue: 'https://petstore3.swagger.io/api/v3' },
+    { provide: PETSTORE_BASE_URL, useValue: 'https://petstore.swagger.io/v2' },
     { provide: WEATHER_BASE_URL, useValue: 'https://api.open-meteo.com' },
     { provide: YOUTUBE_BASE_URL, useValue: 'https://youtube.googleapis.com' },
     provideUsersGetByUsername(),

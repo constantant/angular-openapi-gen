@@ -9,42 +9,44 @@
     </button>
   </div>
 
-  <!-- Add form -->
-  @if (showAddForm()) {
-    <div class="add-form">
-      <div class="add-form-row">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Name *</mat-label>
-          <input matInput [value]="addName()" (input)="addName.set($any($event.target).value)"
-                 placeholder="e.g. Fido" />
-        </mat-form-field>
+  <!-- Add form: deferred until first opened -->
+  @defer (when showAddForm()) {
+    @if (showAddForm()) {
+      <div class="add-form">
+        <div class="add-form-row">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Name *</mat-label>
+            <input matInput [value]="addName()" (input)="addName.set($any($event.target).value)"
+                   placeholder="e.g. Fido" />
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Status</mat-label>
-          <mat-select [value]="addStatus()" (selectionChange)="addStatus.set($event.value)">
-            @for (s of statusOptions; track s) {
-              <mat-option [value]="s">{{ s }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Status</mat-label>
+            <mat-select [value]="addStatus()" (selectionChange)="addStatus.set($event.value)">
+              @for (s of statusOptions; track s) {
+                <mat-option [value]="s">{{ s }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="tags-field">
-          <mat-label>Tags</mat-label>
-          <input matInput [value]="addTags()" (input)="addTags.set($any($event.target).value)"
-                 placeholder="comma-separated" />
-        </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="tags-field">
+            <mat-label>Tags</mat-label>
+            <input matInput [value]="addTags()" (input)="addTags.set($any($event.target).value)"
+                   placeholder="comma-separated" />
+          </mat-form-field>
 
-        <button mat-flat-button
-                [disabled]="!addName().trim() || addLoading()"
-                (click)="submitAdd()">
-          @if (addLoading()) { Adding… } @else { Add }
-        </button>
+          <button mat-flat-button
+                  [disabled]="!addName().trim() || addLoading()"
+                  (click)="submitAdd()">
+            @if (addLoading()) { Adding… } @else { Add }
+          </button>
+        </div>
+
+        @if (addError()) {
+          <p class="add-error">{{ addError() }}</p>
+        }
       </div>
-
-      @if (addError()) {
-        <p class="add-error">{{ addError() }}</p>
-      }
-    </div>
+    }
   }
 
   <!-- Status filter -->
@@ -70,85 +72,91 @@
       } @else {
         <div class="pet-grid">
           @for (pet of visiblePets(); track pet.id) {
-            <div class="pet-card"
-                 [class.selected]="selectedPetId() === pet.id"
-                 role="button"
-                 tabindex="0"
-                 (click)="selectPet(pet.id)"
-                 (keyup.enter)="selectPet(pet.id)"
-                 (keyup.space)="selectPet(pet.id)">
-              <div class="pet-emoji">{{ petEmoji(pet) }}</div>
-              <div class="pet-info">
-                <div class="pet-name">{{ pet.name }}</div>
-                @if (pet.category?.name) {
-                  <div class="pet-meta">{{ pet.category!.name }}</div>
-                }
-                @if (tagNames(pet)) {
-                  <div class="pet-tags">{{ tagNames(pet) }}</div>
-                }
+            @defer (on viewport; prefetch on idle) {
+              <div class="pet-card"
+                   [class.selected]="selectedPetId() === pet.id"
+                   role="button"
+                   tabindex="0"
+                   (click)="selectPet(pet.id)"
+                   (keyup.enter)="selectPet(pet.id)"
+                   (keyup.space)="selectPet(pet.id)">
+                <div class="pet-emoji">{{ petEmoji(pet) }}</div>
+                <div class="pet-info">
+                  <div class="pet-name">{{ pet.name }}</div>
+                  @if (pet.category?.name) {
+                    <div class="pet-meta">{{ pet.category!.name }}</div>
+                  }
+                  @if (tagNames(pet)) {
+                    <div class="pet-tags">{{ tagNames(pet) }}</div>
+                  }
+                </div>
+                <div class="pet-actions">
+                  <span class="status-dot status-{{ pet.status }}"></span>
+                  <button mat-icon-button class="delete-btn"
+                          matTooltip="Delete"
+                          aria-label="Delete pet"
+                          (click)="$event.stopPropagation(); deletePet(pet.id)">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
               </div>
-              <div class="pet-actions">
-                <span class="status-dot status-{{ pet.status }}"></span>
-                <button mat-icon-button class="delete-btn"
-                        matTooltip="Delete"
-                        aria-label="Delete pet"
-                        (click)="$event.stopPropagation(); deletePet(pet.id)">
-                  <mat-icon>delete_outline</mat-icon>
-                </button>
-              </div>
-            </div>
+            } @placeholder {
+              <div class="pet-card-skeleton"></div>
+            }
           }
         </div>
       }
     </div>
 
-    <!-- Detail panel -->
-    @if (selectedPet(); as pet) {
-      <aside class="detail-panel">
-        <div class="detail-header">
-          <span class="detail-emoji">{{ petEmoji(pet) }}</span>
-          <div class="detail-title">
-            <div class="detail-name">{{ pet.name }}</div>
-            <div class="detail-id">#{{ pet.id }}</div>
+    <!-- Detail panel: deferred until first pet is selected -->
+    @defer (when selectedPetId() !== null) {
+      @if (selectedPet(); as pet) {
+        <aside class="detail-panel">
+          <div class="detail-header">
+            <span class="detail-emoji">{{ petEmoji(pet) }}</span>
+            <div class="detail-title">
+              <div class="detail-name">{{ pet.name }}</div>
+              <div class="detail-id">#{{ pet.id }}</div>
+            </div>
+            <button mat-icon-button class="detail-close"
+                    (click)="selectedPetId.set(null)"
+                    aria-label="Close detail">
+              <mat-icon>close</mat-icon>
+            </button>
           </div>
-          <button mat-icon-button class="detail-close"
-                  (click)="selectedPetId.set(null)"
-                  aria-label="Close detail">
-            <mat-icon>close</mat-icon>
+
+          <div class="detail-body">
+            <div class="detail-row">
+              <span class="detail-label">Status</span>
+              <span class="status-badge status-{{ pet.status }}">{{ pet.status }}</span>
+            </div>
+            @if (pet.category?.name) {
+              <div class="detail-row">
+                <span class="detail-label">Category</span>
+                <span>{{ pet.category!.name }}</span>
+              </div>
+            }
+            @if (tagNames(pet)) {
+              <div class="detail-row">
+                <span class="detail-label">Tags</span>
+                <span>{{ tagNames(pet) }}</span>
+              </div>
+            }
+            @if (pet.photoUrls?.length) {
+              <div class="detail-row">
+                <span class="detail-label">Photos</span>
+                <span>{{ pet.photoUrls!.length }}</span>
+              </div>
+            }
+          </div>
+
+          <button mat-stroked-button color="warn" class="detail-delete"
+                  (click)="deletePet(pet.id)">
+            <mat-icon>delete</mat-icon>
+            Delete Pet
           </button>
-        </div>
-
-        <div class="detail-body">
-          <div class="detail-row">
-            <span class="detail-label">Status</span>
-            <span class="status-badge status-{{ pet.status }}">{{ pet.status }}</span>
-          </div>
-          @if (pet.category?.name) {
-            <div class="detail-row">
-              <span class="detail-label">Category</span>
-              <span>{{ pet.category!.name }}</span>
-            </div>
-          }
-          @if (tagNames(pet)) {
-            <div class="detail-row">
-              <span class="detail-label">Tags</span>
-              <span>{{ tagNames(pet) }}</span>
-            </div>
-          }
-          @if (pet.photoUrls?.length) {
-            <div class="detail-row">
-              <span class="detail-label">Photos</span>
-              <span>{{ pet.photoUrls!.length }}</span>
-            </div>
-          }
-        </div>
-
-        <button mat-stroked-button color="warn" class="detail-delete"
-                (click)="deletePet(pet.id)">
-          <mat-icon>delete</mat-icon>
-          Delete Pet
-        </button>
-      </aside>
+        </aside>
+      }
     }
 
   </div>

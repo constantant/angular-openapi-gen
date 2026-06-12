@@ -91,6 +91,18 @@
   padding-bottom: 16px;
 }
 
+.pet-card-skeleton {
+  height: 72px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+
 .pet-card {
   display: flex;
   align-items: center;
