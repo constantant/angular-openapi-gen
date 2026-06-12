@@ -104,8 +104,11 @@ export class PetsPageComponent {
     this.uploadError.set(null);
     this.uploadLoading.set(true);
 
+    const fd = new FormData();
+    fd.append('file', file);
+
     const op = runInInjectionContext(this.injector, () =>
-      this.uploadFileFn(String(petId), file as unknown as UploadFileBody),
+      this.uploadFileFn(String(petId), fd as unknown as UploadFileBody),
     );
     effect(
       () => {
