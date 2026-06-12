@@ -17,6 +17,8 @@ import {
 import {
   PETSTORE_BASE_URL,
   provideFindPetsByStatus,
+  provideAddPet,
+  provideDeletePet,
 } from '@angular-openapi-gen/petstore-data-access';
 import {
   WEATHER_BASE_URL,
@@ -45,6 +47,8 @@ export const appConfig: ApplicationConfig = {
     provideUsersGetByUsername(),
     provideReposListForUser(),
     provideFindPetsByStatus(),
+    provideAddPet(),
+    provideDeletePet(),
     provideGetV1Forecast(),
     provideYoutubeSearchList(),
   ],
