@@ -123,8 +123,8 @@ test.describe('DevTools Panel', () => {
     await expect(page.locator('mat-toolbar .count')).toContainText('no mocks');
   });
 
-  test('toolbar has filter input', async ({ page }) => {
-    await expect(page.locator('mat-toolbar input[placeholder="Filter…"]')).toBeVisible();
+  test('Mocks tab shows filter input', async ({ page }) => {
+    await expect(page.locator('.mocks-filter input[placeholder="Filter…"]')).toBeVisible();
   });
 
   // ── Tab navigation ─────────────────────────────────────────────────────────
@@ -171,7 +171,7 @@ test.describe('DevTools Panel', () => {
   });
 
   test('filter input accepts text', async ({ page }) => {
-    const input = page.locator('mat-toolbar input[placeholder="Filter…"]');
+    const input = page.locator('.mocks-filter input[placeholder="Filter…"]');
     await input.fill('PETS');
     await expect(input).toHaveValue('PETS');
   });
