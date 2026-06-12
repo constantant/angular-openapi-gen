@@ -120,7 +120,7 @@ mat-toolbar.panel-header {
   align-self: center;
 }
 
-// ── Expanded detail panel ────────────────────────────────────────────────────
+/* ── Expanded detail panel ──────────────────────────────────────────────────── */
 
 .event-detail {
   background: color-mix(in srgb, var(--mat-sys-surface-container) 80%, transparent);
