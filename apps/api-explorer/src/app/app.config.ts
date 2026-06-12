@@ -20,6 +20,7 @@ import {
   provideFindPetsByStatus,
   provideAddPet,
   provideDeletePet,
+  provideUploadFile,
   provideGetInventory,
   providePlaceOrder,
   provideGetOrderById,
@@ -69,6 +70,7 @@ export const appConfig: ApplicationConfig = {
     provideFindPetsByStatus(),
     provideAddPet(),
     provideDeletePet(),
+    provideUploadFile(),
     // Petstore — store
     provideGetInventory(),
     providePlaceOrder(),

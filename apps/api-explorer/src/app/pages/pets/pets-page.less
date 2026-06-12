@@ -283,3 +283,39 @@
 }
 
 .detail-delete { width: 100%; }
+
+// ── Photo upload ──────────────────────────────────────────────────────────────
+
+.detail-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 0 16px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  margin-bottom: 4px;
+}
+
+.upload-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .upload-choose-btn {
+    flex: 1;
+    min-width: 0;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.file-input-hidden { display: none; }
+
+.upload-feedback {
+  font-size: 12px;
+  margin: 0;
+}
+
+.upload-ok  { color: #4caf50; }
+.upload-err { color: var(--mat-sys-error); }

@@ -3,8 +3,10 @@ import {
   FIND_PETS_BY_STATUS,
   ADD_PET,
   DELETE_PET,
+  UPLOAD_FILE,
   type FindPetsByStatusParams,
   type AddPetBody,
+  type UploadFileBody,
 } from '@angular-openapi-gen/petstore-data-access';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -46,6 +48,7 @@ export class PetsPageComponent {
   private readonly findPetsByStatus = inject(FIND_PETS_BY_STATUS);
   private readonly addPetFn = inject(ADD_PET);
   private readonly deletePetFn = inject(DELETE_PET);
+  private readonly uploadFileFn = inject(UPLOAD_FILE);
 
   // ── List ──────────────────────────────────────────────────────────────────
   readonly statusOptions: PetStatus[] = ['available', 'pending', 'sold'];
@@ -68,6 +71,12 @@ export class PetsPageComponent {
   readonly addLoading = signal(false);
   readonly addError = signal<string | null>(null);
 
+  // ── Upload photo ──────────────────────────────────────────────────────────
+  readonly uploadFile = signal<File | null>(null);
+  readonly uploadLoading = signal(false);
+  readonly uploadSuccess = signal<string | null>(null);
+  readonly uploadError = signal<string | null>(null);
+
   // ── Delete (optimistic) ───────────────────────────────────────────────────
   readonly deletingIds = signal(new Set<number>());
   readonly visiblePets = computed(() =>
@@ -76,6 +85,48 @@ export class PetsPageComponent {
 
   selectPet(id: number): void {
     this.selectedPetId.update(cur => (cur === id ? null : id));
+    this.uploadFile.set(null);
+    this.uploadSuccess.set(null);
+    this.uploadError.set(null);
+  }
+
+  onFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.uploadFile.set(file);
+    this.uploadSuccess.set(null);
+    this.uploadError.set(null);
+  }
+
+  uploadPhoto(): void {
+    const file = this.uploadFile();
+    const petId = this.selectedPetId();
+    if (!file || petId == null || this.uploadLoading()) return;
+    this.uploadError.set(null);
+    this.uploadLoading.set(true);
+
+    const op = runInInjectionContext(this.injector, () =>
+      this.uploadFileFn(String(petId), file as unknown as UploadFileBody),
+    );
+    effect(
+      () => {
+        const s = op.status();
+        if (s === 'resolved') {
+          untracked(() => {
+            const msg = (op.value() as { message?: string } | undefined)?.message ?? 'Uploaded';
+            this.uploadSuccess.set(msg);
+            this.uploadFile.set(null);
+            this.uploadLoading.set(false);
+            this.pets.reload();
+          });
+        } else if (s === 'error') {
+          untracked(() => {
+            this.uploadError.set('Upload failed.');
+            this.uploadLoading.set(false);
+          });
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   submitAdd(): void {

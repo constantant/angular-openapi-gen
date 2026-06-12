@@ -150,6 +150,30 @@
             }
           </div>
 
+          <div class="detail-upload">
+            <span class="detail-label">Upload Photo</span>
+            <div class="upload-row">
+              <button mat-stroked-button class="upload-choose-btn"
+                      (click)="fileInput.click()">
+                <mat-icon>attach_file</mat-icon>
+                {{ uploadFile() ? uploadFile()!.name : 'Choose…' }}
+              </button>
+              <input #fileInput type="file" accept="image/*" class="file-input-hidden"
+                     (change)="onFileSelected($event)" />
+              <button mat-flat-button
+                      [disabled]="!uploadFile() || uploadLoading()"
+                      (click)="uploadPhoto()">
+                @if (uploadLoading()) { Uploading… } @else { Upload }
+              </button>
+            </div>
+            @if (uploadSuccess()) {
+              <p class="upload-feedback upload-ok">✓ {{ uploadSuccess() }}</p>
+            }
+            @if (uploadError()) {
+              <p class="upload-feedback upload-err">{{ uploadError() }}</p>
+            }
+          </div>
+
           <button mat-stroked-button color="warn" class="detail-delete"
                   (click)="deletePet(pet.id)">
             <mat-icon>delete</mat-icon>
