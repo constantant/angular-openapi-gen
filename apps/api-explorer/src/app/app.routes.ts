@@ -18,6 +18,16 @@ export const appRoutes: Route[] = [
       import('./pages/pets/pets-page').then((m) => m.PetsPageComponent),
   },
   {
+    path: 'store',
+    loadComponent: () =>
+      import('./pages/store/store-page').then((m) => m.StorePageComponent),
+  },
+  {
+    path: 'user',
+    loadComponent: () =>
+      import('./pages/user/user-page').then((m) => m.UserPageComponent),
+  },
+  {
     path: 'weather',
     loadComponent: () =>
       import('./pages/weather/weather-page').then((m) => m.WeatherPageComponent),

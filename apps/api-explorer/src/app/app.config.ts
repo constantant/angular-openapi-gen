@@ -15,10 +15,20 @@ import {
   provideReposListForUser,
 } from '@angular-openapi-gen/github-data-access';
 import {
+  PETSTORE_AUTH,
   PETSTORE_BASE_URL,
   provideFindPetsByStatus,
   provideAddPet,
   provideDeletePet,
+  provideGetInventory,
+  providePlaceOrder,
+  provideGetOrderById,
+  provideDeleteOrder,
+  provideLoginUser,
+  provideLogoutUser,
+  provideGetUserByName,
+  provideCreateUser,
+  provideDeleteUser,
 } from '@angular-openapi-gen/petstore-data-access';
 import {
   WEATHER_BASE_URL,
@@ -34,6 +44,12 @@ export const YOUTUBE_API_KEY = new InjectionToken<WritableSignal<string | null>>
   { providedIn: 'root', factory: () => signal(null) }
 );
 
+/** Writable handle for the Petstore session token. Provides PETSTORE_AUTH. */
+export const PETSTORE_SESSION = new InjectionToken<WritableSignal<string | null>>(
+  'PETSTORE_SESSION',
+  { providedIn: 'root', factory: () => signal(null) }
+);
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -44,11 +60,26 @@ export const appConfig: ApplicationConfig = {
     { provide: PETSTORE_BASE_URL, useValue: 'https://petstore.swagger.io/v2' },
     { provide: WEATHER_BASE_URL, useValue: 'https://api.open-meteo.com' },
     { provide: YOUTUBE_BASE_URL, useValue: 'https://youtube.googleapis.com' },
+    // PETSTORE_AUTH is provided by PETSTORE_SESSION so all pet/store/user
+    // tokens automatically forward the login session as a Bearer header.
+    { provide: PETSTORE_AUTH, useExisting: PETSTORE_SESSION },
     provideUsersGetByUsername(),
     provideReposListForUser(),
+    // Petstore — pet
     provideFindPetsByStatus(),
     provideAddPet(),
     provideDeletePet(),
+    // Petstore — store
+    provideGetInventory(),
+    providePlaceOrder(),
+    provideGetOrderById(),
+    provideDeleteOrder(),
+    // Petstore — user
+    provideLoginUser(),
+    provideLogoutUser(),
+    provideGetUserByName(),
+    provideCreateUser(),
+    provideDeleteUser(),
     provideGetV1Forecast(),
     provideYoutubeSearchList(),
   ],

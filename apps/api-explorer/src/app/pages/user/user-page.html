@@ -1,0 +1,147 @@
+<div class="page">
+  <h1>User</h1>
+
+  <!-- Session -->
+  <section class="section">
+    <h2 class="section-title">Session</h2>
+
+    @if (isLoggedIn()) {
+      <div class="session-row">
+        <span class="session-ok">
+          <mat-icon class="session-icon">verified_user</mat-icon>
+          Session active
+        </span>
+        <button mat-stroked-button (click)="logout()">Logout</button>
+      </div>
+    } @else {
+      <div class="form-row">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Username</mat-label>
+          <input matInput [value]="loginUsername()"
+                 (input)="loginUsername.set($any($event.target).value)"
+                 (keyup.enter)="login()" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" [value]="loginPassword()"
+                 (input)="loginPassword.set($any($event.target).value)"
+                 (keyup.enter)="login()" />
+        </mat-form-field>
+
+        <button mat-flat-button
+                [disabled]="!loginUsername().trim() || !loginPassword().trim() || loginLoading()"
+                (click)="login()">
+          @if (loginLoading()) { Logging in… } @else { Login }
+        </button>
+      </div>
+
+      @if (loginError()) {
+        <p class="feedback-err">{{ loginError() }}</p>
+      }
+    }
+  </section>
+
+  <mat-divider />
+
+  <!-- Find user -->
+  <section class="section">
+    <h2 class="section-title">Find User</h2>
+    <div class="form-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Username</mat-label>
+        <input matInput [value]="searchUsername()"
+               (input)="searchUsername.set($any($event.target).value)"
+               (keyup.enter)="searchUser()"
+               placeholder="e.g. user1" />
+      </mat-form-field>
+      <button mat-stroked-button [disabled]="!searchUsername().trim()" (click)="searchUser()">
+        Search
+      </button>
+    </div>
+
+    @defer (when foundUser() !== null) {
+      @if (foundUser(); as res) {
+        @if (res.isLoading()) {
+          <mat-progress-bar mode="indeterminate" />
+        } @else if (res.error()) {
+          <p class="state-msg">User not found.</p>
+        } @else if (res.value(); as user) {
+          <div class="user-card">
+            <div class="user-avatar">{{ (user.firstName?.[0] ?? user.username?.[0] ?? '?').toUpperCase() }}</div>
+            <div class="user-details">
+              @if (user.firstName || user.lastName) {
+                <div class="user-name">{{ user.firstName }} {{ user.lastName }}</div>
+              }
+              <div class="user-username">&#64;{{ user.username }}</div>
+              @if (user.email) {
+                <div class="user-meta">{{ user.email }}</div>
+              }
+              @if (user.phone) {
+                <div class="user-meta">{{ user.phone }}</div>
+              }
+            </div>
+            <button mat-icon-button color="warn"
+                    [disabled]="deletingUser()"
+                    (click)="deleteFoundUser()"
+                    matTooltip="Delete user">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        }
+      }
+    }
+  </section>
+
+  <mat-divider />
+
+  <!-- Create user -->
+  <section class="section">
+    <h2 class="section-title">Create User</h2>
+    <div class="create-grid">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Username *</mat-label>
+        <input matInput [value]="createUsername()"
+               (input)="createUsername.set($any($event.target).value)" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>First name</mat-label>
+        <input matInput [value]="createFirstName()"
+               (input)="createFirstName.set($any($event.target).value)" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Last name</mat-label>
+        <input matInput [value]="createLastName()"
+               (input)="createLastName.set($any($event.target).value)" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" [value]="createEmail()"
+               (input)="createEmail.set($any($event.target).value)" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" [value]="createPassword()"
+               (input)="createPassword.set($any($event.target).value)" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Phone</mat-label>
+        <input matInput type="tel" [value]="createPhone()"
+               (input)="createPhone.set($any($event.target).value)" />
+      </mat-form-field>
+    </div>
+    <div class="create-actions">
+      <button mat-flat-button
+              [disabled]="!createUsername().trim() || createLoading()"
+              (click)="submitCreate()">
+        @if (createLoading()) { Creating… } @else { Create User }
+      </button>
+      @if (createSuccess()) {
+        <span class="feedback-ok">User created.</span>
+      }
+      @if (createError()) {
+        <span class="feedback-err">{{ createError() }}</span>
+      }
+    </div>
+  </section>
+</div>
