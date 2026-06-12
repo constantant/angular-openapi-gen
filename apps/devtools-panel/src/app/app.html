@@ -11,11 +11,6 @@
           (click)="toggleCatchAll()">⏸ Catch All</button>
   <button mat-button (click)="bridge.clearAll()">Clear</button>
   <button mat-button (click)="bridge.resetAll()">Reset All</button>
-  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filter-field">
-    <input matInput placeholder="Filter…"
-           [value]="filter()"
-           (input)="filter.set($any($event.target).value)" />
-  </mat-form-field>
 </mat-toolbar>
 
 <nav mat-tab-nav-bar [tabPanel]="pagePanel" class="page-nav">
@@ -25,6 +20,13 @@
 
 <mat-tab-nav-panel #pagePanel class="page-body">
   @if (page() === 'mocks') {
+    <div class="mocks-filter">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filter-field">
+        <input matInput placeholder="Filter…"
+               [value]="filter()"
+               (input)="filter.set($any($event.target).value)" />
+      </mat-form-field>
+    </div>
     <div class="main">
       <app-mock-table [filter]="filter()" />
 
