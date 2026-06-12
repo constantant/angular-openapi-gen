@@ -19,6 +19,7 @@ import {
   provideFindPetsByStatusMock,
   provideAddPetMock,
   provideDeletePetMock,
+  provideUploadFileMock,
   provideGetInventoryMock,
   providePlaceOrderMock,
   provideGetOrderByIdMock,
@@ -79,6 +80,7 @@ export const appConfig: ApplicationConfig = {
       delay: 300,
     }),
     provideDeletePetMock({ value: undefined, delay: 200 }),
+    provideUploadFileMock({ value: { code: 200, type: 'unknown', message: 'File uploaded successfully' }, delay: 300 }),
 
     // Petstore — store
     provideGetInventoryMock({

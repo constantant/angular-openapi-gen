@@ -59,4 +59,63 @@ test.describe('Pets page (mock)', () => {
     await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').fail(new Error('500')));
     await expect(page.getByText('Failed to load pets')).toBeVisible();
   });
+
+  test('upload section is visible when a pet is selected', async ({ page }) => {
+    await expect(page.locator('mat-progress-bar')).toBeHidden();
+    await page.getByText('Rex').click();
+    await expect(page.locator('.detail-upload')).toBeVisible();
+  });
+
+  test('upload button is disabled until a file is chosen', async ({ page }) => {
+    await expect(page.locator('mat-progress-bar')).toBeHidden();
+    await page.getByText('Rex').click();
+    await expect(page.locator('.detail-upload')).toBeVisible();
+
+    const uploadBtn = page.locator('.detail-upload button[mat-flat-button]');
+    await expect(uploadBtn).toBeDisabled();
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'photo.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('fake-image'),
+    });
+
+    await expect(uploadBtn).toBeEnabled();
+  });
+
+  test('upload photo shows success feedback', async ({ page }) => {
+    await expect(page.locator('mat-progress-bar')).toBeHidden();
+    await page.getByText('Rex').click();
+    await expect(page.locator('.detail-upload')).toBeVisible();
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'photo.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('fake-image'),
+    });
+
+    await page.locator('.detail-upload button[mat-flat-button]').click();
+    await expect(page.locator('.upload-ok')).toBeVisible();
+    await expect(page.locator('.upload-ok')).toContainText('File uploaded successfully');
+  });
+
+  test('UPLOAD_FILE is called with the correct petId', async ({ page }) => {
+    await expect(page.locator('mat-progress-bar')).toBeHidden();
+    await page.getByText('Rex').click();
+    await expect(page.locator('.detail-upload')).toBeVisible();
+
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'photo.jpg',
+      mimeType: 'image/jpeg',
+      buffer: Buffer.from('fake-image'),
+    });
+
+    await page.locator('.detail-upload button[mat-flat-button]').click();
+    await expect(page.locator('.upload-ok')).toBeVisible();
+
+    const history = await page.evaluate(() => openApiMock('UPLOAD_FILE').getHistory());
+    const req = history.find((e: { type: string }) => e.type === 'request');
+    expect(req).toBeTruthy();
+    expect(req?.args[0]).toBe('1');
+  });
 });
