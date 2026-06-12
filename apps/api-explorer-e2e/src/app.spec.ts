@@ -10,6 +10,8 @@ test.describe('Navigation', () => {
     await expect(nav.getByRole('link', { name: 'Dashboard' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Repos' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Pets' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'Store' })).toBeVisible();
+    await expect(nav.getByRole('link', { name: 'User' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Weather' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'YouTube' })).toBeVisible();
   });
@@ -36,6 +38,16 @@ test.describe('Pages', () => {
   test('pets page loads with correct heading', async ({ page }) => {
     await page.goto('/pets');
     await expect(page.getByRole('heading', { name: /pets/i })).toBeVisible();
+  });
+
+  test('store page loads with correct heading', async ({ page }) => {
+    await page.goto('/store');
+    await expect(page.getByRole('heading', { name: 'Store' })).toBeVisible();
+  });
+
+  test('user page loads with correct heading', async ({ page }) => {
+    await page.goto('/user');
+    await expect(page.getByRole('heading', { name: 'User' })).toBeVisible();
   });
 
   test('weather page loads with correct heading', async ({ page }) => {

@@ -14,13 +14,32 @@ import {
   provideUsersGetByUsernameMock,
   provideReposListForUserMock,
 } from '@angular-openapi-gen/github-data-access/mock';
-import { provideFindPetsByStatusMock } from '@angular-openapi-gen/petstore-data-access/mock';
+import { PETSTORE_AUTH } from '@angular-openapi-gen/petstore-data-access';
+import {
+  provideFindPetsByStatusMock,
+  provideAddPetMock,
+  provideDeletePetMock,
+  provideGetInventoryMock,
+  providePlaceOrderMock,
+  provideGetOrderByIdMock,
+  provideDeleteOrderMock,
+  provideLoginUserMock,
+  provideLogoutUserMock,
+  provideGetUserByNameMock,
+  provideCreateUserMock,
+  provideDeleteUserMock,
+} from '@angular-openapi-gen/petstore-data-access/mock';
 import { provideGetV1ForecastMock } from '@angular-openapi-gen/weather-data-access/mock';
 import { provideYoutubeSearchListMock } from '@angular-openapi-gen/youtube-data-access/mock';
 
 export const YOUTUBE_API_KEY = new InjectionToken<WritableSignal<string | null>>(
   'YOUTUBE_API_KEY',
   { providedIn: 'root', factory: () => signal('mock-api-key') },
+);
+
+export const PETSTORE_SESSION = new InjectionToken<WritableSignal<string | null>>(
+  'PETSTORE_SESSION',
+  { providedIn: 'root', factory: () => signal(null) },
 );
 
 export const appConfig: ApplicationConfig = {
@@ -30,6 +49,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     provideHttpClient(withFetch()),
     provideMockResourceBus(),
+    { provide: PETSTORE_AUTH, useExisting: PETSTORE_SESSION },
 
     provideUsersGetByUsernameMock({
       value: { login: 'angular', name: 'Angular', public_repos: 300 },
@@ -45,14 +65,45 @@ export const appConfig: ApplicationConfig = {
       delay: 500,
     }),
 
+    // Petstore — pet
     provideFindPetsByStatusMock({
       value: [
-        { id: 1, name: 'Rex', status: 'available', photoUrls: [] },
-        { id: 2, name: 'Luna', status: 'available', photoUrls: [] },
-        { id: 3, name: 'Buddy', status: 'available', photoUrls: [] },
+        { id: 1, name: 'Rex', status: 'available', photoUrls: [], category: { id: 1, name: 'Dogs' }, tags: [{ id: 1, name: 'friendly' }] },
+        { id: 2, name: 'Luna', status: 'available', photoUrls: [], category: { id: 1, name: 'Dogs' } },
+        { id: 3, name: 'Buddy', status: 'available', photoUrls: [], category: { id: 2, name: 'Cats' } },
       ],
       delay: 500,
     }),
+    provideAddPetMock({
+      value: { id: 99, name: 'New Pet', status: 'available', photoUrls: [] },
+      delay: 300,
+    }),
+    provideDeletePetMock({ value: undefined, delay: 200 }),
+
+    // Petstore — store
+    provideGetInventoryMock({
+      value: { available: 142, pending: 8, sold: 23 },
+      delay: 400,
+    }),
+    providePlaceOrderMock({
+      value: { id: 100, petId: 5, quantity: 1, status: 'placed', complete: false },
+      delay: 300,
+    }),
+    provideGetOrderByIdMock({
+      value: { id: 1, petId: 5, quantity: 2, status: 'placed', shipDate: '2026-06-20T00:00:00.000Z', complete: false },
+      delay: 400,
+    }),
+    provideDeleteOrderMock({ value: undefined, delay: 200 }),
+
+    // Petstore — user
+    provideLoginUserMock({ value: 'logged-in-user session:mocktoken123', delay: 300 }),
+    provideLogoutUserMock({ value: undefined, delay: 200 }),
+    provideGetUserByNameMock({
+      value: { id: 1, username: 'john', firstName: 'John', lastName: 'Doe', email: 'john@example.com', phone: '555-1234', userStatus: 1 },
+      delay: 400,
+    }),
+    provideCreateUserMock({ value: {}, delay: 300 }),
+    provideDeleteUserMock({ value: undefined, delay: 200 }),
 
     provideGetV1ForecastMock({
       value: {
@@ -64,6 +115,7 @@ export const appConfig: ApplicationConfig = {
           temperature_2m_max: [22, 24, 19],
           temperature_2m_min: [13, 15, 11],
           precipitation_sum: [0, 0.5, 8],
+          weather_code: [0, 3, 61],
         },
       },
       delay: 500,
