@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0 (2026-06-13)
+
+### 🚀 Features
+
+- **devtools-panel:** move key filter into Mocks tab ([846e981](https://github.com/constantant/angular-openapi-gen/commit/846e981579160b9d72edb2c969d7c85f07aa5889))
+
+### 🩹 Bug Fixes
+
+- **openapi-resource-mocks:** sanitize FormData/File/Blob args before DOM dispatch ([7609660](https://github.com/constantant/angular-openapi-gen/commit/7609660a2b5561834dbb85c2e3678979877d0571))
+
 ## 0.6.0 (2026-06-12)
 
 ### 🚀 Features
