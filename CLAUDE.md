@@ -208,8 +208,8 @@ provideHttpClient(withInterceptors([myapiDigestAuthInterceptor])),
 5. `@apidevtools/swagger-parser` — dereference all `$ref` chains for endpoint extraction.
 6. `parseSecuritySchemes(api)` — extract security schemes into `SecuritySchemeModel[]`.
 7. `buildEndpoints(api, tags, convention)` — map each operation to `EndpointModel`.
-8. `renderTokenFile()` / `renderSecurityTokenFile()` — emit token files as strings.
-9. Stale file cleanup — delete any `.token.ts` / `.security-token.ts` files present before the run that weren't produced this run.
+8. `renderTokenFile()` / `renderSecurityTokenFile()` / `renderMockFile()` — emit token and mock files as strings.
+9. Stale file cleanup — snapshot `.token.ts`, `.security-token.ts`, `.mock.ts`, `mocks.manifest.json`, `index.ts`, and `index.mock.ts` files before the run; delete any that weren't produced this run.
 10. `@nx/devkit` `formatFiles()` — run Prettier over all written files.
 
 ### Schema inputs (`schema.json`)
@@ -223,7 +223,8 @@ provideHttpClient(withInterceptors([myapiDigestAuthInterceptor])),
   "namingConvention":"camel | kebab (default: kebab for filenames, SCREAMING_SNAKE for token names)",
   "providedIn":      "none | root (default: none)",
   "includeMocks":    "true | false (default: false) — emit *.mock.ts alongside each *.token.ts",
-  "specId":          "string — embedded in MockResourceMeta._meta; must match the specId used when importing the spec into the DevTools panel"
+  "specId":          "string — embedded in MockResourceMeta._meta; must match the specId used when importing the spec into the DevTools panel",
+  "verbose":         "true | false (default: false) — print +/~/- summary of created/updated/deleted files after generation"
 }
 ```
 
@@ -484,7 +485,11 @@ Conventional Commits PR title (it becomes the squash commit). See
 | Security tokens — digest | `InjectionToken<HttpInterceptorFn>` + named host-scoped interceptor | Challenge-response at HTTP layer; base URL token prevents cross-API interceptor conflicts |
 | Remote spec URL | `specPath` accepts `http://`/`https://` URLs — downloads to a temp file, then processes identically to local files | Eliminates the `curl` pre-step; temp file is cleaned up in the `finally` block regardless of success/failure |
 | Header params | `in: header` params become named string args (required or optional), rendered into a `headers` block alongside auth scheme headers | Consistent with how path params are surfaced; keeps the public API surface explicit and typed |
-| Stale file cleanup | Before generation, snapshot existing `.token.ts`/`.security-token.ts` files; after generation, delete any that weren't produced this run | Prevents phantom exports when endpoints are removed or `tagFilter` narrows the output |
+| Cookie params | `in: cookie` params become named string args (after header params) and are combined into a single `Cookie` header using `[...].join('; ')`; optional cookies use a conditional spread | Cookie params work in SSR (Node HttpClient); browser Cookie header is a forbidden header — document that constraint at usage time rather than in the type |
+| `@deprecated` JSDoc | Generator emits `/** @deprecated */` above the `InjectionToken` constant when `operation.deprecated === true` in the spec | TypeScript deprecation warning at the inject() call site; no runtime cost |
+| Response type unions | Generator collects all 2xx codes with `application/json` content (not just the first); emits a `\|`-union type alias when multiple codes exist | Some endpoints legitimately return 200 (update) or 201 (create) with different shapes; a union preserves that information instead of silently picking one |
+| Binary body | When `requestBody` has no json/form/multipart content type (e.g. `application/octet-stream`, `image/*`), the generated `Body` type alias is `Blob \| ArrayBuffer` instead of the `paths` chain | `paths[...]['requestBody']['content']['application/octet-stream']` would be `string \| Blob` from openapi-typescript — not useful for Angular's `HttpClient` which needs the actual binary object |
+| Stale file cleanup | Before generation, snapshot `.token.ts`, `.security-token.ts`, `.mock.ts`, `mocks.manifest.json`, `index.ts`, and `index.mock.ts` files; after generation, delete any that weren't produced this run | Prevents phantom exports when endpoints are removed or `tagFilter` narrows the output; including barrel files ensures orphaned tag folders (with their `index.ts`) are also removed |
 | Nx executor | `@constantant/openapi-resource-gen:generate` executor wraps the generator so users can declare a `generate` target in `project.json` | `nx run mylib:generate` is easier to remember and can be wired into CI; uses `FsTree`+`flushChanges` from `nx/src/generators/tree` (not in `@nx/devkit` public API) |
 | Lint cache invalidation | `@nx/eslint:lint` has an `externalDependencies` input listing the ESLint plugin packages (`eslint`, `angular-eslint`, `typescript-eslint`, `@eslint/js`, …) in `nx.json` | A rule-strengthening dependency bump (e.g. an `angular-eslint` major) must re-lint against current source, not return a stale cached "pass". Without this, the angular-eslint 22 upgrade merged green while leaving `master` failing `prefer-on-push-component-change-detection` |
 | `includeMocks` + MockResourceMeta | Generator emits `*.mock.ts` alongside each `*.token.ts`; each mock file exports `_meta: MockResourceMeta` with `specId`, `operationId`, `path`, `method`, `tag` | DevTools panel needs this metadata to display operation info and match mock keys to spec entries |

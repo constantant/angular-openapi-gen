@@ -94,6 +94,7 @@ Re-run the generator command whenever your spec changes — it overwrites genera
 | `providedIn` | no | `none` | `none` (use `provideX()` helpers) or `root` (self-registering) |
 | `includeMocks` | no | `false` | Co-generate `.mock.ts` providers, `index.mock.ts` barrels, and `mocks.manifest.json` — requires `@constantant/openapi-resource-mocks` |
 | `specId` | no | derived | Identifier embedded in `MockResourceMeta` and `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match when importing into the DevTools panel. |
+| `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
 See [`tools/openapi-resource-gen/README.md`](tools/openapi-resource-gen/README.md) for full documentation.
 
@@ -148,6 +149,10 @@ Key properties of every generated file:
 - **Request suppression** — returning `undefined` from the lambda keeps the resource idle (no request)
 - **Scoped base URL** — each lib has its own `InjectionToken<string>` so different parts of an app can point at different environments
 - **Header params** — `in: header` parameters become named string args on the factory function and are merged into the `headers` object alongside any auth scheme headers
+- **Cookie params** — `in: cookie` parameters become named string args (after header params) and are combined into a single `Cookie` header value; optional cookies are conditionally included
+- **Binary body** — non-json/form/multipart request bodies (e.g. `application/octet-stream`, `image/*`) emit `Blob | ArrayBuffer` as the body type
+- **Response type unions** — when an endpoint returns multiple 2xx JSON response codes (e.g. 200 and 201), the generated `Response` type alias is a union of all of them
+- **`@deprecated` JSDoc** — operations marked `deprecated: true` in the spec emit `/** @deprecated */` above the token constant, surfacing the warning at every `inject()` call site
 - **Security tokens** — signal-based schemes (`bearer`, `basic`, `apiKey`) emit `InjectionToken<Signal<string | null>>`; `digest` schemes emit `InjectionToken<HttpInterceptorFn>` + a named, host-scoped interceptor that delegates only to requests matching the lib's base URL, preventing cross-API conflicts
 
 ---

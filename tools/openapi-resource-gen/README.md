@@ -88,6 +88,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `providedIn` | no | `none` | `none` or `root` — see table above |
 | `includeMocks` | no | `false` | Emit a `.mock.ts` per endpoint plus `index.mock.ts` barrels and a `mocks.manifest.json` — requires [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) |
 | `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
+| `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
 ---
 
@@ -218,8 +219,13 @@ are never accidentally bundled into a production build.
 
 ### Stale cleanup
 
-Re-running the generator without `--includeMocks` deletes any `.mock.ts` files from
-the previous run. Removing an endpoint from the spec also removes its `.mock.ts`.
+Re-running the generator cleans up any file it no longer produces. This includes:
+- `.token.ts` / `.mock.ts` for removed endpoints
+- `.security-token.ts` for removed security schemes
+- `{tag}/index.ts` / `{tag}/index.mock.ts` barrel files when all endpoints for a tag are removed (e.g. after narrowing `--tagFilter`)
+- `mocks.manifest.json` when `--includeMocks` is dropped
+
+Stale tag folders (left empty after their barrels are removed) are also deleted.
 
 ---
 
@@ -303,6 +309,42 @@ headers: {
 },
 ```
 
+### GET with cookie params
+
+`in: cookie` parameters become named string args placed after header params. Required
+cookies are required args; optional ones get `?`. All cookies for the endpoint are
+combined into a single `Cookie` header value at request time:
+
+```typescript
+export const GET_CURRENT_USER = new InjectionToken<
+  (session: string, theme?: string) => ReturnType<typeof httpResource<GetCurrentUserResponse>>
+>('GET_CURRENT_USER');
+```
+
+Inside the resource the cookie header is built as an array join, so absent optional
+cookies are not included:
+
+```typescript
+headers: {
+  Cookie: [`session=${session}`, ...(theme != null ? [`theme=${theme}`] : [])].join('; '),
+},
+```
+
+> **Browser note:** The `Cookie` header is a [forbidden header name](https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name) — browsers silently block it. Cookie params work correctly in Angular Universal / SSR (Node's `HttpClient` has no such restriction). For browser-only apps, set cookies via `document.cookie` before making the request and pass `withCredentials: true`.
+
+### Deprecated operations
+
+When the spec marks an operation with `deprecated: true`, the generator emits a
+`/** @deprecated */` JSDoc comment immediately above the token constant:
+
+```typescript
+/** @deprecated */
+export const OLD_ENDPOINT = new InjectionToken<...>('OLD_ENDPOINT');
+```
+
+TypeScript then surfaces the deprecation warning at every `inject(OLD_ENDPOINT)` call
+site with no runtime cost.
+
 ### Mutation (POST/PUT/PATCH/DELETE)
 
 The factory returns `(body: BodyType | Signal<BodyType>) => httpResource(...)`.
@@ -381,6 +423,38 @@ Pass a plain object. Angular's `HttpClient` URL-encodes it automatically — no
 const submitForm = inject(SUBMIT_FORM);
 readonly result = submitForm({ username: 'alice', password: 's3cr3t' });
 ```
+
+#### Binary / octet-stream body
+
+When the spec declares `application/octet-stream`, `image/*`, `application/pdf`, or
+any other non-JSON/form/multipart content type, the generated body type is
+`Blob | ArrayBuffer` rather than a `paths[...]` derivation:
+
+```typescript
+export type UploadBinaryBody = Blob | ArrayBuffer;
+
+export const UPLOAD_BINARY = new InjectionToken<
+  (body: UploadBinaryBody | Signal<UploadBinaryBody>)
+    => ReturnType<typeof httpResource<UploadBinaryResponse>>
+>('UPLOAD_BINARY');
+```
+
+Pass a `Blob`, `File`, or `ArrayBuffer` directly — `HttpClient` sends binary bodies
+as-is without any encoding step.
+
+### Response type unions
+
+When an endpoint can return JSON on multiple 2xx status codes (e.g. `200` for an
+update and `201` for a create), the generated `Response` type alias is a union:
+
+```typescript
+export type UpsertResourceResponse =
+  | paths['/resources']['put']['responses']['200']['content']['application/json']
+  | paths['/resources']['put']['responses']['201']['content']['application/json'];
+```
+
+The `httpResource<UpsertResourceResponse>` call site receives a value that is the
+union of all possible success shapes.
 
 ### Security schemes
 
