@@ -1,9 +1,10 @@
 # angular-openapi-gen
 
 [![CI](https://github.com/constantant/angular-openapi-gen/actions/workflows/ci.yml/badge.svg)](https://github.com/constantant/angular-openapi-gen/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/@constantant/openapi-resource-gen)](https://www.npmjs.com/package/@constantant/openapi-resource-gen)
+[![npm: openapi-resource-gen](https://img.shields.io/npm/v/@constantant/openapi-resource-gen?label=openapi-resource-gen)](https://www.npmjs.com/package/@constantant/openapi-resource-gen)
+[![npm: openapi-resource-mocks](https://img.shields.io/npm/v/@constantant/openapi-resource-mocks?label=openapi-resource-mocks)](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Angular 22+](https://img.shields.io/badge/Angular-22%2B-red)](https://angular.dev)
+[![Angular 22+](https://img.shields.io/badge/Angular-22%2B-dd0031?logo=angular&logoColor=white)](https://angular.dev)
 
 > **Requires Angular 22+ and Nx 22+.**
 > The generated code uses [`httpResource()`](https://angular.dev/guide/http/http-resource),
@@ -34,8 +35,7 @@ Because esbuild tree-shakes at file boundaries, any token you never `inject()` c
 
 ## The generator — `@constantant/openapi-resource-gen`
 
-Published on npm: **[`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen)**  
-Current version: **1.5.0**
+Published on npm: **[`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen)**
 
 ### Quick start
 
@@ -245,8 +245,7 @@ npx nx run petstore-data-access:generate
 
 ## Mock bus — `@constantant/openapi-resource-mocks`
 
-Published on npm: **[`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)**  
-Current version: **0.2.0**
+Published on npm: **[`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)**
 
 A companion package that provides zero-HTTP, pure-DI mocks for generated tokens. Key features:
 
@@ -261,7 +260,7 @@ See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/READ
 
 ## Chrome DevTools Extension — OpenAPI Resource Mocks DevTools
 
-Current version: **0.3.2** | Status: pending Chrome Web Store review
+Current version: **0.6.0** | Status: pending Chrome Web Store review
 
 A Chrome DevTools panel that connects to any Angular app running `@constantant/openapi-resource-mocks`. It lists every registered mock token, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code. The **Specs** tab lets you import a `mocks.manifest.json` or full OpenAPI spec to enable schema-aware features in the Respond tab: auto-generated example payloads (⚡ Example) and JSON schema validation (✓ Validate).
 

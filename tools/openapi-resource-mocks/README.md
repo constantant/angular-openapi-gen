@@ -1,5 +1,7 @@
 # @constantant/openapi-resource-mocks
 
+[![npm](https://img.shields.io/npm/v/@constantant/openapi-resource-mocks)](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)
+
 Mock bus for [`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen) tokens.
 
 Provides zero-HTTP, pure-DI mocks for Angular `InjectionToken`-based data-access libs — with a cross-boundary API so **Playwright E2E tests** and a future **Chrome Extension devtools panel** can observe and control every token's state from outside the Angular context.
