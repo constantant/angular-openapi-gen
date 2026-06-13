@@ -3,9 +3,7 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
-export type ReposUploadReleaseAssetBody = NonNullable<
-  paths['/repos/{owner}/{repo}/releases/{release_id}/assets']['post']['requestBody']
->['content']['application/octet-stream'];
+export type ReposUploadReleaseAssetBody = Blob | ArrayBuffer;
 
 export type ReposUploadReleaseAssetResponse =
   paths['/repos/{owner}/{repo}/releases/{release_id}/assets']['post']['responses']['201']['content']['application/json'];

@@ -4,9 +4,7 @@ import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
-export type UploadFileBody = NonNullable<
-  paths['/pet/{petId}/uploadImage']['post']['requestBody']
->['content']['application/octet-stream'];
+export type UploadFileBody = Blob | ArrayBuffer;
 
 export type UploadFileResponse =
   paths['/pet/{petId}/uploadImage']['post']['responses']['200']['content']['application/json'];

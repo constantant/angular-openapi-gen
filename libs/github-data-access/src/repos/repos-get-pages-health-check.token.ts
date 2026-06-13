@@ -4,7 +4,8 @@ import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export type ReposGetPagesHealthCheckResponse =
-  paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['200']['content']['application/json'];
+  | paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['200']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['202']['content']['application/json'];
 
 export const REPOS_GET_PAGES_HEALTH_CHECK = new InjectionToken<
   (

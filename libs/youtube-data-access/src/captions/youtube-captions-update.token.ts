@@ -5,9 +5,7 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
-export type YoutubeCaptionsUpdateBody = NonNullable<
-  paths['/youtube/v3/captions']['put']['requestBody']
->['content']['application/octet-stream'];
+export type YoutubeCaptionsUpdateBody = Blob | ArrayBuffer;
 
 export type YoutubeCaptionsUpdateResponse =
   paths['/youtube/v3/captions']['put']['responses']['200']['content']['application/json'];

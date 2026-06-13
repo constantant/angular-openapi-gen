@@ -5,9 +5,7 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
-export type YoutubeWatermarksSetBody = NonNullable<
-  paths['/youtube/v3/watermarks/set']['post']['requestBody']
->['content']['application/octet-stream'];
+export type YoutubeWatermarksSetBody = Blob | ArrayBuffer;
 
 export const YOUTUBE_WATERMARKS_SET = new InjectionToken<
   (

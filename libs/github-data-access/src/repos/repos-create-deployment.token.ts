@@ -8,7 +8,8 @@ export type ReposCreateDeploymentBody = NonNullable<
 >['content']['application/json'];
 
 export type ReposCreateDeploymentResponse =
-  paths['/repos/{owner}/{repo}/deployments']['post']['responses']['201']['content']['application/json'];
+  | paths['/repos/{owner}/{repo}/deployments']['post']['responses']['201']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/deployments']['post']['responses']['202']['content']['application/json'];
 
 export const REPOS_CREATE_DEPLOYMENT = new InjectionToken<
   (

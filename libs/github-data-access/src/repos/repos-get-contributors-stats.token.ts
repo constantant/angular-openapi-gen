@@ -4,7 +4,8 @@ import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export type ReposGetContributorsStatsResponse =
-  paths['/repos/{owner}/{repo}/stats/contributors']['get']['responses']['200']['content']['application/json'];
+  | paths['/repos/{owner}/{repo}/stats/contributors']['get']['responses']['200']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/stats/contributors']['get']['responses']['202']['content']['application/json'];
 
 export const REPOS_GET_CONTRIBUTORS_STATS = new InjectionToken<
   (
