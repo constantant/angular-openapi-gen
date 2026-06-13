@@ -173,15 +173,18 @@ export async function apiResourceGenerator(
         .filter(Boolean)
     : null;
 
-  // Snapshot which token/security/mock files already exist so we can delete stale
-  // ones that this run no longer produces.
+  // Snapshot which generated files already exist so we can delete stale ones.
+  // Includes barrel index files: a tag folder whose tokens are all removed leaves
+  // behind an orphaned index.ts otherwise.
   const preExistingFiles = new Set(
     collectTreeFiles(tree, outputDir).filter(
       (f) =>
         f.endsWith('.token.ts') ||
         f.endsWith('.security-token.ts') ||
         f.endsWith('.mock.ts') ||
-        f.endsWith('mocks.manifest.json'),
+        f.endsWith('mocks.manifest.json') ||
+        f.endsWith('/index.ts') ||
+        f.endsWith('/index.mock.ts'),
     ),
   );
 
@@ -314,7 +317,9 @@ export async function apiResourceGenerator(
         tagEndpoints
           .map((ep) => `export * from './${ep.fileName}.token';`)
           .join('\n') + '\n';
-      tree.write(joinPathFragments(tagDir, 'index.ts'), tagBarrel);
+      const tagBarrelPath = joinPathFragments(tagDir, 'index.ts');
+      tree.write(tagBarrelPath, tagBarrel);
+      writtenFiles.add(tagBarrelPath);
 
       if (includeMocks) {
         const mockBarrelPath = joinPathFragments(tagDir, 'index.mock.ts');
@@ -332,7 +337,9 @@ export async function apiResourceGenerator(
       `export * from './api-base-url.token';\n` +
       securitySchemes.map((s) => `export * from './${s.fileName}';\n`).join('') +
       [...byTag.keys()].map((tag) => `export * from './${tag}';\n`).join('');
-    tree.write(joinPathFragments(outputDir, 'index.ts'), rootBarrel);
+    const rootBarrelPath = joinPathFragments(outputDir, 'index.ts');
+    tree.write(rootBarrelPath, rootBarrel);
+    writtenFiles.add(rootBarrelPath);
 
     if (includeMocks) {
       const rootMockBarrel =

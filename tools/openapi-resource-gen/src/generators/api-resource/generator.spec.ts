@@ -242,6 +242,61 @@ describe('api-resource generator', () => {
   });
 
   describe('stale file cleanup', () => {
+    it('deletes orphaned tag index.ts when all tokens for that tag are removed', async () => {
+      // First run: two tags — pets and orders.
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets': {
+            get: {
+              operationId: 'listPets',
+              tags: ['pets'],
+              parameters: [{ in: 'query', name: 'limit', schema: { type: 'integer' } }],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+          '/orders': {
+            get: {
+              operationId: 'listOrders',
+              tags: ['orders'],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/barrel-cleanup/src',
+      });
+
+      expect(tree.exists('libs/barrel-cleanup/src/pets/index.ts')).toBe(true);
+      expect(tree.exists('libs/barrel-cleanup/src/orders/index.ts')).toBe(true);
+
+      // Second run: orders tag is gone (tagFilter to pets only).
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets': {
+            get: {
+              operationId: 'listPets',
+              tags: ['pets'],
+              parameters: [{ in: 'query', name: 'limit', schema: { type: 'integer' } }],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/barrel-cleanup/src',
+        tagFilter: 'pets',
+      });
+
+      expect(tree.exists('libs/barrel-cleanup/src/pets/index.ts')).toBe(true);
+      // Orphaned barrel must be removed — it previously referenced files that no longer exist.
+      expect(tree.exists('libs/barrel-cleanup/src/orders/index.ts')).toBe(false);
+    });
+
     it('deletes token files that are no longer generated on re-run', async () => {
       // First run: generates listPets + getPetById (no POST, no DELETE).
       vi.mocked(SwaggerParser.dereference).mockResolvedValue({
