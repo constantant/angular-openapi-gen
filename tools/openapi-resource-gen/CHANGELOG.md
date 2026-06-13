@@ -1,3 +1,26 @@
+## 1.7.0 (2026-06-13)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** deprecated JSDoc, response unions, binary body, cookie params, verbose flag ([fde6863](https://github.com/constantant/angular-openapi-gen/commit/fde6863))
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** delete orphaned tag index.ts barrels on stale cleanup ([7d3b2c3](https://github.com/constantant/angular-openapi-gen/commit/7d3b2c3))
+
+### 📖 Documentation
+
+- document new generator features and stale-cleanup fix ([e992bb3](https://github.com/constantant/angular-openapi-gen/commit/e992bb3))
+
+### 🧱 Updated Dependencies
+
+- Updated openapi-resource-mocks to 0.4.0
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.6.0 (2026-06-10)
 
 ### 🚀 Features

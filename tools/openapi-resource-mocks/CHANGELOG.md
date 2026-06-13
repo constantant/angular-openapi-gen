@@ -1,3 +1,18 @@
+## 0.4.0 (2026-06-13)
+
+### 🩹 Fixes
+
+- **openapi-resource-mocks:** sanitize FormData/File/Blob args before DOM dispatch ([7609660](https://github.com/constantant/angular-openapi-gen/commit/7609660))
+
+### 📖 Documentation
+
+- fix badge coverage and stale version numbers ([290ea7f](https://github.com/constantant/angular-openapi-gen/commit/290ea7f))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 0.3.0 (2026-06-10)
 
 ### 🚀 Features
