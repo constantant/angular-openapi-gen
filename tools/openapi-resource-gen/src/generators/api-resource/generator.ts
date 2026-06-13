@@ -37,6 +37,8 @@ export interface ApiResourceGeneratorSchema {
   includeMocks?: boolean;
   /** Identifier embedded in MockResourceMeta and mocks.manifest.json. */
   specId?: string;
+  /** Print a summary of created, updated, and deleted files after generation. */
+  verbose?: boolean;
 }
 
 /** Derive a specId from the baseUrlToken: PETSTORE_BASE_URL → petstore */
@@ -377,6 +379,19 @@ export async function apiResourceGenerator(
   }
 
   await formatFiles(tree);
+
+  if (options.verbose) {
+    const changes = tree.listChanges();
+    const created = changes.filter((c) => c.type === 'CREATE');
+    const updated = changes.filter((c) => c.type === 'UPDATE');
+    const deleted = changes.filter((c) => c.type === 'DELETE');
+    const summary: string[] = ['\n[openapi-resource-gen] Generation complete:'];
+    if (created.length) summary.push(...created.map((c) => `  + ${c.path}`));
+    if (updated.length) summary.push(...updated.map((c) => `  ~ ${c.path}`));
+    if (deleted.length) summary.push(...deleted.map((c) => `  - ${c.path}`));
+    if (!created.length && !updated.length && !deleted.length) summary.push('  (no changes)');
+    console.log(summary.join('\n'));
+  }
 }
 
 export default apiResourceGenerator;

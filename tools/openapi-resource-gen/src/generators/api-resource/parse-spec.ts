@@ -10,6 +10,13 @@ const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
   OpenAPIV3.HttpMethods.DELETE,
 ];
 
+/** Content types that Angular's HttpClient handles natively (no special body wrapping). */
+const KNOWN_BODY_CONTENT_TYPES = [
+  'application/json',
+  'application/x-www-form-urlencoded',
+  'multipart/form-data',
+];
+
 export function toScreamingSnake(str: string): string {
   return str
     .replace(/\//g, '_')
@@ -111,6 +118,10 @@ export function buildEndpoints(
         .filter((p) => p.in === 'header')
         .map((p) => ({ name: p.name, required: p.required === true }));
 
+      const cookieParams = allParams
+        .filter((p) => p.in === 'cookie')
+        .map((p) => ({ name: p.name, required: p.required === true }));
+
       const hasQueryParams = allParams.some((p) => p.in === 'query');
 
       // Operation-level security overrides global; [] means explicitly no security.
@@ -127,19 +138,16 @@ export function buildEndpoints(
         | OpenAPIV3.RequestBodyObject
         | undefined;
       const bodyContent = requestBody?.content ?? {};
-      const BODY_CONTENT_TYPES = [
-        'application/json',
-        'application/x-www-form-urlencoded',
-        'multipart/form-data',
-      ];
       const bodyContentType =
-        BODY_CONTENT_TYPES.find((ct) => bodyContent[ct]) ??
+        KNOWN_BODY_CONTENT_TYPES.find((ct) => bodyContent[ct]) ??
         Object.keys(bodyContent)[0] ??
         null;
       const hasBody = bodyContentType !== null;
+      // Binary: any content type not in the known set (e.g. octet-stream, pdf, image/*).
+      const isBinaryBody =
+        bodyContentType !== null && !KNOWN_BODY_CONTENT_TYPES.includes(bodyContentType);
 
-      // Pick the first 2xx response code that carries application/json content.
-      // Covers 200, 201, 202, 206, and the catch-all '2XX' used by some specs.
+      // Collect ALL 2xx response codes that carry application/json, in priority order.
       const RESPONSE_PRIORITY = ['200', '201', '202', '206', '2XX', '203', '207', '208', '226'];
       const allResponseCodes = Object.keys(operation.responses ?? {});
       const orderedCodes = [
@@ -148,12 +156,13 @@ export function buildEndpoints(
           (c) => !RESPONSE_PRIORITY.includes(c) && /^2/.test(c)
         ),
       ];
-      const responseStatus =
-        orderedCodes.find((code) => {
-          const obj = operation.responses?.[code] as OpenAPIV3.ResponseObject | undefined;
-          return obj?.content?.['application/json'] != null;
-        }) ?? null;
-      const hasResponse = responseStatus !== null;
+      const responseStatuses = orderedCodes.filter((code) => {
+        const obj = operation.responses?.[code] as OpenAPIV3.ResponseObject | undefined;
+        return obj?.content?.['application/json'] != null;
+      });
+      const hasResponse = responseStatuses.length > 0;
+
+      const deprecated = operation.deprecated === true;
 
       endpoints.push({
         tag: toKebabCase(tag),
@@ -162,13 +171,16 @@ export function buildEndpoints(
         apiPath,
         pathParams,
         headerParams,
+        cookieParams,
         tokenName,
         fileName,
         hasQueryParams,
         hasBody,
         hasResponse,
-        responseStatus,
+        responseStatuses,
         bodyContentType,
+        isBinaryBody,
+        deprecated,
         securitySchemeNames,
       });
     }

@@ -78,7 +78,8 @@ export function renderTokenFile(
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
   const isGet = ep.method === 'get';
-  const { responseStatus } = ep;
+  const { responseStatuses } = ep;
+  const hasResponse = responseStatuses.length > 0;
 
   const applicableSchemes = ep.securitySchemeNames
     .map((name) => schemesByName.get(name))
@@ -102,7 +103,6 @@ export function renderTokenFile(
   lines.push('');
 
   // Exported type aliases sourced directly from the generated paths type.
-  // NonNullable<> guards optional requestBody fields that are typed as T | undefined.
   if (isGet && ep.hasQueryParams) {
     lines.push(
       `export type ${pascal}Params =`,
@@ -111,23 +111,43 @@ export function renderTokenFile(
     );
   }
   if (!isGet && ep.hasBody && ep.bodyContentType) {
-    lines.push(
-      `export type ${pascal}Body =`,
-      `  NonNullable<paths['${ep.apiPath}']['${ep.method}']['requestBody']>['content']['${ep.bodyContentType}'];`,
-      ''
-    );
+    if (ep.isBinaryBody) {
+      // Binary content (octet-stream, pdf, image/*…): use Blob | ArrayBuffer directly.
+      // openapi-typescript types binary schemas as string | Blob which isn't useful here.
+      lines.push(`export type ${pascal}Body = Blob | ArrayBuffer;`, '');
+    } else {
+      lines.push(
+        `export type ${pascal}Body =`,
+        `  NonNullable<paths['${ep.apiPath}']['${ep.method}']['requestBody']>['content']['${ep.bodyContentType}'];`,
+        ''
+      );
+    }
   }
-  if (responseStatus) {
-    lines.push(
-      `export type ${pascal}Response =`,
-      `  paths['${ep.apiPath}']['${ep.method}']['responses']['${responseStatus}']['content']['application/json'];`,
-      ''
-    );
+  if (hasResponse) {
+    if (responseStatuses.length === 1) {
+      lines.push(
+        `export type ${pascal}Response =`,
+        `  paths['${ep.apiPath}']['${ep.method}']['responses']['${responseStatuses[0]}']['content']['application/json'];`,
+        ''
+      );
+    } else {
+      // Union across all 2xx JSON response codes.
+      lines.push(`export type ${pascal}Response =`);
+      for (const code of responseStatuses) {
+        lines.push(
+          `  | paths['${ep.apiPath}']['${ep.method}']['responses']['${code}']['content']['application/json']`
+        );
+      }
+      lines.push('');
+    }
   }
 
-  const responseT = responseStatus ? `${pascal}Response` : 'unknown';
+  const responseT = hasResponse ? `${pascal}Response` : 'unknown';
   const fnArgs = buildFnArgs(ep, pascal, isGet);
 
+  if (ep.deprecated) {
+    lines.push('/** @deprecated */');
+  }
   lines.push(
     `export const ${ep.tokenName} = new InjectionToken<`,
     `  (${fnArgs}) => ReturnType<typeof httpResource<${responseT}>>`,
@@ -248,7 +268,8 @@ function appendResourceOptions(
   }
 
   const hasHeaderParams = ep.headerParams.length > 0;
-  if (headerSchemes.length > 0 || hasHeaderParams) {
+  const hasCookieParams = ep.cookieParams.length > 0;
+  if (headerSchemes.length > 0 || hasHeaderParams || hasCookieParams) {
     lines.push(`${indent}headers: {`);
     // Explicit header params from the spec (e.g. X-Api-Version, Accept-Language)
     for (const h of ep.headerParams) {
@@ -258,6 +279,17 @@ function appendResourceOptions(
       } else {
         lines.push(`${indent}  ...(${varName} != null ? { ${JSON.stringify(h.name)}: ${varName} } : {}),`);
       }
+    }
+    // Cookie params combined into a single Cookie header value.
+    // Required cookies: `name=value`; optional cookies: spread into array if non-null.
+    if (hasCookieParams) {
+      const cookieParts = ep.cookieParams.map((c) => {
+        const v = toCamelCase(c.name);
+        return c.required
+          ? `\`${c.name}=\${${v}}\``
+          : `...(${v} != null ? [\`${c.name}=\${${v}}\`] : [])`;
+      });
+      lines.push(`${indent}  'Cookie': [${cookieParts.join(', ')}].join('; '),`);
     }
     // Auth scheme headers (signal-based, always optional)
     for (const s of headerSchemes) {
@@ -269,10 +301,13 @@ function appendResourceOptions(
 }
 
 function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean): string {
-  // Order: required path params, required header params, optional header params, query params / body
+  // Order: required path params, header params, cookie params, query params / body
   const args: string[] = ep.pathParams.map((p) => `${toCamelCase(p)}: string`);
   for (const h of ep.headerParams) {
     args.push(h.required ? `${toCamelCase(h.name)}: string` : `${toCamelCase(h.name)}?: string`);
+  }
+  for (const c of ep.cookieParams) {
+    args.push(c.required ? `${toCamelCase(c.name)}: string` : `${toCamelCase(c.name)}?: string`);
   }
   if (isGet && ep.hasQueryParams)
     args.push(`params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);

@@ -396,6 +396,210 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('deprecated operations', () => {
+    it('emits /** @deprecated */ JSDoc on a deprecated token', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/old-resource': {
+            get: {
+              operationId: 'legacyGet',
+              tags: ['legacy'],
+              deprecated: true,
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/deprecated/src',
+      });
+      const content = tree.read('libs/deprecated/src/legacy/legacy-get.token.ts', 'utf-8')!;
+      expect(content).toContain('/** @deprecated */');
+    });
+
+    it('does NOT emit @deprecated for a non-deprecated operation', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/not-deprecated/src',
+      });
+      const content = tree.read('libs/not-deprecated/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).not.toContain('@deprecated');
+    });
+  });
+
+  describe('response type unions', () => {
+    it('emits a union type when an endpoint returns 200 and 201 JSON responses', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/resources': {
+            put: {
+              operationId: 'upsertResource',
+              tags: ['resources'],
+              requestBody: { content: { 'application/json': { schema: {} } } },
+              responses: {
+                '200': { content: { 'application/json': { schema: {} } } },
+                '201': { content: { 'application/json': { schema: {} } } },
+              },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/union/src',
+      });
+      const content = tree.read('libs/union/src/resources/upsert-resource.token.ts', 'utf-8')!;
+      expect(content).toContain("['responses']['200']['content']['application/json']");
+      expect(content).toContain("['responses']['201']['content']['application/json']");
+      // The union pipe character should appear in the type definition
+      expect(content).toMatch(/\|\s*paths\[/);
+    });
+
+    it('emits a single type when only one 2xx JSON response exists', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/single-resp/src',
+      });
+      const content = tree.read('libs/single-resp/src/pets/list-pets.token.ts', 'utf-8')!;
+      // Single status — no leading pipe in the type alias line
+      expect(content).toContain("export type ListPetsResponse =");
+      expect(content).toContain("['responses']['200']");
+      expect(content).not.toMatch(/export type ListPetsResponse =\s*\|/);
+    });
+  });
+
+  describe('binary body', () => {
+    it('emits Blob | ArrayBuffer for octet-stream request body', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/upload': {
+            post: {
+              operationId: 'uploadBinary',
+              tags: ['upload'],
+              requestBody: {
+                content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
+              },
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/binary/src',
+      });
+      const content = tree.read('libs/binary/src/upload/upload-binary.token.ts', 'utf-8')!;
+      expect(content).toContain('Blob | ArrayBuffer');
+      // Must NOT reference the paths type for the body (would be wrong for binary)
+      expect(content).not.toContain("['requestBody']['content']['application/octet-stream']");
+    });
+
+    it('does not emit binary body type for standard json body', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/json-body/src',
+      });
+      const content = tree.read('libs/json-body/src/pets/create-pet.token.ts', 'utf-8')!;
+      expect(content).not.toContain('Blob | ArrayBuffer');
+      // Prettier may split the long path across lines, so check the key parts separately
+      expect(content).toContain("requestBody']");
+      expect(content).toContain("['content']['application/json']");
+    });
+  });
+
+  describe('cookie parameters', () => {
+    it('adds required cookie param as a required function arg and Cookie header', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/me': {
+            get: {
+              operationId: 'getCurrentUser',
+              tags: ['user'],
+              parameters: [
+                { in: 'cookie', name: 'session', required: true, schema: { type: 'string' } },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/cookies/src',
+      });
+      const content = tree.read('libs/cookies/src/user/get-current-user.token.ts', 'utf-8')!;
+      expect(content).toContain('session: string');
+      // Prettier strips quotes from valid identifier keys: 'Cookie' → Cookie
+      expect(content).toContain('Cookie:');
+      expect(content).toContain('session=');
+    });
+
+    it('adds optional cookie param with conditional spread in Cookie header', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/prefs': {
+            get: {
+              operationId: 'getPreferences',
+              tags: ['prefs'],
+              parameters: [
+                { in: 'cookie', name: 'theme', required: false, schema: { type: 'string' } },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/cookies-opt/src',
+      });
+      const content = tree.read('libs/cookies-opt/src/prefs/get-preferences.token.ts', 'utf-8')!;
+      expect(content).toContain('theme?: string');
+      // Prettier strips quotes from valid identifier keys: 'Cookie' → Cookie
+      expect(content).toContain('Cookie:');
+      // Optional cookie uses the conditional spread pattern
+      expect(content).toContain('theme != null');
+    });
+  });
+
+  describe('verbose output', () => {
+    it('prints a file summary when verbose is true', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      try {
+        await apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/verbose/src',
+          verbose: true,
+        });
+        expect(consoleSpy).toHaveBeenCalled();
+        const output = consoleSpy.mock.calls.flat().join('\n');
+        expect(output).toContain('[openapi-resource-gen]');
+        expect(output).toContain('+');
+      } finally {
+        consoleSpy.mockRestore();
+      }
+    });
+
+    it('does not print anything when verbose is false', async () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      try {
+        await apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/quiet/src',
+        });
+        expect(consoleSpy).not.toHaveBeenCalled();
+      } finally {
+        consoleSpy.mockRestore();
+      }
+    });
+  });
+
   describe('descriptive errors', () => {
     it('error message for missing openapi field includes version guidance', () => {
       // Verify the error text is descriptive before we even hit SwaggerParser.

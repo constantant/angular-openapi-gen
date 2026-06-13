@@ -43,6 +43,11 @@
     "specId": {
       "type": "string",
       "description": "Identifier for this API spec, embedded in MockResourceMeta and mocks.manifest.json. Defaults to baseUrlToken lowercased with _BASE_URL stripped (e.g. PETSTORE_BASE_URL → petstore)."
+    },
+    "verbose": {
+      "type": "boolean",
+      "default": false,
+      "description": "Print a summary of created, updated, and deleted files after generation."
     }
   },
   "required": ["specPath", "outputDir"]
