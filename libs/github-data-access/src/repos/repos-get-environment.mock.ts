@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_ENVIRONMENT } from './repos-get-environment.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetEnvironmentMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetEnvironmentResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_ENVIRONMENT,
     'REPOS_GET_ENVIRONMENT',
     initialBehavior,
     _meta,
+    options,
   );
 }

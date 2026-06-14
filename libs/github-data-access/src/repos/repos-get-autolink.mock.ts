@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_AUTOLINK } from './repos-get-autolink.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetAutolinkMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetAutolinkResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_AUTOLINK,
     'REPOS_GET_AUTOLINK',
     initialBehavior,
     _meta,
+    options,
   );
 }

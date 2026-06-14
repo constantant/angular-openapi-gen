@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_SET_ADMIN_BRANCH_PROTECTION } from './repos-set-admin-branch-protection.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposSetAdminBranchProtectionMock(
   initialBehavior?: ProviderInitialBehavior<ReposSetAdminBranchProtectionResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_SET_ADMIN_BRANCH_PROTECTION,
     'REPOS_SET_ADMIN_BRANCH_PROTECTION',
     initialBehavior,
     _meta,
+    options,
   );
 }

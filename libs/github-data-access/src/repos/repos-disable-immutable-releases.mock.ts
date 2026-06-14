@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_DISABLE_IMMUTABLE_RELEASES } from './repos-disable-immutable-releases.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposDisableImmutableReleasesMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_DISABLE_IMMUTABLE_RELEASES,
     'REPOS_DISABLE_IMMUTABLE_RELEASES',
     initialBehavior,
     _meta,
+    options,
   );
 }

@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_CUSTOM_DEPLOYMENT_PROTECTION_RULE } from './repos-get-custom-deployment-protection-rule.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetCustomDeploymentProtectionRuleMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetCustomDeploymentProtectionRuleResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_CUSTOM_DEPLOYMENT_PROTECTION_RULE,
     'REPOS_GET_CUSTOM_DEPLOYMENT_PROTECTION_RULE',
     initialBehavior,
     _meta,
+    options,
   );
 }

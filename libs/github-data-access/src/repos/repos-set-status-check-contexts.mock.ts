@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_SET_STATUS_CHECK_CONTEXTS } from './repos-set-status-check-contexts.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposSetStatusCheckContextsMock(
   initialBehavior?: ProviderInitialBehavior<ReposSetStatusCheckContextsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_SET_STATUS_CHECK_CONTEXTS,
     'REPOS_SET_STATUS_CHECK_CONTEXTS',
     initialBehavior,
     _meta,
+    options,
   );
 }

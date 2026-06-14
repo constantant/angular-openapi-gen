@@ -1,0 +1,23 @@
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export const ORGS_SET_PUBLIC_MEMBERSHIP_FOR_AUTHENTICATED_USER =
+  new InjectionToken<
+    (org: string, username: string) => ReturnType<typeof httpResource<unknown>>
+  >('ORGS_SET_PUBLIC_MEMBERSHIP_FOR_AUTHENTICATED_USER');
+
+export function provideOrgsSetPublicMembershipForAuthenticatedUser(): FactoryProvider {
+  return {
+    provide: ORGS_SET_PUBLIC_MEMBERSHIP_FOR_AUTHENTICATED_USER,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (org: string, username: string) =>
+        httpResource<unknown>(() => ({
+          url: `${base}/orgs/${org}/public_members/${username}`,
+          method: 'PUT',
+        }));
+    },
+  };
+}

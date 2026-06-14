@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_LIST_COMMIT_STATUSES_FOR_REF } from './repos-list-commit-statuses-for-ref.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposListCommitStatusesForRefMock(
   initialBehavior?: ProviderInitialBehavior<ReposListCommitStatusesForRefResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_LIST_COMMIT_STATUSES_FOR_REF,
     'REPOS_LIST_COMMIT_STATUSES_FOR_REF',
     initialBehavior,
     _meta,
+    options,
   );
 }

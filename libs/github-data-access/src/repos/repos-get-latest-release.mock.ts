@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_LATEST_RELEASE } from './repos-get-latest-release.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetLatestReleaseMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetLatestReleaseResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_LATEST_RELEASE,
     'REPOS_GET_LATEST_RELEASE',
     initialBehavior,
     _meta,
+    options,
   );
 }

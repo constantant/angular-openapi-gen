@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { USERS_CHECK_FOLLOWING_FOR_USER } from './users-check-following-for-user.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUsersCheckFollowingForUserMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     USERS_CHECK_FOLLOWING_FOR_USER,
     'USERS_CHECK_FOLLOWING_FOR_USER',
     initialBehavior,
     _meta,
+    options,
   );
 }

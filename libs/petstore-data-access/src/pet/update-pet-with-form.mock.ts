@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { UPDATE_PET_WITH_FORM } from './update-pet-with-form.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUpdatePetWithFormMock(
   initialBehavior?: ProviderInitialBehavior<UpdatePetWithFormResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     UPDATE_PET_WITH_FORM,
     'UPDATE_PET_WITH_FORM',
     initialBehavior,
     _meta,
+    options,
   );
 }

@@ -1,0 +1,30 @@
+import { FactoryProvider } from '@angular/core';
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockProviderOptions,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
+import { CODESPACES_GET_ORG_PUBLIC_KEY } from './codespaces-get-org-public-key.token';
+import type { CodespacesGetOrgPublicKeyResponse } from './codespaces-get-org-public-key.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'codespaces/get-org-public-key',
+  path: '/orgs/{org}/codespaces/secrets/public-key',
+  method: 'get',
+  tag: 'codespaces',
+};
+
+export function provideCodespacesGetOrgPublicKeyMock(
+  initialBehavior?: ProviderInitialBehavior<CodespacesGetOrgPublicKeyResponse>,
+  options?: MockProviderOptions,
+): FactoryProvider {
+  return provideMockResource(
+    CODESPACES_GET_ORG_PUBLIC_KEY,
+    'CODESPACES_GET_ORG_PUBLIC_KEY',
+    initialBehavior,
+    _meta,
+    options,
+  );
+}

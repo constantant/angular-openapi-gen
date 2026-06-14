@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_THUMBNAILS_SET } from './youtube-thumbnails-set.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeThumbnailsSetMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeThumbnailsSetResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_THUMBNAILS_SET,
     'YOUTUBE_THUMBNAILS_SET',
     initialBehavior,
     _meta,
+    options,
   );
 }

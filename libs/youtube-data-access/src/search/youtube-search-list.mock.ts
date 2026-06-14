@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_SEARCH_LIST } from './youtube-search-list.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeSearchListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeSearchListResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_SEARCH_LIST,
     'YOUTUBE_SEARCH_LIST',
     initialBehavior,
     _meta,
+    options,
   );
 }

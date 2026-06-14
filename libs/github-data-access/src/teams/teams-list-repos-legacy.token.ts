@@ -1,0 +1,47 @@
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type TeamsListReposLegacyParams =
+  paths['/teams/{team_id}/repos']['get']['parameters']['query'];
+
+export type TeamsListReposLegacyResponse =
+  paths['/teams/{team_id}/repos']['get']['responses']['200']['content']['application/json'];
+
+/** @deprecated */
+export const TEAMS_LIST_REPOS_LEGACY = new InjectionToken<
+  (
+    teamId: string,
+    params?:
+      | TeamsListReposLegacyParams
+      | (() => TeamsListReposLegacyParams | undefined),
+  ) => ReturnType<typeof httpResource<TeamsListReposLegacyResponse>>
+>('TEAMS_LIST_REPOS_LEGACY');
+
+export function provideTeamsListReposLegacy(): FactoryProvider {
+  return {
+    provide: TEAMS_LIST_REPOS_LEGACY,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        teamId: string,
+        params?:
+          | TeamsListReposLegacyParams
+          | (() => TeamsListReposLegacyParams | undefined),
+      ) =>
+        httpResource<TeamsListReposLegacyResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/teams/${teamId}/repos`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
+    },
+  };
+}

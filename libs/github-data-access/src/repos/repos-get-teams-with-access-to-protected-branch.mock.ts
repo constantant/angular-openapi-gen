@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_TEAMS_WITH_ACCESS_TO_PROTECTED_BRANCH } from './repos-get-teams-with-access-to-protected-branch.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetTeamsWithAccessToProtectedBranchMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetTeamsWithAccessToProtectedBranchResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_TEAMS_WITH_ACCESS_TO_PROTECTED_BRANCH,
     'REPOS_GET_TEAMS_WITH_ACCESS_TO_PROTECTED_BRANCH',
     initialBehavior,
     _meta,
+    options,
   );
 }

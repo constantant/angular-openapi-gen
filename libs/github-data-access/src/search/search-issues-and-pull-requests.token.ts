@@ -1,0 +1,44 @@
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type SearchIssuesAndPullRequestsParams =
+  paths['/search/issues']['get']['parameters']['query'];
+
+export type SearchIssuesAndPullRequestsResponse =
+  paths['/search/issues']['get']['responses']['200']['content']['application/json'];
+
+export const SEARCH_ISSUES_AND_PULL_REQUESTS = new InjectionToken<
+  (
+    params?:
+      | SearchIssuesAndPullRequestsParams
+      | (() => SearchIssuesAndPullRequestsParams | undefined),
+  ) => ReturnType<typeof httpResource<SearchIssuesAndPullRequestsResponse>>
+>('SEARCH_ISSUES_AND_PULL_REQUESTS');
+
+export function provideSearchIssuesAndPullRequests(): FactoryProvider {
+  return {
+    provide: SEARCH_ISSUES_AND_PULL_REQUESTS,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        params?:
+          | SearchIssuesAndPullRequestsParams
+          | (() => SearchIssuesAndPullRequestsParams | undefined),
+      ) =>
+        httpResource<SearchIssuesAndPullRequestsResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/search/issues`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
+    },
+  };
+}

@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS } from './youtube-youtube-v3-update-comment-threads.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeYoutubeV3UpdateCommentThreadsMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeYoutubeV3UpdateCommentThreadsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS,
     'YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS',
     initialBehavior,
     _meta,
+    options,
   );
 }

@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_CUSTOM_PROPERTIES_FOR_REPOS_GET_REPOSITORY_VALUES } from './repos-custom-properties-for-repos-get-repository-values.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposCustomPropertiesForReposGetRepositoryValuesMock(
   initialBehavior?: ProviderInitialBehavior<ReposCustomPropertiesForReposGetRepositoryValuesResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_CUSTOM_PROPERTIES_FOR_REPOS_GET_REPOSITORY_VALUES,
     'REPOS_CUSTOM_PROPERTIES_FOR_REPOS_GET_REPOSITORY_VALUES',
     initialBehavior,
     _meta,
+    options,
   );
 }

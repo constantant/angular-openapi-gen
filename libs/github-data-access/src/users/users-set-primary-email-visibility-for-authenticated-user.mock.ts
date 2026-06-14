@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER } from './users-set-primary-email-visibility-for-authenticated-user.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUsersSetPrimaryEmailVisibilityForAuthenticatedUserMock(
   initialBehavior?: ProviderInitialBehavior<UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER,
     'USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER',
     initialBehavior,
     _meta,
+    options,
   );
 }

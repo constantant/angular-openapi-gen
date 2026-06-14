@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_LIVE_CHAT_MESSAGES_LIST } from './youtube-live-chat-messages-list.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeLiveChatMessagesListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeLiveChatMessagesListResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_LIVE_CHAT_MESSAGES_LIST,
     'YOUTUBE_LIVE_CHAT_MESSAGES_LIST',
     initialBehavior,
     _meta,
+    options,
   );
 }
