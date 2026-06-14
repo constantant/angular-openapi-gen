@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_PUNCH_CARD_STATS } from './repos-get-punch-card-stats.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetPunchCardStatsMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetPunchCardStatsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_PUNCH_CARD_STATS,
     'REPOS_GET_PUNCH_CARD_STATS',
     initialBehavior,
     _meta,
+    options,
   );
 }

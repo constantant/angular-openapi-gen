@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_CHANNEL_SECTIONS_INSERT } from './youtube-channel-sections-insert.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeChannelSectionsInsertMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeChannelSectionsInsertResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_CHANNEL_SECTIONS_INSERT,
     'YOUTUBE_CHANNEL_SECTIONS_INSERT',
     initialBehavior,
     _meta,
+    options,
   );
 }

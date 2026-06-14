@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_CANCEL_PAGES_DEPLOYMENT } from './repos-cancel-pages-deployment.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposCancelPagesDeploymentMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_CANCEL_PAGES_DEPLOYMENT,
     'REPOS_CANCEL_PAGES_DEPLOYMENT',
     initialBehavior,
     _meta,
+    options,
   );
 }

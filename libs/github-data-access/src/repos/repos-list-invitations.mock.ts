@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_LIST_INVITATIONS } from './repos-list-invitations.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposListInvitationsMock(
   initialBehavior?: ProviderInitialBehavior<ReposListInvitationsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_LIST_INVITATIONS,
     'REPOS_LIST_INVITATIONS',
     initialBehavior,
     _meta,
+    options,
   );
 }

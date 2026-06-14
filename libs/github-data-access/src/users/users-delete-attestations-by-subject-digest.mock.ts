@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { USERS_DELETE_ATTESTATIONS_BY_SUBJECT_DIGEST } from './users-delete-attestations-by-subject-digest.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUsersDeleteAttestationsBySubjectDigestMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     USERS_DELETE_ATTESTATIONS_BY_SUBJECT_DIGEST,
     'USERS_DELETE_ATTESTATIONS_BY_SUBJECT_DIGEST',
     initialBehavior,
     _meta,
+    options,
   );
 }

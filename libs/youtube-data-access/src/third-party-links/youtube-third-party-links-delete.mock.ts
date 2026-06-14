@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_THIRD_PARTY_LINKS_DELETE } from './youtube-third-party-links-delete.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeThirdPartyLinksDeleteMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_THIRD_PARTY_LINKS_DELETE,
     'YOUTUBE_THIRD_PARTY_LINKS_DELETE',
     initialBehavior,
     _meta,
+    options,
   );
 }

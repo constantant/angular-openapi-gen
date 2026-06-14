@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_TOP_PATHS } from './repos-get-top-paths.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetTopPathsMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetTopPathsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_TOP_PATHS,
     'REPOS_GET_TOP_PATHS',
     initialBehavior,
     _meta,
+    options,
   );
 }

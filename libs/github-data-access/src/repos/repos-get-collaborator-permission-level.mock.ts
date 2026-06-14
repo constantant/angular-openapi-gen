@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_COLLABORATOR_PERMISSION_LEVEL } from './repos-get-collaborator-permission-level.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetCollaboratorPermissionLevelMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetCollaboratorPermissionLevelResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_COLLABORATOR_PERMISSION_LEVEL,
     'REPOS_GET_COLLABORATOR_PERMISSION_LEVEL',
     initialBehavior,
     _meta,
+    options,
   );
 }

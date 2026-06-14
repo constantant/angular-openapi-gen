@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { USERS_GET_BY_USERNAME } from './users-get-by-username.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUsersGetByUsernameMock(
   initialBehavior?: ProviderInitialBehavior<UsersGetByUsernameResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     USERS_GET_BY_USERNAME,
     'USERS_GET_BY_USERNAME',
     initialBehavior,
     _meta,
+    options,
   );
 }

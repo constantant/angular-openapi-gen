@@ -9,6 +9,7 @@ export interface WindowMockEntry {
   setLoading(): void;
   fail(error: unknown): void;
   reset(): void;
+  reload(): boolean;
   setProgress(type: 'upload' | 'download', loaded: number, total?: number): void;
   simulateProgress(
     type: 'upload' | 'download',
@@ -18,9 +19,10 @@ export interface WindowMockEntry {
     steps?: number,
   ): void;
   setCatchMode(enabled: boolean): void;
-  getState(): { status: string; value: unknown; error: unknown; progress: unknown };
+  getState(): { status: string; value: unknown; error: unknown; progress: unknown; requestCount: number };
   getMeta(): MockResourceMeta | undefined;
   getHistory(): MockEvent[];
+  clearHistory(): void;
   onEvent(cb: (event: MockEvent) => void): () => void;
 }
 
@@ -96,16 +98,34 @@ export class MockResourceBus {
 
     window.__openApiMocks__[key] = {
       resolve:      (v)        => { ref.resolve(v as T); emit({ type: 'resolve', value: v, ts: Date.now() }); },
-      resolveAfter: (ms, v)    => { ref.resolveAfter(ms, v as T); },
+      resolveAfter: (ms, v)    => {
+        ref.setLoading();
+        emit({ type: 'loading', ts: Date.now() });
+        setTimeout(() => { ref.resolve(v as T); emit({ type: 'resolve', value: v, ts: Date.now() }); }, ms);
+      },
       setLoading:   ()         => { ref.setLoading();   emit({ type: 'loading', ts: Date.now() }); },
       fail:         (e)        => { ref.fail(e);        emit({ type: 'error', error: e, ts: Date.now() }); },
       reset:        ()         => { ref.reset();        emit({ type: 'reset', ts: Date.now() }); },
+      reload:       ()         => ref.reload(),
       setProgress:  (pt, l, t) => {
         ref.setProgress(pt, l, t);
         emit({ type: 'progress', progressType: pt, loaded: l, total: t, ts: Date.now() });
       },
-      simulateProgress: (pt, total, dur, v, steps) => {
-        ref.simulateProgress(pt, total, dur, v as T, steps);
+      simulateProgress: (pt, total, dur, v, steps = 10) => {
+        ref.setLoading();
+        emit({ type: 'loading', ts: Date.now() });
+        const stepDelay = dur / steps;
+        for (let i = 1; i <= steps; i++) {
+          setTimeout(() => {
+            const loaded = Math.round((total / steps) * i);
+            ref.setProgress(pt, loaded, total);
+            emit({ type: 'progress', progressType: pt, loaded, total, ts: Date.now() });
+          }, stepDelay * i);
+        }
+        setTimeout(() => {
+          ref.resolve(v as T);
+          emit({ type: 'resolve', value: v, ts: Date.now() });
+        }, dur + stepDelay);
       },
       setCatchMode: (enabled) => this.setCatchMode(key, enabled),
       getMeta:   () => this.getMeta(key),
@@ -114,9 +134,11 @@ export class MockResourceBus {
         value: ref.value(),
         error: ref.error(),
         progress: ref.progress(),
+        requestCount: ref.requestCount(),
       }),
-      getHistory: ()  => [...history],
-      onEvent:    (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
+      getHistory:   ()   => [...history],
+      clearHistory: ()   => { history.length = 0; },
+      onEvent:      (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
     };
   }
 
@@ -161,6 +183,7 @@ export class MockResourceBus {
       switch (detail.action) {
         case 'setCatchMode':   this.setCatchMode(detail.key, true);  return;
         case 'clearCatchMode': this.setCatchMode(detail.key, false); return;
+        case 'clearHistory':   window.__openApiMocks__?.[detail.key]?.clearHistory(); return;
       }
       if (!ref) return;
       switch (detail.action) {
@@ -168,6 +191,7 @@ export class MockResourceBus {
         case 'resolveAfter':     ref.resolveAfter(detail.delayMs ?? 0, detail.value);    break;
         case 'setLoading':       ref.setLoading();                                       break;
         case 'fail':             ref.fail(detail.value);                                 break;
+        case 'reload':           ref.reload();                                           break;
         case 'reset': {
           ref.reset();
           // If catch mode is still on, immediately re-intercept the resource.
@@ -180,7 +204,7 @@ export class MockResourceBus {
           break;
         }
         case 'setProgress':      ref.setProgress(detail.progressType!, detail.loaded!, detail.total); break;
-        case 'simulateProgress': ref.simulateProgress(
+        case 'simulateProgress': window.__openApiMocks__?.[detail.key]?.simulateProgress(
                                    detail.progressType!,
                                    detail.total!,
                                    detail.delayMs ?? 1000,

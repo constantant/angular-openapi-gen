@@ -13,6 +13,7 @@ export interface MockResourceRef<T> {
   readonly error: Signal<unknown>;
   readonly isLoading: Signal<boolean>;
   readonly progress: Signal<MockProgress | undefined>;
+  readonly requestCount: Signal<number>;
   hasValue(): boolean;
   reload(): boolean;
   destroy(): void;
@@ -46,6 +47,7 @@ export function createMockResourceRef<T>(
   const _value = signal<T | undefined>(undefined);
   const _error = signal<unknown>(undefined);
   const _progress = signal<MockProgress | undefined>(undefined);
+  const _requestCount = signal(0);
   const requestListeners = new Set<(args: unknown[]) => void>();
 
   if (initialState) {
@@ -65,6 +67,7 @@ export function createMockResourceRef<T>(
     status: _status.asReadonly(),
     error: _error.asReadonly(),
     progress: _progress.asReadonly(),
+    requestCount: _requestCount.asReadonly(),
     isLoading: computed(
       () => _status() === 'loading' || _status() === 'reloading',
     ),
@@ -123,7 +126,14 @@ export function createMockResourceRef<T>(
       }
       setTimeout(() => ref.resolve(finalValue), durationMs + stepDelay);
     },
-    reload: () => false,
+    reload: () => {
+      const cur = _status();
+      if (cur !== 'resolved' && cur !== 'local') return false;
+      _error.set(undefined);
+      _status.set('reloading'); // value intentionally kept
+      ref._notifyRequest([]); // fires bus onRequest → 'request' event + catch mode
+      return true;
+    },
     destroy: () => { /* no-op: signals are not subscriptions */ },
     asReadonly: () => ref,
     onRequest: (cb) => {
@@ -131,6 +141,7 @@ export function createMockResourceRef<T>(
       return () => requestListeners.delete(cb);
     },
     _notifyRequest: (rawArgs) => {
+      _requestCount.update((n) => n + 1);
       const args = rawArgs.map((arg) =>
         typeof arg === 'function' ? (arg as () => unknown)() : arg,
       );

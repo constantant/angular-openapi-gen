@@ -1,0 +1,30 @@
+import { FactoryProvider } from '@angular/core';
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockProviderOptions,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
+import { BILLING_GET_GITHUB_BILLING_PREMIUM_REQUEST_USAGE_REPORT_USER } from './billing-get-github-billing-premium-request-usage-report-user.token';
+import type { BillingGetGithubBillingPremiumRequestUsageReportUserResponse } from './billing-get-github-billing-premium-request-usage-report-user.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'billing/get-github-billing-premium-request-usage-report-user',
+  path: '/users/{username}/settings/billing/premium_request/usage',
+  method: 'get',
+  tag: 'billing',
+};
+
+export function provideBillingGetGithubBillingPremiumRequestUsageReportUserMock(
+  initialBehavior?: ProviderInitialBehavior<BillingGetGithubBillingPremiumRequestUsageReportUserResponse>,
+  options?: MockProviderOptions,
+): FactoryProvider {
+  return provideMockResource(
+    BILLING_GET_GITHUB_BILLING_PREMIUM_REQUEST_USAGE_REPORT_USER,
+    'BILLING_GET_GITHUB_BILLING_PREMIUM_REQUEST_USAGE_REPORT_USER',
+    initialBehavior,
+    _meta,
+    options,
+  );
+}

@@ -14,7 +14,7 @@ export function renderMockFile(ep: EndpointModel, specId: string): string {
 
   return `import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior, MockResourceMeta } from '@constantant/openapi-resource-mocks';
+import type { ProviderInitialBehavior, MockProviderOptions, MockResourceMeta } from '@constantant/openapi-resource-mocks';
 import { ${ep.tokenName} } from './${ep.fileName}.token';${responseImport}
 
 const _meta: MockResourceMeta = {
@@ -26,8 +26,9 @@ const _meta: MockResourceMeta = {
 
 export function provide${pascal}Mock(
   initialBehavior?: ${behaviorType},
+  options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(${ep.tokenName}, '${ep.tokenName}', initialBehavior, _meta);
+  return provideMockResource(${ep.tokenName}, '${ep.tokenName}', initialBehavior, _meta, options);
 }
 `;
 }

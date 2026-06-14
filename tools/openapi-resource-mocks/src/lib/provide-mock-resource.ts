@@ -15,6 +15,11 @@ export type ProviderInitialBehavior<T> =
   | { loading: true }
   | { error: unknown; delay?: number };
 
+export interface MockProviderOptions {
+  /** Called inside the injection context to produce a suffix appended to the bus key as `key:suffix`. */
+  keyDiscriminator?: () => string;
+}
+
 function applyBehavior<T>(ref: MockResourceRef<T>, behavior: ProviderInitialBehavior<T>): void {
   if ('value' in behavior) {
     if (behavior.delay) {
@@ -39,14 +44,17 @@ export function provideMockResource<T>(
   key: string,
   initialBehavior?: ProviderInitialBehavior<T>,
   meta?: MockResourceMeta,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return {
     provide: token,
     useFactory: () => {
       const bus = inject(MockResourceBus);
+      const discriminator = options?.keyDiscriminator;
       return (...args: unknown[]): ReturnType<typeof httpResource<T>> => {
+        const effectiveKey = discriminator ? `${key}:${discriminator()}` : key;
         const ref = createMockResourceRef<T>();
-        bus.register(key, ref, meta);
+        bus.register(effectiveKey, ref, meta);
         const internal = ref as MockResourceRefInternal<T>;
 
         // untracked() prevents thunk signal-reads from leaking into the outer reactive
@@ -55,7 +63,7 @@ export function provideMockResource<T>(
           internal._notifyRequest(args);
           // Skip initialBehavior when the bus caught the request: catch mode takes
           // precedence and the response must come from the DevTools panel.
-          if (initialBehavior && !bus.isCatchMode(key)) applyBehavior(ref, initialBehavior);
+          if (initialBehavior && !bus.isCatchMode(effectiveKey)) applyBehavior(ref, initialBehavior);
         });
 
         // When any arg is a reactive thunk, track signal changes so each new set of
@@ -70,7 +78,7 @@ export function provideMockResource<T>(
             untracked(() => {
               if (first) { first = false; return; } // first run already handled above
               internal._notifyRequest(resolved);
-              if (initialBehavior && !bus.isCatchMode(key)) applyBehavior(ref, initialBehavior);
+              if (initialBehavior && !bus.isCatchMode(effectiveKey)) applyBehavior(ref, initialBehavior);
             });
           });
         }
