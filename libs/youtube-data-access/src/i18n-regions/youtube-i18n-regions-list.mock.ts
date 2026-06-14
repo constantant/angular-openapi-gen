@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_I18N_REGIONS_LIST } from './youtube-i18n-regions-list.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeI18nRegionsListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeI18nRegionsListResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_I18N_REGIONS_LIST,
     'YOUTUBE_I18N_REGIONS_LIST',
     initialBehavior,
     _meta,
+    options,
   );
 }

@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_COMMENTS_LIST } from './youtube-comments-list.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeCommentsListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeCommentsListResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_COMMENTS_LIST,
     'YOUTUBE_COMMENTS_LIST',
     initialBehavior,
     _meta,
+    options,
   );
 }

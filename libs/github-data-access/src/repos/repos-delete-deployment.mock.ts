@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_DELETE_DEPLOYMENT } from './repos-delete-deployment.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposDeleteDeploymentMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_DELETE_DEPLOYMENT,
     'REPOS_DELETE_DEPLOYMENT',
     initialBehavior,
     _meta,
+    options,
   );
 }

@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_ALL_TOPICS } from './repos-get-all-topics.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetAllTopicsMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetAllTopicsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_ALL_TOPICS,
     'REPOS_GET_ALL_TOPICS',
     initialBehavior,
     _meta,
+    options,
   );
 }

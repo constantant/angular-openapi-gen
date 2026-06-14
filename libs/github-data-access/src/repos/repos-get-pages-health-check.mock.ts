@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_PAGES_HEALTH_CHECK } from './repos-get-pages-health-check.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetPagesHealthCheckMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetPagesHealthCheckResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_PAGES_HEALTH_CHECK,
     'REPOS_GET_PAGES_HEALTH_CHECK',
     initialBehavior,
     _meta,
+    options,
   );
 }

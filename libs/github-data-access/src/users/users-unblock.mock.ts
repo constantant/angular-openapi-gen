@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { USERS_UNBLOCK } from './users-unblock.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUsersUnblockMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     USERS_UNBLOCK,
     'USERS_UNBLOCK',
     initialBehavior,
     _meta,
+    options,
   );
 }

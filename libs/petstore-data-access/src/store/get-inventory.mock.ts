@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { GET_INVENTORY } from './get-inventory.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideGetInventoryMock(
   initialBehavior?: ProviderInitialBehavior<GetInventoryResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     GET_INVENTORY,
     'GET_INVENTORY',
     initialBehavior,
     _meta,
+    options,
   );
 }

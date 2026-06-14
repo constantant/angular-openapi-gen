@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { ADD_PET } from './add-pet.token';
@@ -17,6 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideAddPetMock(
   initialBehavior?: ProviderInitialBehavior<AddPetResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(ADD_PET, 'ADD_PET', initialBehavior, _meta);
+  return provideMockResource(
+    ADD_PET,
+    'ADD_PET',
+    initialBehavior,
+    _meta,
+    options,
+  );
 }

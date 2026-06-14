@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_DELETE_WEBHOOK } from './repos-delete-webhook.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposDeleteWebhookMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_DELETE_WEBHOOK,
     'REPOS_DELETE_WEBHOOK',
     initialBehavior,
     _meta,
+    options,
   );
 }

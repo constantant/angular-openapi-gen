@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { GET_ORDER_BY_ID } from './get-order-by-id.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideGetOrderByIdMock(
   initialBehavior?: ProviderInitialBehavior<GetOrderByIdResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     GET_ORDER_BY_ID,
     'GET_ORDER_BY_ID',
     initialBehavior,
     _meta,
+    options,
   );
 }

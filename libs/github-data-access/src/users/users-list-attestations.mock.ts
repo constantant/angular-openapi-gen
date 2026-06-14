@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { USERS_LIST_ATTESTATIONS } from './users-list-attestations.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUsersListAttestationsMock(
   initialBehavior?: ProviderInitialBehavior<UsersListAttestationsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     USERS_LIST_ATTESTATIONS,
     'USERS_LIST_ATTESTATIONS',
     initialBehavior,
     _meta,
+    options,
   );
 }

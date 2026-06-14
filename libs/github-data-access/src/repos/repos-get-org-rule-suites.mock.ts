@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_ORG_RULE_SUITES } from './repos-get-org-rule-suites.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetOrgRuleSuitesMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetOrgRuleSuitesResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_ORG_RULE_SUITES,
     'REPOS_GET_ORG_RULE_SUITES',
     initialBehavior,
     _meta,
+    options,
   );
 }

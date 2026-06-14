@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_CREATE_ATTESTATION } from './repos-create-attestation.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposCreateAttestationMock(
   initialBehavior?: ProviderInitialBehavior<ReposCreateAttestationResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_CREATE_ATTESTATION,
     'REPOS_CREATE_ATTESTATION',
     initialBehavior,
     _meta,
+    options,
   );
 }

@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_DELETE_ADMIN_BRANCH_PROTECTION } from './repos-delete-admin-branch-protection.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposDeleteAdminBranchProtectionMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_DELETE_ADMIN_BRANCH_PROTECTION,
     'REPOS_DELETE_ADMIN_BRANCH_PROTECTION',
     initialBehavior,
     _meta,
+    options,
   );
 }

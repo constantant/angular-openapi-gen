@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_TOP_REFERRERS } from './repos-get-top-referrers.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetTopReferrersMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetTopReferrersResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_TOP_REFERRERS,
     'REPOS_GET_TOP_REFERRERS',
     initialBehavior,
     _meta,
+    options,
   );
 }

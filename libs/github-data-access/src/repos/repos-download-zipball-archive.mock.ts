@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_DOWNLOAD_ZIPBALL_ARCHIVE } from './repos-download-zipball-archive.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposDownloadZipballArchiveMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_DOWNLOAD_ZIPBALL_ARCHIVE,
     'REPOS_DOWNLOAD_ZIPBALL_ARCHIVE',
     initialBehavior,
     _meta,
+    options,
   );
 }

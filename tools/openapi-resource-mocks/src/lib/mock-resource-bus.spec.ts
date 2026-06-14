@@ -211,4 +211,130 @@ describe('MockResourceBus', () => {
       expect((history[0] as any).args).toEqual([{ status: 'available' }]);
     });
   });
+
+  describe('resolveAfter events', () => {
+    it('emits loading then resolve events and appears in history', async () => {
+      vi.useFakeTimers();
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      window.__openApiMocks__!['MY_TOKEN'].resolveAfter(200, 'done');
+      const historyAfterCall = window.__openApiMocks__!['MY_TOKEN'].getHistory();
+      expect(historyAfterCall.map((e) => e.type)).toContain('loading');
+      expect(ref.isLoading()).toBe(true);
+      vi.advanceTimersByTime(200);
+      const historyAfterResolve = window.__openApiMocks__!['MY_TOKEN'].getHistory();
+      expect(historyAfterResolve.map((e) => e.type)).toContain('resolve');
+      expect(ref.status()).toBe('resolved');
+      expect(ref.value()).toBe('done');
+      vi.useRealTimers();
+    });
+
+    it('fires openapi-mock-event for both loading and resolve', () => {
+      vi.useFakeTimers();
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      const domTypes: string[] = [];
+      document.addEventListener('openapi-mock-event', (e) =>
+        domTypes.push((e as CustomEvent).detail.event.type),
+      );
+      window.__openApiMocks__!['MY_TOKEN'].resolveAfter(100, 'x');
+      vi.advanceTimersByTime(100);
+      expect(domTypes).toContain('loading');
+      expect(domTypes).toContain('resolve');
+      vi.useRealTimers();
+    });
+  });
+
+  describe('simulateProgress events', () => {
+    it('emits loading, progress ticks, and resolve in history', () => {
+      vi.useFakeTimers();
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      window.__openApiMocks__!['MY_TOKEN'].simulateProgress('upload', 1000, 500, 'done', 5);
+      vi.advanceTimersByTime(600); // 5 steps + final resolve
+      const history = window.__openApiMocks__!['MY_TOKEN'].getHistory();
+      const types = history.map((e) => e.type);
+      expect(types).toContain('loading');
+      expect(types.filter((t) => t === 'progress').length).toBe(5);
+      expect(types).toContain('resolve');
+      vi.useRealTimers();
+    });
+
+    it('fires openapi-mock-event for each progress tick', () => {
+      vi.useFakeTimers();
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      const domEvents: CustomEvent[] = [];
+      document.addEventListener('openapi-mock-event', (e) => domEvents.push(e as CustomEvent));
+      window.__openApiMocks__!['MY_TOKEN'].simulateProgress('download', 100, 200, 'result', 2);
+      vi.advanceTimersByTime(300);
+      const domTypes = domEvents.map((e) => e.detail.event.type);
+      expect(domTypes.filter((t) => t === 'progress').length).toBe(2);
+      expect(domTypes).toContain('resolve');
+      vi.useRealTimers();
+    });
+  });
+
+  describe('reload', () => {
+    it('window entry reload() sets status to reloading and keeps value', () => {
+      const ref = createMockResourceRef({ value: 99 });
+      bus.register('MY_TOKEN', ref);
+      const result = window.__openApiMocks__!['MY_TOKEN'].reload();
+      expect(result).toBe(true);
+      expect(ref.status()).toBe('reloading');
+      expect(ref.value()).toBe(99);
+    });
+
+    it('reload() emits request event in history via _notifyRequest', () => {
+      const ref = createMockResourceRef({ value: 'x' });
+      bus.register('MY_TOKEN', ref);
+      window.__openApiMocks__!['MY_TOKEN'].reload();
+      const history = window.__openApiMocks__!['MY_TOKEN'].getHistory();
+      expect(history.some((e) => e.type === 'request')).toBe(true);
+    });
+
+    it('openapi-mock-control reload action triggers reload', () => {
+      const ref = createMockResourceRef({ value: 'abc' });
+      bus.register('MY_TOKEN', ref);
+      document.dispatchEvent(
+        new CustomEvent('openapi-mock-control', {
+          detail: { key: 'MY_TOKEN', action: 'reload' },
+        }),
+      );
+      expect(ref.status()).toBe('reloading');
+    });
+
+    it('getState() includes requestCount', () => {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      (ref as any)._notifyRequest([]);
+      (ref as any)._notifyRequest([]);
+      const state = window.__openApiMocks__!['MY_TOKEN'].getState();
+      expect(state.requestCount).toBe(2);
+    });
+  });
+
+  describe('clearHistory', () => {
+    it('clears all history entries', () => {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      window.__openApiMocks__!['MY_TOKEN'].resolve('a');
+      window.__openApiMocks__!['MY_TOKEN'].setLoading();
+      expect(window.__openApiMocks__!['MY_TOKEN'].getHistory()).toHaveLength(2);
+      window.__openApiMocks__!['MY_TOKEN'].clearHistory();
+      expect(window.__openApiMocks__!['MY_TOKEN'].getHistory()).toHaveLength(0);
+    });
+
+    it('openapi-mock-control clearHistory action clears the log', () => {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      window.__openApiMocks__!['MY_TOKEN'].resolve('x');
+      document.dispatchEvent(
+        new CustomEvent('openapi-mock-control', {
+          detail: { key: 'MY_TOKEN', action: 'clearHistory' },
+        }),
+      );
+      expect(window.__openApiMocks__!['MY_TOKEN'].getHistory()).toHaveLength(0);
+    });
+  });
 });

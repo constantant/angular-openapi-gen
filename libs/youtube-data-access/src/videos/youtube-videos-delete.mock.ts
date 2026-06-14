@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_VIDEOS_DELETE } from './youtube-videos-delete.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeVideosDeleteMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_VIDEOS_DELETE,
     'YOUTUBE_VIDEOS_DELETE',
     initialBehavior,
     _meta,
+    options,
   );
 }

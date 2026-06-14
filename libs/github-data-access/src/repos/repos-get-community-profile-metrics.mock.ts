@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_COMMUNITY_PROFILE_METRICS } from './repos-get-community-profile-metrics.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetCommunityProfileMetricsMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetCommunityProfileMetricsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_COMMUNITY_PROFILE_METRICS,
     'REPOS_GET_COMMUNITY_PROFILE_METRICS',
     initialBehavior,
     _meta,
+    options,
   );
 }

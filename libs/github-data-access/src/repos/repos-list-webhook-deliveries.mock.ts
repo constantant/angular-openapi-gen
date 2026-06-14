@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_LIST_WEBHOOK_DELIVERIES } from './repos-list-webhook-deliveries.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposListWebhookDeliveriesMock(
   initialBehavior?: ProviderInitialBehavior<ReposListWebhookDeliveriesResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_LIST_WEBHOOK_DELIVERIES,
     'REPOS_LIST_WEBHOOK_DELIVERIES',
     initialBehavior,
     _meta,
+    options,
   );
 }

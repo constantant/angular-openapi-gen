@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_CREATE_OR_UPDATE_FILE_CONTENTS } from './repos-create-or-update-file-contents.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposCreateOrUpdateFileContentsMock(
   initialBehavior?: ProviderInitialBehavior<ReposCreateOrUpdateFileContentsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_CREATE_OR_UPDATE_FILE_CONTENTS,
     'REPOS_CREATE_OR_UPDATE_FILE_CONTENTS',
     initialBehavior,
     _meta,
+    options,
   );
 }

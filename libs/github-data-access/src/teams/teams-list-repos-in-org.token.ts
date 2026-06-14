@@ -1,0 +1,48 @@
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import type { paths } from '../schema.d';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+
+export type TeamsListReposInOrgParams =
+  paths['/orgs/{org}/teams/{team_slug}/repos']['get']['parameters']['query'];
+
+export type TeamsListReposInOrgResponse =
+  paths['/orgs/{org}/teams/{team_slug}/repos']['get']['responses']['200']['content']['application/json'];
+
+export const TEAMS_LIST_REPOS_IN_ORG = new InjectionToken<
+  (
+    org: string,
+    teamSlug: string,
+    params?:
+      | TeamsListReposInOrgParams
+      | (() => TeamsListReposInOrgParams | undefined),
+  ) => ReturnType<typeof httpResource<TeamsListReposInOrgResponse>>
+>('TEAMS_LIST_REPOS_IN_ORG');
+
+export function provideTeamsListReposInOrg(): FactoryProvider {
+  return {
+    provide: TEAMS_LIST_REPOS_IN_ORG,
+    useFactory: () => {
+      const base = inject(GITHUB_BASE_URL);
+      return (
+        org: string,
+        teamSlug: string,
+        params?:
+          | TeamsListReposInOrgParams
+          | (() => TeamsListReposInOrgParams | undefined),
+      ) =>
+        httpResource<TeamsListReposInOrgResponse>(() => {
+          const _params = typeof params === 'function' ? params() : params;
+          if (typeof params === 'function' && _params === undefined)
+            return undefined;
+          return {
+            url: `${base}/orgs/${org}/teams/${teamSlug}/repos`,
+            params: _params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          };
+        });
+    },
+  };
+}

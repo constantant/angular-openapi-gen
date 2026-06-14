@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_ENABLE_AUTOMATED_SECURITY_FIXES } from './repos-enable-automated-security-fixes.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposEnableAutomatedSecurityFixesMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_ENABLE_AUTOMATED_SECURITY_FIXES,
     'REPOS_ENABLE_AUTOMATED_SECURITY_FIXES',
     initialBehavior,
     _meta,
+    options,
   );
 }

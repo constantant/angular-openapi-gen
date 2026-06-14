@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { USERS_GET_CONTEXT_FOR_USER } from './users-get-context-for-user.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUsersGetContextForUserMock(
   initialBehavior?: ProviderInitialBehavior<UsersGetContextForUserResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     USERS_GET_CONTEXT_FOR_USER,
     'USERS_GET_CONTEXT_FOR_USER',
     initialBehavior,
     _meta,
+    options,
   );
 }

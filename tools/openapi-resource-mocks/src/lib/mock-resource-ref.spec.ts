@@ -198,9 +198,35 @@ describe('createMockResourceRef', () => {
   });
 
   describe('ResourceRef interface compliance', () => {
-    it('reload() returns false (no-op)', () => {
-      const ref = createMockResourceRef();
-      expect(ref.reload()).toBe(false);
+    it('reload() returns false when status is not resolved or local', () => {
+      expect(createMockResourceRef().reload()).toBe(false); // idle
+      expect(createMockResourceRef({ loading: true }).reload()).toBe(false);
+      expect(createMockResourceRef({ error: new Error() }).reload()).toBe(false);
+    });
+
+    it('reload() on resolved ref → status reloading, value kept, returns true', () => {
+      const ref = createMockResourceRef({ value: 42 });
+      expect(ref.reload()).toBe(true);
+      expect(ref.status()).toBe('reloading');
+      expect(ref.value()).toBe(42); // value preserved
+      expect(ref.error()).toBeUndefined();
+      expect(ref.isLoading()).toBe(true); // reloading counts as loading
+    });
+
+    it('reload() on local ref → status reloading, returns true', () => {
+      const ref = createMockResourceRef<number>();
+      ref.set(7);
+      expect(ref.reload()).toBe(true);
+      expect(ref.status()).toBe('reloading');
+    });
+
+    it('reload() fires onRequest listener', () => {
+      const ref = createMockResourceRef({ value: 'x' });
+      const calls: unknown[][] = [];
+      ref.onRequest((args) => calls.push(args));
+      ref.reload();
+      expect(calls).toHaveLength(1);
+      expect(calls[0]).toEqual([]); // reload passes empty args
     });
 
     it('destroy() is a no-op', () => {
@@ -211,6 +237,26 @@ describe('createMockResourceRef', () => {
     it('asReadonly() returns self', () => {
       const ref = createMockResourceRef();
       expect(ref.asReadonly()).toBe(ref);
+    });
+  });
+
+  describe('requestCount', () => {
+    it('starts at 0', () => {
+      const ref = createMockResourceRef();
+      expect(ref.requestCount()).toBe(0);
+    });
+
+    it('increments on each _notifyRequest call', () => {
+      const ref = createMockResourceRef<string>();
+      (ref as any)._notifyRequest([]);
+      (ref as any)._notifyRequest([]);
+      expect(ref.requestCount()).toBe(2);
+    });
+
+    it('increments on reload()', () => {
+      const ref = createMockResourceRef({ value: 'x' });
+      ref.reload();
+      expect(ref.requestCount()).toBe(1);
     });
   });
 });
