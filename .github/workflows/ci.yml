@@ -36,7 +36,7 @@ jobs:
       - run: npx playwright install --with-deps
 
       - name: Derive SHAs for Nx affected
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Detect affected projects
         id: affected
