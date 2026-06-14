@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT } from './repos-list-branches-for-head-commit.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposListBranchesForHeadCommitMock(
   initialBehavior?: ProviderInitialBehavior<ReposListBranchesForHeadCommitResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT,
     'REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT',
     initialBehavior,
     _meta,
+    options,
   );
 }

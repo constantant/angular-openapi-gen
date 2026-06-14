@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_COMPARE_COMMITS } from './repos-compare-commits.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposCompareCommitsMock(
   initialBehavior?: ProviderInitialBehavior<ReposCompareCommitsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_COMPARE_COMMITS,
     'REPOS_COMPARE_COMMITS',
     initialBehavior,
     _meta,
+    options,
   );
 }

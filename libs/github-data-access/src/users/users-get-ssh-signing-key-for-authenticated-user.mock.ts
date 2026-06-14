@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER } from './users-get-ssh-signing-key-for-authenticated-user.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUsersGetSshSigningKeyForAuthenticatedUserMock(
   initialBehavior?: ProviderInitialBehavior<UsersGetSshSigningKeyForAuthenticatedUserResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER,
     'USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER',
     initialBehavior,
     _meta,
+    options,
   );
 }

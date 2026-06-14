@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { DELETE_PET } from './delete-pet.token';
@@ -16,6 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideDeletePetMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(DELETE_PET, 'DELETE_PET', initialBehavior, _meta);
+  return provideMockResource(
+    DELETE_PET,
+    'DELETE_PET',
+    initialBehavior,
+    _meta,
+    options,
+  );
 }

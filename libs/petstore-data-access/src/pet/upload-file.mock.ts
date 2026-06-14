@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { UPLOAD_FILE } from './upload-file.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideUploadFileMock(
   initialBehavior?: ProviderInitialBehavior<UploadFileResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     UPLOAD_FILE,
     'UPLOAD_FILE',
     initialBehavior,
     _meta,
+    options,
   );
 }

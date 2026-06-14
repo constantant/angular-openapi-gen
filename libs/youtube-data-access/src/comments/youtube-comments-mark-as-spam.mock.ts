@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_COMMENTS_MARK_AS_SPAM } from './youtube-comments-mark-as-spam.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeCommentsMarkAsSpamMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_COMMENTS_MARK_AS_SPAM,
     'YOUTUBE_COMMENTS_MARK_AS_SPAM',
     initialBehavior,
     _meta,
+    options,
   );
 }

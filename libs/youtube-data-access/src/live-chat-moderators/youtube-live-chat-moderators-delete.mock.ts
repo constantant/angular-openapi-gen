@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_LIVE_CHAT_MODERATORS_DELETE } from './youtube-live-chat-moderators-delete.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeLiveChatModeratorsDeleteMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_LIVE_CHAT_MODERATORS_DELETE,
     'YOUTUBE_LIVE_CHAT_MODERATORS_DELETE',
     initialBehavior,
     _meta,
+    options,
   );
 }

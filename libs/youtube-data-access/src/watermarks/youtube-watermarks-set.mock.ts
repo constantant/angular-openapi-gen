@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_WATERMARKS_SET } from './youtube-watermarks-set.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeWatermarksSetMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_WATERMARKS_SET,
     'YOUTUBE_WATERMARKS_SET',
     initialBehavior,
     _meta,
+    options,
   );
 }

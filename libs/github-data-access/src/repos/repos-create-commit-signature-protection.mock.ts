@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION } from './repos-create-commit-signature-protection.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposCreateCommitSignatureProtectionMock(
   initialBehavior?: ProviderInitialBehavior<ReposCreateCommitSignatureProtectionResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION,
     'REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION',
     initialBehavior,
     _meta,
+    options,
   );
 }

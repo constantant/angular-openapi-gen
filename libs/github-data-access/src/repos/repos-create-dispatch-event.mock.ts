@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_CREATE_DISPATCH_EVENT } from './repos-create-dispatch-event.token';
@@ -16,11 +17,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposCreateDispatchEventMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_CREATE_DISPATCH_EVENT,
     'REPOS_CREATE_DISPATCH_EVENT',
     initialBehavior,
     _meta,
+    options,
   );
 }

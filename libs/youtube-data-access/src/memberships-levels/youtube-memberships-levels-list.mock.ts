@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { YOUTUBE_MEMBERSHIPS_LEVELS_LIST } from './youtube-memberships-levels-list.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideYoutubeMembershipsLevelsListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeMembershipsLevelsListResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     YOUTUBE_MEMBERSHIPS_LEVELS_LIST,
     'YOUTUBE_MEMBERSHIPS_LEVELS_LIST',
     initialBehavior,
     _meta,
+    options,
   );
 }

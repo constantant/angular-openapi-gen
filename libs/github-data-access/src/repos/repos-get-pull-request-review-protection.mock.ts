@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_GET_PULL_REQUEST_REVIEW_PROTECTION } from './repos-get-pull-request-review-protection.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposGetPullRequestReviewProtectionMock(
   initialBehavior?: ProviderInitialBehavior<ReposGetPullRequestReviewProtectionResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_GET_PULL_REQUEST_REVIEW_PROTECTION,
     'REPOS_GET_PULL_REQUEST_REVIEW_PROTECTION',
     initialBehavior,
     _meta,
+    options,
   );
 }

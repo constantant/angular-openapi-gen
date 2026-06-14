@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_ADD_APP_ACCESS_RESTRICTIONS } from './repos-add-app-access-restrictions.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposAddAppAccessRestrictionsMock(
   initialBehavior?: ProviderInitialBehavior<ReposAddAppAccessRestrictionsResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_ADD_APP_ACCESS_RESTRICTIONS,
     'REPOS_ADD_APP_ACCESS_RESTRICTIONS',
     initialBehavior,
     _meta,
+    options,
   );
 }

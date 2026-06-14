@@ -1,0 +1,30 @@
+import { FactoryProvider } from '@angular/core';
+import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import type {
+  ProviderInitialBehavior,
+  MockProviderOptions,
+  MockResourceMeta,
+} from '@constantant/openapi-resource-mocks';
+import { ACTIONS_CREATE_REMOVE_TOKEN_FOR_ORG } from './actions-create-remove-token-for-org.token';
+import type { ActionsCreateRemoveTokenForOrgResponse } from './actions-create-remove-token-for-org.token';
+
+const _meta: MockResourceMeta = {
+  specId: 'github',
+  operationId: 'actions/create-remove-token-for-org',
+  path: '/orgs/{org}/actions/runners/remove-token',
+  method: 'post',
+  tag: 'actions',
+};
+
+export function provideActionsCreateRemoveTokenForOrgMock(
+  initialBehavior?: ProviderInitialBehavior<ActionsCreateRemoveTokenForOrgResponse>,
+  options?: MockProviderOptions,
+): FactoryProvider {
+  return provideMockResource(
+    ACTIONS_CREATE_REMOVE_TOKEN_FOR_ORG,
+    'ACTIONS_CREATE_REMOVE_TOKEN_FOR_ORG',
+    initialBehavior,
+    _meta,
+    options,
+  );
+}

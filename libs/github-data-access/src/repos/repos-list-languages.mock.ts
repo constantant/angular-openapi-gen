@@ -2,6 +2,7 @@ import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
+  MockProviderOptions,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
 import { REPOS_LIST_LANGUAGES } from './repos-list-languages.token';
@@ -17,11 +18,13 @@ const _meta: MockResourceMeta = {
 
 export function provideReposListLanguagesMock(
   initialBehavior?: ProviderInitialBehavior<ReposListLanguagesResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
   return provideMockResource(
     REPOS_LIST_LANGUAGES,
     'REPOS_LIST_LANGUAGES',
     initialBehavior,
     _meta,
+    options,
   );
 }
