@@ -1,3 +1,14 @@
+## 0.5.0 (2026-06-14)
+
+### 🚀 Features
+
+- **openapi-resource-mocks:** reload status, event fixes, clearHistory, requestCount, keyDiscriminator ([6adfd13](https://github.com/constantant/angular-openapi-gen/commit/6adfd13))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 0.4.0 (2026-06-13)
 
 ### 🩹 Fixes
