@@ -139,7 +139,7 @@ Each `.mock.ts` file exports a single `provide{Operation}Mock(initialBehavior?)`
 // pet/find-pets-by-status.mock.ts  (generated)
 import { FactoryProvider } from '@angular/core';
 import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior, MockResourceMeta } from '@constantant/openapi-resource-mocks';
+import type { ProviderInitialBehavior, MockProviderOptions, MockResourceMeta } from '@constantant/openapi-resource-mocks';
 import { FIND_PETS_BY_STATUS } from './find-pets-by-status.token';
 import type { FindPetsByStatusResponse } from './find-pets-by-status.token';
 
@@ -153,12 +153,15 @@ const _meta: MockResourceMeta = {
 
 export function provideFindPetsByStatusMock(
   initialBehavior?: ProviderInitialBehavior<FindPetsByStatusResponse>,
+  options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', initialBehavior, _meta);
+  return provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', initialBehavior, _meta, options);
 }
 ```
 
 Each mock file also embeds a `MockResourceMeta` const with `specId`, `operationId`, `path`, `method`, and `tag`. The DevTools panel reads this metadata to pre-populate the Respond tab's schema display — no manual configuration needed.
+
+The optional `options` argument (second param on the wrapper) is passed through to `provideMockResource`. The main use is `keyDiscriminator` — see [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) for details.
 
 The token name string key is always in sync — renaming an operation in the spec and
 regenerating updates both the token constant and its key automatically.
@@ -182,6 +185,9 @@ provideFindPetsByStatusMock({
   value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
   delay: 500,
 })
+
+// With keyDiscriminator for list-row components (second argument)
+provideFindPetsByStatusMock(undefined, { keyDiscriminator: () => inject(PET_ID).toString() })
 ```
 
 `initialBehavior` supports:
