@@ -94,6 +94,17 @@ mock.reset();
 
 // Delayed response (loading → data after 500 ms)
 mock.resolveAfter(500, []);
+
+// Reload — keeps previous value visible while re-fetching (status → 'reloading')
+mock.resolve([{ id: 1, name: 'Rex', status: 'available' }]);
+mock.reload(); // status: 'reloading', value still [Rex], isLoading() → true
+mock.resolve([{ id: 1, name: 'Rex', status: 'sold' }]); // complete the reload
+
+// Request count — total factory invocations including reactive param changes and reload()
+expect(mock.requestCount()).toBe(1); // checked after fixture.detectChanges()
+
+// Reset history between scenarios without remounting the component
+mock.clearHistory(); // via bus.get(key)
 ```
 
 Types come from the generated lib — no hand-written interfaces needed.
@@ -246,8 +257,13 @@ interface MockEntry {
   setLoading(): void;
   fail(error: unknown): void;
   reset(): void;
-  getState(): { status: string; value: unknown; error: unknown; progress: unknown };
-  getHistory(): Array<{ type: string; args: unknown[]; ts: number }>;
+  reload(): boolean;
+  setProgress(type: 'upload' | 'download', loaded: number, total?: number): void;
+  simulateProgress(type: 'upload' | 'download', totalBytes: number, durationMs: number, finalValue: unknown, steps?: number): void;
+  getState(): { status: string; value: unknown; error: unknown; progress: unknown; requestCount: number };
+  getHistory(): Array<{ type: string; ts: number; [key: string]: unknown }>;
+  clearHistory(): void;
+  onEvent(cb: (event: { type: string; [key: string]: unknown }) => void): () => void;
 }
 
 interface Window {
@@ -290,11 +306,21 @@ await expect(page.locator('mat-progress-bar')).toBeVisible();
 // Simulate slow network
 await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolveAfter(1000, []));
 
-// Inspect current state (includes progress if active)
+// Reload — keeps previous value visible while re-fetching
+await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').reload());
+// status → 'reloading', pets still shown, spinner visible
+await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 2, name: 'Luna', status: 'available' }]));
+
+// Inspect current state (includes progress and requestCount)
 const state = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getState());
+// { status, value, error, progress, requestCount }
 
 // Full event history (requests + responses + progress ticks)
+// resolveAfter and simulateProgress now emit loading/progress/resolve entries here
 const history = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getHistory());
+
+// Reset history between test scenarios without remounting components
+await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').clearHistory());
 ```
 
 ### Asserting request params
@@ -324,11 +350,12 @@ expect(req?.args[0]).toBeUndefined();
 document.dispatchEvent(new CustomEvent('openapi-mock-control', {
   detail: { key: 'FIND_PETS_BY_STATUS', action: 'resolve', value: [...] },
 }));
-// actions: resolve | resolveAfter | setLoading | fail | reset
-//          setProgress | simulateProgress
+// actions: resolve | resolveAfter | setLoading | fail | reset | reload
+//          setProgress | simulateProgress | clearHistory
 // resolveAfter:     delayMs: number
 // setProgress:      progressType: 'upload'|'download', loaded: number, total?: number
 // simulateProgress: progressType, total: number, delayMs: number, value, steps?: number
+// reload / clearHistory: no additional fields required
 ```
 
 **App → extension (observe):**
@@ -349,11 +376,13 @@ document.addEventListener('openapi-mock-event', (e) => {
 
 Returns `EnvironmentProviders`. Call once in your root providers or TestBed setup.
 
-### `provideMockResource(token, key, initialBehavior?, meta?)`
+### `provideMockResource(token, key, initialBehavior?, meta?, options?)`
 
 Returns `FactoryProvider`. Each time a component invokes the factory function, a fresh ref is created, registered in the bus under `key`, and `initialBehavior` is applied — simulating the full request lifecycle on every mount.
 
 The optional `meta` argument is a `MockResourceMeta` object. When provided, the DevTools panel uses it to look up response schemas and pre-populate the Respond tab's schema display. Generated `.mock.ts` files embed this automatically — you only need to pass it manually when using `provideMockResource()` directly.
+
+The optional `options` argument is a `MockProviderOptions` object — see below.
 
 `initialBehavior` controls how the mock behaves on each invocation:
 
@@ -364,6 +393,33 @@ The optional `meta` argument is a `MockResourceMeta` object. When provided, the 
 | `{ loading: true }` | Stays loading indefinitely |
 | `{ error: unknown }` | Fails immediately |
 | `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
+
+### `MockProviderOptions`
+
+Passed as the fifth argument to `provideMockResource()` and as the second argument to generated `provide{Operation}Mock()` wrappers.
+
+```typescript
+interface MockProviderOptions {
+  keyDiscriminator?: () => string;
+}
+```
+
+**`keyDiscriminator`** — called inside the factory injection context to produce a suffix appended to the bus key as `key:suffix`. Use this when the same token appears in multiple component instances simultaneously (e.g. list rows) so each instance is independently addressable:
+
+```typescript
+// List row component — each instance registers under a unique key
+providers: [
+  providePetItemMock(undefined, { keyDiscriminator: () => inject(PET_ID).toString() }),
+]
+// Registers as 'GET_PET_BY_ID:42', 'GET_PET_BY_ID:43', etc.
+
+// Control a specific instance from a Playwright test
+await page.evaluate(() => openApiMock('GET_PET_BY_ID:42').resolve({ id: 42, name: 'Rex' }));
+```
+
+Without `keyDiscriminator`, the last-mounted instance overwrites earlier registrations under the same key.
+
+---
 
 ### `injectMockResource<T>(key)`
 
@@ -428,18 +484,19 @@ Creates a standalone ref without the bus — useful for Storybook decorators, cu
 | `error: Signal<unknown>` | Current error, if any |
 | `isLoading: Signal<boolean>` | `true` while status is `'loading'` or `'reloading'` |
 | `progress: Signal<MockProgress \| undefined>` | Current transfer progress, if active |
+| `requestCount: Signal<number>` | Total factory invocations (increments on mount, reactive param change, and `reload()`) |
 | `hasValue(): boolean` | `true` when value is set |
 | `resolve(value: T)` | Set value, clear error and progress → `'resolved'` |
 | `resolveAfter(ms, value)` | Set loading immediately, resolve after delay |
 | `setLoading()` | Clear error → `'loading'` |
 | `fail(error)` | Set error → `'error'` (progress preserved) |
 | `reset()` | Clear all including progress → `'idle'` |
+| `reload()` | Keep value, clear error → `'reloading'`; fires request event; returns `true`. Returns `false` if status is not `'resolved'` or `'local'` |
 | `setProgress(type, loaded, total?)` | Set progress and status → `'loading'` |
 | `simulateProgress(type, totalBytes, durationMs, finalValue, steps?)` | Animate incremental progress over `durationMs` ms then resolve |
 | `set(value)` | Local mutation → `'local'` (ResourceRef interface) |
 | `update(fn)` | Local update → `'local'` (ResourceRef interface) |
 | `onRequest(cb)` | Subscribe to factory invocations; returns unsubscribe fn |
-| `reload()` | No-op, returns `false` |
 
 ### `MockProgress`
 
@@ -466,14 +523,16 @@ await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolve([...]));
 | Member | Description |
 |--------|-------------|
 | `resolve(value)` | Set value (JSON-serializable) |
-| `resolveAfter(ms, value)` | Delayed resolve |
+| `resolveAfter(ms, value)` | Loading immediately, resolve after delay — emits `loading` + `resolve` events |
 | `setLoading()` | Start loading state |
 | `fail(error)` | Set error state |
 | `reset()` | Return to idle |
+| `reload()` | Keep value → `'reloading'`, fire request event; returns `true` if was resolved/local |
 | `setProgress(type, loaded, total?)` | Set transfer progress |
-| `simulateProgress(type, totalBytes, durationMs, finalValue, steps?)` | Animate progress then resolve |
-| `getState()` | `{ status, value, error, progress }` snapshot |
+| `simulateProgress(type, totalBytes, durationMs, finalValue, steps?)` | Animate progress then resolve — emits `loading`, one `progress` event per step, then `resolve` |
+| `getState()` | `{ status, value, error, progress, requestCount }` snapshot |
 | `getHistory()` | Array of all `MockEvent` entries (requests, responses, progress ticks) |
+| `clearHistory()` | Empty the event log — useful for resetting between test scenarios |
 | `onEvent(cb)` | Subscribe to all events; returns unsubscribe fn |
 
 ### `MockEvent` types
