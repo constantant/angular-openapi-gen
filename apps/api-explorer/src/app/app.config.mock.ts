@@ -129,11 +129,11 @@ export const appConfig: ApplicationConfig = {
         pageInfo: { totalResults: 3, resultsPerPage: 12 },
         items: [
           {
-            id: { videoId: 'dq1ilXOmChs' },
+            id: { videoId: 'Ata9cSC2WpM' },
             snippet: {
               title: 'Angular in 100 Seconds',
               channelTitle: 'Fireship',
-              thumbnails: { medium: { url: 'https://i.ytimg.com/vi/dq1ilXOmChs/mqdefault.jpg' } },
+              thumbnails: { medium: { url: 'https://i.ytimg.com/vi/Ata9cSC2WpM/mqdefault.jpg' } },
             },
           },
           {
