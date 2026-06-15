@@ -3,6 +3,7 @@ export interface MockState {
   value: unknown;
   error: unknown;
   progress: { type: string; loaded: number; total?: number } | undefined;
+  requestCount?: number;
 }
 
 export interface MockEntry {
@@ -16,7 +17,7 @@ export interface MockEntry {
 export type PanelMessage =
   | { type: 'mock-keys'; keys: string[] }
   | { type: 'mock-state'; key: string; state: MockState }
-  | { type: 'mock-event'; key: string; event: { type: string; value?: unknown; error?: unknown; ts: number } };
+  | { type: 'mock-event'; key: string; event: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; ts: number } };
 
 /** Messages sent from the panel → background → content script. */
 export type ContentMessage =

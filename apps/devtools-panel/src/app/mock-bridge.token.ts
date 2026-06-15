@@ -132,6 +132,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
           next.set(key, { ...entry, history: [] });
           return next;
         });
+        post({ type: 'control', detail: { key, action: 'clearHistory' } });
       },
     };
   },

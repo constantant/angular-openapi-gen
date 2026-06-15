@@ -52,6 +52,8 @@
                   [class.catch-active]="row.catchMode"
                   [matTooltip]="row.catchMode ? 'Catch mode on — click to disable' : 'Enable catch mode'"
                   (click)="bridge.setCatchMode(row.key, !row.catchMode)">⏸</button>
+          <button mat-icon-button matTooltip="Reload (keeps value)"
+                  (click)="bridge.sendControl(row.key, 'reload')">↻</button>
           <button mat-icon-button matTooltip="Set loading"
                   (click)="bridge.sendControl(row.key, 'setLoading')">⏳</button>
           <button mat-icon-button matTooltip="Fail"

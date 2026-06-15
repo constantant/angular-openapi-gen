@@ -9,6 +9,7 @@ export interface MockState {
   value: unknown;
   error: unknown;
   progress: { type: string; loaded: number; total?: number } | undefined;
+  requestCount?: number;
 }
 
 export interface HistoryEvent {
@@ -83,7 +84,7 @@ export function applyEvent(
       next.state = { ...entry.state, status: 'loading' };
       break;
     case 'reloading':
-      next.state = { ...entry.state, status: 'reloading' };
+      next.state = { ...entry.state, status: 'reloading', error: undefined };
       break;
     case 'error':
       next.pendingRequest = null;

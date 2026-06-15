@@ -106,7 +106,11 @@ export class MockResourceBus {
       setLoading:   ()         => { ref.setLoading();   emit({ type: 'loading', ts: Date.now() }); },
       fail:         (e)        => { ref.fail(e);        emit({ type: 'error', error: e, ts: Date.now() }); },
       reset:        ()         => { ref.reset();        emit({ type: 'reset', ts: Date.now() }); },
-      reload:       ()         => ref.reload(),
+      reload:       ()         => {
+        const result = ref.reload();
+        if (result) emit({ type: 'reloading', ts: Date.now() });
+        return result;
+      },
       setProgress:  (pt, l, t) => {
         ref.setProgress(pt, l, t);
         emit({ type: 'progress', progressType: pt, loaded: l, total: t, ts: Date.now() });
@@ -191,7 +195,7 @@ export class MockResourceBus {
         case 'resolveAfter':     ref.resolveAfter(detail.delayMs ?? 0, detail.value);    break;
         case 'setLoading':       ref.setLoading();                                       break;
         case 'fail':             ref.fail(detail.value);                                 break;
-        case 'reload':           ref.reload();                                           break;
+        case 'reload':           window.__openApiMocks__?.[detail.key]?.reload();         break;
         case 'reset': {
           ref.reset();
           // If catch mode is still on, immediately re-intercept the resource.
