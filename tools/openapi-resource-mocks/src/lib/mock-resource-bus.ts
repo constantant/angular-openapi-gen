@@ -60,13 +60,7 @@ export class MockResourceBus {
 
   setCatchMode(key: string, enabled: boolean): void {
     if (enabled) {
-      if (this.catchModeKeys.has(key)) return; // idempotent — avoids duplicate caught events
-      this.catchModeKeys.add(key);
-      const ref = this.refs.get(key);
-      if (ref) {
-        ref.setLoading();
-        this.dispatchDomEvent(key, { type: 'caught', args: [], requestId: this.nextReqId(), ts: Date.now() });
-      }
+      this.catchModeKeys.add(key); // idempotent — next request will be caught, current value untouched
     } else {
       this.catchModeKeys.delete(key);
     }
@@ -196,17 +190,7 @@ export class MockResourceBus {
         case 'setLoading':       ref.setLoading();                                       break;
         case 'fail':             ref.fail(detail.value);                                 break;
         case 'reload':           window.__openApiMocks__?.[detail.key]?.reload();         break;
-        case 'reset': {
-          ref.reset();
-          // If catch mode is still on, immediately re-intercept the resource.
-          if (this.catchModeKeys.has(detail.key)) {
-            ref.setLoading();
-            this.dispatchDomEvent(detail.key, {
-              type: 'caught', args: [], requestId: this.nextReqId(), ts: Date.now(),
-            });
-          }
-          break;
-        }
+        case 'reset':          ref.reset();                                                break;
         case 'setProgress':      ref.setProgress(detail.progressType!, detail.loaded!, detail.total); break;
         case 'simulateProgress': window.__openApiMocks__?.[detail.key]?.simulateProgress(
                                    detail.progressType!,

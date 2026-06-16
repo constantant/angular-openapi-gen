@@ -57,14 +57,18 @@ export function provideMockResource<T>(
         bus.register(effectiveKey, ref, meta);
         const internal = ref as MockResourceRefInternal<T>;
 
+        if (initialBehavior) {
+          // Re-apply on every request (initial, param change, reload) unless catch mode
+          // is intercepting. The bus's onRequest listener (registered in bus.register)
+          // runs first, so isCatchMode reflects whether this request was just caught.
+          ref.onRequest(() => {
+            if (!bus.isCatchMode(effectiveKey)) applyBehavior(ref, initialBehavior);
+          });
+        }
+
         // untracked() prevents thunk signal-reads from leaking into the outer reactive
         // context — component field initializers run during Angular change detection.
-        untracked(() => {
-          internal._notifyRequest(args);
-          // Skip initialBehavior when the bus caught the request: catch mode takes
-          // precedence and the response must come from the DevTools panel.
-          if (initialBehavior && !bus.isCatchMode(effectiveKey)) applyBehavior(ref, initialBehavior);
-        });
+        untracked(() => { internal._notifyRequest(args); });
 
         // When any arg is a reactive thunk, track signal changes so each new set of
         // params fires a new request event (mirroring how httpResource re-fires on
@@ -76,9 +80,8 @@ export function provideMockResource<T>(
             // Resolve thunks inside the effect body so their signals are tracked.
             const resolved = args.map((a) => (typeof a === 'function' ? (a as () => unknown)() : a));
             untracked(() => {
-              if (first) { first = false; return; } // first run already handled above
+              if (first) { first = false; return; } // first run already handled by _notifyRequest above
               internal._notifyRequest(resolved);
-              if (initialBehavior && !bus.isCatchMode(effectiveKey)) applyBehavior(ref, initialBehavior);
             });
           });
         }
