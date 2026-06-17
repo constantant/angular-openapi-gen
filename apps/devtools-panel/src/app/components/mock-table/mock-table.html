@@ -1,3 +1,7 @@
+<div class="new-mock-bar">
+  <button mat-button (click)="openCreateDialog()">＋ New mock</button>
+</div>
+
 @if (entries().length === 0) {
   <div class="empty-state">
     <p>No mocks registered yet.</p>
@@ -48,6 +52,10 @@
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let row" class="actions-cell"
             (click)="$event.stopPropagation()">
+          @if (row.state.status === 'local') {
+            <button mat-icon-button matTooltip="Remove local mock"
+                    (click)="bridge.deleteLocalMock(row.key)">🗑</button>
+          }
           <button mat-icon-button
                   [class.catch-active]="row.catchMode"
                   [matTooltip]="row.catchMode ? 'Catch mode on — click to disable' : 'Enable catch mode'"

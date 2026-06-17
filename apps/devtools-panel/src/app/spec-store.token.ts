@@ -42,7 +42,7 @@ const STORAGE_KEY = 'oarm_specs';
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 /** Matches the generator's toScreamingSnake — must stay in sync. */
-function toScreamingSnake(str: string): string {
+export function toScreamingSnake(str: string): string {
   return str
     .replace(/\//g, '_')
     .replace(/([a-z0-9])([A-Z])/g, '$1_$2')

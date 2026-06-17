@@ -1,12 +1,24 @@
 :host {
   flex: 1;
   min-width: 0;
-  overflow: auto;
-  display: block;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.new-mock-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
+
+  button { font-size: 12px; }
 }
 
 .table-wrap {
-  height: 100%;
+  flex: 1;
+  height: 0;
   overflow: auto;
 }
 
@@ -22,10 +34,10 @@ table {
 .mat-mdc-row.selected { background: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent); }
 .mat-mdc-row.catching { border-left: 2px solid var(--app-color-catch); }
 
-.mat-column-key       { width: 32%; }
+.mat-column-key       { width: 30%; }
 .mat-column-status    { width: 13%; }
-.mat-column-lastEvent { width: 28%; }
-.mat-column-actions   { width: 27%; }
+.mat-column-lastEvent { width: 22%; }
+.mat-column-actions   { width: 35%; }
 
 .key-cell {
   font-family: var(--app-font-mono), monospace;

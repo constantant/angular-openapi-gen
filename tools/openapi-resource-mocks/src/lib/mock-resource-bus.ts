@@ -164,6 +164,18 @@ export class MockResourceBus {
 
   constructor() {
     if (typeof document === 'undefined') return;
+
+    // Pre-populate catch modes injected by the DevTools extension before Angular
+    // bootstrapped (window.__oarmPendingCatch__ is set by the extension SW on
+    // page navigation start so local panel mocks are active from the first request).
+    const pending = (window as unknown as Record<string, unknown>)['__oarmPendingCatch__'];
+    if (pending && typeof pending === 'object') {
+      for (const [key, enabled] of Object.entries(pending as Record<string, boolean>)) {
+        if (enabled) this.catchModeKeys.add(key);
+      }
+      delete (window as unknown as Record<string, unknown>)['__oarmPendingCatch__'];
+    }
+
     document.addEventListener('openapi-mock-control', (e: Event) => {
       const detail = (
         e as CustomEvent<{

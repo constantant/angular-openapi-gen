@@ -1,0 +1,73 @@
+@if (specList().length === 0) {
+  <h2 mat-dialog-title>New mock</h2>
+  <mat-dialog-content class="empty-state">
+    <p>No specs imported yet.</p>
+    <p>Go to the <strong>Specs</strong> tab and import an OpenAPI spec first.</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Close</button>
+  </mat-dialog-actions>
+} @else {
+  <h2 mat-dialog-title>New mock</h2>
+
+  <mat-dialog-content>
+    <div class="spec-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Spec</mat-label>
+        <mat-select [value]="effectiveSpecId()" (selectionChange)="onSpecChange($event.value)">
+          @for (spec of specList(); track spec.specId) {
+            <mat-option [value]="spec.specId">
+              {{ spec.specId }} ({{ spec.mocks.length }})
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="filter-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filter-field">
+        <mat-label>Filter operations</mat-label>
+        <input matInput placeholder="path, operationId, method…"
+               [value]="operationFilter()"
+               (input)="operationFilter.set($any($event.target).value)" />
+      </mat-form-field>
+    </div>
+
+    <div class="ops-list">
+      @for (mock of filteredMocks(); track mock.operationId) {
+        <button class="op-row"
+                [class.selected]="selectedMock()?.operationId === mock.operationId"
+                (click)="selectOperation(mock)">
+          <span class="op-method method-{{ mock.method }}">{{ mock.method.toUpperCase() }}</span>
+          <span class="op-path" [title]="mock.path">{{ mock.path }}</span>
+          <span class="op-id" [title]="mock.operationId">{{ mock.operationId }}</span>
+        </button>
+      }
+      @if (filteredMocks().length === 0) {
+        <div class="ops-empty">No operations match.</div>
+      }
+    </div>
+
+    <div class="key-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="key-field">
+        <mat-label>Key</mat-label>
+        <input matInput placeholder="TOKEN_NAME"
+               [value]="keyInput()"
+               (input)="keyInput.set($any($event.target).value)" />
+        @if (keyConflict()) {
+          <mat-hint class="key-conflict">Key already exists in the mock table</mat-hint>
+        }
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-flat-button
+            [disabled]="!canCreate()"
+            [matTooltip]="keyConflict() ? 'Key already exists' : ''"
+            (click)="create()">
+      Create
+    </button>
+  </mat-dialog-actions>
+}

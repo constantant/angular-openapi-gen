@@ -1,6 +1,48 @@
 // Map of inspected tabId → connected DevTools panel port.
 const ports = new Map<number, chrome.runtime.Port>();
 
+// ── Catch-mode persistence ────────────────────────────────────────────────────
+// Tracks which keys have catch mode enabled per tab so they can be pre-injected
+// into the MAIN world before Angular bootstraps on the next page load.
+// In-memory for speed; mirrored to chrome.storage.session to survive SW sleep.
+const tabCatchModes = new Map<number, Record<string, boolean>>();
+
+// Restore from storage when the SW wakes up after being suspended.
+chrome.storage.session.get(null, (all) => {
+  for (const [k, v] of Object.entries(all)) {
+    if (k.startsWith('oarm_catch_') && typeof v === 'object' && v !== null) {
+      const tabId = parseInt(k.slice('oarm_catch_'.length), 10);
+      if (!isNaN(tabId)) tabCatchModes.set(tabId, v as Record<string, boolean>);
+    }
+  }
+});
+
+function setCatchForTab(tabId: number, key: string, enabled: boolean): void {
+  const modes = tabCatchModes.get(tabId) ?? {};
+  if (enabled) modes[key] = true; else delete modes[key];
+  tabCatchModes.set(tabId, modes);
+  chrome.storage.session.set({ [`oarm_catch_${tabId}`]: modes });
+}
+
+// Pre-inject active catch modes before Angular bootstraps on the next page load.
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status !== 'loading') return;
+  const modes = tabCatchModes.get(tabId);
+  if (!modes) return;
+  const active: Record<string, boolean> = {};
+  for (const [k, v] of Object.entries(modes)) if (v) active[k] = true;
+  if (Object.keys(active).length === 0) return;
+  chrome.scripting.executeScript({
+    target: { tabId },
+    world: 'MAIN',
+    injectImmediately: true,
+    func: (catchModes: Record<string, boolean>) => {
+      (window as unknown as Record<string, unknown>)['__oarmPendingCatch__'] = catchModes;
+    },
+    args: [active],
+  }).catch(() => { /* tab may be a chrome:// page */ });
+});
+
 /**
  * Inject a self-contained function into the page's MAIN world via the scripting
  * API. This bypasses both content-script isolation and the page's CSP.
@@ -75,6 +117,11 @@ chrome.runtime.onConnect.addListener((port) => {
       // watch-list re-enable logic in the panel for every sendControl call.
       injectStateOnly(tabId, msg.key, port);
       return;
+    }
+    if (msg.type === 'control' && msg.detail?.key) {
+      const { key, action } = msg.detail as { key: string; action: string };
+      if (action === 'setCatchMode') setCatchForTab(tabId, key, true);
+      else if (action === 'clearCatchMode') setCatchForTab(tabId, key, false);
     }
     chrome.tabs.sendMessage(tabId, msg).catch(() => { /* swallow — tab may have navigated */ });
   });

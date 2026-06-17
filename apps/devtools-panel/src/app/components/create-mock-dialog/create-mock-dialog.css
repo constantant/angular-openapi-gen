@@ -1,0 +1,93 @@
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+  min-width: 400px;
+  max-height: 60vh;
+}
+
+.spec-row mat-form-field,
+.filter-row .filter-field {
+  width: 100%;
+}
+
+.ops-list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-on-surface) 15%, transparent);
+  border-radius: 4px;
+  min-height: 120px;
+  max-height: 260px;
+}
+
+.op-row {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 5px 8px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-family: var(--app-font-mono), monospace;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: color-mix(in srgb, var(--mat-sys-on-surface) 6%, transparent); }
+  &.selected { background: color-mix(in srgb, var(--mat-sys-primary) 20%, transparent); }
+}
+
+.op-method {
+  font-weight: 700;
+  font-size: 10px;
+  text-align: center;
+}
+
+.op-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mat-sys-on-surface);
+}
+
+.op-id {
+  font-size: 10px;
+  color: var(--mat-sys-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 130px;
+}
+
+.ops-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+}
+
+.key-row .key-field { width: 100%; }
+
+.key-conflict { color: var(--mat-sys-error); }
+
+.empty-state {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 16px 0;
+}
+
+/* Method colours — same as mock-table.css */
+.method-get    { color: #4fc3f7; }
+.method-post   { color: #81c784; }
+.method-put    { color: #ffb74d; }
+.method-patch  { color: #ffd54f; }
+.method-delete { color: #e57373; }
+.method-head,
+.method-options { color: #ba68c8; }

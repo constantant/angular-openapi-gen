@@ -1,5 +1,5 @@
 import { InjectionToken, Signal, WritableSignal, inject, signal } from '@angular/core';
-import { MockEntry, MockState, PanelMessage, applyEvent, blankEntry } from './mock-entry';
+import { MockEntry, MockResourceMeta, MockState, PanelMessage, applyEvent, blankEntry } from './mock-entry';
 import { SPEC_STORE } from './spec-store.token';
 
 export interface MockBridge {
@@ -11,6 +11,8 @@ export interface MockBridge {
   clearAll(): void;
   resetAll(): void;
   clearHistory(key: string): void;
+  createLocalMock(key: string, meta: MockResourceMeta): void;
+  deleteLocalMock(key: string): void;
 }
 
 export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
@@ -29,11 +31,22 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         clearAll: () => { /* noop */ },
         resetAll: () => { /* noop */ },
         clearHistory: () => { /* noop */ },
+        createLocalMock: () => { /* noop */ },
+        deleteLocalMock: () => { /* noop */ },
       };
     }
 
     const tabId = chrome.devtools.inspectedWindow.tabId;
     const specStore = inject(SPEC_STORE);
+    const LOCAL_MOCKS_KEY = 'oarm_local_mocks';
+
+    function persistLocalMocks(map: Map<string, MockEntry>): void {
+      const out: Record<string, { meta: MockResourceMeta; catchMode: boolean }> = {};
+      for (const [key, entry] of map) {
+        if (entry.state.status === 'local' && entry.meta) out[key] = { meta: entry.meta, catchMode: entry.catchMode };
+      }
+      chrome.storage.local.set({ [LOCAL_MOCKS_KEY]: out });
+    }
 
     let port: chrome.runtime.Port;
 
@@ -45,13 +58,18 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
             // Runtime meta (Phase 1) takes priority; fall back to SPEC_STORE (Phase 3).
             const runtimeMeta = msg.metas?.[key] ?? null;
             const meta = runtimeMeta ?? specStore.findMock(key) ?? null;
-            if (!next.has(key)) {
+            const existing = next.get(key);
+            if (!existing) {
               next.set(key, { ...blankEntry(key), meta });
+            } else if (existing.state.status === 'local') {
+              // Entry was panel-created; the app has now registered the key — promote it.
+              next.set(key, { ...existing, state: { status: 'idle', value: undefined, error: undefined, progress: undefined }, meta: meta ?? existing.meta });
             } else if (meta) {
-              const existing = next.get(key);
-              if (existing) next.set(key, { ...existing, meta });
+              next.set(key, { ...existing, meta });
             }
           }
+          // Clean up storage for any promoted local mocks.
+          persistLocalMocks(next);
         } else if (msg.type === 'mock-state') {
           const existing = next.get(msg.key) ?? blankEntry(msg.key);
           const newState = msg.state as MockState;
@@ -92,6 +110,21 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
 
     connect();
 
+    chrome.storage.local.get(LOCAL_MOCKS_KEY, (res) => {
+      const stored = res[LOCAL_MOCKS_KEY];
+      if (stored && typeof stored === 'object' && !Array.isArray(stored)) {
+        mocks.update((prev) => {
+          const next = new Map(prev);
+          for (const [key, v] of Object.entries(stored as Record<string, { meta: MockResourceMeta; catchMode?: boolean }>)) {
+            if (!next.has(key) && v.meta) {
+              next.set(key, { ...blankEntry(key), state: { status: 'local', value: undefined, error: undefined, progress: undefined }, meta: v.meta, catchMode: v.catchMode ?? false });
+            }
+          }
+          return next;
+        });
+      }
+    });
+
     function post(msg: unknown): void {
       try {
         port.postMessage(msg);
@@ -119,6 +152,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
           next.set(key, { ...entry, catchMode: enabled, pendingRequest: enabled ? entry.pendingRequest : null });
           return next;
         });
+        persistLocalMocks(mocks());
         post({ type: 'control', detail: { key, action: enabled ? 'setCatchMode' : 'clearCatchMode' } });
       },
       refresh: () => post({ type: 'get-keys' }),
@@ -133,6 +167,26 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
           return next;
         });
         post({ type: 'control', detail: { key, action: 'clearHistory' } });
+      },
+      createLocalMock: (key: string, meta: MockResourceMeta) => {
+        mocks.update((prev) => {
+          const next = new Map(prev);
+          next.set(key, { ...blankEntry(key), state: { status: 'local', value: undefined, error: undefined, progress: undefined }, meta });
+          return next;
+        });
+        selectedKey.set(key);
+        persistLocalMocks(mocks());
+      },
+      deleteLocalMock: (key: string) => {
+        mocks.update((prev) => {
+          const entry = prev.get(key);
+          if (!entry || entry.state.status !== 'local') return prev;
+          const next = new Map(prev);
+          next.delete(key);
+          return next;
+        });
+        if (selectedKey() === key) selectedKey.set(null);
+        persistLocalMocks(mocks());
       },
     };
   },

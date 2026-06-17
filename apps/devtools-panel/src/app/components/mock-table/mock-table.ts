@@ -1,9 +1,11 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
 import type { MockEntry } from '../../mock-entry';
+import { CreateMockDialog } from '../create-mock-dialog/create-mock-dialog';
 
 @Component({
   selector: 'app-mock-table',
@@ -13,6 +15,7 @@ import type { MockEntry } from '../../mock-entry';
 })
 export class MockTable {
   protected readonly bridge = inject(MOCK_BRIDGE);
+  private readonly dialog = inject(MatDialog);
   readonly filter = input<string>('');
 
   protected readonly entries = computed<MockEntry[]>(() => {
@@ -23,6 +26,10 @@ export class MockTable {
   });
 
   protected readonly cols = ['key', 'status', 'lastEvent', 'actions'];
+
+  protected openCreateDialog(): void {
+    this.dialog.open(CreateMockDialog, { autoFocus: false });
+  }
 
   protected ago(ts: number): string {
     const ms = Date.now() - ts;
