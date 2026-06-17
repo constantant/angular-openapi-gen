@@ -388,6 +388,124 @@ test.describe('DevTools Panel', () => {
     await expect(page.locator('.spec-id')).toContainText('test-api');
   });
 
+  // ── Mock table — new mock bar ─────────────────────────────────────────────
+
+  const newMockBtn = (page: import('@playwright/test').Page) =>
+    page.locator('.new-mock-bar button:has-text("＋ New mock")');
+  const dialog = (page: import('@playwright/test').Page) =>
+    page.locator('mat-dialog-container');
+  const mocksTab = (page: import('@playwright/test').Page) =>
+    page.locator('.page-nav button[mat-tab-link]:has-text("Mocks")');
+
+  test('"＋ New mock" button is always visible in the mock table', async ({ page }) => {
+    await expect(newMockBtn(page)).toBeVisible();
+  });
+
+  test('clicking "＋ New mock" opens a dialog with the title "New mock"', async ({ page }) => {
+    await newMockBtn(page).click();
+    await expect(dialog(page)).toBeVisible();
+    await expect(dialog(page).locator('h2')).toContainText('New mock');
+  });
+
+  // ── Create Mock dialog — no specs ─────────────────────────────────────────
+
+  test('Create Mock dialog shows empty state when no specs are imported', async ({ page }) => {
+    await newMockBtn(page).click();
+    await expect(dialog(page).locator('.empty-state')).toBeVisible();
+    await expect(dialog(page).locator('.empty-state')).toContainText('No specs imported');
+  });
+
+  test('Create Mock dialog empty state has a Close button', async ({ page }) => {
+    await newMockBtn(page).click();
+    await dialog(page).locator('button:has-text("Close")').click();
+    await expect(dialog(page)).toBeHidden();
+  });
+
+  // ── Create Mock dialog — with spec ────────────────────────────────────────
+
+  test('Create Mock dialog lists operations from an imported spec', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await expect(dialog(page).locator('.op-row')).toHaveCount(2);
+  });
+
+  test('Create Mock dialog shows operation method and path', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await expect(dialog(page).locator('.op-row').first()).toContainText('GET');
+    await expect(dialog(page).locator('.op-row').first()).toContainText('/pets');
+  });
+
+  test('Create button is disabled when no operation is selected', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await expect(dialog(page).locator('mat-dialog-actions button:has-text("Create")')).toBeDisabled();
+  });
+
+  test('selecting an operation auto-fills the key field', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await dialog(page).locator('.op-row').first().click();
+    await expect(dialog(page).locator('input[placeholder="TOKEN_NAME"]')).toHaveValue('GET_PETS');
+  });
+
+  test('Create button is enabled after selecting an operation', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await dialog(page).locator('.op-row').first().click();
+    await expect(dialog(page).locator('mat-dialog-actions button:has-text("Create")')).toBeEnabled();
+  });
+
+  test('key field is editable after auto-fill', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await dialog(page).locator('.op-row').first().click();
+    const keyInput = dialog(page).locator('input[placeholder="TOKEN_NAME"]');
+    await keyInput.fill('MY_CUSTOM_KEY');
+    await expect(keyInput).toHaveValue('MY_CUSTOM_KEY');
+  });
+
+  test('filtering operations by method narrows the list', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await dialog(page).locator('input[placeholder*="path"]').fill('post');
+    await expect(dialog(page).locator('.op-row')).toHaveCount(1);
+    await expect(dialog(page).locator('.op-row')).toContainText('POST');
+  });
+
+  test('filtering operations by operationId narrows the list', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await dialog(page).locator('input[placeholder*="path"]').fill('createPet');
+    await expect(dialog(page).locator('.op-row')).toHaveCount(1);
+    await expect(dialog(page).locator('.op-row')).toContainText('createPet');
+  });
+
+  test('Cancel button closes the Create Mock dialog', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await dialog(page).locator('button:has-text("Cancel")').click();
+    await expect(dialog(page)).toBeHidden();
+  });
+
+  test('Create button closes the dialog after creation', async ({ page }) => {
+    await addManifestViaUrl(page);
+    await mocksTab(page).click();
+    await newMockBtn(page).click();
+    await dialog(page).locator('.op-row').first().click();
+    await dialog(page).locator('mat-dialog-actions button:has-text("Create")').click();
+    await expect(dialog(page)).toBeHidden();
+  });
+
   test('multiple specs can be registered', async ({ page }) => {
     const manifest2 = { specId: 'other-api', mocks: [MANIFEST.mocks[0]] };
     await page.route(MANIFEST_URL, (route) =>
