@@ -386,6 +386,7 @@ npx nx g @nx/angular:service <name> --project=<project> --no-interactive
 ```
 page (Angular app with @constantant/openapi-resource-mocks)
   │  window.__openApiMocks__          (MockResourceBus)
+  │  window.__oarmPendingCatch__      (pre-injected by SW at page-load start)
   │  DOM events: openapi-mock-event / openapi-mock-control
   ▼
 content script (tools/openapi-resource-devtools/src/content/content.ts)
@@ -393,6 +394,7 @@ content script (tools/openapi-resource-devtools/src/content/content.ts)
   ▼
 background service worker (tools/openapi-resource-devtools/src/background/sw.ts)
   │  chrome.runtime.Port (named "devtools-<tabId>")
+  │  tabCatchModes: Map<tabId, Record<key, boolean>>   (in-memory + chrome.storage.session)
   ▼
 devtools panel (apps/devtools-panel/) — Angular 22 app
   MOCK_BRIDGE InjectionToken  ←→  port.postMessage / port.onMessage
@@ -401,6 +403,20 @@ devtools panel (apps/devtools-panel/) — Angular 22 app
 The panel app (`apps/devtools-panel/`) is a standalone Angular 22 app that runs inside
 the Chrome DevTools panel page. It communicates with the inspected page via the
 background service worker using named ports.
+
+#### Catch-mode pre-injection (SW → page at navigation start)
+
+When a developer enables catch mode on any mock (including a local/unregistered one), the
+SW records it in an in-memory `tabCatchModes` map (mirrored to `chrome.storage.session`
+under `oarm_catch_<tabId>` for SW sleep survival). On `chrome.tabs.onUpdated` with
+`status: 'loading'`, the SW immediately calls `chrome.scripting.executeScript` with
+`injectImmediately: true` to set `window.__oarmPendingCatch__ = { KEY: true, ... }` in the
+MAIN world — before Angular's `<script type="module">` tags execute.
+
+`MockResourceBus` constructor reads `window.__oarmPendingCatch__` synchronously and
+pre-populates `catchModeKeys`. This ensures the very first `_notifyRequest()` call (which
+fires synchronously inside `provideMockResource`'s factory during Angular bootstrap) is
+already intercepted, with no async round-trip required.
 
 ### MOCK_BRIDGE token
 
@@ -411,6 +427,19 @@ background service worker using named ports.
   bridge. Guard: `typeof chrome === 'undefined' || !chrome.devtools`.
 
 Never provide `MOCK_BRIDGE` via `@Injectable` — it must always be the token factory.
+
+`MockBridge` interface includes two methods for panel-managed (local) mocks:
+- `createLocalMock(key, meta)` — adds an entry with `status: 'local'`, persists to
+  `chrome.storage.local['oarm_local_mocks']` (schema: `Record<string, { meta, catchMode }>`),
+  and auto-selects the new entry in the table.
+- `deleteLocalMock(key)` — removes the entry and clears it from storage. Guard: only
+  deletes entries whose `state.status === 'local'`, never live entries.
+
+Local mocks are restored from storage on panel init (after `connect()`). When `mock-keys`
+arrives containing a key that was local, the entry is **promoted in-place**: status
+transitions to `'idle'`, `catchMode` is preserved, and the catch-mode re-send loop fires
+the `setCatchMode` control message to the newly-live bus. The entry is removed from
+`oarm_local_mocks` storage at that point.
 
 ### DevTools panel tech stack
 
@@ -425,6 +454,8 @@ Never provide `MOCK_BRIDGE` via `@Injectable` — it must always be the token fa
 - **js-yaml** — `load as yamlLoad` — Specs tab accepts `.yaml`/`.yml` files and YAML URLs in addition to JSON.
 - **SPEC_STORE token** (`apps/devtools-panel/src/app/spec-store.token.ts`) — stores OpenAPI specs in `chrome.storage.local`. Uses a module-level `rewrittenDefsCache: Map<string, …>` to defer the expensive `rewriteRefs()` call on large `components/schemas` blobs (e.g. github.yaml) until the first `findSchema()` call, avoiding hangs on import.
 - **MockResourceMeta** — `{ specId, operationId, path, method, tag? }` — embedded in each generated mock file as `export const _meta: MockResourceMeta`. Passed to `provideMockResource()` so the panel can show operation info in the mock table and Respond tab.
+- **CreateMockDialog** — `apps/devtools-panel/src/app/components/create-mock-dialog/` — opened by the "＋ New mock" button in the mock table. Lets developers create panel-managed (local) mocks before `provideMockResource()` exists in the app: pick a spec from `SPEC_STORE`, select an operation, confirm the auto-generated key (`toScreamingSnake(operationId)`, editable). The key is conflict-checked against `MOCK_BRIDGE.mocks()`. Uses `MatDialog` from `@angular/material/dialog`.
+- **`toScreamingSnake`** — exported from `apps/devtools-panel/src/app/spec-store.token.ts`. Used by `CreateMockDialog` to derive the default key from an operationId, matching the generator's naming convention exactly.
 
 ### Releasing the extension
 
@@ -496,6 +527,8 @@ Conventional Commits PR title (it becomes the squash commit). See
 | Lazy definitions cache in SPEC_STORE | `rewrittenDefsCache: Map<string, Record<string, unknown>>` defers `rewriteRefs()` on `components/schemas` to first `findSchema()` call; separate `rawDefinitions` field in `SpecEntry` avoids embedding the full definitions blob into every per-operation schema | github.yaml has ~30MB of definitions; embedding them N times in storage caused hangs. Deferring to first use keeps import fast |
 | `@cfworker/json-schema` Validator class | Use `new Validator(schema).validate(instance)`, NOT the standalone `validate()` function | The standalone `validate` export is broken — always returns `{valid: true}`. The `Validator` class API works correctly and resolves `$ref`/`definitions` |
 | Respond tab pinned footer | `schema-section`, `delay-row`, and `action-row` moved out of the scrollable `.respond-body` into a `flex-shrink: 0` `.respond-footer` below it | When the editor grows tall, schema/delay/actions were scrolled off-screen. Pinning them ensures they are always reachable |
+| Local (unregistered) mocks | `MockBridge.createLocalMock()` adds a panel-managed entry with `status: 'local'`; persisted in `chrome.storage.local['oarm_local_mocks']` with `catchMode`; promoted in-place when the app registers the key | Developer pre-configures a mock (catch mode, Respond tab value) before writing the Angular code. All controls work identically to live mocks; control messages to the page are silently ignored until the key is registered |
+| Catch-mode pre-injection | SW tracks catch modes in memory + `chrome.storage.session['oarm_catch_<tabId>']`; on `tabs.onUpdated(loading)` injects `window.__oarmPendingCatch__` via `executeScript(injectImmediately:true)`; `MockResourceBus` constructor reads and pre-populates `catchModeKeys` | `provideMockResource` calls `_notifyRequest()` synchronously during Angular bootstrap — before any async panel message can arrive. Pre-injection closes this race so the very first request is caught |
 
 ---
 
