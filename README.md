@@ -93,6 +93,7 @@ Re-run the generator command whenever your spec changes — it overwrites genera
 | `namingConvention` | no | `kebab` | `kebab` or `camel` — controls file names |
 | `providedIn` | no | `none` | `none` (use `provideX()` helpers) or `root` (self-registering) |
 | `includeMocks` | no | `false` | Co-generate `.mock.ts` providers, `index.mock.ts` barrels, and `mocks.manifest.json` — requires `@constantant/openapi-resource-mocks` |
+| `includeMswHandlers` | no | `false` | Co-generate `.msw.ts` MSW 2.x handler files and `index.msw.ts` barrels — requires [`msw`](https://mswjs.io) >= 2.0.0 |
 | `specId` | no | derived | Identifier embedded in `MockResourceMeta` and `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match when importing into the DevTools panel. |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
@@ -257,7 +258,9 @@ A companion package that provides zero-HTTP, pure-DI mocks for generated tokens.
 - `provideMockResourceBus()` — registers the bus; exposes `window.__openApiMocks__` and `openApiMock(key)` for Playwright
 - `provideMockResource(token, key, initialBehavior?, meta?)` — replaces a token's factory with a mock; the optional `meta` (`MockResourceMeta`) is embedded automatically in generated `.mock.ts` files and used by the DevTools panel to resolve response schemas
 - DOM event bridge (`openapi-mock-event` / `openapi-mock-control`) — lets the Chrome Extension DevTools panel observe and control mocks in real time
+- `injectMockResource<T>(key)` — retrieves the `MockResourceRef<T>` for a registered key inside an injection context (e.g. `TestBed.runInInjectionContext`)
 - `MockResourceRef<T>` — `resolve()`, `setLoading()`, `fail()`, `reset()`, `simulateProgress()`, `getHistory()`
+- **`/testing` sub-entry** — `mockResource(token, behavior?)` returns a `MockResourceHandle<T>` extending `FactoryProvider`; drop directly into `TestBed` providers without a full bus setup; supports `{ sequence: [...] }` for multi-step per-call responses
 
 See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/README.md) for full documentation.
 
@@ -265,9 +268,17 @@ See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/READ
 
 ## Chrome DevTools Extension — OpenAPI Resource Mocks DevTools
 
-Current version: **0.6.0** | Status: pending Chrome Web Store review
+Current version: **0.7.0** | Status: pending Chrome Web Store review
 
-A Chrome DevTools panel that connects to any Angular app running `@constantant/openapi-resource-mocks`. It lists every registered mock token, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code. The **Specs** tab lets you import a `mocks.manifest.json` or full OpenAPI spec to enable schema-aware features in the Respond tab: auto-generated example payloads (⚡ Example) and JSON schema validation (✓ Validate).
+A Chrome DevTools panel that connects to any Angular app running `@constantant/openapi-resource-mocks`. It lists every registered mock token, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code.
+
+Key panel features:
+- **Mock table** — live status, catch mode toggle, resolve/fail/reset actions per token
+- **Respond tab** — JSON editor with schema-aware ⚡ Example generation and ✓ Validate; delay control; catch mode release
+- **History tab** — reverse-chronological event log; for `request`/`caught` events shows the filled URL (`GET /pet/42`), path-param rows labeled by name, and Query / Body sections for remaining args; binary payloads (`[FormData]`, `[Blob]`, etc.) shown as inline badges
+- **Specs tab** — import `mocks.manifest.json` or a full OpenAPI spec (JSON or YAML, file or URL) to enable schema-aware features
+- **Scenarios** toolbar button — save named snapshots of the full mock table state, load / delete them, or export / import as JSON for cross-machine sharing
+- **＋ New mock** button — create a panel-managed (local) mock before `provideMockResource()` exists in the app, pre-configure catch mode and a response value, and have it promoted in-place when the key is registered
 
 ### Install
 

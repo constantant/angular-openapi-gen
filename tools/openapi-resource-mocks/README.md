@@ -111,6 +111,74 @@ Types come from the generated lib — no hand-written interfaces needed.
 
 ---
 
+## Unit test helpers (`/testing`)
+
+`@constantant/openapi-resource-mocks/testing` is a lightweight sub-entry for unit tests and
+Storybook. It does not import `MockResourceBus`, register DOM events, or touch `window` —
+it simply wraps a token with a `MockResourceRef` and drops it into `TestBed` as a
+`FactoryProvider`.
+
+```typescript
+import { mockResource } from '@constantant/openapi-resource-mocks/testing';
+import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
+
+const petsMock = mockResource(FIND_PETS_BY_STATUS, { value: [] });
+
+TestBed.configureTestingModule({
+  imports: [PetsComponent],
+  providers: [petsMock],   // MockResourceHandle extends FactoryProvider — drop it in directly
+});
+
+fixture.detectChanges();
+
+petsMock.ref.resolve([{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }]);
+fixture.detectChanges();
+
+petsMock.expectCalled();
+petsMock.expectCalledWith({ status: 'available' });
+console.log(petsMock.calls); // readonly unknown[][]  — all factory invocations and their args
+```
+
+### `mockResource<T>(token, behaviorOrOptions?)`
+
+Returns `MockResourceHandle<T>`, which extends `FactoryProvider`.
+
+The second argument sets the initial mock state (same shapes as `provideMockResource`):
+
+| Shape | Effect |
+|-------|--------|
+| `{ value: T }` | Resolves immediately |
+| `{ value: T, delay: ms }` | Loading for `ms` ms, then resolves |
+| `{ loading: true }` | Stays loading indefinitely |
+| `{ error: unknown }` | Fails immediately |
+| `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
+
+### Response sequences
+
+Pass `{ sequence: [...] }` to advance through multiple states — each factory call (and
+each `reload()` in resolved state) consumes the next entry; the last entry repeats when exhausted:
+
+```typescript
+const mock = mockResource(FIND_PETS_BY_STATUS, {
+  sequence: [
+    { loading: true },
+    { error: new Error('timeout') },
+    { value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }] },
+  ],
+});
+```
+
+### `MockResourceHandle<T>`
+
+| Member | Description |
+|--------|-------------|
+| `.ref` | `MockResourceRef<T>` — the underlying ref; call `.resolve()`, `.fail()`, etc. to change state mid-test |
+| `.calls` | `readonly unknown[][]` — all args the factory was invoked with |
+| `.expectCalled()` | Throws if the factory was never called |
+| `.expectCalledWith(...args)` | Throws if no call matches (deep equality via recursive comparison) |
+
+---
+
 ## File upload / download progress
 
 ### In-process (unit tests / Storybook)

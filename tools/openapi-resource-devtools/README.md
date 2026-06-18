@@ -87,7 +87,17 @@ Manually resolve, fail, or control the selected mock:
 
 ### History tab
 
-Reverse-chronological event log for the selected mock (up to 200 entries). Each row shows the timestamp, event type badge, and a truncated JSON preview of the value or error. A **Clear** button wipes the log.
+Reverse-chronological event log for the selected mock (up to 200 entries). A **Clear** button wipes the log.
+
+Each row shows the timestamp, event type badge, and a one-line preview. For `request` and `caught` events the preview shows the **filled URL** — e.g. `GET /pet/42` — derived from the operation's path template and the actual args the component passed.
+
+Clicking a row expands a structured detail view:
+
+- **Filled URL** — the path with `{param}` placeholders substituted by positional args (e.g. `GET /pet/{petId}` → `GET /pet/42`)
+- **Path param rows** — one row per `{param}`, labeled by name from the spec, showing the actual value passed
+- **Query / Body section** — remaining args after path params are labeled **Query** (GET/HEAD/DELETE) or **Body** (POST/PUT/PATCH)
+- **Binary badges** — `[FormData]`, `[Blob]`, `[ArrayBuffer]`, and `[File: name]` are displayed as inline badges instead of quoted strings
+- **Response / Error sections** — shown for `resolve` and `error` events
 
 ---
 
@@ -145,7 +155,25 @@ After each release, if catch mode is still on, the resource is immediately re-in
 | ⏸ Catch All | Toggles catch mode on every registered mock |
 | Clear | Removes all mocks from the panel (does not affect the page) |
 | Reset All | Calls `reset()` on every mock, returning them to `idle` |
+| Scenarios | Opens the Scenarios dialog — save named snapshots of the full mock table state, load / delete them, or export / import as JSON for cross-machine sharing |
 | Filter… | Filters the mock table by key name |
+
+---
+
+## Local (unregistered) mocks
+
+The **＋ New mock** button in the mock table toolbar lets you create a panel-managed mock before `provideMockResource()` exists in the Angular app. Use this to pre-configure a mock response while you're still writing the component code:
+
+1. Click **＋ New mock** — the **Create mock** dialog opens.
+2. Pick a spec from the **Specs** tab (the spec must already be imported), then select an operation.
+3. The key is auto-generated from the operationId (e.g. `findPetsByStatus` → `FIND_PETS_BY_STATUS`). Edit it if needed.
+4. Click **Create** — the new entry appears in the mock table with status `local`.
+
+Local mock entries support all panel controls: catch mode, the Respond tab (including ⚡ Example and ✓ Validate when a spec is imported), and the History tab. Control messages to the page are silently ignored until the matching key is registered by the app.
+
+When the app registers `provideMockResource(..., 'FIND_PETS_BY_STATUS', ...)`, the local entry is **promoted in-place** — its status transitions to `idle`, catch mode is preserved, and any pending catch-mode control is re-sent to the now-live bus.
+
+Local mock entries are persisted across DevTools sessions in `chrome.storage.local`.
 
 ---
 

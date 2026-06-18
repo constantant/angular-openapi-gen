@@ -87,6 +87,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `namingConvention` | no | `kebab` | `kebab` → `find-pets-by-status.token.ts`; `camel` → `findPetsByStatus.token.ts` |
 | `providedIn` | no | `none` | `none` or `root` — see table above |
 | `includeMocks` | no | `false` | Emit a `.mock.ts` per endpoint plus `index.mock.ts` barrels and a `mocks.manifest.json` — requires [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) |
+| `includeMswHandlers` | no | `false` | Emit a `.msw.ts` per endpoint plus `index.msw.ts` barrels — requires [`msw`](https://mswjs.io) >= 2.0.0 |
 | `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
@@ -101,12 +102,15 @@ Re-run the same command whenever your spec changes — the generator overwrites 
   {scheme}.security-token.ts        # one per security scheme (if any)
   index.ts                          # re-exports all tag barrels + base-url + security tokens
   index.mock.ts                     # (--includeMocks) re-exports all tag mock barrels
+  index.msw.ts                      # (--includeMswHandlers) re-exports all tag MSW handler arrays
   mocks.manifest.json               # (--includeMocks) machine-readable endpoint list + specId for the DevTools panel
   {tag}/
     index.ts                        # re-exports all token files in this tag folder
     index.mock.ts                   # (--includeMocks) re-exports all mock files in this tag
+    index.msw.ts                    # (--includeMswHandlers) re-exports all MSW handlers in this tag
     {operation-id}.token.ts         # one file per endpoint
     {operation-id}.mock.ts          # (--includeMocks) typed mock provider per endpoint
+    {operation-id}.msw.ts           # (--includeMswHandlers) MSW 2.x handler factory + pre-called array
 ```
 
 Tags map to subfolders; untagged operations go into `default/`.
@@ -232,6 +236,70 @@ Re-running the generator cleans up any file it no longer produces. This includes
 - `mocks.manifest.json` when `--includeMocks` is dropped
 
 Stale tag folders (left empty after their barrels are removed) are also deleted.
+
+---
+
+## MSW handlers (`--includeMswHandlers`)
+
+Pass `--includeMswHandlers` to co-generate [MSW 2.x](https://mswjs.io) handler files
+alongside every `.token.ts`. Requires `msw >= 2.0.0`:
+
+```bash
+npm install -D msw
+
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=specs/petstore.yaml \
+  --outputDir=libs/petstore-data-access/src \
+  --baseUrlToken=PETSTORE_BASE_URL \
+  --includeMswHandlers
+```
+
+### Generated MSW file
+
+Each `.msw.ts` file exports a handler factory and a pre-called array:
+
+```typescript
+// pet/find-pets-by-status.msw.ts  (generated)
+import { http, HttpResponse } from 'msw';
+import type { FindPetsByStatusResponse } from './find-pets-by-status.token';
+
+export function findPetsByStatusHandler(body?: FindPetsByStatusResponse | null) {
+  return http.get('/pet/findByStatus', () =>
+    body !== undefined
+      ? HttpResponse.json(body)
+      : new HttpResponse(null, { status: 204 }),
+  );
+}
+
+export const findPetsByStatusHandlers = [findPetsByStatusHandler()];
+```
+
+Path params (`{id}`) are converted to MSW `:id` syntax. DELETE and other no-response endpoints
+emit `new HttpResponse(null, { status: 204 })` by default.
+
+### Barrel imports
+
+The generator registers a `/msw` path alias in `tsconfig.base.json` automatically:
+
+```json
+"@myapp/petstore-data-access/msw": ["libs/petstore-data-access/src/index.msw.ts"]
+```
+
+Use the pre-built arrays for a quick setup, or import the factory to override the response:
+
+```typescript
+import { findPetsByStatusHandlers } from '@myapp/petstore-data-access/msw';
+import { findPetsByStatusHandler } from '@myapp/petstore-data-access/msw';
+
+// In your MSW setup file:
+server.use(...findPetsByStatusHandlers);
+
+// Override with a specific response in a test:
+server.use(findPetsByStatusHandler([{ id: 1, name: 'Rex', status: 'available' }]));
+```
+
+MSW handler files are intentionally kept out of the main `index.ts` barrel so they
+are never bundled into a production build.
 
 ---
 
@@ -736,7 +804,7 @@ navigation in and destroyed on navigation out, with no cross-route state leakage
 | Type generation | `openapi-typescript` programmatic API | Emit `schema.d.ts` — the single source of truth for all request/response types |
 | Spec dereferencing | `@apidevtools/swagger-parser` | Resolve all `$ref` chains for endpoint extraction |
 | Security parsing | `parseSecuritySchemes(api)` | Extract scheme definitions; resolve per-operation overrides |
-| Code generation | `renderTokenFile()` / `renderSecurityTokenFile()` / `renderMockFile()` | Direct string assembly for token and mock files |
+| Code generation | `renderTokenFile()` / `renderSecurityTokenFile()` / `renderMockFile()` / `renderMswFile()` | Direct string assembly for token, mock, and MSW handler files |
 | Formatting | `@nx/devkit` `formatFiles()` | Runs Prettier over all written files |
 
 Hyphenated path parameter names (e.g. `{enterprise-team}` in the GitHub spec)
