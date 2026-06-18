@@ -57,6 +57,11 @@
       "type": "boolean",
       "default": false,
       "description": "Wrap all XxxResponse and XxxError type aliases in Readonly<> to prevent accidental mutation of response data."
+    },
+    "includeMswHandlers": {
+      "type": "boolean",
+      "default": false,
+      "description": "Generate a .msw.ts file per endpoint (and index.msw.ts barrels) with MSW 2.x http.* handlers. Requires msw to be installed."
     }
   },
   "required": ["specPath", "outputDir"]

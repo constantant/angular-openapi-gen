@@ -25,6 +25,7 @@ import { OpenAPIV3 } from 'openapi-types';
 import { buildEndpoints, parseSecuritySchemes, parseWebhooks } from './parse-spec';
 import { renderTokenFile, renderSecurityTokenFile, renderWebhookTokenFile } from './render-token';
 import { renderMockFile } from './render-mock-file';
+import { renderMswFile } from './render-msw-file';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
@@ -43,6 +44,8 @@ export interface ApiResourceGeneratorSchema {
   dateType?: 'string' | 'Date' | 'Temporal';
   /** Wrap all XxxResponse and XxxError type aliases in Readonly<> to prevent accidental mutation. */
   readonlyResponses?: boolean;
+  /** Emit a *.msw.ts MSW handler file alongside each token file. Requires msw to be installed. */
+  includeMswHandlers?: boolean;
 }
 
 /** Derive a specId from the baseUrlToken: PETSTORE_BASE_URL → petstore */
@@ -128,6 +131,32 @@ function addMockPathAlias(tree: Tree, outputDir: string): void {
   });
 }
 
+/** Add a /{lib}/msw path alias to tsconfig.base.json alongside the existing /{lib} alias. */
+function addMswPathAlias(tree: Tree, outputDir: string): void {
+  const tsconfigPath = 'tsconfig.base.json';
+  if (!tree.exists(tsconfigPath)) return;
+
+  const normalizedDir = outputDir.replace(/\\/g, '/').replace(/\/$/, '');
+  const indexTsValue = `${normalizedDir}/index.ts`;
+  const indexMswTsValue = `${normalizedDir}/index.msw.ts`;
+
+  updateJson(tree, tsconfigPath, (json) => {
+    const paths = json?.compilerOptions?.paths as Record<string, string[]> | undefined;
+    if (!paths) return json;
+
+    const existingKey = Object.keys(paths).find((key) =>
+      paths[key].some((v) => v.replace(/\\/g, '/') === indexTsValue),
+    );
+    if (!existingKey) return json;
+
+    const mswKey = `${existingKey}/msw`;
+    if (!paths[mswKey]) {
+      paths[mswKey] = [indexMswTsValue];
+    }
+    return json;
+  });
+}
+
 /** Recursively collect all file paths under a tree directory. */
 function collectTreeFiles(tree: Tree, dir: string): string[] {
   const result: string[] = [];
@@ -170,6 +199,8 @@ export async function apiResourceGenerator(
     }
   }
 
+  const includeMswHandlers = options.includeMswHandlers ?? false;
+
   const allowedTags = tagFilter
     ? tagFilter
         .split(',')
@@ -187,9 +218,11 @@ export async function apiResourceGenerator(
         f.endsWith('.security-token.ts') ||
         f.endsWith('.webhook.ts') ||
         f.endsWith('.mock.ts') ||
+        f.endsWith('.msw.ts') ||
         f.endsWith('mocks.manifest.json') ||
         f.endsWith('/index.ts') ||
-        f.endsWith('/index.mock.ts'),
+        f.endsWith('/index.mock.ts') ||
+        f.endsWith('/index.msw.ts'),
     ),
   );
 
@@ -326,6 +359,12 @@ export async function apiResourceGenerator(
           tree.write(mockPath, renderMockFile(ep, specId));
           writtenFiles.add(mockPath);
         }
+
+        if (includeMswHandlers) {
+          const mswPath = joinPathFragments(tagDir, `${ep.fileName}.msw.ts`);
+          tree.write(mswPath, renderMswFile(ep));
+          writtenFiles.add(mswPath);
+        }
       }
 
       const tagBarrel =
@@ -344,6 +383,16 @@ export async function apiResourceGenerator(
             .join('\n') + '\n';
         tree.write(mockBarrelPath, mockBarrel);
         writtenFiles.add(mockBarrelPath);
+      }
+
+      if (includeMswHandlers) {
+        const mswBarrelPath = joinPathFragments(tagDir, 'index.msw.ts');
+        const mswBarrel =
+          tagEndpoints
+            .map((ep) => `export * from './${ep.fileName}.msw';`)
+            .join('\n') + '\n';
+        tree.write(mswBarrelPath, mswBarrel);
+        writtenFiles.add(mswBarrelPath);
       }
     }
 
@@ -377,6 +426,15 @@ export async function apiResourceGenerator(
         JSON.stringify({ specId, mocks: manifestMocks }, null, 2) + '\n',
       );
       writtenFiles.add(manifestPath);
+    }
+
+    if (includeMswHandlers) {
+      const rootMswBarrel =
+        [...byTag.keys()].map((tag) => `export * from './${tag}/index.msw';\n`).join('');
+      const rootMswPath = joinPathFragments(outputDir, 'index.msw.ts');
+      tree.write(rootMswPath, rootMswBarrel);
+      writtenFiles.add(rootMswPath);
+      addMswPathAlias(tree, outputDir);
     }
 
     // 9. Delete stale token/security files from previous runs that this run

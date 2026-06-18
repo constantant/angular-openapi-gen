@@ -19,6 +19,7 @@ vi.mock('http', () => ({
   get: vi.fn(),
 }));
 
+
 import SwaggerParser from '@apidevtools/swagger-parser';
 import * as https from 'https';
 import { apiResourceGenerator } from './generator';
@@ -1709,6 +1710,121 @@ describe('api-resource generator', () => {
           outputDir: 'libs/err-ref/src',
         })
       ).rejects.toThrow('Failed to resolve $ref chains in spec');
+    });
+  });
+
+  describe('MSW handler generation', () => {
+    it('does not emit .msw.ts files by default', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+      });
+      expect(tree.exists('libs/petstore/src/pets/list-pets.msw.ts')).toBe(false);
+      expect(tree.exists('libs/petstore/src/index.msw.ts')).toBe(false);
+    });
+
+    it('emits .msw.ts files when includeMswHandlers is true', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        includeMswHandlers: true,
+      });
+      expect(tree.exists('libs/petstore/src/pets/list-pets.msw.ts')).toBe(true);
+      expect(tree.exists('libs/petstore/src/pets/create-pet.msw.ts')).toBe(true);
+      expect(tree.exists('libs/petstore/src/pets/get-pet-by-id.msw.ts')).toBe(true);
+      expect(tree.exists('libs/petstore/src/pets/delete-pet.msw.ts')).toBe(true);
+    });
+
+    it('GET handler imports http/HttpResponse, accepts optional typed body', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        includeMswHandlers: true,
+      });
+      const content = tree.read('libs/petstore/src/pets/list-pets.msw.ts', 'utf-8')!;
+      expect(content).toContain("import { http, HttpResponse } from 'msw'");
+      expect(content).toContain("import type { ListPetsResponse } from './list-pets.token'");
+      expect(content).toContain('export function listPetsHandler(body?: ListPetsResponse | null)');
+      expect(content).toContain("http.get('/pets'");
+      expect(content).toContain('HttpResponse.json(body ?? null)');
+      expect(content).toContain('export const listPetsHandlers = [listPetsHandler()];');
+    });
+
+    it('POST handler uses 201 status argument', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        includeMswHandlers: true,
+      });
+      const content = tree.read('libs/petstore/src/pets/create-pet.msw.ts', 'utf-8')!;
+      expect(content).toContain("http.post('/pets'");
+      expect(content).toContain('{ status: 201 }');
+    });
+
+    it('DELETE handler with no response body uses 204 status and no body param', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        includeMswHandlers: true,
+      });
+      const content = tree.read('libs/petstore/src/pets/delete-pet.msw.ts', 'utf-8')!;
+      expect(content).toContain("http.delete(");
+      expect(content).toContain("'/pets/:id'");
+      expect(content).toContain('new HttpResponse(null, { status: 204 })');
+      expect(content).not.toContain('DeletePetResponse');
+    });
+
+    it('path params are converted to :param notation', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        includeMswHandlers: true,
+      });
+      const content = tree.read('libs/petstore/src/pets/get-pet-by-id.msw.ts', 'utf-8')!;
+      expect(content).toContain("http.get('/pets/:id'");
+    });
+
+    it('emits tag-level index.msw.ts barrels', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        includeMswHandlers: true,
+      });
+      const barrel = tree.read('libs/petstore/src/pets/index.msw.ts', 'utf-8')!;
+      expect(barrel).toContain("export * from './list-pets.msw'");
+      expect(barrel).toContain("export * from './create-pet.msw'");
+    });
+
+    it('emits root index.msw.ts re-exporting tag barrels', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        includeMswHandlers: true,
+      });
+      const root = tree.read('libs/petstore/src/index.msw.ts', 'utf-8')!;
+      expect(root).toContain("export * from './pets/index.msw'");
+    });
+
+    it('adds /msw path alias to tsconfig.base.json', async () => {
+      tree.write(
+        'tsconfig.base.json',
+        JSON.stringify({
+          compilerOptions: {
+            paths: {
+              '@myorg/petstore': ['libs/petstore/src/index.ts'],
+            },
+          },
+        })
+      );
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        includeMswHandlers: true,
+      });
+      const tsconfig = JSON.parse(tree.read('tsconfig.base.json', 'utf-8')!);
+      expect(tsconfig.compilerOptions.paths['@myorg/petstore/msw']).toEqual([
+        'libs/petstore/src/index.msw.ts',
+      ]);
     });
   });
 });
