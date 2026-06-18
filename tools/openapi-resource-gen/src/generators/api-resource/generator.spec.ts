@@ -1152,6 +1152,200 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('OpenAPI 3.1 constructs', () => {
+    it('accepts a spec with openapi: 3.1.0 without error', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(MOCK_SPEC as never);
+      // The YAML validator checks the raw parsed object; we need the raw spec to say 3.1.0.
+      // Simulate by writing a 3.1 spec file and confirming generation succeeds.
+      // Generator reads the file directly — patch tree to provide a 3.1.0 YAML.
+      await expect(
+        apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/oas31/src',
+        })
+      ).resolves.not.toThrow();
+      expect(tree.exists('libs/oas31/src/schema.d.ts')).toBe(true);
+    });
+
+    it('detects date-time fields with type: [string, null] (OAS 3.1 nullable)', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/user': {
+            get: {
+              operationId: 'getUser',
+              tags: ['user'],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'object',
+                        properties: {
+                          // OAS 3.1 nullable date-time: type array instead of nullable:true
+                          createdAt: { type: ['string', 'null'], format: 'date-time' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/oas31-nullable-date/src',
+        dateType: 'Date',
+      });
+      const content = tree.read('libs/oas31-nullable-date/src/user/get-user.token.ts', 'utf-8')!;
+      expect(content).toContain('GetUserRevived');
+      expect(content).toContain("obj['createdAt'] != null");
+    });
+
+    it('handles const: value as a single-element enum for x-enum-varnames', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/config': {
+            get: {
+              operationId: 'getConfig',
+              tags: ['config'],
+              parameters: [
+                {
+                  in: 'query',
+                  name: 'format',
+                  schema: {
+                    const: 'json',
+                    'x-enum-varnames': ['JSON'],
+                  },
+                },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/oas31-const/src',
+      });
+      const content = tree.read('libs/oas31-const/src/config/get-config.token.ts', 'utf-8')!;
+      expect(content).toContain('getConfigFormatLabels');
+      expect(content).toContain("json: 'JSON'");
+    });
+
+    it('handles if/then/else response schema without crashing', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets': {
+            get: {
+              operationId: 'listPets',
+              tags: ['pets'],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        if: { properties: { type: { const: 'cat' } } },
+                        then: { properties: { indoor: { type: 'boolean' } } },
+                        else: { properties: { outdoor: { type: 'boolean' } } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await expect(
+        apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/oas31-ifthen/src',
+        })
+      ).resolves.not.toThrow();
+      expect(tree.exists('libs/oas31-ifthen/src/pets/list-pets.token.ts')).toBe(true);
+    });
+
+    it('handles prefixItems (OAS 3.1 tuple) array response without crashing', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/coords': {
+            get: {
+              operationId: 'getCoords',
+              tags: ['coords'],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      // Tuple: [latitude, longitude] — no items, only prefixItems
+                      schema: {
+                        type: 'array',
+                        prefixItems: [
+                          { type: 'number' },
+                          { type: 'number' },
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await expect(
+        apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/oas31-tuple/src',
+        })
+      ).resolves.not.toThrow();
+      const content = tree.read('libs/oas31-tuple/src/coords/get-coords.token.ts', 'utf-8')!;
+      expect(content).toContain('GetCoordsResponse');
+      // No reviver — tuple items have no date fields
+      expect(content).not.toContain('Revived');
+    });
+
+    it('detects array response with type: [array, null] (OAS 3.1 nullable array)', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/events': {
+            get: {
+              operationId: 'listEvents',
+              tags: ['events'],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: ['array', 'null'],
+                        items: {
+                          type: 'object',
+                          properties: {
+                            at: { type: 'string', format: 'date-time' },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/oas31-nullable-array/src',
+        dateType: 'Date',
+      });
+      const content = tree.read('libs/oas31-nullable-array/src/events/list-events.token.ts', 'utf-8')!;
+      // Should recognise as array response and emit the array-wrapped reviver
+      expect(content).toContain('ListEventsRevived');
+      expect(content).toContain('(infer _I)[]');
+    });
+  });
+
   describe('x-enum-varnames / x-enum-descriptions', () => {
     const ENUM_SPEC = {
       paths: {

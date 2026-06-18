@@ -75,6 +75,19 @@ export function parseSecuritySchemes(api: OpenAPIV3.Document): SecuritySchemeMod
 
 const RESPONSE_PRIORITY_CODES = ['200', '201', '202', '206', '2XX', '203', '207', '208', '226'];
 
+/** OAS 3.1 allows type to be a string array (e.g. ['string', 'null'] for nullable). */
+function isStringType(type: unknown): boolean {
+  if (type === 'string') return true;
+  if (Array.isArray(type)) return (type as string[]).includes('string');
+  return false;
+}
+
+function isArrayType(type: unknown): boolean {
+  if (type === 'array') return true;
+  if (Array.isArray(type)) return (type as string[]).includes('array');
+  return false;
+}
+
 function extractDiscriminatorFromSchema(
   schema: OpenAPIV3.SchemaObject | null | undefined,
   isArrayResponse: boolean
@@ -113,7 +126,7 @@ function collectDateFields(schema: OpenAPIV3.SchemaObject | null | undefined): D
   return Object.entries(schema.properties)
     .filter(([, prop]) => {
       const s = prop as OpenAPIV3.SchemaObject;
-      return s.type === 'string' && (s.format === 'date-time' || s.format === 'date');
+      return isStringType(s.type) && (s.format === 'date-time' || s.format === 'date');
     })
     .map(([name, prop]) => ({
       name,
@@ -129,11 +142,16 @@ function collectEnumExtensions(params: OpenAPIV3.ParameterObject[]): EnumExtensi
       'x-enum-varnames'?: string[];
       'x-enum-descriptions'?: string[];
     }) | undefined;
-    if (!schema || !Array.isArray(schema.enum)) continue;
+    // OAS 3.1 uses const: value for a single fixed value; treat as a single-element enum.
+    const constVal = (schema as { const?: unknown }).const;
+    const rawValues: unknown[] | undefined = Array.isArray(schema.enum)
+      ? (schema.enum as unknown[])
+      : constVal !== undefined ? [constVal] : undefined;
+    if (!rawValues) continue;
     const varnames = schema['x-enum-varnames'];
     const descriptions = schema['x-enum-descriptions'];
     if (!varnames && !descriptions) continue;
-    const values = (schema.enum as unknown[]).map(String);
+    const values = rawValues.map(String);
     result.push({
       paramName: p.name,
       values,
@@ -267,14 +285,19 @@ export function buildEndpoints(
         const primaryResponseObj = operation.responses?.[responseStatuses[0]] as OpenAPIV3.ResponseObject | undefined;
         const primarySchema = primaryResponseObj?.content?.['application/json']?.schema as OpenAPIV3.SchemaObject | undefined;
         if (primarySchema) {
+          // OAS 3.1 allows type to be an array (e.g. ['array', 'null']); isArrayType handles both forms.
+          const schemaIsArray = isArrayType(primarySchema.type);
           discriminator =
             extractDiscriminatorFromSchema(primarySchema, false) ??
-            (primarySchema.type === 'array'
+            (schemaIsArray
               ? extractDiscriminatorFromSchema(primarySchema.items as OpenAPIV3.SchemaObject, true)
               : null);
-          if (primarySchema.type === 'array' && primarySchema.items) {
+          if (schemaIsArray) {
             responseIsArray = true;
-            dateFields = collectDateFields(primarySchema.items as OpenAPIV3.SchemaObject);
+            // items may be absent for OAS 3.1 tuple schemas using prefixItems; skip date collection.
+            dateFields = primarySchema.items
+              ? collectDateFields(primarySchema.items as OpenAPIV3.SchemaObject)
+              : [];
           } else {
             dateFields = collectDateFields(primarySchema);
           }
