@@ -166,4 +166,100 @@ describe('mockResource', () => {
       expect(handle.ref.status()).toBe('error');
     });
   });
+
+  describe('response sequence', () => {
+    it('applies first entry on initial factory call', () => {
+      const handle = mockResource<string[]>(TOKEN as never, {
+        sequence: [{ value: ['a'] }, { value: ['b'] }],
+      });
+      const fn = handle.useFactory!() as FakeFn;
+      fn();
+      expect(handle.ref.status()).toBe('resolved');
+      expect(handle.ref.value()).toEqual(['a']);
+    });
+
+    it('advances to the next entry on each factory call', () => {
+      const handle = mockResource<string[]>(TOKEN as never, {
+        sequence: [{ value: ['first'] }, { value: ['second'] }],
+      });
+      const fn = handle.useFactory!() as FakeFn;
+      fn();
+      expect(handle.ref.value()).toEqual(['first']);
+      fn();
+      expect(handle.ref.value()).toEqual(['second']);
+    });
+
+    it('also advances on reload() when in resolved state', () => {
+      const handle = mockResource<string[]>(TOKEN as never, {
+        sequence: [{ value: ['v1'] }, { value: ['v2'] }],
+      });
+      const fn = handle.useFactory!() as FakeFn;
+      fn();
+      expect(handle.ref.value()).toEqual(['v1']);
+      handle.ref.reload(); // reload() calls _notifyRequest internally → advances sequence
+      expect(handle.ref.value()).toEqual(['v2']);
+    });
+
+    it('error-then-success pattern', () => {
+      const err = new Error('timeout');
+      const handle = mockResource<number>(TOKEN as never, {
+        sequence: [{ error: err }, { value: 42 }],
+      });
+      const fn = handle.useFactory!() as FakeFn;
+      fn(); // call 1 → error
+      expect(handle.ref.status()).toBe('error');
+      expect(handle.ref.error()).toBe(err);
+      fn(); // call 2 → success (simulates param change / retry)
+      expect(handle.ref.status()).toBe('resolved');
+      expect(handle.ref.value()).toBe(42);
+    });
+
+    it('loading → resolved pattern', () => {
+      const handle = mockResource<string>(TOKEN as never, {
+        sequence: [{ loading: true }, { value: 'done' }],
+      });
+      const fn = handle.useFactory!() as FakeFn;
+      fn(); // call 1 → loading
+      expect(handle.ref.isLoading()).toBe(true);
+      fn(); // call 2 → resolved
+      expect(handle.ref.value()).toBe('done');
+    });
+
+    it('repeats last entry when sequence is exhausted', () => {
+      const handle = mockResource<number>(TOKEN as never, {
+        sequence: [{ value: 1 }, { value: 2 }],
+      });
+      const fn = handle.useFactory!() as FakeFn;
+      fn();
+      expect(handle.ref.value()).toBe(1);
+      fn();
+      expect(handle.ref.value()).toBe(2);
+      fn(); // beyond sequence — last entry repeats
+      expect(handle.ref.value()).toBe(2);
+    });
+
+    it('still tracks calls in sequence mode', () => {
+      const handle = mockResource<string>(TOKEN as never, {
+        sequence: [{ value: 'x' }],
+      });
+      const fn = handle.useFactory!() as FakeFn;
+      fn({ param: 1 });
+      expect(handle.calls).toHaveLength(1);
+      expect(handle.calls[0]).toEqual([{ param: 1 }]);
+    });
+
+    it('delay in sequence entry: loading immediately then resolves after delay', () => {
+      vi.useFakeTimers();
+      const handle = mockResource<string>(TOKEN as never, {
+        sequence: [{ value: 'slow', delay: 300 }],
+      });
+      const fn = handle.useFactory!() as FakeFn;
+      fn();
+      expect(handle.ref.isLoading()).toBe(true);
+      vi.advanceTimersByTime(300);
+      expect(handle.ref.status()).toBe('resolved');
+      expect(handle.ref.value()).toBe('slow');
+      vi.useRealTimers();
+    });
+  });
 });
