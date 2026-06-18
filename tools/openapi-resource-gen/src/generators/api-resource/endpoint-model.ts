@@ -12,6 +12,22 @@ export interface DiscriminatorModel {
   isArrayResponse: boolean;
 }
 
+export interface WebhookModel {
+  /** The webhook name key as it appears in the spec, e.g. 'newPet'. */
+  name: string;
+  /** HTTP method of the webhook operation, e.g. 'post'. */
+  method: string;
+  /** SCREAMING_SNAKE token constant name, e.g. 'NEW_PET_WEBHOOK'. */
+  tokenName: string;
+  /** Kebab-case file name without extension, e.g. 'new-pet.webhook'. */
+  fileName: string;
+  deprecated: boolean;
+  /** Content type of the request body, null if absent or non-JSON. */
+  payloadContentType: string | null;
+  /** 2xx response codes that carry application/json content. */
+  responseStatuses: string[];
+}
+
 /** Non-default serialization style for a query parameter. */
 export type QueryParamSerializer = 'deepObject' | 'csv' | 'pipes' | 'spaces';
 

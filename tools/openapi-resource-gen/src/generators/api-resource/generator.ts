@@ -22,8 +22,8 @@ import * as path from 'path';
 import { pathToFileURL } from 'url';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import { buildEndpoints, parseSecuritySchemes } from './parse-spec';
-import { renderTokenFile, renderSecurityTokenFile } from './render-token';
+import { buildEndpoints, parseSecuritySchemes, parseWebhooks } from './parse-spec';
+import { renderTokenFile, renderSecurityTokenFile, renderWebhookTokenFile } from './render-token';
 import { renderMockFile } from './render-mock-file';
 import type { SecuritySchemeModel } from './endpoint-model';
 
@@ -181,6 +181,7 @@ export async function apiResourceGenerator(
       (f) =>
         f.endsWith('.token.ts') ||
         f.endsWith('.security-token.ts') ||
+        f.endsWith('.webhook.ts') ||
         f.endsWith('.mock.ts') ||
         f.endsWith('mocks.manifest.json') ||
         f.endsWith('/index.ts') ||
@@ -231,9 +232,11 @@ export async function apiResourceGenerator(
       `For Swagger 2.x specs, convert first with swagger2openapi.`
     );
   }
-  if (!specObj['paths'] || typeof specObj['paths'] !== 'object') {
+  const hasPaths = specObj['paths'] && typeof specObj['paths'] === 'object';
+  const hasWebhooks = specObj['webhooks'] && typeof specObj['webhooks'] === 'object';
+  if (!hasPaths && !hasWebhooks) {
     throw new Error(
-      `No "paths" object found in spec. Is "${specPath}" a valid OpenAPI 3.x file?`
+      `No "paths" or "webhooks" object found in spec. Is "${specPath}" a valid OpenAPI 3.x file?`
     );
   }
 
@@ -288,6 +291,14 @@ export async function apiResourceGenerator(
       writtenFiles.add(filePath);
     }
 
+    // 5b. Parse and emit webhook token files (OAS 3.1 webhooks).
+    const webhookModels = parseWebhooks(api, namingConvention);
+    for (const wh of webhookModels) {
+      const filePath = joinPathFragments(outputDir, `${wh.fileName}.ts`);
+      tree.write(filePath, renderWebhookTokenFile(wh));
+      writtenFiles.add(filePath);
+    }
+
     const endpoints = buildEndpoints(api, allowedTags, namingConvention);
 
     // 6. Group by tag
@@ -336,6 +347,7 @@ export async function apiResourceGenerator(
     const rootBarrel =
       `export * from './api-base-url.token';\n` +
       securitySchemes.map((s) => `export * from './${s.fileName}';\n`).join('') +
+      webhookModels.map((wh) => `export * from './${wh.fileName}';\n`).join('') +
       [...byTag.keys()].map((tag) => `export * from './${tag}';\n`).join('');
     const rootBarrelPath = joinPathFragments(outputDir, 'index.ts');
     tree.write(rootBarrelPath, rootBarrel);

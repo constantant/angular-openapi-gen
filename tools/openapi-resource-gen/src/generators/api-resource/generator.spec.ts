@@ -1061,6 +1061,97 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('webhook generation', () => {
+    const WEBHOOK_SPEC = {
+      paths: {},
+      webhooks: {
+        newPet: {
+          post: {
+            requestBody: { content: { 'application/json': { schema: {} } } },
+            responses: {
+              '200': { content: { 'application/json': { schema: {} } } },
+            },
+          },
+        },
+      },
+    };
+
+    it('emits a .webhook.ts file with InjectionToken<HttpInterceptorFn>', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(WEBHOOK_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/wh-basic/src',
+      });
+      const content = tree.read('libs/wh-basic/src/new-pet.webhook.ts', 'utf-8')!;
+      expect(content).toContain('InjectionToken<HttpInterceptorFn>');
+      expect(content).toContain('NEW_PET_WEBHOOK');
+    });
+
+    it('emits XxxWebhookPayload type when requestBody has application/json', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(WEBHOOK_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/wh-payload/src',
+      });
+      const content = tree.read('libs/wh-payload/src/new-pet.webhook.ts', 'utf-8')!;
+      expect(content).toContain('NewPetWebhookPayload');
+      expect(content).toContain("webhooks['newPet']['post']");
+      expect(content).toContain("import type { webhooks } from './schema.d'");
+    });
+
+    it('emits XxxWebhookResponse type when 2xx response has application/json', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(WEBHOOK_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/wh-response/src',
+      });
+      const content = tree.read('libs/wh-response/src/new-pet.webhook.ts', 'utf-8')!;
+      expect(content).toContain('NewPetWebhookResponse');
+      expect(content).toContain("['responses']['200']");
+    });
+
+    it('re-exports webhook file from the root index barrel', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(WEBHOOK_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/wh-barrel/src',
+      });
+      const index = tree.read('libs/wh-barrel/src/index.ts', 'utf-8')!;
+      expect(index).toContain("export * from './new-pet.webhook'");
+    });
+
+    it('omits webhooks import when no payload or response schemas exist', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {},
+        webhooks: {
+          ping: {
+            post: {
+              responses: { '204': {} }, // no JSON content
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/wh-notypes/src',
+      });
+      const content = tree.read('libs/wh-notypes/src/ping.webhook.ts', 'utf-8')!;
+      expect(content).toContain('PING_WEBHOOK');
+      expect(content).not.toContain("from './schema.d'");
+      expect(content).not.toContain('WebhookPayload');
+      expect(content).not.toContain('WebhookResponse');
+    });
+
+    it('does not emit webhook files for specs without webhooks field', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/wh-empty/src',
+      });
+      const files = tree.listChanges().map((c) => c.path);
+      expect(files.some((f) => f.endsWith('.webhook.ts'))).toBe(false);
+    });
+  });
+
   describe('descriptive errors', () => {
     it('error message for missing openapi field includes version guidance', () => {
       // Verify the error text is descriptive before we even hit SwaggerParser.

@@ -1,6 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import type { DiscriminatorModel, DiscriminatorVariant, EndpointModel, SecurityKind, SecuritySchemeModel, SpecialQueryParam } from './endpoint-model';
+import type { DiscriminatorModel, DiscriminatorVariant, EndpointModel, SecurityKind, SecuritySchemeModel, SpecialQueryParam, WebhookModel } from './endpoint-model';
 
 const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
   OpenAPIV3.HttpMethods.GET,
@@ -72,6 +72,8 @@ export function parseSecuritySchemes(api: OpenAPIV3.Document): SecuritySchemeMod
 
   return result;
 }
+
+const RESPONSE_PRIORITY_CODES = ['200', '201', '202', '206', '2XX', '203', '207', '208', '226'];
 
 function extractDiscriminatorFromSchema(
   schema: OpenAPIV3.SchemaObject | null | undefined,
@@ -196,12 +198,11 @@ export function buildEndpoints(
         bodyContentType !== null && !KNOWN_BODY_CONTENT_TYPES.includes(bodyContentType);
 
       // Collect ALL 2xx response codes that carry application/json, in priority order.
-      const RESPONSE_PRIORITY = ['200', '201', '202', '206', '2XX', '203', '207', '208', '226'];
       const allResponseCodes = Object.keys(operation.responses ?? {});
       const orderedCodes = [
-        ...RESPONSE_PRIORITY.filter((c) => allResponseCodes.includes(c)),
+        ...RESPONSE_PRIORITY_CODES.filter((c) => allResponseCodes.includes(c)),
         ...allResponseCodes.filter(
-          (c) => !RESPONSE_PRIORITY.includes(c) && /^2/.test(c)
+          (c) => !RESPONSE_PRIORITY_CODES.includes(c) && /^2/.test(c)
         ),
       ];
       const responseStatuses = orderedCodes.filter((code) => {
@@ -259,6 +260,54 @@ export function buildEndpoints(
   }
 
   return endpoints;
+}
+
+/** Extract WebhookModel entries from api.webhooks (OAS 3.1). */
+export function parseWebhooks(
+  api: OpenAPIV3.Document,
+  namingConvention: 'camel' | 'kebab'
+): WebhookModel[] {
+  const webhooks = (api as unknown as { webhooks?: Record<string, OpenAPIV3.PathItemObject> })
+    .webhooks;
+  if (!webhooks) return [];
+
+  const result: WebhookModel[] = [];
+  for (const [name, pathItem] of Object.entries(webhooks)) {
+    if (!pathItem) continue;
+    for (const method of HTTP_METHODS) {
+      const operation = pathItem[method] as OpenAPIV3.OperationObject | undefined;
+      if (!operation) continue;
+
+      const fileName =
+        (namingConvention === 'kebab' ? toKebabCase(name) : name) + '.webhook';
+      const tokenName = toScreamingSnake(name) + '_WEBHOOK';
+
+      const requestBody = operation.requestBody as OpenAPIV3.RequestBodyObject | undefined;
+      const payloadContentType =
+        requestBody?.content?.['application/json'] != null ? 'application/json' : null;
+
+      const allResponseCodes = Object.keys(operation.responses ?? {});
+      const orderedCodes = [
+        ...RESPONSE_PRIORITY_CODES.filter((c) => allResponseCodes.includes(c)),
+        ...allResponseCodes.filter((c) => !RESPONSE_PRIORITY_CODES.includes(c) && /^2/.test(c)),
+      ];
+      const responseStatuses = orderedCodes.filter((code) => {
+        const obj = operation.responses?.[code] as OpenAPIV3.ResponseObject | undefined;
+        return obj?.content?.['application/json'] != null;
+      });
+
+      result.push({
+        name,
+        method,
+        tokenName,
+        fileName,
+        deprecated: operation.deprecated === true,
+        payloadContentType,
+        responseStatuses,
+      });
+    }
+  }
+  return result;
 }
 
 /** Convenience wrapper that dereferences the spec before building endpoints. */

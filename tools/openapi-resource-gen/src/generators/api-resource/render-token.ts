@@ -1,4 +1,4 @@
-import type { EndpointModel, SecuritySchemeModel } from './endpoint-model';
+import type { EndpointModel, SecuritySchemeModel, WebhookModel } from './endpoint-model';
 
 export function toPascalCase(str: string): string {
   return str
@@ -67,6 +67,57 @@ export function renderSecurityTokenFile(
     `export const ${scheme.tokenName} = new InjectionToken<Signal<string | null>>('${scheme.tokenName}');`,
     ``,
   ].join('\n');
+}
+
+export function renderWebhookTokenFile(wh: WebhookModel): string {
+  const pascal = toPascalCase(wh.name);
+  const hasPayload = wh.payloadContentType !== null;
+  const hasResponse = wh.responseStatuses.length > 0;
+  const needsWebhooksType = hasPayload || hasResponse;
+
+  const lines: string[] = [];
+  lines.push(`import { InjectionToken } from '@angular/core';`);
+  lines.push(`import { HttpInterceptorFn } from '@angular/common/http';`);
+  if (needsWebhooksType) {
+    lines.push(`import type { webhooks } from './schema.d';`);
+  }
+  lines.push('');
+
+  if (hasPayload) {
+    lines.push(
+      `export type ${pascal}WebhookPayload =`,
+      `  NonNullable<webhooks[${JSON.stringify(wh.name)}][${JSON.stringify(wh.method)}]['requestBody']>['content'][${JSON.stringify(wh.payloadContentType)}];`,
+      ''
+    );
+  }
+
+  if (hasResponse) {
+    if (wh.responseStatuses.length === 1) {
+      lines.push(
+        `export type ${pascal}WebhookResponse =`,
+        `  webhooks[${JSON.stringify(wh.name)}][${JSON.stringify(wh.method)}]['responses'][${JSON.stringify(wh.responseStatuses[0])}]['content']['application/json'];`,
+        ''
+      );
+    } else {
+      lines.push(`export type ${pascal}WebhookResponse =`);
+      for (const code of wh.responseStatuses) {
+        lines.push(
+          `  | webhooks[${JSON.stringify(wh.name)}][${JSON.stringify(wh.method)}]['responses'][${JSON.stringify(code)}]['content']['application/json']`
+        );
+      }
+      lines.push('');
+    }
+  }
+
+  if (wh.deprecated) {
+    lines.push('/** @deprecated */');
+  }
+  lines.push(
+    `export const ${wh.tokenName} = new InjectionToken<HttpInterceptorFn>('${wh.tokenName}');`,
+    ''
+  );
+
+  return lines.join('\n');
 }
 
 export function renderTokenFile(
