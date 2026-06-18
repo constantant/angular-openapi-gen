@@ -162,6 +162,35 @@ export function renderTokenFile(
   const responseT = hasResponse ? `${pascal}Response` : 'unknown';
   const fnArgs = buildFnArgs(ep, pascal, isGet);
 
+  // Emit a params serializer when the spec uses non-default query param styles.
+  const hasSpecialParams = ep.specialQueryParams.length > 0 && isGet && ep.hasQueryParams;
+  if (hasSpecialParams) {
+    lines.push(`function _serializeParams(p: ${pascal}Params | undefined): Record<string, string | readonly string[]> | undefined {`);
+    lines.push(`  if (p == null) return undefined;`);
+    lines.push(`  const _out: Record<string, string | readonly string[]> = {};`);
+    lines.push(`  for (const [_k, _v] of Object.entries(p as Record<string, unknown>)) {`);
+    lines.push(`    if (_v == null) continue;`);
+    lines.push(`    switch (_k) {`);
+    for (const sp of ep.specialQueryParams) {
+      lines.push(`      case ${JSON.stringify(sp.name)}:`);
+      if (sp.serializer === 'deepObject') {
+        lines.push(`        for (const [_dk, _dv] of Object.entries(_v as Record<string, unknown>))`);
+        lines.push(`          if (_dv != null) _out['${sp.name}[' + _dk + ']'] = String(_dv);`);
+      } else {
+        const sep = sp.serializer === 'pipes' ? '|' : sp.serializer === 'spaces' ? ' ' : ',';
+        lines.push(`        _out[${JSON.stringify(sp.name)}] = Array.isArray(_v) ? (_v as unknown[]).join(${JSON.stringify(sep)}) : String(_v);`);
+      }
+      lines.push(`        break;`);
+    }
+    lines.push(`      default:`);
+    lines.push(`        _out[_k] = Array.isArray(_v) ? (_v as unknown[]).map(String) : String(_v as string | number | boolean);`);
+    lines.push(`    }`);
+    lines.push(`  }`);
+    lines.push(`  return _out;`);
+    lines.push(`}`);
+    lines.push('');
+  }
+
   if (ep.deprecated) {
     lines.push('/** @deprecated */');
   }
@@ -258,6 +287,7 @@ function appendResourceOptions(
 
   const hasRegularParams = isGet && ep.hasQueryParams;
   const hasAuthQueryParams = querySchemes.length > 0;
+  const hasSpecialParams = ep.specialQueryParams.length > 0 && hasRegularParams;
 
   if (hasRegularParams || hasAuthQueryParams) {
     const authQueryParts = querySchemes
@@ -266,9 +296,11 @@ function appendResourceOptions(
           `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: \`\${${toCamelCase(s.schemeName)}()}\` } : {})`
       )
       .join(', ');
-    const paramsExpr = usePrecomputedParams
-      ? '_params'
-      : `(typeof params === 'function' ? params() : params)`;
+    const paramsExpr = hasSpecialParams
+      ? `_serializeParams(_params)`
+      : usePrecomputedParams
+        ? '_params'
+        : `(typeof params === 'function' ? params() : params)`;
     const cast = ` as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>`;
 
     if (hasRegularParams && hasAuthQueryParams) {

@@ -1,6 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import type { EndpointModel, SecurityKind, SecuritySchemeModel } from './endpoint-model';
+import type { EndpointModel, SecurityKind, SecuritySchemeModel, SpecialQueryParam } from './endpoint-model';
 
 const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
   OpenAPIV3.HttpMethods.GET,
@@ -124,6 +124,22 @@ export function buildEndpoints(
 
       const hasQueryParams = allParams.some((p) => p.in === 'query');
 
+      // Collect query params that need non-default serialization.
+      // OpenAPI default: form + explode:true (Angular handles arrays natively).
+      // deepObject always needs expansion; the delimited styles and form+explode:false need joining.
+      const specialQueryParams: SpecialQueryParam[] = allParams
+        .filter((p) => p.in === 'query')
+        .flatMap((p): SpecialQueryParam[] => {
+          const style = (p as { style?: string }).style ?? 'form';
+          const defaultExplode = style === 'form';
+          const explode = (p as { explode?: boolean }).explode ?? defaultExplode;
+          if (style === 'deepObject') return [{ name: p.name, serializer: 'deepObject' }];
+          if (style === 'pipeDelimited' && !explode) return [{ name: p.name, serializer: 'pipes' }];
+          if (style === 'spaceDelimited' && !explode) return [{ name: p.name, serializer: 'spaces' }];
+          if (style === 'form' && !explode) return [{ name: p.name, serializer: 'csv' }];
+          return [];
+        });
+
       // Operation-level security overrides global; [] means explicitly no security.
       const operationSecurity = operation.security as
         | OpenAPIV3.SecurityRequirementObject[]
@@ -182,6 +198,7 @@ export function buildEndpoints(
         tokenName,
         fileName,
         hasQueryParams,
+        specialQueryParams,
         hasBody,
         hasResponse,
         responseStatuses,

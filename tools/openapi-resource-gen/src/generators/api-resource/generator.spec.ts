@@ -772,6 +772,127 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('query param serialization styles', () => {
+    it('emits _serializeParams function for a deepObject param', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/search': {
+            get: {
+              operationId: 'search',
+              tags: ['search'],
+              parameters: [
+                { in: 'query', name: 'filter', style: 'deepObject', explode: true, schema: { type: 'object' } },
+                { in: 'query', name: 'limit', schema: { type: 'integer' } },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/deep/src',
+      });
+      const content = tree.read('libs/deep/src/search/search.token.ts', 'utf-8')!;
+      expect(content).toContain('function _serializeParams');
+      expect(content).toContain("case 'filter':");
+      expect(content).toContain("'filter[' + _dk + ']'");
+      expect(content).toContain('_serializeParams(_params)');
+      // Regular limit param goes through the default branch, not a special case
+      expect(content).not.toContain("case 'limit':");
+    });
+
+    it('emits _serializeParams with pipe-delimited join for pipeDelimited param', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/items': {
+            get: {
+              operationId: 'listItems',
+              tags: ['items'],
+              parameters: [
+                { in: 'query', name: 'tags', style: 'pipeDelimited', explode: false, schema: { type: 'array' } },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/pipes/src',
+      });
+      const content = tree.read('libs/pipes/src/items/list-items.token.ts', 'utf-8')!;
+      expect(content).toContain('function _serializeParams');
+      expect(content).toContain("case 'tags':");
+      expect(content).toContain("join('|')");
+    });
+
+    it('emits _serializeParams with space-delimited join for spaceDelimited param', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/items': {
+            get: {
+              operationId: 'listItems',
+              tags: ['items'],
+              parameters: [
+                { in: 'query', name: 'fields', style: 'spaceDelimited', explode: false, schema: { type: 'array' } },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/spaces/src',
+      });
+      const content = tree.read('libs/spaces/src/items/list-items.token.ts', 'utf-8')!;
+      expect(content).toContain('function _serializeParams');
+      expect(content).toContain("case 'fields':");
+      expect(content).toContain("join(' ')");
+    });
+
+    it('emits _serializeParams with comma join for form+explode:false param', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/items': {
+            get: {
+              operationId: 'listItems',
+              tags: ['items'],
+              parameters: [
+                { in: 'query', name: 'status', style: 'form', explode: false, schema: { type: 'array' } },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/csv/src',
+      });
+      const content = tree.read('libs/csv/src/items/list-items.token.ts', 'utf-8')!;
+      expect(content).toContain('function _serializeParams');
+      expect(content).toContain("case 'status':");
+      expect(content).toContain("join(',')");
+    });
+
+    it('does NOT emit _serializeParams for default form+explode:true params', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/no-serialize/src',
+      });
+      const content = tree.read('libs/no-serialize/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).not.toContain('_serializeParams');
+      // Still uses the direct cast (Prettier may wrap the line, so check the keyword)
+      expect(content).toContain('as unknown as Record<');
+    });
+  });
+
   describe('descriptive errors', () => {
     it('error message for missing openapi field includes version guidance', () => {
       // Verify the error text is descriptive before we even hit SwaggerParser.

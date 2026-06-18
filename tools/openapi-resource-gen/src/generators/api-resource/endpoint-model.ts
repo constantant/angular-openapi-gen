@@ -1,3 +1,11 @@
+/** Non-default serialization style for a query parameter. */
+export type QueryParamSerializer = 'deepObject' | 'csv' | 'pipes' | 'spaces';
+
+export interface SpecialQueryParam {
+  name: string;
+  serializer: QueryParamSerializer;
+}
+
 export type SecurityKind =
   | 'bearer'
   | 'basic'
@@ -29,6 +37,8 @@ export interface EndpointModel {
   tokenName: string;
   fileName: string;
   hasQueryParams: boolean;
+  /** Query params that need non-default serialization (deepObject, pipeDelimited, spaceDelimited, form+explode:false). */
+  specialQueryParams: SpecialQueryParam[];
   hasBody: boolean;
   hasResponse: boolean;
   /** All 2xx response codes that carry application/json content, in priority order. */
