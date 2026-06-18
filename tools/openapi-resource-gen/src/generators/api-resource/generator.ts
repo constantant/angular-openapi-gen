@@ -41,6 +41,8 @@ export interface ApiResourceGeneratorSchema {
   verbose?: boolean;
   /** Convert format:date-time / format:date response fields to Date or Temporal objects. */
   dateType?: 'string' | 'Date' | 'Temporal';
+  /** Wrap all XxxResponse and XxxError type aliases in Readonly<> to prevent accidental mutation. */
+  readonlyResponses?: boolean;
 }
 
 /** Derive a specId from the baseUrlToken: PETSTORE_BASE_URL → petstore */
@@ -316,7 +318,7 @@ export async function apiResourceGenerator(
 
       for (const ep of tagEndpoints) {
         const filePath = joinPathFragments(tagDir, `${ep.fileName}.token.ts`);
-        tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName, options.dateType ?? 'string'));
+        tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName, options.dateType ?? 'string', options.readonlyResponses ?? false));
         writtenFiles.add(filePath);
 
         if (includeMocks) {

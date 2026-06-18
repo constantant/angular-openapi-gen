@@ -1152,6 +1152,83 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('readonly response types', () => {
+    it('wraps XxxResponse in Readonly<> when readonlyResponses is true', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/readonly-single/src',
+        readonlyResponses: true,
+      });
+      const content = tree.read('libs/readonly-single/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).toContain('Readonly<');
+      expect(content).toContain("export type ListPetsResponse =");
+    });
+
+    it('wraps each union member in Readonly<> for multi-status responses', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/resources': {
+            put: {
+              operationId: 'upsertResource',
+              tags: ['resources'],
+              requestBody: { content: { 'application/json': { schema: {} } } },
+              responses: {
+                '200': { content: { 'application/json': { schema: {} } } },
+                '201': { content: { 'application/json': { schema: {} } } },
+              },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/readonly-union/src',
+        readonlyResponses: true,
+      });
+      const content = tree.read('libs/readonly-union/src/resources/upsert-resource.token.ts', 'utf-8')!;
+      // Both union members are wrapped independently
+      expect(content).toMatch(/\|\s*Readonly</);
+      expect(content).toContain("['responses']['200']");
+      expect(content).toContain("['responses']['201']");
+    });
+
+    it('wraps XxxError in Readonly<> when readonlyResponses is true', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets/{id}': {
+            get: {
+              operationId: 'getPet',
+              tags: ['pets'],
+              parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+              responses: {
+                '200': { content: { 'application/json': { schema: {} } } },
+                '404': { content: { 'application/json': { schema: {} } } },
+              },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/readonly-error/src',
+        readonlyResponses: true,
+      });
+      const content = tree.read('libs/readonly-error/src/pets/get-pet.token.ts', 'utf-8')!;
+      expect(content).toContain('export type GetPetError =');
+      expect(content).toContain("Readonly<");
+      expect(content).toContain("['responses']['404']");
+    });
+
+    it('does not wrap types in Readonly<> by default', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/not-readonly/src',
+      });
+      const content = tree.read('libs/not-readonly/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).not.toContain('Readonly<');
+    });
+  });
+
   describe('date / temporal deserialization', () => {
     const USER_SPEC = {
       paths: {

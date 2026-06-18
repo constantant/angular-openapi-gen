@@ -125,7 +125,8 @@ export function renderTokenFile(
   baseUrlToken: string,
   providedIn: 'root' | 'none' = 'none',
   schemesByName: Map<string, SecuritySchemeModel> = new Map(),
-  dateType: 'string' | 'Date' | 'Temporal' = 'string'
+  dateType: 'string' | 'Date' | 'Temporal' = 'string',
+  readonlyResponses = false
 ): string {
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
@@ -176,11 +177,13 @@ export function renderTokenFile(
       );
     }
   }
+  const ro = (expr: string) => readonlyResponses ? `Readonly<${expr}>` : expr;
+
   if (hasResponse) {
     if (responseStatuses.length === 1) {
       lines.push(
         `export type ${pascal}Response =`,
-        `  paths['${ep.apiPath}']['${ep.method}']['responses']['${responseStatuses[0]}']['content']['application/json'];`,
+        `  ${ro(`paths['${ep.apiPath}']['${ep.method}']['responses']['${responseStatuses[0]}']['content']['application/json']`)};`,
         ''
       );
     } else {
@@ -188,7 +191,7 @@ export function renderTokenFile(
       lines.push(`export type ${pascal}Response =`);
       for (const code of responseStatuses) {
         lines.push(
-          `  | paths['${ep.apiPath}']['${ep.method}']['responses']['${code}']['content']['application/json']`
+          `  | ${ro(`paths['${ep.apiPath}']['${ep.method}']['responses']['${code}']['content']['application/json']`)}`
         );
       }
       lines.push('');
@@ -198,14 +201,14 @@ export function renderTokenFile(
     if (ep.errorStatuses.length === 1) {
       lines.push(
         `export type ${pascal}Error =`,
-        `  paths['${ep.apiPath}']['${ep.method}']['responses']['${ep.errorStatuses[0]}']['content']['application/json'];`,
+        `  ${ro(`paths['${ep.apiPath}']['${ep.method}']['responses']['${ep.errorStatuses[0]}']['content']['application/json']`)};`,
         ''
       );
     } else {
       lines.push(`export type ${pascal}Error =`);
       for (const code of ep.errorStatuses) {
         lines.push(
-          `  | paths['${ep.apiPath}']['${ep.method}']['responses']['${code}']['content']['application/json']`
+          `  | ${ro(`paths['${ep.apiPath}']['${ep.method}']['responses']['${code}']['content']['application/json']`)}`
         );
       }
       lines.push('');

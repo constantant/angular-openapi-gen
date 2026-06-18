@@ -52,6 +52,11 @@
       "enum": ["string", "Date", "Temporal"],
       "default": "string",
       "description": "Convert format:date-time / format:date response fields to Date or Temporal objects. Emits a typed XxxRevived alias and reviveXxxDates() helper per affected endpoint."
+    },
+    "readonlyResponses": {
+      "type": "boolean",
+      "default": false,
+      "description": "Wrap all XxxResponse and XxxError type aliases in Readonly<> to prevent accidental mutation of response data."
     }
   },
   "required": ["specPath", "outputDir"]
