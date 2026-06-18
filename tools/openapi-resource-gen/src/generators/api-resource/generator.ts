@@ -39,6 +39,8 @@ export interface ApiResourceGeneratorSchema {
   specId?: string;
   /** Print a summary of created, updated, and deleted files after generation. */
   verbose?: boolean;
+  /** Convert format:date-time / format:date response fields to Date or Temporal objects. */
+  dateType?: 'string' | 'Date' | 'Temporal';
 }
 
 /** Derive a specId from the baseUrlToken: PETSTORE_BASE_URL → petstore */
@@ -314,7 +316,7 @@ export async function apiResourceGenerator(
 
       for (const ep of tagEndpoints) {
         const filePath = joinPathFragments(tagDir, `${ep.fileName}.token.ts`);
-        tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName));
+        tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName, options.dateType ?? 'string'));
         writtenFiles.add(filePath);
 
         if (includeMocks) {

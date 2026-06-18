@@ -124,7 +124,8 @@ export function renderTokenFile(
   ep: EndpointModel,
   baseUrlToken: string,
   providedIn: 'root' | 'none' = 'none',
-  schemesByName: Map<string, SecuritySchemeModel> = new Map()
+  schemesByName: Map<string, SecuritySchemeModel> = new Map(),
+  dateType: 'string' | 'Date' | 'Temporal' = 'string'
 ): string {
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
@@ -236,6 +237,67 @@ export function renderTokenFile(
     const variantNames = variants.map((v) => `${pascal}${toPascalCase(v.key)}`).join(' | ');
     const discriminatedExpr = isArrayResponse ? `(${variantNames})[]` : variantNames;
     lines.push(`export type ${pascal}Discriminated = ${discriminatedExpr};`, '');
+  }
+
+  // Date/datetime reviver — emitted when dateType != 'string' and the response has date fields.
+  if (dateType !== 'string' && ep.dateFields.length > 0 && hasResponse) {
+    const omitKeys = ep.dateFields.map((f) => JSON.stringify(f.name)).join(' | ');
+    if (ep.responseIsArray) {
+      lines.push(`export type ${pascal}Revived = (Omit<`);
+      lines.push(`  ${pascal}Response extends (infer _I)[] ? _I : never,`);
+      lines.push(`  ${omitKeys}`);
+      lines.push(`> & {`);
+      for (const f of ep.dateFields) {
+        const tsType = dateType === 'Temporal'
+          ? f.format === 'date-time' ? 'Temporal.Instant' : 'Temporal.PlainDate'
+          : 'Date';
+        lines.push(`  ${f.name}: ${tsType};`);
+      }
+      lines.push(`})[];`);
+      lines.push('');
+      lines.push(`export function revive${pascal}Dates(raw: ${pascal}Response): ${pascal}Revived {`);
+      lines.push(`  return (raw as unknown[]).map((item) => {`);
+      lines.push(`    const obj = item as Record<string, unknown>;`);
+      lines.push(`    return {`);
+      lines.push(`      ...obj,`);
+      for (const f of ep.dateFields) {
+        const convert = dateType === 'Temporal'
+          ? f.format === 'date-time'
+            ? `Temporal.Instant.from(obj[${JSON.stringify(f.name)}] as string)`
+            : `Temporal.PlainDate.from(obj[${JSON.stringify(f.name)}] as string)`
+          : `new Date(obj[${JSON.stringify(f.name)}] as string)`;
+        lines.push(`      ${f.name}: obj[${JSON.stringify(f.name)}] != null ? ${convert} : obj[${JSON.stringify(f.name)}],`);
+      }
+      lines.push(`    };`);
+      lines.push(`  }) as ${pascal}Revived;`);
+      lines.push(`}`);
+      lines.push('');
+    } else {
+      lines.push(`export type ${pascal}Revived = Omit<${pascal}Response, ${omitKeys}> & {`);
+      for (const f of ep.dateFields) {
+        const tsType = dateType === 'Temporal'
+          ? f.format === 'date-time' ? 'Temporal.Instant' : 'Temporal.PlainDate'
+          : 'Date';
+        lines.push(`  ${f.name}: ${tsType};`);
+      }
+      lines.push(`};`);
+      lines.push('');
+      lines.push(`export function revive${pascal}Dates(raw: ${pascal}Response): ${pascal}Revived {`);
+      lines.push(`  const obj = raw as unknown as Record<string, unknown>;`);
+      lines.push(`  return {`);
+      lines.push(`    ...obj,`);
+      for (const f of ep.dateFields) {
+        const convert = dateType === 'Temporal'
+          ? f.format === 'date-time'
+            ? `Temporal.Instant.from(obj[${JSON.stringify(f.name)}] as string)`
+            : `Temporal.PlainDate.from(obj[${JSON.stringify(f.name)}] as string)`
+          : `new Date(obj[${JSON.stringify(f.name)}] as string)`;
+        lines.push(`    ${f.name}: obj[${JSON.stringify(f.name)}] != null ? ${convert} : obj[${JSON.stringify(f.name)}],`);
+      }
+      lines.push(`  } as ${pascal}Revived;`);
+      lines.push(`}`);
+      lines.push('');
+    }
   }
 
   const responseT = hasResponse ? `${pascal}Response` : 'unknown';

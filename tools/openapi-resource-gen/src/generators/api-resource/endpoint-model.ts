@@ -12,6 +12,12 @@ export interface DiscriminatorModel {
   isArrayResponse: boolean;
 }
 
+/** A response property with format:date-time or format:date. */
+export interface DateField {
+  name: string;
+  format: 'date-time' | 'date';
+}
+
 export interface WebhookModel {
   /** The webhook name key as it appears in the spec, e.g. 'newPet'. */
   name: string;
@@ -84,4 +90,8 @@ export interface EndpointModel {
   securitySchemeNames: string[];
   /** Present when the primary response schema carries a discriminator. */
   discriminator: DiscriminatorModel | null;
+  /** Date/datetime fields on the primary response object, for optional reviver generation. */
+  dateFields: DateField[];
+  /** True when the primary JSON response type is an array. */
+  responseIsArray: boolean;
 }

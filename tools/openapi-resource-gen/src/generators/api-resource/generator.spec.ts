@@ -1152,6 +1152,146 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('date / temporal deserialization', () => {
+    const USER_SPEC = {
+      paths: {
+        '/user': {
+          get: {
+            operationId: 'getUser',
+            tags: ['user'],
+            responses: {
+              '200': {
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        name: { type: 'string' },
+                        createdAt: { type: 'string', format: 'date-time' },
+                        dueDate: { type: 'string', format: 'date' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const EVENT_LIST_SPEC = {
+      paths: {
+        '/events': {
+          get: {
+            operationId: 'listEvents',
+            tags: ['events'],
+            responses: {
+              '200': {
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string' },
+                          happenedAt: { type: 'string', format: 'date-time' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    it('emits XxxRevived type and reviveXxxDates function for Date mode (object response)', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(USER_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/date-obj/src',
+        dateType: 'Date',
+      });
+      const content = tree.read('libs/date-obj/src/user/get-user.token.ts', 'utf-8')!;
+      expect(content).toContain('export type GetUserRevived =');
+      expect(content).toContain("Omit<GetUserResponse, 'createdAt' | 'dueDate'>");
+      expect(content).toContain('createdAt: Date');
+      expect(content).toContain('dueDate: Date');
+      expect(content).toContain('export function reviveGetUserDates(');
+      expect(content).toContain("obj['createdAt'] != null");
+      expect(content).toContain("obj['dueDate'] != null");
+    });
+
+    it('emits array-wrapped XxxRevived and maps over items for Date mode (array response)', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(EVENT_LIST_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/date-arr/src',
+        dateType: 'Date',
+      });
+      const content = tree.read('libs/date-arr/src/events/list-events.token.ts', 'utf-8')!;
+      expect(content).toContain('export type ListEventsRevived =');
+      // Array wrapper pattern
+      expect(content).toContain('ListEventsResponse extends (infer _I)[] ? _I : never');
+      expect(content).toContain(')[];');
+      expect(content).toContain('export function reviveListEventsDates(');
+      // Uses map over items
+      expect(content).toContain('.map(');
+      expect(content).toContain("new Date(obj['happenedAt']");
+    });
+
+    it('emits Temporal.Instant for date-time fields in Temporal mode', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(USER_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/temporal-instant/src',
+        dateType: 'Temporal',
+      });
+      const content = tree.read('libs/temporal-instant/src/user/get-user.token.ts', 'utf-8')!;
+      expect(content).toContain('createdAt: Temporal.Instant');
+      expect(content).toContain("Temporal.Instant.from(obj['createdAt']");
+    });
+
+    it('emits Temporal.PlainDate for date fields in Temporal mode', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(USER_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/temporal-plain/src',
+        dateType: 'Temporal',
+      });
+      const content = tree.read('libs/temporal-plain/src/user/get-user.token.ts', 'utf-8')!;
+      expect(content).toContain('dueDate: Temporal.PlainDate');
+      expect(content).toContain("Temporal.PlainDate.from(obj['dueDate']");
+    });
+
+    it('does not emit reviver when dateType is string (default)', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(USER_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/date-default/src',
+      });
+      const content = tree.read('libs/date-default/src/user/get-user.token.ts', 'utf-8')!;
+      expect(content).not.toContain('Revived');
+      expect(content).not.toContain('reviveGetUser');
+    });
+
+    it('does not emit reviver when the response schema has no date fields', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/date-none/src',
+        dateType: 'Date',
+      });
+      // MOCK_SPEC has no date fields
+      const content = tree.read('libs/date-none/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).not.toContain('Revived');
+      expect(content).not.toContain('reviveListPets');
+    });
+  });
+
   describe('descriptive errors', () => {
     it('error message for missing openapi field includes version guidance', () => {
       // Verify the error text is descriptive before we even hit SwaggerParser.

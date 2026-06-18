@@ -48,6 +48,12 @@
       "type": "boolean",
       "default": false,
       "description": "Print a summary of created, updated, and deleted files after generation."
+    },
+    "dateType": {
+      "type": "string",
+      "enum": ["string", "Date", "Temporal"],
+      "default": "string",
+      "description": "Convert format:date-time / format:date response fields to Date or Temporal objects. Emits a typed XxxRevived alias and reviveXxxDates() helper per affected endpoint."
     }
   },
   "required": ["specPath", "outputDir"]

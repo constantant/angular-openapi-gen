@@ -1,6 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import type { DiscriminatorModel, DiscriminatorVariant, EndpointModel, SecurityKind, SecuritySchemeModel, SpecialQueryParam, WebhookModel } from './endpoint-model';
+import type { DateField, DiscriminatorModel, DiscriminatorVariant, EndpointModel, SecurityKind, SecuritySchemeModel, SpecialQueryParam, WebhookModel } from './endpoint-model';
 
 const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
   OpenAPIV3.HttpMethods.GET,
@@ -105,6 +105,20 @@ function extractDiscriminatorFromSchema(
   }
 
   return variants.length > 0 ? { propertyName, variants, isArrayResponse } : null;
+}
+
+/** Collect top-level properties with format:date-time or format:date from a schema object. */
+function collectDateFields(schema: OpenAPIV3.SchemaObject | null | undefined): DateField[] {
+  if (!schema?.properties) return [];
+  return Object.entries(schema.properties)
+    .filter(([, prop]) => {
+      const s = prop as OpenAPIV3.SchemaObject;
+      return s.type === 'string' && (s.format === 'date-time' || s.format === 'date');
+    })
+    .map(([name, prop]) => ({
+      name,
+      format: (prop as OpenAPIV3.SchemaObject).format as 'date-time' | 'date',
+    }));
 }
 
 export function buildEndpoints(
@@ -220,8 +234,10 @@ export function buildEndpoints(
 
       const deprecated = operation.deprecated === true;
 
-      // Detect discriminated union on the primary response schema.
+      // Detect discriminated union and collect date fields from the primary response schema.
       let discriminator: DiscriminatorModel | null = null;
+      let dateFields: DateField[] = [];
+      let responseIsArray = false;
       if (responseStatuses.length > 0) {
         const primaryResponseObj = operation.responses?.[responseStatuses[0]] as OpenAPIV3.ResponseObject | undefined;
         const primarySchema = primaryResponseObj?.content?.['application/json']?.schema as OpenAPIV3.SchemaObject | undefined;
@@ -231,6 +247,12 @@ export function buildEndpoints(
             (primarySchema.type === 'array'
               ? extractDiscriminatorFromSchema(primarySchema.items as OpenAPIV3.SchemaObject, true)
               : null);
+          if (primarySchema.type === 'array' && primarySchema.items) {
+            responseIsArray = true;
+            dateFields = collectDateFields(primarySchema.items as OpenAPIV3.SchemaObject);
+          } else {
+            dateFields = collectDateFields(primarySchema);
+          }
         }
       }
 
@@ -255,6 +277,8 @@ export function buildEndpoints(
         securitySchemeNames,
         errorStatuses,
         discriminator,
+        dateFields,
+        responseIsArray,
       });
     }
   }
