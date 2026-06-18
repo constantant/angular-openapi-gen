@@ -1,6 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import type { DateField, DiscriminatorModel, DiscriminatorVariant, EndpointModel, SecurityKind, SecuritySchemeModel, SpecialQueryParam, WebhookModel } from './endpoint-model';
+import type { DateField, DiscriminatorModel, DiscriminatorVariant, EndpointModel, EnumExtension, SecurityKind, SecuritySchemeModel, SpecialQueryParam, WebhookModel } from './endpoint-model';
 
 const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
   OpenAPIV3.HttpMethods.GET,
@@ -121,6 +121,29 @@ function collectDateFields(schema: OpenAPIV3.SchemaObject | null | undefined): D
     }));
 }
 
+/** Collect x-enum-varnames / x-enum-descriptions from the query/path/header parameters of an operation. */
+function collectEnumExtensions(params: OpenAPIV3.ParameterObject[]): EnumExtension[] {
+  const result: EnumExtension[] = [];
+  for (const p of params) {
+    const schema = p.schema as (OpenAPIV3.SchemaObject & {
+      'x-enum-varnames'?: string[];
+      'x-enum-descriptions'?: string[];
+    }) | undefined;
+    if (!schema || !Array.isArray(schema.enum)) continue;
+    const varnames = schema['x-enum-varnames'];
+    const descriptions = schema['x-enum-descriptions'];
+    if (!varnames && !descriptions) continue;
+    const values = (schema.enum as unknown[]).map(String);
+    result.push({
+      paramName: p.name,
+      values,
+      ...(varnames ? { varnames: varnames.slice(0, values.length) } : {}),
+      ...(descriptions ? { descriptions: descriptions.slice(0, values.length) } : {}),
+    });
+  }
+  return result;
+}
+
 export function buildEndpoints(
   api: OpenAPIV3.Document,
   allowedTags: string[] | null,
@@ -187,6 +210,8 @@ export function buildEndpoints(
           if (style === 'form' && !explode) return [{ name: p.name, serializer: 'csv' }];
           return [];
         });
+
+      const enumExtensions = collectEnumExtensions(allParams);
 
       // Operation-level security overrides global; [] means explicitly no security.
       const operationSecurity = operation.security as
@@ -277,6 +302,7 @@ export function buildEndpoints(
         securitySchemeNames,
         errorStatuses,
         discriminator,
+        enumExtensions,
         dateFields,
         responseIsArray,
       });

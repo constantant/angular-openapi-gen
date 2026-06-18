@@ -12,6 +12,18 @@ export interface DiscriminatorModel {
   isArrayResponse: boolean;
 }
 
+/** An enum parameter or response property annotated with x-enum-varnames / x-enum-descriptions. */
+export interface EnumExtension {
+  /** Parameter or property name, e.g. 'status'. */
+  paramName: string;
+  /** Raw enum values from the spec, e.g. ['placed', 'approved']. */
+  values: string[];
+  /** Human-readable names from x-enum-varnames, parallel to values. */
+  varnames?: string[];
+  /** Long-form descriptions from x-enum-descriptions, parallel to values. */
+  descriptions?: string[];
+}
+
 /** A response property with format:date-time or format:date. */
 export interface DateField {
   name: string;
@@ -90,6 +102,8 @@ export interface EndpointModel {
   securitySchemeNames: string[];
   /** Present when the primary response schema carries a discriminator. */
   discriminator: DiscriminatorModel | null;
+  /** Enum parameters/properties with x-enum-varnames or x-enum-descriptions vendor extensions. */
+  enumExtensions: EnumExtension[];
   /** Date/datetime fields on the primary response object, for optional reviver generation. */
   dateFields: DateField[];
   /** True when the primary JSON response type is an array. */

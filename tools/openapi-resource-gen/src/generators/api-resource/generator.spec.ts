@@ -1152,6 +1152,119 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('x-enum-varnames / x-enum-descriptions', () => {
+    const ENUM_SPEC = {
+      paths: {
+        '/pets': {
+          get: {
+            operationId: 'listPets',
+            tags: ['pets'],
+            parameters: [
+              {
+                in: 'query',
+                name: 'status',
+                schema: {
+                  type: 'string',
+                  enum: ['available', 'pending', 'sold'],
+                  'x-enum-varnames': ['Available', 'Pending', 'Sold'],
+                  'x-enum-descriptions': [
+                    'Pet is available',
+                    'Pet is pending sale',
+                    'Pet has been sold',
+                  ],
+                },
+              },
+            ],
+            responses: { '200': { content: { 'application/json': { schema: {} } } } },
+          },
+        },
+      },
+    };
+
+    it('emits a labels map for a param with x-enum-varnames', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(ENUM_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/enum-labels/src',
+      });
+      const content = tree.read('libs/enum-labels/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).toContain('export const listPetsStatusLabels = {');
+      expect(content).toContain("available: 'Available'");
+      expect(content).toContain("pending: 'Pending'");
+      expect(content).toContain("sold: 'Sold'");
+      expect(content).toContain('} as const;');
+    });
+
+    it('emits a descriptions map for a param with x-enum-descriptions', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(ENUM_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/enum-desc/src',
+      });
+      const content = tree.read('libs/enum-desc/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).toContain('export const listPetsStatusDescriptions = {');
+      expect(content).toContain("available: 'Pet is available'");
+      expect(content).toContain("sold: 'Pet has been sold'");
+      expect(content).toContain('} as const;');
+    });
+
+    it('emits both labels and descriptions when both extensions are present', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(ENUM_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/enum-both/src',
+      });
+      const content = tree.read('libs/enum-both/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).toContain('listPetsStatusLabels');
+      expect(content).toContain('listPetsStatusDescriptions');
+    });
+
+    it('handles path params with x-enum-varnames', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets/{type}': {
+            get: {
+              operationId: 'getPetByType',
+              tags: ['pets'],
+              parameters: [
+                {
+                  in: 'path',
+                  name: 'type',
+                  required: true,
+                  schema: {
+                    type: 'string',
+                    enum: ['cat', 'dog'],
+                    'x-enum-varnames': ['Cat', 'Dog'],
+                  },
+                },
+              ],
+              responses: { '200': { content: { 'application/json': { schema: {} } } } },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/enum-path/src',
+      });
+      const content = tree.read('libs/enum-path/src/pets/get-pet-by-type.token.ts', 'utf-8')!;
+      expect(content).toContain('export const getPetByTypeTypeLabels = {');
+      expect(content).toContain("cat: 'Cat'");
+      expect(content).toContain("dog: 'Dog'");
+    });
+
+    it('does not emit enum maps when no vendor extensions are present', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/enum-none/src',
+      });
+      // MOCK_SPEC has a limit query param but no x-enum-varnames
+      const content = tree.read('libs/enum-none/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).not.toContain('Labels =');
+      expect(content).not.toContain('Descriptions =');
+    });
+  });
+
   describe('readonly response types', () => {
     it('wraps XxxResponse in Readonly<> when readonlyResponses is true', async () => {
       await apiResourceGenerator(tree, {

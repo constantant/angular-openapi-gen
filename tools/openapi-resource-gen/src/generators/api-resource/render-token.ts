@@ -164,6 +164,25 @@ export function renderTokenFile(
       ''
     );
   }
+
+  // Enum label / description maps from x-enum-varnames / x-enum-descriptions vendor extensions.
+  for (const ext of ep.enumExtensions) {
+    const mapPrefix = `${toCamelCase(ep.operationId)}${toPascalCase(ext.paramName)}`;
+    if (ext.varnames) {
+      lines.push(`export const ${mapPrefix}Labels = {`);
+      for (let i = 0; i < ext.values.length; i++) {
+        lines.push(`  ${JSON.stringify(ext.values[i])}: ${JSON.stringify(ext.varnames[i] ?? ext.values[i])},`);
+      }
+      lines.push(`} as const;`, '');
+    }
+    if (ext.descriptions) {
+      lines.push(`export const ${mapPrefix}Descriptions = {`);
+      for (let i = 0; i < ext.values.length; i++) {
+        lines.push(`  ${JSON.stringify(ext.values[i])}: ${JSON.stringify(ext.descriptions[i] ?? '')},`);
+      }
+      lines.push(`} as const;`, '');
+    }
+  }
   if (!isGet && ep.hasBody && ep.bodyContentType) {
     if (ep.isBinaryBody) {
       // Binary content (octet-stream, pdf, image/*…): use Blob | ArrayBuffer directly.
