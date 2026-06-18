@@ -95,7 +95,8 @@ export function renderTokenFile(
   if (providedIn === 'none') coreImports.push('FactoryProvider');
   lines.push(`import { ${coreImports.join(', ')} } from '@angular/core';`);
   lines.push(`import { httpResource } from '@angular/common/http';`);
-  lines.push(`import type { paths } from '../schema.d';`);
+  const needsComponents = ep.discriminator?.variants.some((v) => v.schemaName) ?? false;
+  lines.push(`import type { paths${needsComponents ? ', components' : ''} } from '../schema.d';`);
   lines.push(`import { ${baseUrlToken} } from '../api-base-url.token';`);
   for (const scheme of applicableSchemes) {
     lines.push(`import { ${scheme.tokenName} } from '../${scheme.fileName}';`);
@@ -157,6 +158,33 @@ export function renderTokenFile(
       }
       lines.push('');
     }
+  }
+
+  // Discriminated union helpers — emitted when the primary response schema has a discriminator.
+  if (ep.discriminator && hasResponse) {
+    const { propertyName, variants, isArrayResponse } = ep.discriminator;
+    const keyLiterals = variants.map((v) => JSON.stringify(v.key)).join(' | ');
+    lines.push(`export type ${pascal}DiscriminatorKey = ${keyLiterals};`, '');
+
+    for (const v of variants) {
+      const variantPascal = toPascalCase(v.key);
+      let typeExpr: string;
+      if (v.schemaName) {
+        // Mapping-based: intersect component schema with a literal discriminant tag.
+        typeExpr = `components['schemas'][${JSON.stringify(v.schemaName)}] & { ${JSON.stringify(propertyName)}: ${JSON.stringify(v.key)} }`;
+      } else {
+        // Enum-based fallback: narrow the response union with Extract.
+        const base = isArrayResponse
+          ? `${pascal}Response extends (infer _I)[] ? _I : never`
+          : `${pascal}Response`;
+        typeExpr = `Extract<${base}, { ${JSON.stringify(propertyName)}: ${JSON.stringify(v.key)} }>`;
+      }
+      lines.push(`export type ${pascal}${variantPascal} = ${typeExpr};`, '');
+    }
+
+    const variantNames = variants.map((v) => `${pascal}${toPascalCase(v.key)}`).join(' | ');
+    const discriminatedExpr = isArrayResponse ? `(${variantNames})[]` : variantNames;
+    lines.push(`export type ${pascal}Discriminated = ${discriminatedExpr};`, '');
   }
 
   const responseT = hasResponse ? `${pascal}Response` : 'unknown';

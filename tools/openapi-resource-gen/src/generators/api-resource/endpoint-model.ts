@@ -1,3 +1,17 @@
+export interface DiscriminatorVariant {
+  /** Discriminant literal value, e.g. 'cat'. */
+  key: string;
+  /** Component schema name extracted from discriminator.mapping, e.g. 'Cat'. Absent when only enum-based. */
+  schemaName?: string;
+}
+
+export interface DiscriminatorModel {
+  propertyName: string;
+  variants: DiscriminatorVariant[];
+  /** True when the response schema is an array whose items carry the discriminator. */
+  isArrayResponse: boolean;
+}
+
 /** Non-default serialization style for a query parameter. */
 export type QueryParamSerializer = 'deepObject' | 'csv' | 'pipes' | 'spaces';
 
@@ -52,4 +66,6 @@ export interface EndpointModel {
   deprecated: boolean;
   /** Names of security schemes that apply to this endpoint (resolved from global + operation level). */
   securitySchemeNames: string[];
+  /** Present when the primary response schema carries a discriminator. */
+  discriminator: DiscriminatorModel | null;
 }

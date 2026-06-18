@@ -1,6 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
-import type { EndpointModel, SecurityKind, SecuritySchemeModel, SpecialQueryParam } from './endpoint-model';
+import type { DiscriminatorModel, DiscriminatorVariant, EndpointModel, SecurityKind, SecuritySchemeModel, SpecialQueryParam } from './endpoint-model';
 
 const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
   OpenAPIV3.HttpMethods.GET,
@@ -71,6 +71,38 @@ export function parseSecuritySchemes(api: OpenAPIV3.Document): SecuritySchemeMod
   }
 
   return result;
+}
+
+function extractDiscriminatorFromSchema(
+  schema: OpenAPIV3.SchemaObject | null | undefined,
+  isArrayResponse: boolean
+): DiscriminatorModel | null {
+  if (!schema?.discriminator?.propertyName) return null;
+
+  const { propertyName, mapping } = schema.discriminator;
+  const variants: DiscriminatorVariant[] = [];
+
+  if (mapping) {
+    for (const [key, ref] of Object.entries(mapping)) {
+      const schemaName = ref.split('/').pop();
+      if (schemaName) variants.push({ key, schemaName });
+    }
+  }
+
+  // Fallback: look for enum values on the discriminator property in each oneOf/anyOf variant.
+  if (variants.length === 0) {
+    const subschemas = [
+      ...((schema.oneOf ?? []) as OpenAPIV3.SchemaObject[]),
+      ...((schema.anyOf ?? []) as OpenAPIV3.SchemaObject[]),
+    ];
+    for (const sub of subschemas) {
+      const discProp = sub.properties?.[propertyName] as OpenAPIV3.SchemaObject | undefined;
+      const enumVal = discProp?.enum?.[0];
+      if (enumVal !== undefined) variants.push({ key: String(enumVal) });
+    }
+  }
+
+  return variants.length > 0 ? { propertyName, variants, isArrayResponse } : null;
 }
 
 export function buildEndpoints(
@@ -187,6 +219,20 @@ export function buildEndpoints(
 
       const deprecated = operation.deprecated === true;
 
+      // Detect discriminated union on the primary response schema.
+      let discriminator: DiscriminatorModel | null = null;
+      if (responseStatuses.length > 0) {
+        const primaryResponseObj = operation.responses?.[responseStatuses[0]] as OpenAPIV3.ResponseObject | undefined;
+        const primarySchema = primaryResponseObj?.content?.['application/json']?.schema as OpenAPIV3.SchemaObject | undefined;
+        if (primarySchema) {
+          discriminator =
+            extractDiscriminatorFromSchema(primarySchema, false) ??
+            (primarySchema.type === 'array'
+              ? extractDiscriminatorFromSchema(primarySchema.items as OpenAPIV3.SchemaObject, true)
+              : null);
+        }
+      }
+
       endpoints.push({
         tag: toKebabCase(tag),
         operationId: rawId,
@@ -207,6 +253,7 @@ export function buildEndpoints(
         deprecated,
         securitySchemeNames,
         errorStatuses,
+        discriminator,
       });
     }
   }

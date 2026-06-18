@@ -893,6 +893,174 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('discriminated union support', () => {
+    const DISC_SPEC = {
+      paths: {
+        '/events': {
+          get: {
+            operationId: 'listEvents',
+            tags: ['events'],
+            responses: {
+              '200': {
+                content: {
+                  'application/json': {
+                    schema: {
+                      oneOf: [
+                        { type: 'object', properties: { type: { type: 'string' }, x: { type: 'number' } } },
+                        { type: 'object', properties: { type: { type: 'string' }, duration: { type: 'number' } } },
+                      ],
+                      discriminator: {
+                        propertyName: 'type',
+                        mapping: {
+                          click: '#/components/schemas/ClickEvent',
+                          hover: '#/components/schemas/HoverEvent',
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    it('emits DiscriminatorKey union type', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(DISC_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/disc-key/src',
+      });
+      const content = tree.read('libs/disc-key/src/events/list-events.token.ts', 'utf-8')!;
+      expect(content).toContain("export type ListEventsDiscriminatorKey = 'click' | 'hover';");
+    });
+
+    it('emits per-variant narrowed type aliases using component schema intersection', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(DISC_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/disc-variants/src',
+      });
+      const content = tree.read('libs/disc-variants/src/events/list-events.token.ts', 'utf-8')!;
+      expect(content).toContain("components['schemas']['ClickEvent']");
+      expect(content).toContain("components['schemas']['HoverEvent']");
+      // Prettier reformats { "type": "click" } → { type: 'click'; }
+      expect(content).toContain("type: 'click'");
+      expect(content).toContain("type: 'hover'");
+      expect(content).toContain('export type ListEventsClick =');
+      expect(content).toContain('export type ListEventsHover =');
+    });
+
+    it('imports components from schema.d when mapping-based variants are present', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(DISC_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/disc-import/src',
+      });
+      const content = tree.read('libs/disc-import/src/events/list-events.token.ts', 'utf-8')!;
+      expect(content).toContain("import type { paths, components } from '../schema.d'");
+    });
+
+    it('emits XxxDiscriminated union type', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(DISC_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/disc-union/src',
+      });
+      const content = tree.read('libs/disc-union/src/events/list-events.token.ts', 'utf-8')!;
+      expect(content).toContain('export type ListEventsDiscriminated = ListEventsClick | ListEventsHover;');
+    });
+
+    it('wraps XxxDiscriminated in array for array-of-discriminated-items responses', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/events': {
+            get: {
+              operationId: 'listEvents',
+              tags: ['events'],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'array',
+                        items: {
+                          oneOf: [
+                            { type: 'object', properties: { type: { type: 'string' } } },
+                            { type: 'object', properties: { type: { type: 'string' } } },
+                          ],
+                          discriminator: {
+                            propertyName: 'type',
+                            mapping: {
+                              click: '#/components/schemas/ClickEvent',
+                              hover: '#/components/schemas/HoverEvent',
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/disc-array/src',
+      });
+      const content = tree.read('libs/disc-array/src/events/list-events.token.ts', 'utf-8')!;
+      expect(content).toContain('export type ListEventsDiscriminated = (ListEventsClick | ListEventsHover)[];');
+    });
+
+    it('emits Extract-based variants when only enum values are available (no mapping)', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/events': {
+            get: {
+              operationId: 'listEvents',
+              tags: ['events'],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        oneOf: [
+                          { type: 'object', properties: { type: { type: 'string', enum: ['click'] } } },
+                          { type: 'object', properties: { type: { type: 'string', enum: ['hover'] } } },
+                        ],
+                        discriminator: { propertyName: 'type' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/disc-enum/src',
+      });
+      const content = tree.read('libs/disc-enum/src/events/list-events.token.ts', 'utf-8')!;
+      expect(content).toContain('Extract<ListEventsResponse,');
+      expect(content).not.toContain("import type { paths, components }");
+    });
+
+    it('does not emit discriminated types when response has no discriminator', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/disc-none/src',
+      });
+      const content = tree.read('libs/disc-none/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).not.toContain('DiscriminatorKey');
+      expect(content).not.toContain('Discriminated');
+    });
+  });
+
   describe('descriptive errors', () => {
     it('error message for missing openapi field includes version guidance', () => {
       // Verify the error text is descriptive before we even hit SwaggerParser.
