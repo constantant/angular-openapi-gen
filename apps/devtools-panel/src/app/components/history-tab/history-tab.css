@@ -152,3 +152,24 @@ mat-toolbar.panel-header {
   overflow-y: auto;
   line-height: 1.5;
 }
+
+.detail-request-line {
+  font-family: var(--app-font-mono), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mat-sys-primary);
+  padding: 3px 6px;
+  margin-bottom: 6px;
+  background: color-mix(in srgb, var(--mat-sys-primary) 10%, transparent);
+  border-radius: 3px;
+}
+
+.detail-badge {
+  display: inline-block;
+  font-family: var(--app-font-mono), monospace;
+  font-size: 10px;
+  color: var(--mat-sys-on-surface-variant);
+  background: color-mix(in srgb, var(--mat-sys-on-surface) 10%, transparent);
+  padding: 2px 6px;
+  border-radius: 3px;
+}

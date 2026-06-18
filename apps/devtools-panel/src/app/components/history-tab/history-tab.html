@@ -21,16 +21,24 @@
              [attr.role]="hasPayload(ev) ? 'button' : null">
           <span class="ev-ts">{{ timestamp(ev.ts) }}</span>
           <span class="ev-type ev-{{ ev.type }}">{{ ev.type }}</span>
-          <span class="ev-preview">{{ preview(ev) }}</span>
+          <span class="ev-preview">{{ preview(ev, entry.meta) }}</span>
           @if (hasPayload(ev)) {
             <span class="ev-chevron">{{ expandedId() === ev.id ? '▾' : '▸' }}</span>
           }
         </div>
         @if (expandedId() === ev.id) {
           <div class="event-detail">
-            @for (s of payloadSections(ev); track s.label) {
-              <div class="detail-label">{{ s.label }}</div>
-              <pre class="detail-json">{{ s.json }}</pre>
+            @for (s of payloadSections(ev, entry.meta); track s.label) {
+              @if (s.type === 'header') {
+                <div class="detail-request-line">{{ s.label }}</div>
+              } @else {
+                <div class="detail-label">{{ s.label }}</div>
+                @if (s.type === 'string') {
+                  <span class="detail-badge">{{ s.json }}</span>
+                } @else {
+                  <pre class="detail-json">{{ s.json }}</pre>
+                }
+              }
             }
           </div>
         }
