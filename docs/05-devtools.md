@@ -1,0 +1,269 @@
+# 5 — Chrome DevTools Extension
+
+The **OpenAPI Resource Mocks DevTools** panel connects to any Angular app running
+`provideMockResourceBus()` and gives you a live, clickable UI over every mock token —
+no code changes, no page reloads.
+
+---
+
+## Install the extension
+
+> The extension is pending Chrome Web Store review. Use **Load unpacked** for now.
+
+1. Clone the repo and install dependencies:
+   ```bash
+   git clone https://github.com/constantant/angular-openapi-gen.git
+   cd angular-openapi-gen
+   npm ci
+   ```
+2. Build the extension:
+   ```bash
+   npx nx run openapi-resource-devtools:build
+   ```
+3. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and
+   select `dist/tools/openapi-resource-devtools/`.
+
+---
+
+## Prerequisites: your app must use the mock bus
+
+The extension communicates with the page through a DOM event bridge. For this to work,
+your app (or a dev/mock variant of it) must call `provideMockResourceBus()`:
+
+```typescript
+// app.config.mock.ts — see Guide 4 for the full mock setup
+import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
+import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access/mock';
+
+export const mockAppConfig: ApplicationConfig = {
+  providers: [
+    provideMockResourceBus(),
+    provideFindPetsByStatusMock(),
+    // ...
+  ],
+};
+```
+
+Open Chrome DevTools (`F12`) on a page running this config. The **API Mocks** tab
+appears in the DevTools tab bar.
+
+---
+
+## Panel overview
+
+The panel has two panes:
+
+- **Left — mock table**: every registered token with its current status and action buttons
+- **Right — detail tabs** (`Respond`, `History`, `Specs`): appear when you click a row
+
+### Status values
+
+| Status | Meaning |
+|--------|---------|
+| `idle` | No request has been made yet (or `reset()` was called) |
+| `loading` | Request in flight |
+| `reloading` | Reload in flight; previous value still visible |
+| `resolved` | Data available |
+| `error` | Last request failed |
+| `local` | Panel-managed entry (key not yet registered by the app — see [Local mocks](#local-unregistered-mocks)) |
+| **CAUGHT** | Catch mode is active; request is held until you release it |
+
+---
+
+## Catching requests
+
+**Catch mode** intercepts a request before it resolves, holding the resource in `loading`
+until you explicitly decide the response. Use it to:
+- Inspect what params the component sent before deciding the response
+- Test loading skeletons without hardcoded delays
+- Reproduce race conditions and error states on demand
+
+### Enable per mock
+
+Click the **⏸** button in the row's Actions column. The row gains an amber left border.
+
+### Enable for all mocks
+
+Click **⏸ Catch All** in the toolbar.
+
+### Release a caught request
+
+When a mock is caught, the **Respond** tab shows:
+- **Caught request args** — the params / body the component sent
+- **Response (JSON)** — fill this in and click **Release → Resolve** or **Release → Fail**
+
+After release, if catch mode is still on, the next request from that mock is immediately
+caught again.
+
+---
+
+## Respond tab
+
+Controls the selected mock's response:
+
+| Control | What it does |
+|---------|-------------|
+| **Response (JSON)** | The value to resolve with; leave empty for `undefined` |
+| **⚡ Example** | Generates a valid random payload from the response schema (requires Specs import) |
+| **✓ Validate** | Validates the current JSON against the response schema |
+| **Delay (ms)** | Adds simulated latency before resolving |
+| **Resolve** | Transitions to `resolved` with the given value |
+| **Loading** | Forces back to `loading` |
+| **Fail** | Transitions to `error` with the given value as the error object |
+| **Reset** | Returns to `idle` |
+
+---
+
+## History tab
+
+Reverse-chronological event log for the selected mock. Each row shows the event type, timestamp, and a one-line preview.
+
+### Request inspector
+
+For `request` and `caught` events, clicking a row expands a structured detail view:
+
+- **Filled URL** — e.g. `GET /pet/42` (path params substituted with actual values)
+- **Path param rows** — one row per `{placeholder}`, labeled by name from the spec
+- **Query / Body section** — remaining args labeled **Query** (GET/HEAD/DELETE) or **Body** (POST/PUT/PATCH)
+- **Binary badges** — `[FormData]`, `[Blob]`, `[ArrayBuffer]`, `[File: name]` are shown as inline badges rather than quoted strings
+
+For `resolve` and `error` events the detail view shows the response value or error object.
+
+The row preview for `request`/`caught` events shows the filled URL — e.g. `GET /pet/42` — at a glance without expanding.
+
+> **Note:** Path param labels and filled URLs require the spec to be imported in the Specs tab.
+
+---
+
+## Specs tab
+
+The **Specs** tab (top-right area) lets you import OpenAPI spec metadata so the panel can
+display response schemas and enable schema-aware Respond tab features.
+
+### Importing a spec
+
+Two formats are accepted:
+
+**`mocks.manifest.json`** (generated by `--includeMocks`) — a lightweight metadata file
+with path, method, operationId, and tag per endpoint. Enables the History inspector's path
+labels but not schema features.
+
+**Full OpenAPI spec** (`.json` or `.yaml`, local file or HTTPS URL) — includes response
+schemas. Enables ⚡ Example and ✓ Validate in the Respond tab.
+
+After import, the panel shows a confirmation form where you can verify the **specId** —
+it must match the `--specId` value used when generating the mock library (defaults to the
+base URL token name with `_BASE_URL` stripped, e.g. `PETSTORE_BASE_URL` → `petstore`).
+
+Specs are stored in `chrome.storage.local` and persist across DevTools sessions.
+
+### Workflow
+
+1. Generate the lib with `--includeMocks --specId=petstore`
+2. In the Specs tab, click **+ File** and select `libs/petstore-data-access/src/mocks.manifest.json`
+   — this gives you path labels in History
+3. Optionally, import the full spec file (`specs/petstore.yaml`) for schema features
+
+---
+
+## Scenarios
+
+The **Scenarios** toolbar button opens a dialog to save, load, and export snapshots of the
+entire mock table state (values + catch modes).
+
+### Saving a scenario
+
+1. Set up mock values and catch modes in the main panel.
+2. Click **Scenarios** → enter a name → **Save**.
+3. The scenario is stored in `chrome.storage.local` and persists across DevTools sessions.
+
+### Loading a scenario
+
+Click a saved scenario → **Load**. The panel sends control messages to the page to apply
+all the saved values and catch modes in one step.
+
+Keys that no longer exist in the current page are silently skipped — scenarios are
+forward-compatible with component changes.
+
+### Exporting / importing
+
+- **Export** — copies the current mock table state as JSON to the clipboard (or downloads
+  as a file if clipboard access is denied). Share the JSON with a teammate.
+- **Import** — open the dialog, click **Import from file**, select a previously exported
+  JSON — the state is applied immediately without saving as a named scenario.
+
+This makes it easy to reproduce a specific UI state across machines or share a bug
+reproduction setup via a JSON file committed alongside a PR.
+
+---
+
+## Local (unregistered) mocks
+
+You can create a panel-managed mock entry **before** `provideMockResource()` exists in
+the Angular app. This is useful when you're building a new feature and want to configure
+the mock response while you write the component code.
+
+### Creating a local mock
+
+1. Import the spec in the **Specs** tab first (local mocks require a spec to pick an operation from).
+2. Click **＋ New mock** in the mock table toolbar.
+3. In the dialog:
+   - Pick a spec from the dropdown
+   - Select an operation from the list
+   - The key is auto-generated (e.g. `findPetsByStatus` → `FIND_PETS_BY_STATUS`); edit if needed
+4. Click **Create** — the entry appears with status `local`.
+
+Local mock entries:
+- Support all Respond tab controls (resolve, fail, delay, schema features)
+- Support catch mode — the catch flag is preserved when the key is promoted
+- Control messages to the page are silently ignored until the key is registered
+
+### Promotion to live
+
+When your app registers `provideMockResource(..., 'FIND_PETS_BY_STATUS', ...)`, the local
+entry is **promoted in-place**: status changes from `local` to `idle`, the catch mode
+setting is re-sent to the now-live bus, and the entry is removed from local storage.
+Everything you configured — catch mode, response JSON — is immediately active.
+
+---
+
+## Toolbar actions reference
+
+| Button | Action |
+|--------|--------|
+| **↺ Refresh** | Re-queries all mock states from the page |
+| **⏸ Catch All** | Toggles catch mode on every registered mock |
+| **Clear** | Removes all mocks from the panel (does not affect the page) |
+| **Reset All** | Calls `reset()` on every mock, returning them to `idle` |
+| **Scenarios** | Opens the Scenarios dialog |
+| **＋ New mock** | Opens the Create mock dialog |
+| **Filter…** | Filters the mock table by key name |
+
+---
+
+## Catch-mode pre-injection
+
+When you enable catch mode and then navigate to a new page (or reload), the background
+service worker injects `window.__oarmPendingCatch__` into the page **before Angular's
+module scripts execute**. The mock bus constructor reads this and pre-populates its
+catch-mode set, so the very first request from a component (which fires synchronously
+during Angular bootstrap) is caught — no async round-trip required.
+
+This means catch mode works reliably even for data loaded at startup, not just for
+user-triggered interactions.
+
+---
+
+## Tips
+
+**Combine with E2E tests** — the same mock bus your Playwright tests use is what the
+DevTools panel connects to. Run `nx serve myapp --configuration=mock-e2e` (port 4201),
+open DevTools, and you can manually interact with the same app state your tests control
+programmatically.
+
+**Commit the manifest** — check `mocks.manifest.json` into git alongside the generated
+lib. Teammates can import it from the local file picker without needing to build anything.
+
+**Use Scenarios for PR reviews** — export the mock state that reproduces the feature you're
+reviewing, commit the JSON to the PR branch, and include the import instructions in the PR
+description.

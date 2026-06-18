@@ -97,7 +97,7 @@ Re-run the generator command whenever your spec changes — it overwrites genera
 | `specId` | no | derived | Identifier embedded in `MockResourceMeta` and `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match when importing into the DevTools panel. |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
-See [`tools/openapi-resource-gen/README.md`](tools/openapi-resource-gen/README.md) for full documentation.
+See [`tools/openapi-resource-gen/README.md`](tools/openapi-resource-gen/README.md) for full documentation, or the [step-by-step tutorials](docs/README.md).
 
 ---
 
