@@ -31,6 +31,9 @@
       "@constantant/openapi-resource-mocks": [
         "tools/openapi-resource-mocks/src/index.ts"
       ],
+      "@constantant/openapi-resource-mocks/testing": [
+        "tools/openapi-resource-mocks/src/testing.ts"
+      ],
       "@angular-openapi-gen/petstore-data-access/mock": [
         "libs/petstore-data-access/src/index.mock.ts"
       ],
