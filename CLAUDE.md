@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI specs via `httpResource`.
 
-> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen` (v1.6.0), `@constantant/openapi-resource-mocks` (v0.3.0), Chrome Extension `openapi-resource-mocks-devtools` (v0.4.0). Data-access libs: `github`, `petstore`, `weather`, `youtube` — all generated with `--includeMocks=true --specId=<name>`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
+> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen` (v1.8.0), `@constantant/openapi-resource-mocks` (v0.5.0), Chrome Extension `openapi-resource-mocks-devtools` (v0.7.0). Data-access libs: `github`, `petstore`, `weather`, `youtube` — all generated with `--includeMocks=true --specId=<name>`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
 
 ---
 
@@ -55,6 +55,7 @@ tools/
 
   openapi-resource-mocks/     # published as @constantant/openapi-resource-mocks
                               # mock bus: window API, DOM events, Chrome Extension bridge
+                              # src/testing.ts — /testing sub-entry (mockResource, MockResourceHandle)
 
   openapi-resource-devtools/  # Chrome Extension shell (manifest, content script, service worker,
                               # devtools page). Panel UI lives in apps/devtools-panel/.
@@ -208,23 +209,24 @@ provideHttpClient(withInterceptors([myapiDigestAuthInterceptor])),
 5. `@apidevtools/swagger-parser` — dereference all `$ref` chains for endpoint extraction.
 6. `parseSecuritySchemes(api)` — extract security schemes into `SecuritySchemeModel[]`.
 7. `buildEndpoints(api, tags, convention)` — map each operation to `EndpointModel`.
-8. `renderTokenFile()` / `renderSecurityTokenFile()` / `renderMockFile()` — emit token and mock files as strings.
-9. Stale file cleanup — snapshot `.token.ts`, `.security-token.ts`, `.mock.ts`, `mocks.manifest.json`, `index.ts`, and `index.mock.ts` files before the run; delete any that weren't produced this run.
+8. `renderTokenFile()` / `renderSecurityTokenFile()` / `renderMockFile()` / `renderMswFile()` — emit token, mock, and MSW handler files as strings.
+9. Stale file cleanup — snapshot `.token.ts`, `.security-token.ts`, `.mock.ts`, `.msw.ts`, `mocks.manifest.json`, `index.ts`, `index.mock.ts`, and `index.msw.ts` files before the run; delete any that weren't produced this run.
 10. `@nx/devkit` `formatFiles()` — run Prettier over all written files.
 
 ### Schema inputs (`schema.json`)
 
 ```json
 {
-  "specPath":        "local path OR https:// URL to the OpenAPI YAML/JSON file",
-  "outputDir":       "output directory inside libs/",
-  "baseUrlToken":    "optional: name of the base URL token (default: API_BASE_URL)",
-  "tagFilter":       "optional: only generate tokens for these tags",
-  "namingConvention":"camel | kebab (default: kebab for filenames, SCREAMING_SNAKE for token names)",
-  "providedIn":      "none | root (default: none)",
-  "includeMocks":    "true | false (default: false) — emit *.mock.ts alongside each *.token.ts",
-  "specId":          "string — embedded in MockResourceMeta._meta; must match the specId used when importing the spec into the DevTools panel",
-  "verbose":         "true | false (default: false) — print +/~/- summary of created/updated/deleted files after generation"
+  "specPath":           "local path OR https:// URL to the OpenAPI YAML/JSON file",
+  "outputDir":          "output directory inside libs/",
+  "baseUrlToken":       "optional: name of the base URL token (default: API_BASE_URL)",
+  "tagFilter":          "optional: only generate tokens for these tags",
+  "namingConvention":   "camel | kebab (default: kebab for filenames, SCREAMING_SNAKE for token names)",
+  "providedIn":         "none | root (default: none)",
+  "includeMocks":       "true | false (default: false) — emit *.mock.ts alongside each *.token.ts",
+  "includeMswHandlers": "true | false (default: false) — emit *.msw.ts MSW 2.x handler files alongside each *.token.ts; adds /msw path alias to tsconfig.base.json",
+  "specId":             "string — embedded in MockResourceMeta._meta; must match the specId used when importing the spec into the DevTools panel",
+  "verbose":            "true | false (default: false) — print +/~/- summary of created/updated/deleted files after generation"
 }
 ```
 
@@ -456,6 +458,9 @@ the `setCatchMode` control message to the newly-live bus. The entry is removed f
 - **MockResourceMeta** — `{ specId, operationId, path, method, tag? }` — embedded in each generated mock file as `export const _meta: MockResourceMeta`. Passed to `provideMockResource()` so the panel can show operation info in the mock table and Respond tab.
 - **CreateMockDialog** — `apps/devtools-panel/src/app/components/create-mock-dialog/` — opened by the "＋ New mock" button in the mock table. Lets developers create panel-managed (local) mocks before `provideMockResource()` exists in the app: pick a spec from `SPEC_STORE`, select an operation, confirm the auto-generated key (`toScreamingSnake(operationId)`, editable). The key is conflict-checked against `MOCK_BRIDGE.mocks()`. Uses `MatDialog` from `@angular/material/dialog`.
 - **`toScreamingSnake`** — exported from `apps/devtools-panel/src/app/spec-store.token.ts`. Used by `CreateMockDialog` to derive the default key from an operationId, matching the generator's naming convention exactly.
+- **ScenarioDialog** — `apps/devtools-panel/src/app/components/scenario-dialog/` — opened by the "Scenarios" toolbar button. Saves/loads/deletes named mock state snapshots (values + catch modes) and exports/imports current state as JSON. Opened via `MatDialog.open()` — must NOT appear in the host component's `imports[]`.
+- **SCENARIO_STORE token** — `apps/devtools-panel/src/app/scenario-store.token.ts` — `providedIn: 'root'` token. Persists named `Scenario` objects to `chrome.storage.local['oarm_scenarios']` (keyed by name, sorted newest-first). `load()` calls `bridge.sendControl` + `bridge.setCatchMode` per mock entry; skips keys not in `bridge.mocks()` and skips items with invalid shape. `importJson()` applies state immediately without saving a named scenario.
+- **History tab request inspector** — `apps/devtools-panel/src/app/components/history-tab/` — when expanding a `request` or `caught` event, displays: a `METHOD /filled/path` header (path params substituted from actual arg values using `meta.path`), individual path-param rows labeled by placeholder name, and remaining args labeled Query (GET/HEAD/DELETE) or Body (POST/PUT/PATCH). Binary placeholders (`[FormData]`, `[Blob]`, `[ArrayBuffer]`, `[File: name]`) are rendered as inline badges rather than JSON strings. The row preview for request events also shows the filled URL. Gracefully falls back to a generic "Request" section when `MockResourceMeta` is null.
 
 ### Releasing the extension
 
@@ -529,6 +534,10 @@ Conventional Commits PR title (it becomes the squash commit). See
 | Respond tab pinned footer | `schema-section`, `delay-row`, and `action-row` moved out of the scrollable `.respond-body` into a `flex-shrink: 0` `.respond-footer` below it | When the editor grows tall, schema/delay/actions were scrolled off-screen. Pinning them ensures they are always reachable |
 | Local (unregistered) mocks | `MockBridge.createLocalMock()` adds a panel-managed entry with `status: 'local'`; persisted in `chrome.storage.local['oarm_local_mocks']` with `catchMode`; promoted in-place when the app registers the key | Developer pre-configures a mock (catch mode, Respond tab value) before writing the Angular code. All controls work identically to live mocks; control messages to the page are silently ignored until the key is registered |
 | Catch-mode pre-injection | SW tracks catch modes in memory + `chrome.storage.session['oarm_catch_<tabId>']`; on `tabs.onUpdated(loading)` injects `window.__oarmPendingCatch__` via `executeScript(injectImmediately:true)`; `MockResourceBus` constructor reads and pre-populates `catchModeKeys` | `provideMockResource` calls `_notifyRequest()` synchronously during Angular bootstrap — before any async panel message can arrive. Pre-injection closes this race so the very first request is caught |
+| `includeMswHandlers` | Generator emits `*.msw.ts` alongside each `*.token.ts`; each file exports `listPetsHandler(body?)` + `listPetsHandlers` array; path params converted `{id}` → `:id`; DELETE/no-response endpoints use `new HttpResponse(null, { status: 204 })`; root `index.msw.ts` barrel + `/msw` tsconfig alias added automatically | MSW 2.x is the standard for component-test mocking; this lets consumers drop handlers directly into `server.use(listPetsHandlers)` without writing boilerplate |
+| `/testing` entry point | `@constantant/openapi-resource-mocks/testing` exports `mockResource(TOKEN, behavior?)` returning `MockResourceHandle<T>` — a `FactoryProvider` plus `.ref`, `.calls`, `.expectCalled()`, `.expectCalledWith()`. Supports `{ sequence: [...] }` for multi-step scenarios. No `MockResourceBus`, no DOM events — pure signal state | Vitest/Jasmine component tests need zero-infrastructure mocking; sequence mode enables pagination, retry, and error-then-success patterns in a single test |
+| Scenario save/load | `SCENARIO_STORE` token (`providedIn: 'root'`) persists named `Scenario` objects to `chrome.storage.local['oarm_scenarios']`; `load()` applies via `bridge.sendControl` + `bridge.setCatchMode`; `exportJson()` serialises current mock table to JSON; `importJson()` applies without saving | Developers can commit scenario files alongside feature branches and restore a full mock state in one click, or share via JSON export |
+| History tab request inspector | `payloadSections(ev, meta)` extracts path-param names from `meta.path` `{placeholders}`, fills in actual arg values to produce `GET /pet/42` header line, labels remaining args as Query or Body based on HTTP method, renders `[FormData]`/`[Blob]` as badges instead of JSON strings | Raw `JSON.stringify(args)` was unreadable for multi-arg calls; path-template parsing gives named labels without any runtime schema |
 
 ---
 
