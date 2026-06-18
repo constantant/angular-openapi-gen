@@ -12,9 +12,9 @@ const out  = resolve(root, 'dist/tools/openapi-resource-devtools');
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
-// 1. Build the Angular panel (development = no content hashing, source maps, fast)
+// 1. Build the Angular panel in production mode (optimized, small bundle)
 console.log('Building Angular panel (devtools-panel)…');
-execSync('npx nx build devtools-panel --configuration=development', {
+execSync('npx nx build devtools-panel', {
   cwd: root,
   stdio: 'inherit',
 });
