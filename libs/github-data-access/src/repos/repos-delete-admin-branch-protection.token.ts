@@ -3,6 +3,9 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposDeleteAdminBranchProtectionError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins']['delete']['responses']['404']['content']['application/json'];
+
 export const REPOS_DELETE_ADMIN_BRANCH_PROTECTION = new InjectionToken<
   (
     owner: string,

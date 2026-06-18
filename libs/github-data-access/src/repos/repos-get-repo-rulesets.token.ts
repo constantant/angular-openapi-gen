@@ -9,6 +9,10 @@ export type ReposGetRepoRulesetsParams =
 export type ReposGetRepoRulesetsResponse =
   paths['/repos/{owner}/{repo}/rulesets']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetRepoRulesetsError =
+  | paths['/repos/{owner}/{repo}/rulesets']['get']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/rulesets']['get']['responses']['500']['content']['application/json'];
+
 export const REPOS_GET_REPO_RULESETS = new InjectionToken<
   (
     owner: string,

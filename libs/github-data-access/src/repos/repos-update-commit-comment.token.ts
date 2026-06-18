@@ -10,6 +10,9 @@ export type ReposUpdateCommitCommentBody = NonNullable<
 export type ReposUpdateCommitCommentResponse =
   paths['/repos/{owner}/{repo}/comments/{comment_id}']['patch']['responses']['200']['content']['application/json'];
 
+export type ReposUpdateCommitCommentError =
+  paths['/repos/{owner}/{repo}/comments/{comment_id}']['patch']['responses']['404']['content']['application/json'];
+
 export const REPOS_UPDATE_COMMIT_COMMENT = new InjectionToken<
   (
     owner: string,

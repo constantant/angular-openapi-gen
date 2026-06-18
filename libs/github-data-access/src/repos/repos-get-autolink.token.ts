@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetAutolinkResponse =
   paths['/repos/{owner}/{repo}/autolinks/{autolink_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetAutolinkError =
+  paths['/repos/{owner}/{repo}/autolinks/{autolink_id}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_AUTOLINK = new InjectionToken<
   (
     owner: string,

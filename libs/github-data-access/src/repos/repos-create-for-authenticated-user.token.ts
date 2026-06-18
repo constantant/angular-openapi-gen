@@ -10,6 +10,13 @@ export type ReposCreateForAuthenticatedUserBody = NonNullable<
 export type ReposCreateForAuthenticatedUserResponse =
   paths['/user/repos']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateForAuthenticatedUserError =
+  | paths['/user/repos']['post']['responses']['400']['content']['application/json']
+  | paths['/user/repos']['post']['responses']['401']['content']['application/json']
+  | paths['/user/repos']['post']['responses']['403']['content']['application/json']
+  | paths['/user/repos']['post']['responses']['404']['content']['application/json']
+  | paths['/user/repos']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     body:

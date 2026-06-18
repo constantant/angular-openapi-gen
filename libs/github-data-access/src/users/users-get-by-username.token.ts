@@ -1,10 +1,26 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import type { paths } from '../schema.d';
+import type { paths, components } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export type UsersGetByUsernameResponse =
   paths['/users/{username}']['get']['responses']['200']['content']['application/json'];
+
+export type UsersGetByUsernameError =
+  paths['/users/{username}']['get']['responses']['404']['content']['application/json'];
+
+export type UsersGetByUsernameDiscriminatorKey = 'public' | 'private';
+
+export type UsersGetByUsernamePublic = components['schemas']['public-user'] & {
+  user_view_type: 'public';
+};
+
+export type UsersGetByUsernamePrivate =
+  components['schemas']['private-user'] & { user_view_type: 'private' };
+
+export type UsersGetByUsernameDiscriminated =
+  | UsersGetByUsernamePublic
+  | UsersGetByUsernamePrivate;
 
 export const USERS_GET_BY_USERNAME = new InjectionToken<
   (

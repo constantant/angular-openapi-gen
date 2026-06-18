@@ -10,6 +10,9 @@ export type ReposRemoveUserAccessRestrictionsBody = NonNullable<
 export type ReposRemoveUserAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['delete']['responses']['200']['content']['application/json'];
 
+export type ReposRemoveUserAccessRestrictionsError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['delete']['responses']['422']['content']['application/json'];
+
 export const REPOS_REMOVE_USER_ACCESS_RESTRICTIONS = new InjectionToken<
   (
     owner: string,

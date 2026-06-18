@@ -10,6 +10,9 @@ export type ReposCreateDeploymentStatusBody = NonNullable<
 export type ReposCreateDeploymentStatusResponse =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateDeploymentStatusError =
+  paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_DEPLOYMENT_STATUS = new InjectionToken<
   (
     owner: string,

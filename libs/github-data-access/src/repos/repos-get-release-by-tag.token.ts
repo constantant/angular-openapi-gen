@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetReleaseByTagResponse =
   paths['/repos/{owner}/{repo}/releases/tags/{tag}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetReleaseByTagError =
+  paths['/repos/{owner}/{repo}/releases/tags/{tag}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_RELEASE_BY_TAG = new InjectionToken<
   (
     owner: string,

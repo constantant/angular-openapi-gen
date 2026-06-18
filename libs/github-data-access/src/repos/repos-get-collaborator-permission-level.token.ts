@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetCollaboratorPermissionLevelResponse =
   paths['/repos/{owner}/{repo}/collaborators/{username}/permission']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetCollaboratorPermissionLevelError =
+  paths['/repos/{owner}/{repo}/collaborators/{username}/permission']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_COLLABORATOR_PERMISSION_LEVEL = new InjectionToken<
   (
     owner: string,

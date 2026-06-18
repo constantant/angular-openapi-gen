@@ -10,6 +10,12 @@ export type UsersAddSocialAccountForAuthenticatedUserBody = NonNullable<
 export type UsersAddSocialAccountForAuthenticatedUserResponse =
   paths['/user/social_accounts']['post']['responses']['201']['content']['application/json'];
 
+export type UsersAddSocialAccountForAuthenticatedUserError =
+  | paths['/user/social_accounts']['post']['responses']['401']['content']['application/json']
+  | paths['/user/social_accounts']['post']['responses']['403']['content']['application/json']
+  | paths['/user/social_accounts']['post']['responses']['404']['content']['application/json']
+  | paths['/user/social_accounts']['post']['responses']['422']['content']['application/json'];
+
 export const USERS_ADD_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (

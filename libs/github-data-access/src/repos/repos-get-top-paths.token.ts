@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetTopPathsResponse =
   paths['/repos/{owner}/{repo}/traffic/popular/paths']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetTopPathsError =
+  paths['/repos/{owner}/{repo}/traffic/popular/paths']['get']['responses']['403']['content']['application/json'];
+
 export const REPOS_GET_TOP_PATHS = new InjectionToken<
   (
     owner: string,

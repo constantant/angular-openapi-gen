@@ -9,6 +9,11 @@ export type UsersListSshSigningKeysForAuthenticatedUserParams =
 export type UsersListSshSigningKeysForAuthenticatedUserResponse =
   paths['/user/ssh_signing_keys']['get']['responses']['200']['content']['application/json'];
 
+export type UsersListSshSigningKeysForAuthenticatedUserError =
+  | paths['/user/ssh_signing_keys']['get']['responses']['401']['content']['application/json']
+  | paths['/user/ssh_signing_keys']['get']['responses']['403']['content']['application/json']
+  | paths['/user/ssh_signing_keys']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_LIST_SSH_SIGNING_KEYS_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (

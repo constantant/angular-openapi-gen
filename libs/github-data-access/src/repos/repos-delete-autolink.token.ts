@@ -3,6 +3,9 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposDeleteAutolinkError =
+  paths['/repos/{owner}/{repo}/autolinks/{autolink_id}']['delete']['responses']['404']['content']['application/json'];
+
 export const REPOS_DELETE_AUTOLINK = new InjectionToken<
   (
     owner: string,

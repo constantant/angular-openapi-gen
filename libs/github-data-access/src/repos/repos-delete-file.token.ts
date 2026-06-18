@@ -10,6 +10,12 @@ export type ReposDeleteFileBody = NonNullable<
 export type ReposDeleteFileResponse =
   paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['200']['content']['application/json'];
 
+export type ReposDeleteFileError =
+  | paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['409']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['422']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['503']['content']['application/json'];
+
 export const REPOS_DELETE_FILE = new InjectionToken<
   (
     owner: string,

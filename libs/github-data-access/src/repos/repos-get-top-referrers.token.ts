@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetTopReferrersResponse =
   paths['/repos/{owner}/{repo}/traffic/popular/referrers']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetTopReferrersError =
+  paths['/repos/{owner}/{repo}/traffic/popular/referrers']['get']['responses']['403']['content']['application/json'];
+
 export const REPOS_GET_TOP_REFERRERS = new InjectionToken<
   (
     owner: string,

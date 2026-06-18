@@ -6,6 +6,11 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type UsersGetPublicSshKeyForAuthenticatedUserResponse =
   paths['/user/keys/{key_id}']['get']['responses']['200']['content']['application/json'];
 
+export type UsersGetPublicSshKeyForAuthenticatedUserError =
+  | paths['/user/keys/{key_id}']['get']['responses']['401']['content']['application/json']
+  | paths['/user/keys/{key_id}']['get']['responses']['403']['content']['application/json']
+  | paths['/user/keys/{key_id}']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_GET_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (

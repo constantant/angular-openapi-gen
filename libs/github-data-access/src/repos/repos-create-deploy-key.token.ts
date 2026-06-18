@@ -10,6 +10,9 @@ export type ReposCreateDeployKeyBody = NonNullable<
 export type ReposCreateDeployKeyResponse =
   paths['/repos/{owner}/{repo}/keys']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateDeployKeyError =
+  paths['/repos/{owner}/{repo}/keys']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_DEPLOY_KEY = new InjectionToken<
   (
     owner: string,

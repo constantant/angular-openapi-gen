@@ -3,6 +3,9 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposCancelPagesDeploymentError =
+  paths['/repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}/cancel']['post']['responses']['404']['content']['application/json'];
+
 export const REPOS_CANCEL_PAGES_DEPLOYMENT = new InjectionToken<
   (
     owner: string,

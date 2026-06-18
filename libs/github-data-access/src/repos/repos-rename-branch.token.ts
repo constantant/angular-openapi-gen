@@ -10,6 +10,11 @@ export type ReposRenameBranchBody = NonNullable<
 export type ReposRenameBranchResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['201']['content']['application/json'];
 
+export type ReposRenameBranchError =
+  | paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_RENAME_BRANCH = new InjectionToken<
   (
     owner: string,

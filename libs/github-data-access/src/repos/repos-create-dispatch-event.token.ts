@@ -7,6 +7,10 @@ export type ReposCreateDispatchEventBody = NonNullable<
   paths['/repos/{owner}/{repo}/dispatches']['post']['requestBody']
 >['content']['application/json'];
 
+export type ReposCreateDispatchEventError =
+  | paths['/repos/{owner}/{repo}/dispatches']['post']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/dispatches']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_DISPATCH_EVENT = new InjectionToken<
   (
     owner: string,

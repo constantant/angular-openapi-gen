@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetPagesDeploymentResponse =
   paths['/repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetPagesDeploymentError =
+  paths['/repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_PAGES_DEPLOYMENT = new InjectionToken<
   (
     owner: string,

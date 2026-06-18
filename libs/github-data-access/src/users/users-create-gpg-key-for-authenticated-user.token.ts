@@ -10,6 +10,12 @@ export type UsersCreateGpgKeyForAuthenticatedUserBody = NonNullable<
 export type UsersCreateGpgKeyForAuthenticatedUserResponse =
   paths['/user/gpg_keys']['post']['responses']['201']['content']['application/json'];
 
+export type UsersCreateGpgKeyForAuthenticatedUserError =
+  | paths['/user/gpg_keys']['post']['responses']['401']['content']['application/json']
+  | paths['/user/gpg_keys']['post']['responses']['403']['content']['application/json']
+  | paths['/user/gpg_keys']['post']['responses']['404']['content']['application/json']
+  | paths['/user/gpg_keys']['post']['responses']['422']['content']['application/json'];
+
 export const USERS_CREATE_GPG_KEY_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     body:

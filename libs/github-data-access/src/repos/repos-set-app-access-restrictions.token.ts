@@ -10,6 +10,9 @@ export type ReposSetAppAccessRestrictionsBody = NonNullable<
 export type ReposSetAppAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['put']['responses']['200']['content']['application/json'];
 
+export type ReposSetAppAccessRestrictionsError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['put']['responses']['422']['content']['application/json'];
+
 export const REPOS_SET_APP_ACCESS_RESTRICTIONS = new InjectionToken<
   (
     owner: string,

@@ -10,6 +10,10 @@ export type ReposCreateInOrgBody = NonNullable<
 export type ReposCreateInOrgResponse =
   paths['/orgs/{org}/repos']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateInOrgError =
+  | paths['/orgs/{org}/repos']['post']['responses']['403']['content']['application/json']
+  | paths['/orgs/{org}/repos']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_IN_ORG = new InjectionToken<
   (
     org: string,

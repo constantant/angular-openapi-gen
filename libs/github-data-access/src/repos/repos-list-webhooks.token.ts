@@ -9,6 +9,9 @@ export type ReposListWebhooksParams =
 export type ReposListWebhooksResponse =
   paths['/repos/{owner}/{repo}/hooks']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListWebhooksError =
+  paths['/repos/{owner}/{repo}/hooks']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_LIST_WEBHOOKS = new InjectionToken<
   (
     owner: string,

@@ -10,6 +10,11 @@ export type ReposCreateWebhookBody = NonNullable<
 export type ReposCreateWebhookResponse =
   paths['/repos/{owner}/{repo}/hooks']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateWebhookError =
+  | paths['/repos/{owner}/{repo}/hooks']['post']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/hooks']['post']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/hooks']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_WEBHOOK = new InjectionToken<
   (
     owner: string,

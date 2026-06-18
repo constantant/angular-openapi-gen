@@ -9,6 +9,9 @@ export type ReposGetClonesParams =
 export type ReposGetClonesResponse =
   paths['/repos/{owner}/{repo}/traffic/clones']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetClonesError =
+  paths['/repos/{owner}/{repo}/traffic/clones']['get']['responses']['403']['content']['application/json'];
+
 export const REPOS_GET_CLONES = new InjectionToken<
   (
     owner: string,

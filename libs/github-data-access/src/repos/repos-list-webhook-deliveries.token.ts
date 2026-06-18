@@ -9,6 +9,10 @@ export type ReposListWebhookDeliveriesParams =
 export type ReposListWebhookDeliveriesResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListWebhookDeliveriesError =
+  | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['responses']['400']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['responses']['422']['content']['application/json'];
+
 export const REPOS_LIST_WEBHOOK_DELIVERIES = new InjectionToken<
   (
     owner: string,

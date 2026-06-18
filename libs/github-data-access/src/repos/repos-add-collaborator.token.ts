@@ -10,6 +10,10 @@ export type ReposAddCollaboratorBody = NonNullable<
 export type ReposAddCollaboratorResponse =
   paths['/repos/{owner}/{repo}/collaborators/{username}']['put']['responses']['201']['content']['application/json'];
 
+export type ReposAddCollaboratorError =
+  | paths['/repos/{owner}/{repo}/collaborators/{username}']['put']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/collaborators/{username}']['put']['responses']['422']['content']['application/json'];
+
 export const REPOS_ADD_COLLABORATOR = new InjectionToken<
   (
     owner: string,

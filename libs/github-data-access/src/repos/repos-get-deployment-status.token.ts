@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetDeploymentStatusResponse =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses/{status_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetDeploymentStatusError =
+  paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses/{status_id}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_DEPLOYMENT_STATUS = new InjectionToken<
   (
     owner: string,

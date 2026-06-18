@@ -3,6 +3,10 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposDeleteRepoRulesetError =
+  | paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}']['delete']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}']['delete']['responses']['500']['content']['application/json'];
+
 export const REPOS_DELETE_REPO_RULESET = new InjectionToken<
   (
     owner: string,

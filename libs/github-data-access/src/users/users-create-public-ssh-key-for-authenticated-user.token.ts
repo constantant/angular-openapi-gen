@@ -10,6 +10,12 @@ export type UsersCreatePublicSshKeyForAuthenticatedUserBody = NonNullable<
 export type UsersCreatePublicSshKeyForAuthenticatedUserResponse =
   paths['/user/keys']['post']['responses']['201']['content']['application/json'];
 
+export type UsersCreatePublicSshKeyForAuthenticatedUserError =
+  | paths['/user/keys']['post']['responses']['401']['content']['application/json']
+  | paths['/user/keys']['post']['responses']['403']['content']['application/json']
+  | paths['/user/keys']['post']['responses']['404']['content']['application/json']
+  | paths['/user/keys']['post']['responses']['422']['content']['application/json'];
+
 export const USERS_CREATE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (

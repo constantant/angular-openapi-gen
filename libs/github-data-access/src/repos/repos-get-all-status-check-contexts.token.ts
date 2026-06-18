@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetAllStatusCheckContextsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetAllStatusCheckContextsError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_ALL_STATUS_CHECK_CONTEXTS = new InjectionToken<
   (
     owner: string,

@@ -6,6 +6,10 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetWebhookDeliveryResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetWebhookDeliveryError =
+  | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['400']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['422']['content']['application/json'];
+
 export const REPOS_GET_WEBHOOK_DELIVERY = new InjectionToken<
   (
     owner: string,

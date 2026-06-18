@@ -3,6 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type UsersDeletePublicSshKeyForAuthenticatedUserError =
+  | paths['/user/keys/{key_id}']['delete']['responses']['401']['content']['application/json']
+  | paths['/user/keys/{key_id}']['delete']['responses']['403']['content']['application/json']
+  | paths['/user/keys/{key_id}']['delete']['responses']['404']['content']['application/json'];
+
 export const USERS_DELETE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (keyId: string) => ReturnType<typeof httpResource<unknown>>

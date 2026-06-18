@@ -10,6 +10,10 @@ export type ReposUpdateStatusCheckProtectionBody = NonNullable<
 export type ReposUpdateStatusCheckProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['patch']['responses']['200']['content']['application/json'];
 
+export type ReposUpdateStatusCheckProtectionError =
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['patch']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['patch']['responses']['422']['content']['application/json'];
+
 export const REPOS_UPDATE_STATUS_CHECK_PROTECTION = new InjectionToken<
   (
     owner: string,

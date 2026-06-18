@@ -10,6 +10,10 @@ export type ReposRemoveStatusCheckContextsBody = NonNullable<
 export type ReposRemoveStatusCheckContextsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['delete']['responses']['200']['content']['application/json'];
 
+export type ReposRemoveStatusCheckContextsError =
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['delete']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['delete']['responses']['422']['content']['application/json'];
+
 export const REPOS_REMOVE_STATUS_CHECK_CONTEXTS = new InjectionToken<
   (
     owner: string,

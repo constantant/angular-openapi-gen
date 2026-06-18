@@ -3,6 +3,9 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposDeletePullRequestReviewProtectionError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['delete']['responses']['404']['content']['application/json'];
+
 export const REPOS_DELETE_PULL_REQUEST_REVIEW_PROTECTION = new InjectionToken<
   (
     owner: string,

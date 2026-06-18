@@ -10,6 +10,9 @@ export type ReposGenerateReleaseNotesBody = NonNullable<
 export type ReposGenerateReleaseNotesResponse =
   paths['/repos/{owner}/{repo}/releases/generate-notes']['post']['responses']['200']['content']['application/json'];
 
+export type ReposGenerateReleaseNotesError =
+  paths['/repos/{owner}/{repo}/releases/generate-notes']['post']['responses']['404']['content']['application/json'];
+
 export const REPOS_GENERATE_RELEASE_NOTES = new InjectionToken<
   (
     owner: string,

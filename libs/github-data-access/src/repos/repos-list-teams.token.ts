@@ -9,6 +9,9 @@ export type ReposListTeamsParams =
 export type ReposListTeamsResponse =
   paths['/repos/{owner}/{repo}/teams']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListTeamsError =
+  paths['/repos/{owner}/{repo}/teams']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_LIST_TEAMS = new InjectionToken<
   (
     owner: string,

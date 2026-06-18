@@ -3,6 +3,9 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposDeleteWebhookError =
+  paths['/repos/{owner}/{repo}/hooks/{hook_id}']['delete']['responses']['404']['content']['application/json'];
+
 export const REPOS_DELETE_WEBHOOK = new InjectionToken<
   (
     owner: string,

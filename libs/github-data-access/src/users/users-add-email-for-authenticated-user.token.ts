@@ -10,6 +10,12 @@ export type UsersAddEmailForAuthenticatedUserBody = NonNullable<
 export type UsersAddEmailForAuthenticatedUserResponse =
   paths['/user/emails']['post']['responses']['201']['content']['application/json'];
 
+export type UsersAddEmailForAuthenticatedUserError =
+  | paths['/user/emails']['post']['responses']['401']['content']['application/json']
+  | paths['/user/emails']['post']['responses']['403']['content']['application/json']
+  | paths['/user/emails']['post']['responses']['404']['content']['application/json']
+  | paths['/user/emails']['post']['responses']['422']['content']['application/json'];
+
 export const USERS_ADD_EMAIL_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     body:

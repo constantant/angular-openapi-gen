@@ -9,6 +9,9 @@ export type ReposListActivitiesParams =
 export type ReposListActivitiesResponse =
   paths['/repos/{owner}/{repo}/activity']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListActivitiesError =
+  paths['/repos/{owner}/{repo}/activity']['get']['responses']['422']['content']['application/json'];
+
 export const REPOS_LIST_ACTIVITIES = new InjectionToken<
   (
     owner: string,

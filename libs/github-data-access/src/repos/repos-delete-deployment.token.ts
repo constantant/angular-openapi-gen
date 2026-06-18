@@ -3,6 +3,10 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposDeleteDeploymentError =
+  | paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['delete']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['delete']['responses']['422']['content']['application/json'];
+
 export const REPOS_DELETE_DEPLOYMENT = new InjectionToken<
   (
     owner: string,

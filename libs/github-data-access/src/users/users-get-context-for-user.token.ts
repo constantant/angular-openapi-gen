@@ -9,6 +9,10 @@ export type UsersGetContextForUserParams =
 export type UsersGetContextForUserResponse =
   paths['/users/{username}/hovercard']['get']['responses']['200']['content']['application/json'];
 
+export type UsersGetContextForUserError =
+  | paths['/users/{username}/hovercard']['get']['responses']['404']['content']['application/json']
+  | paths['/users/{username}/hovercard']['get']['responses']['422']['content']['application/json'];
+
 export const USERS_GET_CONTEXT_FOR_USER = new InjectionToken<
   (
     username: string,

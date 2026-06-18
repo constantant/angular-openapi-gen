@@ -9,6 +9,10 @@ export type ReposListContributorsParams =
 export type ReposListContributorsResponse =
   paths['/repos/{owner}/{repo}/contributors']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListContributorsError =
+  | paths['/repos/{owner}/{repo}/contributors']['get']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/contributors']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_LIST_CONTRIBUTORS = new InjectionToken<
   (
     owner: string,

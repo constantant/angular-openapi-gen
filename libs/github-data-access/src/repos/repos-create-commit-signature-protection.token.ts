@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposCreateCommitSignatureProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures']['post']['responses']['200']['content']['application/json'];
 
+export type ReposCreateCommitSignatureProtectionError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures']['post']['responses']['404']['content']['application/json'];
+
 export const REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION = new InjectionToken<
   (
     owner: string,

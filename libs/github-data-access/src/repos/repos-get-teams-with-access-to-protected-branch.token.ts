@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetTeamsWithAccessToProtectedBranchResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetTeamsWithAccessToProtectedBranchError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_TEAMS_WITH_ACCESS_TO_PROTECTED_BRANCH =
   new InjectionToken<
     (

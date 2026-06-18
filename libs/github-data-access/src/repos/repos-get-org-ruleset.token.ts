@@ -6,6 +6,10 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetOrgRulesetResponse =
   paths['/orgs/{org}/rulesets/{ruleset_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetOrgRulesetError =
+  | paths['/orgs/{org}/rulesets/{ruleset_id}']['get']['responses']['404']['content']['application/json']
+  | paths['/orgs/{org}/rulesets/{ruleset_id}']['get']['responses']['500']['content']['application/json'];
+
 export const REPOS_GET_ORG_RULESET = new InjectionToken<
   (
     org: string,

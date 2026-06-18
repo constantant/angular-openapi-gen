@@ -6,6 +6,10 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposListBranchesForHeadCommitResponse =
   paths['/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListBranchesForHeadCommitError =
+  | paths['/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head']['get']['responses']['409']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head']['get']['responses']['422']['content']['application/json'];
+
 export const REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT = new InjectionToken<
   (
     owner: string,

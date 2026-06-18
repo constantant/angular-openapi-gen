@@ -9,6 +9,11 @@ export type UsersListPublicSshKeysForAuthenticatedUserParams =
 export type UsersListPublicSshKeysForAuthenticatedUserResponse =
   paths['/user/keys']['get']['responses']['200']['content']['application/json'];
 
+export type UsersListPublicSshKeysForAuthenticatedUserError =
+  | paths['/user/keys']['get']['responses']['401']['content']['application/json']
+  | paths['/user/keys']['get']['responses']['403']['content']['application/json']
+  | paths['/user/keys']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_LIST_PUBLIC_SSH_KEYS_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (

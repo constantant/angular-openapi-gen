@@ -1,6 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import type { paths } from '../schema.d';
+import type { paths, components } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
 export type ReposGetContentParams =
@@ -8,6 +8,35 @@ export type ReposGetContentParams =
 
 export type ReposGetContentResponse =
   paths['/repos/{owner}/{repo}/contents/{path}']['get']['responses']['200']['content']['application/json'];
+
+export type ReposGetContentError =
+  | paths['/repos/{owner}/{repo}/contents/{path}']['get']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/contents/{path}']['get']['responses']['404']['content']['application/json'];
+
+export type ReposGetContentDiscriminatorKey =
+  | 'array'
+  | 'file'
+  | 'symlink'
+  | 'submodule';
+
+export type ReposGetContentArray =
+  components['schemas']['content-directory'] & { type: 'array' };
+
+export type ReposGetContentFile = components['schemas']['content-file'] & {
+  type: 'file';
+};
+
+export type ReposGetContentSymlink =
+  components['schemas']['content-symlink'] & { type: 'symlink' };
+
+export type ReposGetContentSubmodule =
+  components['schemas']['content-submodule'] & { type: 'submodule' };
+
+export type ReposGetContentDiscriminated =
+  | ReposGetContentArray
+  | ReposGetContentFile
+  | ReposGetContentSymlink
+  | ReposGetContentSubmodule;
 
 export const REPOS_GET_CONTENT = new InjectionToken<
   (

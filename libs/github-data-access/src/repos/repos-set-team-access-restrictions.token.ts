@@ -10,6 +10,9 @@ export type ReposSetTeamAccessRestrictionsBody = NonNullable<
 export type ReposSetTeamAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['put']['responses']['200']['content']['application/json'];
 
+export type ReposSetTeamAccessRestrictionsError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['put']['responses']['422']['content']['application/json'];
+
 export const REPOS_SET_TEAM_ACCESS_RESTRICTIONS = new InjectionToken<
   (
     owner: string,

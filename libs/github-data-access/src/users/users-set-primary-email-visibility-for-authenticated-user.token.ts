@@ -11,6 +11,12 @@ export type UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody =
 export type UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse =
   paths['/user/email/visibility']['patch']['responses']['200']['content']['application/json'];
 
+export type UsersSetPrimaryEmailVisibilityForAuthenticatedUserError =
+  | paths['/user/email/visibility']['patch']['responses']['401']['content']['application/json']
+  | paths['/user/email/visibility']['patch']['responses']['403']['content']['application/json']
+  | paths['/user/email/visibility']['patch']['responses']['404']['content']['application/json']
+  | paths['/user/email/visibility']['patch']['responses']['422']['content']['application/json'];
+
 export const USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (

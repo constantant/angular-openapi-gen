@@ -7,6 +7,12 @@ export type UsersDeleteEmailForAuthenticatedUserBody = NonNullable<
   paths['/user/emails']['delete']['requestBody']
 >['content']['application/json'];
 
+export type UsersDeleteEmailForAuthenticatedUserError =
+  | paths['/user/emails']['delete']['responses']['401']['content']['application/json']
+  | paths['/user/emails']['delete']['responses']['403']['content']['application/json']
+  | paths['/user/emails']['delete']['responses']['404']['content']['application/json']
+  | paths['/user/emails']['delete']['responses']['422']['content']['application/json'];
+
 export const USERS_DELETE_EMAIL_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     body:

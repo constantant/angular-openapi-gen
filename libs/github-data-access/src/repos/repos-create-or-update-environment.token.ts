@@ -10,6 +10,9 @@ export type ReposCreateOrUpdateEnvironmentBody = NonNullable<
 export type ReposCreateOrUpdateEnvironmentResponse =
   paths['/repos/{owner}/{repo}/environments/{environment_name}']['put']['responses']['200']['content']['application/json'];
 
+export type ReposCreateOrUpdateEnvironmentError =
+  paths['/repos/{owner}/{repo}/environments/{environment_name}']['put']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_OR_UPDATE_ENVIRONMENT = new InjectionToken<
   (
     owner: string,

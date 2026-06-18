@@ -10,6 +10,12 @@ export type UsersCreateSshSigningKeyForAuthenticatedUserBody = NonNullable<
 export type UsersCreateSshSigningKeyForAuthenticatedUserResponse =
   paths['/user/ssh_signing_keys']['post']['responses']['201']['content']['application/json'];
 
+export type UsersCreateSshSigningKeyForAuthenticatedUserError =
+  | paths['/user/ssh_signing_keys']['post']['responses']['401']['content']['application/json']
+  | paths['/user/ssh_signing_keys']['post']['responses']['403']['content']['application/json']
+  | paths['/user/ssh_signing_keys']['post']['responses']['404']['content']['application/json']
+  | paths['/user/ssh_signing_keys']['post']['responses']['422']['content']['application/json'];
+
 export const USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (

@@ -9,6 +9,13 @@ export type ReposGetCommitParams =
 export type ReposGetCommitResponse =
   paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetCommitError =
+  | paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['409']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['422']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['500']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['503']['content']['application/json'];
+
 export const REPOS_GET_COMMIT = new InjectionToken<
   (
     owner: string,

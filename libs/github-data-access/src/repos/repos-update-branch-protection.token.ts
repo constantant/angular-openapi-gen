@@ -10,6 +10,11 @@ export type ReposUpdateBranchProtectionBody = NonNullable<
 export type ReposUpdateBranchProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['200']['content']['application/json'];
 
+export type ReposUpdateBranchProtectionError =
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['422']['content']['application/json'];
+
 export const REPOS_UPDATE_BRANCH_PROTECTION = new InjectionToken<
   (
     owner: string,

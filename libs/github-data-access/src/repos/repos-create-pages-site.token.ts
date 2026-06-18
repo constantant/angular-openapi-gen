@@ -10,6 +10,10 @@ export type ReposCreatePagesSiteBody = NonNullable<
 export type ReposCreatePagesSiteResponse =
   paths['/repos/{owner}/{repo}/pages']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreatePagesSiteError =
+  | paths['/repos/{owner}/{repo}/pages']['post']['responses']['409']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/pages']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_PAGES_SITE = new InjectionToken<
   (
     owner: string,

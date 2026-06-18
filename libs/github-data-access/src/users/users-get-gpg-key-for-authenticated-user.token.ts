@@ -6,6 +6,11 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type UsersGetGpgKeyForAuthenticatedUserResponse =
   paths['/user/gpg_keys/{gpg_key_id}']['get']['responses']['200']['content']['application/json'];
 
+export type UsersGetGpgKeyForAuthenticatedUserError =
+  | paths['/user/gpg_keys/{gpg_key_id}']['get']['responses']['401']['content']['application/json']
+  | paths['/user/gpg_keys/{gpg_key_id}']['get']['responses']['403']['content']['application/json']
+  | paths['/user/gpg_keys/{gpg_key_id}']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     gpgKeyId: string,

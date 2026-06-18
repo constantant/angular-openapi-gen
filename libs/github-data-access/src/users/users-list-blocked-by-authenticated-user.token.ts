@@ -9,6 +9,11 @@ export type UsersListBlockedByAuthenticatedUserParams =
 export type UsersListBlockedByAuthenticatedUserResponse =
   paths['/user/blocks']['get']['responses']['200']['content']['application/json'];
 
+export type UsersListBlockedByAuthenticatedUserError =
+  | paths['/user/blocks']['get']['responses']['401']['content']['application/json']
+  | paths['/user/blocks']['get']['responses']['403']['content']['application/json']
+  | paths['/user/blocks']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_LIST_BLOCKED_BY_AUTHENTICATED_USER = new InjectionToken<
   (
     params?:

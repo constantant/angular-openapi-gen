@@ -10,6 +10,12 @@ export type ReposCreateForkBody = NonNullable<
 export type ReposCreateForkResponse =
   paths['/repos/{owner}/{repo}/forks']['post']['responses']['202']['content']['application/json'];
 
+export type ReposCreateForkError =
+  | paths['/repos/{owner}/{repo}/forks']['post']['responses']['400']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/forks']['post']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/forks']['post']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/forks']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_FORK = new InjectionToken<
   (
     owner: string,

@@ -10,6 +10,11 @@ export type ReposUpdateOrgRulesetBody = NonNullable<
 export type ReposUpdateOrgRulesetResponse =
   paths['/orgs/{org}/rulesets/{ruleset_id}']['put']['responses']['200']['content']['application/json'];
 
+export type ReposUpdateOrgRulesetError =
+  | paths['/orgs/{org}/rulesets/{ruleset_id}']['put']['responses']['404']['content']['application/json']
+  | paths['/orgs/{org}/rulesets/{ruleset_id}']['put']['responses']['422']['content']['application/json']
+  | paths['/orgs/{org}/rulesets/{ruleset_id}']['put']['responses']['500']['content']['application/json'];
+
 export const REPOS_UPDATE_ORG_RULESET = new InjectionToken<
   (
     org: string,

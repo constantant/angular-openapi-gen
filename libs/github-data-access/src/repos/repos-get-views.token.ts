@@ -9,6 +9,9 @@ export type ReposGetViewsParams =
 export type ReposGetViewsResponse =
   paths['/repos/{owner}/{repo}/traffic/views']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetViewsError =
+  paths['/repos/{owner}/{repo}/traffic/views']['get']['responses']['403']['content']['application/json'];
+
 export const REPOS_GET_VIEWS = new InjectionToken<
   (
     owner: string,

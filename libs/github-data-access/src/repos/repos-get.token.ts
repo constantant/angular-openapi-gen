@@ -6,6 +6,10 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetResponse =
   paths['/repos/{owner}/{repo}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetError =
+  | paths['/repos/{owner}/{repo}']['get']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET = new InjectionToken<
   (
     owner: string,

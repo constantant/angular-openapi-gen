@@ -6,6 +6,10 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetRepoRuleSuiteResponse =
   paths['/repos/{owner}/{repo}/rulesets/rule-suites/{rule_suite_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetRepoRuleSuiteError =
+  | paths['/repos/{owner}/{repo}/rulesets/rule-suites/{rule_suite_id}']['get']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/rulesets/rule-suites/{rule_suite_id}']['get']['responses']['500']['content']['application/json'];
+
 export const REPOS_GET_REPO_RULE_SUITE = new InjectionToken<
   (
     owner: string,

@@ -9,6 +9,10 @@ export type ReposGetOrgRuleSuitesParams =
 export type ReposGetOrgRuleSuitesResponse =
   paths['/orgs/{org}/rulesets/rule-suites']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetOrgRuleSuitesError =
+  | paths['/orgs/{org}/rulesets/rule-suites']['get']['responses']['404']['content']['application/json']
+  | paths['/orgs/{org}/rulesets/rule-suites']['get']['responses']['500']['content']['application/json'];
+
 export const REPOS_GET_ORG_RULE_SUITES = new InjectionToken<
   (
     org: string,

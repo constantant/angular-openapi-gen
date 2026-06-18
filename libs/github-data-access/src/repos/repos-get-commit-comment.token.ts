@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetCommitCommentResponse =
   paths['/repos/{owner}/{repo}/comments/{comment_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetCommitCommentError =
+  paths['/repos/{owner}/{repo}/comments/{comment_id}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_COMMIT_COMMENT = new InjectionToken<
   (
     owner: string,

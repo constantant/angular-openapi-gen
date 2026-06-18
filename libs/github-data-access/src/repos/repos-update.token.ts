@@ -10,6 +10,11 @@ export type ReposUpdateBody = NonNullable<
 export type ReposUpdateResponse =
   paths['/repos/{owner}/{repo}']['patch']['responses']['200']['content']['application/json'];
 
+export type ReposUpdateError =
+  | paths['/repos/{owner}/{repo}']['patch']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}']['patch']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}']['patch']['responses']['422']['content']['application/json'];
+
 export const REPOS_UPDATE = new InjectionToken<
   (
     owner: string,

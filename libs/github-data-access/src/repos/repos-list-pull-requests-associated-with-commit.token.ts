@@ -9,6 +9,9 @@ export type ReposListPullRequestsAssociatedWithCommitParams =
 export type ReposListPullRequestsAssociatedWithCommitResponse =
   paths['/repos/{owner}/{repo}/commits/{commit_sha}/pulls']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListPullRequestsAssociatedWithCommitError =
+  paths['/repos/{owner}/{repo}/commits/{commit_sha}/pulls']['get']['responses']['409']['content']['application/json'];
+
 export const REPOS_LIST_PULL_REQUESTS_ASSOCIATED_WITH_COMMIT =
   new InjectionToken<
     (

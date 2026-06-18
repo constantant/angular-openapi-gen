@@ -7,6 +7,9 @@ export type UsersDeleteAttestationsBulkBody = NonNullable<
   paths['/users/{username}/attestations/delete-request']['post']['requestBody']
 >['content']['application/json'];
 
+export type UsersDeleteAttestationsBulkError =
+  paths['/users/{username}/attestations/delete-request']['post']['responses']['404']['content']['application/json'];
+
 export const USERS_DELETE_ATTESTATIONS_BULK = new InjectionToken<
   (
     username: string,

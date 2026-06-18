@@ -10,6 +10,12 @@ export type UsersUpdateAuthenticatedBody = NonNullable<
 export type UsersUpdateAuthenticatedResponse =
   paths['/user']['patch']['responses']['200']['content']['application/json'];
 
+export type UsersUpdateAuthenticatedError =
+  | paths['/user']['patch']['responses']['401']['content']['application/json']
+  | paths['/user']['patch']['responses']['403']['content']['application/json']
+  | paths['/user']['patch']['responses']['404']['content']['application/json']
+  | paths['/user']['patch']['responses']['422']['content']['application/json'];
+
 export const USERS_UPDATE_AUTHENTICATED = new InjectionToken<
   (
     body: UsersUpdateAuthenticatedBody | Signal<UsersUpdateAuthenticatedBody>,

@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetAccessRestrictionsError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_ACCESS_RESTRICTIONS = new InjectionToken<
   (
     owner: string,

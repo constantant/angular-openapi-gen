@@ -9,6 +9,9 @@ export type ReposListDeploymentStatusesParams =
 export type ReposListDeploymentStatusesResponse =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListDeploymentStatusesError =
+  paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_LIST_DEPLOYMENT_STATUSES = new InjectionToken<
   (
     owner: string,

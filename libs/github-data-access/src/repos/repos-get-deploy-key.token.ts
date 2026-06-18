@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetDeployKeyResponse =
   paths['/repos/{owner}/{repo}/keys/{key_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetDeployKeyError =
+  paths['/repos/{owner}/{repo}/keys/{key_id}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_DEPLOY_KEY = new InjectionToken<
   (
     owner: string,

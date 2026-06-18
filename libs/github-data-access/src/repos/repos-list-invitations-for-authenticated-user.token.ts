@@ -9,6 +9,11 @@ export type ReposListInvitationsForAuthenticatedUserParams =
 export type ReposListInvitationsForAuthenticatedUserResponse =
   paths['/user/repository_invitations']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListInvitationsForAuthenticatedUserError =
+  | paths['/user/repository_invitations']['get']['responses']['401']['content']['application/json']
+  | paths['/user/repository_invitations']['get']['responses']['403']['content']['application/json']
+  | paths['/user/repository_invitations']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_LIST_INVITATIONS_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     params?:

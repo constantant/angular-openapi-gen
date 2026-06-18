@@ -10,6 +10,11 @@ export type ReposCreateOrgRulesetBody = NonNullable<
 export type ReposCreateOrgRulesetResponse =
   paths['/orgs/{org}/rulesets']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateOrgRulesetError =
+  | paths['/orgs/{org}/rulesets']['post']['responses']['404']['content']['application/json']
+  | paths['/orgs/{org}/rulesets']['post']['responses']['422']['content']['application/json']
+  | paths['/orgs/{org}/rulesets']['post']['responses']['500']['content']['application/json'];
+
 export const REPOS_CREATE_ORG_RULESET = new InjectionToken<
   (
     org: string,

@@ -6,6 +6,10 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposCustomPropertiesForReposGetRepositoryValuesResponse =
   paths['/repos/{owner}/{repo}/properties/values']['get']['responses']['200']['content']['application/json'];
 
+export type ReposCustomPropertiesForReposGetRepositoryValuesError =
+  | paths['/repos/{owner}/{repo}/properties/values']['get']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/properties/values']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_CUSTOM_PROPERTIES_FOR_REPOS_GET_REPOSITORY_VALUES =
   new InjectionToken<
     (

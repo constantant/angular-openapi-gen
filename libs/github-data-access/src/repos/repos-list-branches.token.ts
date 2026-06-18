@@ -9,6 +9,9 @@ export type ReposListBranchesParams =
 export type ReposListBranchesResponse =
   paths['/repos/{owner}/{repo}/branches']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListBranchesError =
+  paths['/repos/{owner}/{repo}/branches']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_LIST_BRANCHES = new InjectionToken<
   (
     owner: string,

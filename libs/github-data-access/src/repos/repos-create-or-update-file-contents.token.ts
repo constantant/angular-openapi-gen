@@ -11,6 +11,11 @@ export type ReposCreateOrUpdateFileContentsResponse =
   | paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['200']['content']['application/json']
   | paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['201']['content']['application/json'];
 
+export type ReposCreateOrUpdateFileContentsError =
+  | paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['409']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_OR_UPDATE_FILE_CONTENTS = new InjectionToken<
   (
     owner: string,

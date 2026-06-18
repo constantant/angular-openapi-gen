@@ -9,6 +9,9 @@ export type ReposListCollaboratorsParams =
 export type ReposListCollaboratorsResponse =
   paths['/repos/{owner}/{repo}/collaborators']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListCollaboratorsError =
+  paths['/repos/{owner}/{repo}/collaborators']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_LIST_COLLABORATORS = new InjectionToken<
   (
     owner: string,

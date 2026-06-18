@@ -10,6 +10,11 @@ export type ReposCreateRepoRulesetBody = NonNullable<
 export type ReposCreateRepoRulesetResponse =
   paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateRepoRulesetError =
+  | paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['422']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['500']['content']['application/json'];
+
 export const REPOS_CREATE_REPO_RULESET = new InjectionToken<
   (
     owner: string,

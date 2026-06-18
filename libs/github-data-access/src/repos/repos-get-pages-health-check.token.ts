@@ -7,6 +7,9 @@ export type ReposGetPagesHealthCheckResponse =
   | paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['200']['content']['application/json']
   | paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['202']['content']['application/json'];
 
+export type ReposGetPagesHealthCheckError =
+  paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_PAGES_HEALTH_CHECK = new InjectionToken<
   (
     owner: string,

@@ -6,6 +6,10 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetHashAlgorithmResponse =
   paths['/repos/{owner}/{repo}/hash-algorithm']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetHashAlgorithmError =
+  | paths['/repos/{owner}/{repo}/hash-algorithm']['get']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/hash-algorithm']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_HASH_ALGORITHM = new InjectionToken<
   (
     owner: string,

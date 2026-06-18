@@ -10,6 +10,10 @@ export type ReposCreateReleaseBody = NonNullable<
 export type ReposCreateReleaseResponse =
   paths['/repos/{owner}/{repo}/releases']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateReleaseError =
+  | paths['/repos/{owner}/{repo}/releases']['post']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/releases']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_RELEASE = new InjectionToken<
   (
     owner: string,

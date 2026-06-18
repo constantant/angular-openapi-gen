@@ -10,6 +10,11 @@ export type ReposCreatePagesDeploymentBody = NonNullable<
 export type ReposCreatePagesDeploymentResponse =
   paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['200']['content']['application/json'];
 
+export type ReposCreatePagesDeploymentError =
+  | paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['400']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_PAGES_DEPLOYMENT = new InjectionToken<
   (
     owner: string,

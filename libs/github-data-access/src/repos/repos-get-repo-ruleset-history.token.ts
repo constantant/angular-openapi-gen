@@ -9,6 +9,10 @@ export type ReposGetRepoRulesetHistoryParams =
 export type ReposGetRepoRulesetHistoryResponse =
   paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetRepoRulesetHistoryError =
+  | paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['500']['content']['application/json'];
+
 export const REPOS_GET_REPO_RULESET_HISTORY = new InjectionToken<
   (
     owner: string,

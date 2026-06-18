@@ -10,6 +10,10 @@ export type ReposUpdateWebhookBody = NonNullable<
 export type ReposUpdateWebhookResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}']['patch']['responses']['200']['content']['application/json'];
 
+export type ReposUpdateWebhookError =
+  | paths['/repos/{owner}/{repo}/hooks/{hook_id}']['patch']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/hooks/{hook_id}']['patch']['responses']['422']['content']['application/json'];
+
 export const REPOS_UPDATE_WEBHOOK = new InjectionToken<
   (
     owner: string,

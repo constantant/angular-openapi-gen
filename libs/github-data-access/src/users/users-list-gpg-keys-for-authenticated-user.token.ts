@@ -9,6 +9,11 @@ export type UsersListGpgKeysForAuthenticatedUserParams =
 export type UsersListGpgKeysForAuthenticatedUserResponse =
   paths['/user/gpg_keys']['get']['responses']['200']['content']['application/json'];
 
+export type UsersListGpgKeysForAuthenticatedUserError =
+  | paths['/user/gpg_keys']['get']['responses']['401']['content']['application/json']
+  | paths['/user/gpg_keys']['get']['responses']['403']['content']['application/json']
+  | paths['/user/gpg_keys']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_LIST_GPG_KEYS_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     params?:

@@ -10,6 +10,9 @@ export type ReposCreateAutolinkBody = NonNullable<
 export type ReposCreateAutolinkResponse =
   paths['/repos/{owner}/{repo}/autolinks']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateAutolinkError =
+  paths['/repos/{owner}/{repo}/autolinks']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_AUTOLINK = new InjectionToken<
   (
     owner: string,

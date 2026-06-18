@@ -9,6 +9,11 @@ export type UsersListSocialAccountsForAuthenticatedUserParams =
 export type UsersListSocialAccountsForAuthenticatedUserResponse =
   paths['/user/social_accounts']['get']['responses']['200']['content']['application/json'];
 
+export type UsersListSocialAccountsForAuthenticatedUserError =
+  | paths['/user/social_accounts']['get']['responses']['401']['content']['application/json']
+  | paths['/user/social_accounts']['get']['responses']['403']['content']['application/json']
+  | paths['/user/social_accounts']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_LIST_SOCIAL_ACCOUNTS_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (

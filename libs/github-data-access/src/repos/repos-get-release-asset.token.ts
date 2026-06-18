@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetReleaseAssetResponse =
   paths['/repos/{owner}/{repo}/releases/assets/{asset_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetReleaseAssetError =
+  paths['/repos/{owner}/{repo}/releases/assets/{asset_id}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_RELEASE_ASSET = new InjectionToken<
   (
     owner: string,

@@ -10,6 +10,10 @@ export type ReposMergeBody = NonNullable<
 export type ReposMergeResponse =
   paths['/repos/{owner}/{repo}/merges']['post']['responses']['201']['content']['application/json'];
 
+export type ReposMergeError =
+  | paths['/repos/{owner}/{repo}/merges']['post']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/merges']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_MERGE = new InjectionToken<
   (
     owner: string,

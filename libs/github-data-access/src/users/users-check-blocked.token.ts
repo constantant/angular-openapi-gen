@@ -3,6 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type UsersCheckBlockedError =
+  | paths['/user/blocks/{username}']['get']['responses']['401']['content']['application/json']
+  | paths['/user/blocks/{username}']['get']['responses']['403']['content']['application/json']
+  | paths['/user/blocks/{username}']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_CHECK_BLOCKED = new InjectionToken<
   (username: string) => ReturnType<typeof httpResource<unknown>>
 >('USERS_CHECK_BLOCKED');

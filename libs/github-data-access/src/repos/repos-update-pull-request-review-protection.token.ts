@@ -10,6 +10,9 @@ export type ReposUpdatePullRequestReviewProtectionBody = NonNullable<
 export type ReposUpdatePullRequestReviewProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['patch']['responses']['200']['content']['application/json'];
 
+export type ReposUpdatePullRequestReviewProtectionError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['patch']['responses']['422']['content']['application/json'];
+
 export const REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION = new InjectionToken<
   (
     owner: string,

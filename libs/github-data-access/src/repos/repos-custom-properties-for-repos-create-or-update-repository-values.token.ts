@@ -8,6 +8,11 @@ export type ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody =
     paths['/repos/{owner}/{repo}/properties/values']['patch']['requestBody']
   >['content']['application/json'];
 
+export type ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesError =
+  | paths['/repos/{owner}/{repo}/properties/values']['patch']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/properties/values']['patch']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/properties/values']['patch']['responses']['422']['content']['application/json'];
+
 export const REPOS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_REPOSITORY_VALUES =
   new InjectionToken<
     (

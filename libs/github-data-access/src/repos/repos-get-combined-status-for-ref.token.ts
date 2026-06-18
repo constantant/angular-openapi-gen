@@ -9,6 +9,9 @@ export type ReposGetCombinedStatusForRefParams =
 export type ReposGetCombinedStatusForRefResponse =
   paths['/repos/{owner}/{repo}/commits/{ref}/status']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetCombinedStatusForRefError =
+  paths['/repos/{owner}/{repo}/commits/{ref}/status']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_COMBINED_STATUS_FOR_REF = new InjectionToken<
   (
     owner: string,

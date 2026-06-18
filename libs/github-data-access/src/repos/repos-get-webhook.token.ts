@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetWebhookResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetWebhookError =
+  paths['/repos/{owner}/{repo}/hooks/{hook_id}']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_WEBHOOK = new InjectionToken<
   (
     owner: string,

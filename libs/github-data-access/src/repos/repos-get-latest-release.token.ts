@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetLatestReleaseResponse =
   paths['/repos/{owner}/{repo}/releases/latest']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetLatestReleaseError =
+  paths['/repos/{owner}/{repo}/releases/latest']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_LATEST_RELEASE = new InjectionToken<
   (
     owner: string,

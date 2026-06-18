@@ -9,6 +9,9 @@ export type ReposListPublicParams =
 export type ReposListPublicResponse =
   paths['/repositories']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListPublicError =
+  paths['/repositories']['get']['responses']['422']['content']['application/json'];
+
 export const REPOS_LIST_PUBLIC = new InjectionToken<
   (
     params?: ReposListPublicParams | (() => ReposListPublicParams | undefined),

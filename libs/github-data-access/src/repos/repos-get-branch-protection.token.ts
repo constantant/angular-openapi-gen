@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetBranchProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetBranchProtectionError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_BRANCH_PROTECTION = new InjectionToken<
   (
     owner: string,

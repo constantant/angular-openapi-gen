@@ -3,6 +3,9 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposDisableImmutableReleasesError =
+  paths['/repos/{owner}/{repo}/immutable-releases']['delete']['responses']['409']['content']['application/json'];
+
 export const REPOS_DISABLE_IMMUTABLE_RELEASES = new InjectionToken<
   (owner: string, repo: string) => ReturnType<typeof httpResource<unknown>>
 >('REPOS_DISABLE_IMMUTABLE_RELEASES');

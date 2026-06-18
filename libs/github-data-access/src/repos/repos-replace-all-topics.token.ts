@@ -10,6 +10,10 @@ export type ReposReplaceAllTopicsBody = NonNullable<
 export type ReposReplaceAllTopicsResponse =
   paths['/repos/{owner}/{repo}/topics']['put']['responses']['200']['content']['application/json'];
 
+export type ReposReplaceAllTopicsError =
+  | paths['/repos/{owner}/{repo}/topics']['put']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/topics']['put']['responses']['422']['content']['application/json'];
+
 export const REPOS_REPLACE_ALL_TOPICS = new InjectionToken<
   (
     owner: string,

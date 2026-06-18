@@ -9,6 +9,10 @@ export type UsersListFollowersForAuthenticatedUserParams =
 export type UsersListFollowersForAuthenticatedUserResponse =
   paths['/user/followers']['get']['responses']['200']['content']['application/json'];
 
+export type UsersListFollowersForAuthenticatedUserError =
+  | paths['/user/followers']['get']['responses']['401']['content']['application/json']
+  | paths['/user/followers']['get']['responses']['403']['content']['application/json'];
+
 export const USERS_LIST_FOLLOWERS_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     params?:

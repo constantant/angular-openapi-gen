@@ -10,6 +10,9 @@ export type ReposAddUserAccessRestrictionsBody = NonNullable<
 export type ReposAddUserAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['post']['responses']['200']['content']['application/json'];
 
+export type ReposAddUserAccessRestrictionsError =
+  paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_ADD_USER_ACCESS_RESTRICTIONS = new InjectionToken<
   (
     owner: string,

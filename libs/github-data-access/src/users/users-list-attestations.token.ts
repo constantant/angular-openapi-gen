@@ -10,6 +10,9 @@ export type UsersListAttestationsResponse =
   | paths['/users/{username}/attestations/{subject_digest}']['get']['responses']['200']['content']['application/json']
   | paths['/users/{username}/attestations/{subject_digest}']['get']['responses']['201']['content']['application/json'];
 
+export type UsersListAttestationsError =
+  paths['/users/{username}/attestations/{subject_digest}']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_LIST_ATTESTATIONS = new InjectionToken<
   (
     username: string,

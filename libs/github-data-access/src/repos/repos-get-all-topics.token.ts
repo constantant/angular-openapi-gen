@@ -9,6 +9,9 @@ export type ReposGetAllTopicsParams =
 export type ReposGetAllTopicsResponse =
   paths['/repos/{owner}/{repo}/topics']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetAllTopicsError =
+  paths['/repos/{owner}/{repo}/topics']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_ALL_TOPICS = new InjectionToken<
   (
     owner: string,

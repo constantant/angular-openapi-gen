@@ -10,6 +10,10 @@ export type ReposCreateCommitCommentBody = NonNullable<
 export type ReposCreateCommitCommentResponse =
   paths['/repos/{owner}/{repo}/commits/{commit_sha}/comments']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateCommitCommentError =
+  | paths['/repos/{owner}/{repo}/commits/{commit_sha}/comments']['post']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/commits/{commit_sha}/comments']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_COMMIT_COMMENT = new InjectionToken<
   (
     owner: string,

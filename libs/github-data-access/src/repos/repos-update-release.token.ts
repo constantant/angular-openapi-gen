@@ -10,6 +10,9 @@ export type ReposUpdateReleaseBody = NonNullable<
 export type ReposUpdateReleaseResponse =
   paths['/repos/{owner}/{repo}/releases/{release_id}']['patch']['responses']['200']['content']['application/json'];
 
+export type ReposUpdateReleaseError =
+  paths['/repos/{owner}/{repo}/releases/{release_id}']['patch']['responses']['404']['content']['application/json'];
+
 export const REPOS_UPDATE_RELEASE = new InjectionToken<
   (
     owner: string,

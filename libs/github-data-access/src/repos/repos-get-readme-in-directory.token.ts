@@ -9,6 +9,10 @@ export type ReposGetReadmeInDirectoryParams =
 export type ReposGetReadmeInDirectoryResponse =
   paths['/repos/{owner}/{repo}/readme/{dir}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetReadmeInDirectoryError =
+  | paths['/repos/{owner}/{repo}/readme/{dir}']['get']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/readme/{dir}']['get']['responses']['422']['content']['application/json'];
+
 export const REPOS_GET_README_IN_DIRECTORY = new InjectionToken<
   (
     owner: string,

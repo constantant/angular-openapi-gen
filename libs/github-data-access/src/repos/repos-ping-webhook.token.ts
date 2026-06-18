@@ -3,6 +3,9 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposPingWebhookError =
+  paths['/repos/{owner}/{repo}/hooks/{hook_id}/pings']['post']['responses']['404']['content']['application/json'];
+
 export const REPOS_PING_WEBHOOK = new InjectionToken<
   (
     owner: string,

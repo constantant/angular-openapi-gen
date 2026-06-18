@@ -9,6 +9,11 @@ export type UsersListEmailsForAuthenticatedUserParams =
 export type UsersListEmailsForAuthenticatedUserResponse =
   paths['/user/emails']['get']['responses']['200']['content']['application/json'];
 
+export type UsersListEmailsForAuthenticatedUserError =
+  | paths['/user/emails']['get']['responses']['401']['content']['application/json']
+  | paths['/user/emails']['get']['responses']['403']['content']['application/json']
+  | paths['/user/emails']['get']['responses']['404']['content']['application/json'];
+
 export const USERS_LIST_EMAILS_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     params?:

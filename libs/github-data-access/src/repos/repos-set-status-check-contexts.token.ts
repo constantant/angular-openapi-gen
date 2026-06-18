@@ -10,6 +10,10 @@ export type ReposSetStatusCheckContextsBody = NonNullable<
 export type ReposSetStatusCheckContextsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['responses']['200']['content']['application/json'];
 
+export type ReposSetStatusCheckContextsError =
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['responses']['422']['content']['application/json'];
+
 export const REPOS_SET_STATUS_CHECK_CONTEXTS = new InjectionToken<
   (
     owner: string,

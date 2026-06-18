@@ -9,6 +9,10 @@ export type ReposGetRepoRuleSuitesParams =
 export type ReposGetRepoRuleSuitesResponse =
   paths['/repos/{owner}/{repo}/rulesets/rule-suites']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetRepoRuleSuitesError =
+  | paths['/repos/{owner}/{repo}/rulesets/rule-suites']['get']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/rulesets/rule-suites']['get']['responses']['500']['content']['application/json'];
+
 export const REPOS_GET_REPO_RULE_SUITES = new InjectionToken<
   (
     owner: string,

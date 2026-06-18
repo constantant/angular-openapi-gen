@@ -9,6 +9,9 @@ export type ReposListForksParams =
 export type ReposListForksResponse =
   paths['/repos/{owner}/{repo}/forks']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListForksError =
+  paths['/repos/{owner}/{repo}/forks']['get']['responses']['400']['content']['application/json'];
+
 export const REPOS_LIST_FORKS = new InjectionToken<
   (
     owner: string,

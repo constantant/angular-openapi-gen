@@ -9,6 +9,11 @@ export type ReposCompareCommitsParams =
 export type ReposCompareCommitsResponse =
   paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['200']['content']['application/json'];
 
+export type ReposCompareCommitsError =
+  | paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['500']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['503']['content']['application/json'];
+
 export const REPOS_COMPARE_COMMITS = new InjectionToken<
   (
     owner: string,

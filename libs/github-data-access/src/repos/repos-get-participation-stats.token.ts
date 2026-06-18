@@ -6,6 +6,9 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type ReposGetParticipationStatsResponse =
   paths['/repos/{owner}/{repo}/stats/participation']['get']['responses']['200']['content']['application/json'];
 
+export type ReposGetParticipationStatsError =
+  paths['/repos/{owner}/{repo}/stats/participation']['get']['responses']['404']['content']['application/json'];
+
 export const REPOS_GET_PARTICIPATION_STATS = new InjectionToken<
   (
     owner: string,

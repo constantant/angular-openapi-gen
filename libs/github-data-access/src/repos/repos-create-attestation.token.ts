@@ -10,6 +10,10 @@ export type ReposCreateAttestationBody = NonNullable<
 export type ReposCreateAttestationResponse =
   paths['/repos/{owner}/{repo}/attestations']['post']['responses']['201']['content']['application/json'];
 
+export type ReposCreateAttestationError =
+  | paths['/repos/{owner}/{repo}/attestations']['post']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}/attestations']['post']['responses']['422']['content']['application/json'];
+
 export const REPOS_CREATE_ATTESTATION = new InjectionToken<
   (
     owner: string,

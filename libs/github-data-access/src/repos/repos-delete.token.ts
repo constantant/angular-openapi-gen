@@ -3,6 +3,11 @@ import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposDeleteError =
+  | paths['/repos/{owner}/{repo}']['delete']['responses']['403']['content']['application/json']
+  | paths['/repos/{owner}/{repo}']['delete']['responses']['404']['content']['application/json']
+  | paths['/repos/{owner}/{repo}']['delete']['responses']['409']['content']['application/json'];
+
 export const REPOS_DELETE = new InjectionToken<
   (owner: string, repo: string) => ReturnType<typeof httpResource<unknown>>
 >('REPOS_DELETE');

@@ -9,6 +9,11 @@ export type ReposListForAuthenticatedUserParams =
 export type ReposListForAuthenticatedUserResponse =
   paths['/user/repos']['get']['responses']['200']['content']['application/json'];
 
+export type ReposListForAuthenticatedUserError =
+  | paths['/user/repos']['get']['responses']['401']['content']['application/json']
+  | paths['/user/repos']['get']['responses']['403']['content']['application/json']
+  | paths['/user/repos']['get']['responses']['422']['content']['application/json'];
+
 export const REPOS_LIST_FOR_AUTHENTICATED_USER = new InjectionToken<
   (
     params?:
