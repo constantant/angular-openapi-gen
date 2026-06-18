@@ -9,7 +9,7 @@ export function toPascalCase(str: string): string {
     .join('');
 }
 
-function toCamelCase(str: string): string {
+export function toCamelCase(str: string): string {
   const parts = str.split(/[-_.]+/).filter(Boolean);
   const first = parts[0].charAt(0).toLowerCase() + parts[0].slice(1);
   return first + parts.slice(1).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');

@@ -62,6 +62,7 @@ export const SCENARIO_STORE = new InjectionToken<ScenarioStore>('SCENARIO_STORE'
 
     function applyScenario(scenario: Scenario): void {
       for (const m of scenario.mocks) {
+        if (typeof m?.key !== 'string') continue;
         if (!bridge.mocks().has(m.key)) continue;
         if (m.value !== undefined) {
           bridge.sendControl(m.key, 'resolve', { value: m.value });

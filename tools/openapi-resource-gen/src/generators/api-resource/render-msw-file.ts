@@ -1,12 +1,5 @@
 import type { EndpointModel } from './endpoint-model';
-import { toPascalCase } from './render-token';
-
-function toCamelCase(str: string): string {
-  const parts = str.split(/[-_.]+/).filter(Boolean);
-  if (parts.length === 0) return str;
-  const first = parts[0].charAt(0).toLowerCase() + parts[0].slice(1);
-  return first + parts.slice(1).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('');
-}
+import { toPascalCase, toCamelCase } from './render-token';
 
 /** Convert OpenAPI path template {param} to MSW :param notation. */
 function toMswPath(apiPath: string): string {
