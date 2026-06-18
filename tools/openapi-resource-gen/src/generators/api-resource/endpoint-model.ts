@@ -33,6 +33,8 @@ export interface EndpointModel {
   hasResponse: boolean;
   /** All 2xx response codes that carry application/json content, in priority order. */
   responseStatuses: string[];
+  /** 4xx/5xx/default response codes that carry application/json content. */
+  errorStatuses: string[];
   bodyContentType: string | null;
   /** True when bodyContentType is not json / form-urlencoded / multipart (e.g. octet-stream, pdf, image). */
   isBinaryBody: boolean;

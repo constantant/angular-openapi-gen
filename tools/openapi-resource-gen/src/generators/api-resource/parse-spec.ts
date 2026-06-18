@@ -162,6 +162,13 @@ export function buildEndpoints(
       });
       const hasResponse = responseStatuses.length > 0;
 
+      const errorStatuses = Object.keys(operation.responses ?? {})
+        .filter((code) => code === 'default' || /^[45]/.test(code))
+        .filter((code) => {
+          const obj = operation.responses?.[code] as OpenAPIV3.ResponseObject | undefined;
+          return obj?.content?.['application/json'] != null;
+        });
+
       const deprecated = operation.deprecated === true;
 
       endpoints.push({
@@ -182,6 +189,7 @@ export function buildEndpoints(
         isBinaryBody,
         deprecated,
         securitySchemeNames,
+        errorStatuses,
       });
     }
   }

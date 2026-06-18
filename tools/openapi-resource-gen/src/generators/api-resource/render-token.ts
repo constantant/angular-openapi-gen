@@ -141,6 +141,23 @@ export function renderTokenFile(
       lines.push('');
     }
   }
+  if (ep.errorStatuses.length > 0) {
+    if (ep.errorStatuses.length === 1) {
+      lines.push(
+        `export type ${pascal}Error =`,
+        `  paths['${ep.apiPath}']['${ep.method}']['responses']['${ep.errorStatuses[0]}']['content']['application/json'];`,
+        ''
+      );
+    } else {
+      lines.push(`export type ${pascal}Error =`);
+      for (const code of ep.errorStatuses) {
+        lines.push(
+          `  | paths['${ep.apiPath}']['${ep.method}']['responses']['${code}']['content']['application/json']`
+        );
+      }
+      lines.push('');
+    }
+  }
 
   const responseT = hasResponse ? `${pascal}Response` : 'unknown';
   const fnArgs = buildFnArgs(ep, pascal, isGet);

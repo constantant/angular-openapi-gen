@@ -623,6 +623,123 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('typed error responses', () => {
+    it('emits a single XxxError type for a single 4xx JSON response', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets/{id}': {
+            get: {
+              operationId: 'getPet',
+              tags: ['pets'],
+              parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+              responses: {
+                '200': { content: { 'application/json': { schema: {} } } },
+                '404': { content: { 'application/json': { schema: {} } } },
+              },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/error-single/src',
+      });
+      const content = tree.read('libs/error-single/src/pets/get-pet.token.ts', 'utf-8')!;
+      expect(content).toContain('export type GetPetError =');
+      expect(content).toContain("['responses']['404']['content']['application/json']");
+      expect(content).not.toMatch(/export type GetPetError =\s*\|/);
+    });
+
+    it('emits a union XxxError type for multiple error codes', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets': {
+            post: {
+              operationId: 'createPet',
+              tags: ['pets'],
+              requestBody: { content: { 'application/json': { schema: {} } } },
+              responses: {
+                '201': { content: { 'application/json': { schema: {} } } },
+                '400': { content: { 'application/json': { schema: {} } } },
+                '422': { content: { 'application/json': { schema: {} } } },
+              },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/error-union/src',
+      });
+      const content = tree.read('libs/error-union/src/pets/create-pet.token.ts', 'utf-8')!;
+      expect(content).toContain('export type CreatePetError =');
+      expect(content).toContain("['responses']['400']['content']['application/json']");
+      expect(content).toContain("['responses']['422']['content']['application/json']");
+      expect(content).toMatch(/\|\s*paths\[.*\['responses'\]\['400'\]/);
+    });
+
+    it('includes the default catch-all response code in the error type', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/items': {
+            get: {
+              operationId: 'listItems',
+              tags: ['items'],
+              responses: {
+                '200': { content: { 'application/json': { schema: {} } } },
+                default: { content: { 'application/json': { schema: {} } } },
+              },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/error-default/src',
+      });
+      const content = tree.read('libs/error-default/src/items/list-items.token.ts', 'utf-8')!;
+      expect(content).toContain('export type ListItemsError =');
+      expect(content).toContain("['responses']['default']['content']['application/json']");
+    });
+
+    it('does not emit XxxError type when no error responses carry JSON', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/files/{id}': {
+            delete: {
+              operationId: 'deleteFile',
+              tags: ['files'],
+              parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+              responses: {
+                '204': {},
+                '404': { content: { 'text/plain': { schema: {} } } },
+              },
+            },
+          },
+        },
+      } as never);
+
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/no-error-type/src',
+      });
+      const content = tree.read('libs/no-error-type/src/files/delete-file.token.ts', 'utf-8')!;
+      expect(content).not.toContain('Error =');
+    });
+
+    it('does not emit XxxError type when no error responses are defined', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/no-errors/src',
+      });
+      const content = tree.read('libs/no-errors/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).not.toContain('Error =');
+    });
+  });
+
   describe('verbose output', () => {
     it('prints a file summary when verbose is true', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
