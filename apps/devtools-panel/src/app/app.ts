@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabNav, MatTabLink, MatTabNavPanel } from '@angular/material/tabs';
@@ -10,6 +11,7 @@ import { MockTable } from './components/mock-table/mock-table';
 import { RespondTab } from './components/respond-tab/respond-tab';
 import { HistoryTab } from './components/history-tab/history-tab';
 import { SpecsTab } from './components/specs-tab/specs-tab';
+import { ScenarioDialog } from './components/scenario-dialog/scenario-dialog';
 
 const PANEL_WIDTH_KEY = 'oarm_right_panel_width';
 const MIN_WIDTH = 200;
@@ -39,6 +41,7 @@ function clamp(v: number, min: number, max: number): number {
 })
 export class App {
   protected readonly bridge = inject(MOCK_BRIDGE);
+  private readonly dialog = inject(MatDialog);
   protected readonly filter = signal('');
   protected readonly page = signal<'mocks' | 'specs'>('mocks');
   protected readonly rightTab = signal<'respond' | 'history'>('respond');
@@ -56,6 +59,10 @@ export class App {
     const m = this.bridge.mocks();
     return m.size > 0 && [...m.values()].every((e) => e.catchMode);
   });
+
+  protected openScenarios(): void {
+    this.dialog.open(ScenarioDialog, { autoFocus: false });
+  }
 
   protected toggleCatchAll(): void {
     const enable = !this.catchAllActive();

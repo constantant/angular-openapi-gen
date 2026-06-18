@@ -1,0 +1,54 @@
+<h2 mat-dialog-title>Scenarios</h2>
+
+<mat-dialog-content>
+  <div class="save-row">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="name-field">
+      <mat-label>Scenario name</mat-label>
+      <input matInput placeholder="happy-path"
+             [value]="saveName()"
+             (input)="saveName.set($any($event.target).value)"
+             (keydown.enter)="save()" />
+    </mat-form-field>
+    <button mat-flat-button [disabled]="!saveName().trim()" (click)="save()">Save current</button>
+  </div>
+
+  @if (feedback()) {
+    <div class="feedback">{{ feedback() }}</div>
+  }
+  @if (error()) {
+    <div class="feedback error">{{ error() }}</div>
+  }
+
+  <div class="scenarios-list">
+    @if (store.scenarios().length === 0) {
+      <div class="empty-state">No saved scenarios yet. Use "Save current" to create one.</div>
+    }
+    @for (scenario of store.scenarios(); track scenario.name) {
+      <div class="scenario-row">
+        <div class="scenario-info">
+          <span class="scenario-name">{{ scenario.name }}</span>
+          <span class="scenario-meta">{{ scenario.mocks.length }} mock{{ scenario.mocks.length === 1 ? '' : 's' }} · {{ formatDate(scenario.savedAt) }}</span>
+        </div>
+        <div class="scenario-actions">
+          <button mat-stroked-button (click)="load(scenario)">Load</button>
+          <button mat-icon-button
+                  matTooltip="Delete scenario"
+                  (click)="remove(scenario, $event)">✕</button>
+        </div>
+      </div>
+    }
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions">
+  <div class="io-actions">
+    <button mat-stroked-button (click)="exportToClipboard()" matTooltip="Copy current mock state as JSON">
+      Export JSON
+    </button>
+    <label mat-stroked-button class="import-label" matTooltip="Import and apply mock state from a JSON file">
+      Import JSON
+      <input type="file" accept=".json" (change)="importFromFile($event)" hidden />
+    </label>
+  </div>
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>
