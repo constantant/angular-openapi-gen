@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       specifier:
-        description: 'Version bump (empty = auto from conventional commits)'
-        type: choice
-        options: ['', 'patch', 'minor', 'major', 'premajor', 'preminor', 'prepatch', 'prerelease']
+        description: 'Version bump: relative (patch/minor/major/premajor/preminor/prepatch/prerelease) or exact (e.g. 1.9.0). Empty = auto from conventional commits.'
+        type: string
         default: ''
       preid:
         description: 'Pre-release id (alpha / beta / rc) — only used with pre* specifier'
