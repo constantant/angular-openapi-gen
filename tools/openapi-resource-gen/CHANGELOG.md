@@ -1,3 +1,39 @@
+## 1.9.0 (2026-06-19)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** emit MSW 2.x handler files with includeMswHandlers option ([035141a](https://github.com/constantant/angular-openapi-gen/commit/035141a))
+- **openapi-resource-gen:** handle OAS 3.1 constructs in parsing layer ([87314bb](https://github.com/constantant/angular-openapi-gen/commit/87314bb))
+- **openapi-resource-gen:** emit enum label/description maps from x-enum-varnames / x-enum-descriptions ([bc5dec6](https://github.com/constantant/angular-openapi-gen/commit/bc5dec6))
+- **openapi-resource-gen:** add readonlyResponses option to wrap XxxResponse/XxxError in Readonly<> ([72d69f9](https://github.com/constantant/angular-openapi-gen/commit/72d69f9))
+- **openapi-resource-gen:** emit XxxRevived type and reviveXxxDates() for date/datetime fields ([3d268a7](https://github.com/constantant/angular-openapi-gen/commit/3d268a7))
+- **openapi-resource-gen:** generate webhook token files for OAS 3.1 webhooks ([463f52c](https://github.com/constantant/angular-openapi-gen/commit/463f52c))
+- **openapi-resource-gen:** emit discriminated union types for oneOf/anyOf with discriminator ([bc1b2f4](https://github.com/constantant/angular-openapi-gen/commit/bc1b2f4))
+- **openapi-resource-gen:** emit _serializeParams for non-default query param styles ([dc9bc1e](https://github.com/constantant/angular-openapi-gen/commit/dc9bc1e))
+- **openapi-resource-gen:** emit typed XxxError type aliases for 4xx/5xx JSON responses ([db820c3](https://github.com/constantant/angular-openapi-gen/commit/db820c3))
+
+### 🩹 Fixes
+
+- deduplicate toCamelCase and guard importJson item shape ([083f0f7](https://github.com/constantant/angular-openapi-gen/commit/083f0f7))
+
+### 📖 Documentation
+
+- update READMEs for v1.8.0/v0.5.0/v0.7.0 features ([c09f0a8](https://github.com/constantant/angular-openapi-gen/commit/c09f0a8))
+- **openapi-resource-gen:** update generated mock file example for options? param ([959c2fc](https://github.com/constantant/angular-openapi-gen/commit/959c2fc))
+
+### 🏡 Chore
+
+- **openapi-resource-gen:** sync executor schema with generator (verbose, dateType) ([4376b6b](https://github.com/constantant/angular-openapi-gen/commit/4376b6b))
+
+### 🧱 Updated Dependencies
+
+- Updated openapi-resource-mocks to 1.9.0
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.8.0 (2026-06-14)
 
 ### 🚀 Features

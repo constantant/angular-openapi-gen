@@ -1,3 +1,26 @@
+## 1.9.0 (2026-06-19)
+
+### 🚀 Features
+
+- **openapi-resource-mocks/testing:** add response sequence mocking ([abef482](https://github.com/constantant/angular-openapi-gen/commit/abef482))
+- **openapi-resource-mocks:** add /testing entry point with mockResource helper ([afedfa6](https://github.com/constantant/angular-openapi-gen/commit/afedfa6))
+- **devtools-panel:** create unregistered (local) mocks from the panel ([f79d39f](https://github.com/constantant/angular-openapi-gen/commit/f79d39f))
+
+### 🩹 Fixes
+
+- **openapi-resource-mocks:** catch mode no longer disrupts existing mock value on enable ([5b869c1](https://github.com/constantant/angular-openapi-gen/commit/5b869c1))
+- **openapi-resource-mocks:** emit reloading event and fix reload control routing ([78000c8](https://github.com/constantant/angular-openapi-gen/commit/78000c8))
+
+### 📖 Documentation
+
+- update READMEs for v1.8.0/v0.5.0/v0.7.0 features ([c09f0a8](https://github.com/constantant/angular-openapi-gen/commit/c09f0a8))
+- **openapi-resource-mocks:** document reload, requestCount, clearHistory, keyDiscriminator ([7d61ea9](https://github.com/constantant/angular-openapi-gen/commit/7d61ea9))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 0.5.0 (2026-06-14)
 
 ### 🚀 Features
