@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       specifier:
-        description: 'Version bump (empty = auto from conventional commits)'
-        type: choice
-        options: ['', 'patch', 'minor', 'major']
+        description: 'Version bump: relative (patch/minor/major) or exact (e.g. 1.9.0). Empty = auto from conventional commits.'
+        type: string
         default: ''
       dryRun:
         description: 'Dry run — skip push, GitHub Release, and CWS upload'

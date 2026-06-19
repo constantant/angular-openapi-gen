@@ -53,7 +53,8 @@ console.log(`Commits since ${lastTag || 'beginning'}: ${commits.length}`);
 
 // ── 3. Determine version bump ─────────────────────────────────────────────
 const VALID_BUMPS = ['patch', 'minor', 'major'];
-const requestedBump = process.argv[2];
+const requestedSpecifier = process.argv[2];
+const SEMVER_EXACT_RE = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
 
 function detectBump(messages) {
   if (messages.some(m => m.includes('BREAKING CHANGE') || /^[^(]+!:/.test(m)))
@@ -70,12 +71,17 @@ function bumpSemver(version, type) {
   return `${maj}.${min}.${pat + 1}`;
 }
 
-const bumpType = VALID_BUMPS.includes(requestedBump)
-  ? requestedBump
-  : detectBump(commits.map(l => l.slice(41)));
-
-const newVersion = bumpSemver(currentVersion, bumpType);
-console.log(`Bump type: ${bumpType}  →  ${currentVersion} → ${newVersion}`);
+let newVersion;
+if (SEMVER_EXACT_RE.test(requestedSpecifier)) {
+  newVersion = requestedSpecifier;
+  console.log(`Exact version: ${currentVersion} → ${newVersion}`);
+} else {
+  const bumpType = VALID_BUMPS.includes(requestedSpecifier)
+    ? requestedSpecifier
+    : detectBump(commits.map(l => l.slice(41)));
+  newVersion = bumpSemver(currentVersion, bumpType);
+  console.log(`Bump type: ${bumpType}  →  ${currentVersion} → ${newVersion}`);
+}
 
 // ── 4. Generate CHANGELOG entry ───────────────────────────────────────────
 const date = new Date().toISOString().slice(0, 10);
