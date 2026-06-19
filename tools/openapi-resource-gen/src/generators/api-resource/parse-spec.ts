@@ -142,6 +142,7 @@ function collectEnumExtensions(params: OpenAPIV3.ParameterObject[]): EnumExtensi
       'x-enum-varnames'?: string[];
       'x-enum-descriptions'?: string[];
     }) | undefined;
+    if (!schema) continue;
     // OAS 3.1 uses const: value for a single fixed value; treat as a single-element enum.
     const constVal = (schema as { const?: unknown }).const;
     const rawValues: unknown[] | undefined = Array.isArray(schema.enum)
@@ -287,16 +288,17 @@ export function buildEndpoints(
         if (primarySchema) {
           // OAS 3.1 allows type to be an array (e.g. ['array', 'null']); isArrayType handles both forms.
           const schemaIsArray = isArrayType(primarySchema.type);
+          const arraySchema = primarySchema as OpenAPIV3.ArraySchemaObject;
           discriminator =
             extractDiscriminatorFromSchema(primarySchema, false) ??
             (schemaIsArray
-              ? extractDiscriminatorFromSchema(primarySchema.items as OpenAPIV3.SchemaObject, true)
+              ? extractDiscriminatorFromSchema(arraySchema.items as OpenAPIV3.SchemaObject, true)
               : null);
           if (schemaIsArray) {
             responseIsArray = true;
             // items may be absent for OAS 3.1 tuple schemas using prefixItems; skip date collection.
-            dateFields = primarySchema.items
-              ? collectDateFields(primarySchema.items as OpenAPIV3.SchemaObject)
+            dateFields = arraySchema.items
+              ? collectDateFields(arraySchema.items as OpenAPIV3.SchemaObject)
               : [];
           } else {
             dateFields = collectDateFields(primarySchema);
