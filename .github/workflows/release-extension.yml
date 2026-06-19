@@ -11,6 +11,14 @@ on:
         description: 'Dry run — skip push, GitHub Release, and CWS upload'
         type: boolean
         default: false
+      skipVersioning:
+        description: 'Skip version bump step — use when tag already exists and only build+publish is needed'
+        type: boolean
+        default: false
+      skipCws:
+        description: 'Skip Chrome Web Store upload — use to retry after refreshing the OAuth token'
+        type: boolean
+        default: false
 
 # contents: write → create commits, tags, GitHub Releases, upload assets
 permissions:
@@ -44,6 +52,7 @@ jobs:
 
       # Bumps manifest.json, writes CHANGELOG.md entry, commits + tags.
       - name: Bump version and generate changelog
+        if: ${{ !inputs.skipVersioning }}
         run: node tools/openapi-resource-devtools/scripts/release.mjs ${{ inputs.specifier }}
 
       # Read the new version from the just-bumped manifest.json.
@@ -83,7 +92,7 @@ jobs:
       # ── Dry-run stops here; everything below touches the remote or the CWS ──
 
       - name: Push version commit and tag
-        if: ${{ !inputs.dryRun }}
+        if: ${{ !inputs.dryRun && !inputs.skipVersioning }}
         run: |
           git push origin master
           git push origin "refs/tags/${{ steps.version.outputs.tag }}"
@@ -109,7 +118,7 @@ jobs:
       # CHROME_PUBLISHER_ID: developer dashboard URL → chrome.google.com/webstore/devconsole/<id>
       # Obtain refresh token: CLIENT_ID=… CLIENT_SECRET=… npx chrome-webstore-upload-cli@4 fetch-token
       - name: Publish to Chrome Web Store
-        if: ${{ !inputs.dryRun }}
+        if: ${{ !inputs.dryRun && !inputs.skipCws }}
         env:
           # chrome-webstore-upload-cli@4 reads these exact env var names
           EXTENSION_ID:  ${{ secrets.CHROME_EXTENSION_ID }}
