@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.9.0 (2026-06-19)
+
+### 🚀 Features
+
+- **devtools-panel:** request body inspector in History tab ([5894270](https://github.com/constantant/angular-openapi-gen/commit/5894270c891489102f63b9fe3f8c197adad732d6))
+- **devtools-panel:** scenario save/load, export/import mock state ([5371ab1](https://github.com/constantant/angular-openapi-gen/commit/5371ab10a73b63d88494118a9d36c34382b53769))
+- **devtools-panel:** create unregistered (local) mocks from the panel ([f79d39f](https://github.com/constantant/angular-openapi-gen/commit/f79d39f3b9011ff7471251e3df4681dd04a9033e))
+
+### 🩹 Bug Fixes
+
+- **openapi-resource-devtools:** build extension panel in production mode ([543cd5f](https://github.com/constantant/angular-openapi-gen/commit/543cd5fde44296eccf8746618b20480d78fc37d2))
+- deduplicate toCamelCase and guard importJson item shape ([083f0f7](https://github.com/constantant/angular-openapi-gen/commit/083f0f78d6571d79040a30ad7b3ef6faaceab2bd))
+- **openapi-resource-mocks:** emit reloading event and fix reload control routing ([78000c8](https://github.com/constantant/angular-openapi-gen/commit/78000c87c708df01e58aa07f0c69bb39aa5b02c7))
+
+### 📖 Documentation
+
+- update READMEs for v1.8.0/v0.5.0/v0.7.0 features ([c09f0a8](https://github.com/constantant/angular-openapi-gen/commit/c09f0a8f781f59724e6d7a670930e50b92591f46))
+
 ## 0.7.0 (2026-06-13)
 
 ### 🚀 Features
