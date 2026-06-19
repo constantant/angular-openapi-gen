@@ -15,6 +15,10 @@ on:
         description: 'Dry run — skip git push and npm publish'
         type: boolean
         default: false
+      skipVersioning:
+        description: 'Skip nx release versioning step — use when tags already exist and only build+publish is needed'
+        type: boolean
+        default: false
 
 # contents: write  → create commits, tags, and GitHub releases
 permissions:
@@ -57,6 +61,7 @@ jobs:
       # --skip-publish: npm publishing is handled separately so we can add --provenance.
       # --yes: skip interactive confirmation prompts.
       - name: Bump version and generate changelog
+        if: ${{ !inputs.skipVersioning }}
         run: |
           FLAGS="--skip-publish"
           [[ -n "${{ inputs.specifier }}" ]] && FLAGS="$FLAGS --specifier=${{ inputs.specifier }}"
@@ -67,7 +72,7 @@ jobs:
 
       # Dry-run stops here — all subsequent steps touch the remote or the npm registry.
       - name: Push version commit and tag
-        if: ${{ !inputs.dryRun }}
+        if: ${{ !inputs.dryRun && !inputs.skipVersioning }}
         run: git push --follow-tags origin master
 
       # Build after the version bump so the dist package.json carries the new version.
