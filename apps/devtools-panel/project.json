@@ -34,22 +34,22 @@
           "apps/devtools-panel/src/theme.scss",
           "apps/devtools-panel/src/styles.less"
         ],
-        "budgets": [
-          {
-            "type": "initial",
-            "maximumWarning": "600kb",
-            "maximumError": "2mb"
-          },
-          {
-            "type": "anyComponentStyle",
-            "maximumWarning": "6kb",
-            "maximumError": "10kb"
-          }
-        ]
       },
       "configurations": {
         "production": {
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "600kb",
+              "maximumError": "2mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "6kb",
+              "maximumError": "10kb"
+            }
+          ]
         },
         "development": {
           "optimization": false,
