@@ -89,6 +89,8 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `includeMocks` | no | `false` | Emit a `.mock.ts` per endpoint plus `index.mock.ts` barrels and a `mocks.manifest.json` — requires [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) |
 | `includeMswHandlers` | no | `false` | Emit a `.msw.ts` per endpoint plus `index.msw.ts` barrels — requires [`msw`](https://mswjs.io) >= 2.0.0 |
 | `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
+| `dateType` | no | `string` | `string` (default — no change), `Date`, or `Temporal`. When set to `Date` or `Temporal`, emits a typed `XxxRevived` alias and a `reviveXxxDates()` helper per endpoint whose response contains `format: date-time` or `format: date` fields. |
+| `readonlyResponses` | no | `false` | Wrap all `XxxResponse` and `XxxError` type aliases in `Readonly<>` to prevent accidental mutation of response data. |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
 ---
@@ -104,6 +106,8 @@ Re-run the same command whenever your spec changes — the generator overwrites 
   index.mock.ts                     # (--includeMocks) re-exports all tag mock barrels
   index.msw.ts                      # (--includeMswHandlers) re-exports all tag MSW handler arrays
   mocks.manifest.json               # (--includeMocks) machine-readable endpoint list + specId for the DevTools panel
+  webhooks/
+    {webhook-name}.webhook.ts       # (OAS 3.1 webhooks) InjectionToken<HttpInterceptorFn> per webhook
   {tag}/
     index.ts                        # re-exports all token files in this tag folder
     index.mock.ts                   # (--includeMocks) re-exports all mock files in this tag
@@ -113,7 +117,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
     {operation-id}.msw.ts           # (--includeMswHandlers) MSW 2.x handler factory + pre-called array
 ```
 
-Tags map to subfolders; untagged operations go into `default/`.
+Tags map to subfolders; untagged operations go into `default/`. OAS 3.1 `webhooks` map to `webhooks/`.
 
 ---
 
@@ -300,6 +304,89 @@ server.use(findPetsByStatusHandler([{ id: 1, name: 'Rex', status: 'available' }]
 
 MSW handler files are intentionally kept out of the main `index.ts` barrel so they
 are never bundled into a production build.
+
+---
+
+## Date revival (`--dateType`)
+
+By default the generator uses `dateType: 'string'` — date/time fields stay as
+`string` exactly as `openapi-typescript` emits them. Set `--dateType=Date` or
+`--dateType=Temporal` to also generate a `XxxRevived` type alias and a
+`reviveXxxDates()` helper for any endpoint whose response contains
+`format: date-time` or `format: date` fields:
+
+```typescript
+// orders/get-order.token.ts  (generated with --dateType=Date)
+
+// The raw response type still reflects the schema faithfully:
+export type GetOrderResponse =
+  paths['/orders/{id}']['get']['responses']['200']['content']['application/json'];
+
+// Revived alias: date fields replaced with Date objects
+export type GetOrderRevived = Omit<GetOrderResponse, 'createdAt' | 'updatedAt'> & {
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+// Pure reviver function — does not mutate the raw object
+export function reviveGetOrderDates(raw: GetOrderResponse): GetOrderRevived {
+  const obj = raw as unknown as Record<string, unknown>;
+  return {
+    ...obj,
+    createdAt: obj['createdAt'] != null ? new Date(obj['createdAt'] as string) : obj['createdAt'],
+    updatedAt: obj['updatedAt'] != null ? new Date(obj['updatedAt'] as string) : obj['updatedAt'],
+  } as GetOrderRevived;
+}
+```
+
+For array responses (`GetOrderRevived` becomes `(Omit<…> & { … })[]`), the function
+maps over each element. Using `--dateType=Temporal` produces `Temporal.Instant` for
+`date-time` fields and `Temporal.PlainDate` for `date` fields:
+
+```typescript
+export type GetOrderRevived = Omit<GetOrderResponse, 'createdAt'> & {
+  createdAt: Temporal.Instant;
+};
+```
+
+Call the reviver after receiving the resource value:
+
+```typescript
+readonly order = this.getOrder('42');
+readonly orderRevived = computed(() => {
+  const raw = this.order.value();
+  return raw ? reviveGetOrderDates(raw) : undefined;
+});
+```
+
+---
+
+## Readonly responses (`--readonlyResponses`)
+
+Pass `--readonlyResponses` to wrap every emitted `XxxResponse` and `XxxError` type
+alias in `Readonly<>`. This prevents accidental mutation of the returned data at the
+TypeScript type level:
+
+```typescript
+// Without --readonlyResponses (default):
+export type GetOrderResponse =
+  paths['/orders/{id}']['get']['responses']['200']['content']['application/json'];
+
+// With --readonlyResponses:
+export type GetOrderResponse =
+  Readonly<paths['/orders/{id}']['get']['responses']['200']['content']['application/json']>;
+```
+
+Multi-status union aliases use `Readonly<>` on each branch:
+
+```typescript
+export type UpsertOrderResponse =
+  | Readonly<paths['/orders']['put']['responses']['200']['content']['application/json']>
+  | Readonly<paths['/orders']['put']['responses']['201']['content']['application/json']>;
+```
+
+`--readonlyResponses` works in combination with `--dateType` — the `XxxRevived`
+alias also wraps the `Omit & { … }` shape in `Readonly<>`.
 
 ---
 
@@ -529,6 +616,124 @@ export type UpsertResourceResponse =
 
 The `httpResource<UpsertResourceResponse>` call site receives a value that is the
 union of all possible success shapes.
+
+### Typed error aliases
+
+For 4xx/5xx responses that carry JSON bodies, the generator emits an `XxxError` type alias
+alongside the response type. This lets callers type the `.error()` signal from `httpResource`:
+
+```typescript
+// Single error code
+export type GetOrderError =
+  paths['/orders/{id}']['get']['responses']['404']['content']['application/json'];
+
+// Multiple error codes — union
+export type GetOrderError =
+  | paths['/orders/{id}']['get']['responses']['400']['content']['application/json']
+  | paths['/orders/{id}']['get']['responses']['404']['content']['application/json'];
+```
+
+With `--readonlyResponses` each branch is wrapped in `Readonly<>`.
+
+### Enum label/description maps
+
+When query or path params use the vendor extensions `x-enum-varnames` and/or
+`x-enum-descriptions`, the generator emits typed const objects alongside the
+`Params` type alias. These are useful for building select options and accessible
+tooltips without hand-writing display strings:
+
+```typescript
+// find-pets-by-status.token.ts
+// Spec has: enum: [available, pending, sold], x-enum-varnames: [Available, Pending, Sold]
+export const findPetsByStatusStatusLabels = {
+  'available': 'Available',
+  'pending': 'Pending',
+  'sold': 'Sold',
+} as const;
+
+// x-enum-descriptions: [Pets ready to adopt, Pending adoption, Already adopted]
+export const findPetsByStatusStatusDescriptions = {
+  'available': 'Pets ready to adopt',
+  'pending': 'Pending adoption',
+  'sold': 'Already adopted',
+} as const;
+```
+
+The object key is the raw enum value (as it appears in the API request); the object
+value is the human-readable label or description from the extension.
+
+### Non-default query param serialization
+
+When a query parameter declares a non-default `style` in the spec (`deepObject`,
+`pipeDelimited`, or `spaceDelimited`), the generator emits a module-private
+`_serializeParams()` helper inside the token file. This helper converts the typed
+`XxxParams` object to a flat `Record<string, string | readonly string[]>` before
+passing it to `HttpClient`:
+
+```typescript
+// deep-search.token.ts (generated — deepObject param 'filter')
+function _serializeParams(p: DeepSearchParams | undefined): Record<string, string | readonly string[]> | undefined {
+  if (p == null) return undefined;
+  const _out: Record<string, string | readonly string[]> = {};
+  for (const [_k, _v] of Object.entries(p as Record<string, unknown>)) {
+    if (_v == null) continue;
+    switch (_k) {
+      case 'filter':
+        for (const [_dk, _dv] of Object.entries(_v as Record<string, unknown>))
+          if (_dv != null) _out['filter[' + _dk + ']'] = String(_dv);
+        break;
+      default:
+        _out[_k] = Array.isArray(_v) ? (_v as unknown[]).map(String) : String(_v as string | number | boolean);
+    }
+  }
+  return _out;
+}
+```
+
+| Spec `style` | Serialization |
+|---|---|
+| `deepObject` | `filter[key]=value` — one query param per nested key |
+| `pipeDelimited` | `tags=a\|b\|c` — pipe-joined array |
+| `spaceDelimited` | `tags=a b c` — space-joined array |
+
+Standard comma-separated arrays use the default `HttpClient` serialization; no helper
+is emitted for those.
+
+### Discriminated unions
+
+When a response schema uses `oneOf`/`anyOf` with a discriminator, the generator emits
+narrowing helpers alongside the `XxxResponse` type:
+
+```typescript
+// get-animal.token.ts (discriminator: { propertyName: 'type' })
+export type GetAnimalDiscriminatorKey = 'dog' | 'cat';
+
+// Mapping-style: each variant intersects its component schema with the discriminant literal
+export type GetAnimalDog = components['schemas']['Dog'] & { 'type': 'dog' };
+export type GetAnimalCat = components['schemas']['Cat'] & { 'type': 'cat' };
+
+// Convenience union of all narrowed variants
+export type GetAnimalDiscriminated = GetAnimalDog | GetAnimalCat;
+```
+
+When the discriminator resolves from a plain enum (no `components/schemas` mapping),
+the generator uses `Extract` instead:
+
+```typescript
+export type GetAnimalDog = Extract<GetAnimalResponse, { 'type': 'dog' }>;
+```
+
+For array responses (`GetAnimalResponse` is `Animal[]`), `GetAnimalDiscriminated`
+becomes `(GetAnimalDog | GetAnimalCat)[]`.
+
+Use the narrowed types at the call site:
+
+```typescript
+const item = this.getAnimal.value();
+if (item && 'type' in item && item.type === 'dog') {
+  const dog: GetAnimalDog = item; // narrowed
+}
+```
 
 ### Security schemes
 
@@ -793,6 +998,59 @@ navigation in and destroyed on navigation out, with no cross-route state leakage
 3. Add base URL provider and token providers to `app.config.ts`.
 
 4. Optionally, add a `generate` target to your lib's `project.json` (see the executor section above) so future regeneration is just `nx run myapi-data-access:generate`.
+
+---
+
+## OAS 3.1 support
+
+The generator handles OpenAPI 3.1 specs in addition to 3.0.x. The main differences
+that affect code generation:
+
+### Type arrays and implicit nullability
+
+OAS 3.1 allows `type: ['string', 'null']` instead of `nullable: true`. Both forms
+produce the same output from `openapi-typescript` (`string | null`), so generated
+token types remain correct in either spec version.
+
+### Webhooks
+
+OAS 3.1 `webhooks` entries are emitted as `.webhook.ts` files under a `webhooks/`
+subfolder. Each webhook token holds `InjectionToken<HttpInterceptorFn>` — the
+consumer registers an interceptor that handles incoming webhook requests:
+
+```typescript
+// webhooks/order-placed.webhook.ts  (generated)
+import { InjectionToken } from '@angular/core';
+import { HttpInterceptorFn } from '@angular/common/http';
+import type { webhooks } from '../schema.d';
+
+export type OrderPlacedWebhookPayload =
+  NonNullable<webhooks['order.placed']['post']['requestBody']>['content']['application/json'];
+
+export type OrderPlacedWebhookResponse =
+  webhooks['order.placed']['post']['responses']['200']['content']['application/json'];
+
+export const ORDER_PLACED_WEBHOOK = new InjectionToken<HttpInterceptorFn>('ORDER_PLACED_WEBHOOK');
+```
+
+Wire up in `app.config.ts`:
+
+```typescript
+import { ORDER_PLACED_WEBHOOK } from '@myapp/myapi-data-access';
+import type { OrderPlacedWebhookPayload } from '@myapp/myapi-data-access';
+
+const myWebhookHandler: HttpInterceptorFn = (req, next) => {
+  // req.body is the incoming webhook payload
+  const payload = req.body as OrderPlacedWebhookPayload;
+  // ... handle it
+  return next(req);
+};
+
+{ provide: ORDER_PLACED_WEBHOOK, useValue: myWebhookHandler }
+```
+
+Webhook files are included in the root `index.ts` barrel and participate in stale
+file cleanup like all other generated files.
 
 ---
 

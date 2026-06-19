@@ -35,7 +35,7 @@ providers: [
 
 ### Chrome Web Store _(recommended)_
 
-> _Not yet published. Use manual loading below._
+Search for **"OpenAPI Resource Mocks DevTools"** in the [Chrome Web Store](https://chromewebstore.google.com).
 
 ### Load unpacked (development / local build)
 
