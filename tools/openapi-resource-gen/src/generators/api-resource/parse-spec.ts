@@ -267,7 +267,29 @@ export function buildEndpoints(
         const obj = operation.responses?.[code] as OpenAPIV3.ResponseObject | undefined;
         return obj?.content?.['application/json'] != null;
       });
-      const hasResponse = responseStatuses.length > 0;
+
+      // When no JSON response exists, check for text/* or binary content types so the
+      // generator can emit httpResource.text() / httpResource.blob() instead of falling
+      // back to httpResource<unknown>() which would attempt JSON-parsing and fail.
+      let responseVariant: 'json' | 'text' | 'blob' = 'json';
+      let hasResponse = responseStatuses.length > 0;
+      if (!hasResponse) {
+        for (const code of orderedCodes) {
+          const obj = operation.responses?.[code] as OpenAPIV3.ResponseObject | undefined;
+          if (!obj?.content) continue;
+          const contentTypes = Object.keys(obj.content);
+          if (contentTypes.some((ct) => ct === 'text/plain' || ct.startsWith('text/'))) {
+            responseVariant = 'text';
+            hasResponse = true;
+            break;
+          }
+          if (contentTypes.length > 0) {
+            responseVariant = 'blob';
+            hasResponse = true;
+            break;
+          }
+        }
+      }
 
       const errorStatuses = Object.keys(operation.responses ?? {})
         .filter((code) => code === 'default' || /^[45]/.test(code))
@@ -330,6 +352,7 @@ export function buildEndpoints(
         enumExtensions,
         dateFields,
         responseIsArray,
+        responseVariant,
       });
     }
   }

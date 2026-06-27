@@ -617,6 +617,65 @@ export type UpsertResourceResponse =
 The `httpResource<UpsertResourceResponse>` call site receives a value that is the
 union of all possible success shapes.
 
+### Non-JSON responses (text and binary)
+
+When a 2xx response has a non-JSON content type, the generator picks the correct
+`httpResource` variant automatically — no manual file maintenance needed:
+
+| Content type | `httpResource` call | `XxxResponse` type |
+|---|---|---|
+| `application/json` (default) | `httpResource<XxxResponse>()` | derived from `paths[…]['application/json']` |
+| `text/plain`, `text/*` | `httpResource.text()` | `string` |
+| `image/*`, `video/*`, `audio/*`, `application/octet-stream`, `application/pdf`, … | `httpResource.blob()` | `Blob` |
+
+```typescript
+// GET /reports/{id} — response: { '200': { content: { 'text/plain': … } } }
+export type GetReportResponse = string;
+
+export const GET_REPORT = new InjectionToken<
+  (id: string) => ReturnType<typeof httpResource.text>
+>('GET_REPORT');
+
+export function provideGetReport(): FactoryProvider {
+  return {
+    provide: GET_REPORT,
+    useFactory: () => {
+      const base = inject(MYAPI_BASE_URL);
+      return (id: string) =>
+        httpResource.text(() => ({ url: `${base}/reports/${id}` }));
+    },
+  };
+}
+```
+
+```typescript
+// GET /images/{id} — response: { '200': { content: { 'image/png': … } } }
+export type GetImageResponse = Blob;
+
+export const GET_IMAGE = new InjectionToken<
+  (id: string) => ReturnType<typeof httpResource.blob>
+>('GET_IMAGE');
+```
+
+`XxxResponse` is always emitted so consumers have a stable type to import regardless
+of the content kind. Use it to type component state:
+
+```typescript
+readonly report = this.getReport('q4-2025');
+readonly reportText = computed(() => this.report.value() ?? '');
+
+readonly image = this.getImage('logo');
+readonly imageUrl = computed(() => {
+  const blob = this.image.value();
+  return blob ? URL.createObjectURL(blob) : null;
+});
+```
+
+> **`httpResource.arrayBuffer`** is available in Angular 22 but the generator does
+> not emit it — `Blob` covers all practical binary use cases (downloads, object URLs,
+> streaming). Add `x-response-type: arraybuffer` as a vendor extension in the spec
+> if you need raw byte access; the generator will recognise it in a future release.
+
 ### Typed error aliases
 
 For 4xx/5xx responses that carry JSON bodies, the generator emits an `XxxError` type alias

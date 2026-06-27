@@ -217,7 +217,7 @@ describe('api-resource generator', () => {
       expect(content).toContain("['responses']['202']");
     });
 
-    it('falls back to unknown type when no 2xx JSON response exists', async () => {
+    it('emits httpResource.blob() for binary (non-JSON/non-text) 2xx response', async () => {
       vi.mocked(SwaggerParser.dereference).mockResolvedValue({
         paths: {
           '/files/{id}': {
@@ -238,7 +238,9 @@ describe('api-resource generator', () => {
         outputDir: 'libs/files/src',
       });
       const content = tree.read('libs/files/src/files/download-file.token.ts', 'utf-8')!;
-      expect(content).toContain('httpResource<unknown>');
+      expect(content).toContain('httpResource.blob');
+      expect(content).toContain('export type DownloadFileResponse = Blob;');
+      expect(content).not.toContain('httpResource<unknown>');
     });
   });
 

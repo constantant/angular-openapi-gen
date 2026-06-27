@@ -108,4 +108,11 @@ export interface EndpointModel {
   dateFields: DateField[];
   /** True when the primary JSON response type is an array. */
   responseIsArray: boolean;
+  /**
+   * How the response body should be fetched. Drives the httpResource variant used in code gen.
+   * 'json' — httpResource<T>() (default JSON parsing)
+   * 'text' — httpResource.text() for text/plain and other text/* content types
+   * 'blob' — httpResource.blob() for binary content types
+   */
+  responseVariant: 'json' | 'text' | 'blob';
 }
