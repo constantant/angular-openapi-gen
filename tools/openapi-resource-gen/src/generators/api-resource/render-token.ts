@@ -131,8 +131,9 @@ export function renderTokenFile(
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
   const isGet = ep.method === 'get';
-  const { responseStatuses } = ep;
-  const hasResponse = responseStatuses.length > 0;
+  const { responseStatuses, responseVariant } = ep;
+  const hasJsonResponse = responseStatuses.length > 0;
+  const hasResponse = hasJsonResponse || responseVariant !== 'json';
 
   const applicableSchemes = ep.securitySchemeNames
     .map((name) => schemesByName.get(name))
@@ -199,7 +200,11 @@ export function renderTokenFile(
   const ro = (expr: string) => readonlyResponses ? `Readonly<${expr}>` : expr;
 
   if (hasResponse) {
-    if (responseStatuses.length === 1) {
+    if (responseVariant === 'text') {
+      lines.push(`export type ${pascal}Response = string;`, '');
+    } else if (responseVariant === 'blob') {
+      lines.push(`export type ${pascal}Response = Blob;`, '');
+    } else if (responseStatuses.length === 1) {
       lines.push(
         `export type ${pascal}Response =`,
         `  ${ro(`paths['${ep.apiPath}']['${ep.method}']['responses']['${responseStatuses[0]}']['content']['application/json']`)};`,
@@ -323,6 +328,18 @@ export function renderTokenFile(
   }
 
   const responseT = hasResponse ? `${pascal}Response` : 'unknown';
+  // Token generic and call site differ by responseVariant.
+  // json  → InjectionToken<(...) => ReturnType<typeof httpResource<T>>>
+  // text  → InjectionToken<(...) => ReturnType<typeof httpResource.text>>
+  // blob  → InjectionToken<(...) => ReturnType<typeof httpResource.blob>>
+  const resourceReturnType =
+    responseVariant === 'text' ? `ReturnType<typeof httpResource.text>` :
+    responseVariant === 'blob' ? `ReturnType<typeof httpResource.blob>` :
+    `ReturnType<typeof httpResource<${responseT}>>`;
+  const resourceCall =
+    responseVariant === 'text' ? 'httpResource.text' :
+    responseVariant === 'blob' ? 'httpResource.blob' :
+    `httpResource<${responseT}>`;
   const fnArgs = buildFnArgs(ep, pascal, isGet);
 
   // Emit a params serializer when the spec uses non-default query param styles.
@@ -359,7 +376,7 @@ export function renderTokenFile(
   }
   lines.push(
     `export const ${ep.tokenName} = new InjectionToken<`,
-    `  (${fnArgs}) => ReturnType<typeof httpResource<${responseT}>>`,
+    `  (${fnArgs}) => ${resourceReturnType}`,
     `>('${ep.tokenName}'${providedIn === 'root' ? `, {` : ')'}`,
   );
 
@@ -383,7 +400,7 @@ export function renderTokenFile(
     if (needsBlockBody) {
       lines.push(
         `    return (${fnArgs}) =>`,
-        `      httpResource<${responseT}>(() => {`,
+        `      ${resourceCall}(() => {`,
         `        const _params = typeof params === 'function' ? params() : params;`,
         `        if (typeof params === 'function' && _params === undefined) return undefined;`,
         `        return {`,
@@ -394,7 +411,7 @@ export function renderTokenFile(
     } else {
       lines.push(
         `    return (${fnArgs}) =>`,
-        `      httpResource<${responseT}>(() => ({`,
+        `      ${resourceCall}(() => ({`,
         `        url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '        ', headerSchemes, querySchemes, false);
@@ -413,7 +430,7 @@ export function renderTokenFile(
     if (needsBlockBody) {
       lines.push(
         `      return (${fnArgs}) =>`,
-        `        httpResource<${responseT}>(() => {`,
+        `        ${resourceCall}(() => {`,
         `          const _params = typeof params === 'function' ? params() : params;`,
         `          if (typeof params === 'function' && _params === undefined) return undefined;`,
         `          return {`,
@@ -424,7 +441,7 @@ export function renderTokenFile(
     } else {
       lines.push(
         `      return (${fnArgs}) =>`,
-        `        httpResource<${responseT}>(() => ({`,
+        `        ${resourceCall}(() => ({`,
         `          url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, false);

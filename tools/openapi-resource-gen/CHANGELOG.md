@@ -1,3 +1,20 @@
+## 1.9.1 (2026-06-23)
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** emit httpResource.text/blob for non-JSON responses ([a335333](https://github.com/constantant/angular-openapi-gen/commit/a335333))
+- **openapi-resource-gen:** guard schema undefined and cast ArraySchemaObject for TS strict checks ([a475240](https://github.com/constantant/angular-openapi-gen/commit/a475240))
+
+### 📖 Documentation
+
+- **openapi-resource-gen:** document non-JSON response handling (text/blob) ([2166744](https://github.com/constantant/angular-openapi-gen/commit/2166744))
+- update READMEs for v1.9.0 ([f74473f](https://github.com/constantant/angular-openapi-gen/commit/f74473f))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- kk
+
 ## 1.9.0 (2026-06-19)
 
 ### 🚀 Features
