@@ -37,7 +37,7 @@ jobs:
           # GH_PAT (admin PAT, Contents: write) bypasses branch protection on push
           token: ${{ secrets.GH_PAT }}
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
