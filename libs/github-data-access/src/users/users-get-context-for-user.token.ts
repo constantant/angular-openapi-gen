@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
+import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
@@ -12,6 +13,40 @@ export type UsersGetContextForUserResponse =
 export type UsersGetContextForUserError =
   | paths['/users/{username}/hovercard']['get']['responses']['404']['content']['application/json']
   | paths['/users/{username}/hovercard']['get']['responses']['422']['content']['application/json'];
+
+const _responseSchema: Schema = {
+  title: 'Hovercard',
+  description: 'Hovercard',
+  type: 'object',
+  properties: {
+    contexts: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          message: {
+            type: 'string',
+          },
+          octicon: {
+            type: 'string',
+          },
+        },
+        required: ['message', 'octicon'],
+      },
+    },
+  },
+  required: ['contexts'],
+};
+
+function _validateResponse(value: unknown): UsersGetContextForUserResponse {
+  const _result = new Validator(_responseSchema).validate(value);
+  if (!_result.valid) {
+    throw new Error(
+      `UsersGetContextForUser response failed schema validation: ${JSON.stringify(_result.errors)}`,
+    );
+  }
+  return value as UsersGetContextForUserResponse;
+}
 
 export const USERS_GET_CONTEXT_FOR_USER = new InjectionToken<
   (
@@ -33,18 +68,24 @@ export function provideUsersGetContextForUser(): FactoryProvider {
           | UsersGetContextForUserParams
           | (() => UsersGetContextForUserParams | undefined),
       ) =>
-        httpResource<UsersGetContextForUserResponse>(() => {
-          const _params = typeof params === 'function' ? params() : params;
-          if (typeof params === 'function' && _params === undefined)
-            return undefined;
-          return {
-            url: `${base}/users/${username}/hovercard`,
-            params: _params as unknown as Record<
-              string,
-              string | number | boolean | readonly (string | number | boolean)[]
-            >,
-          };
-        });
+        httpResource<UsersGetContextForUserResponse>(
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/users/${username}/hovercard`,
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+            };
+          },
+          { parse: _validateResponse },
+        );
     },
   };
 }

@@ -28,8 +28,7 @@ export function provideReposCreateDispatchEvent(): FactoryProvider {
         owner: string,
         repo: string,
         body:
-          | ReposCreateDispatchEventBody
-          | Signal<ReposCreateDispatchEventBody>,
+          ReposCreateDispatchEventBody | Signal<ReposCreateDispatchEventBody>,
       ) =>
         httpResource<unknown>(() => ({
           url: `${base}/repos/${owner}/${repo}/dispatches`,

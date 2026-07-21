@@ -22591,9 +22591,7 @@ export interface components {
        * @enum {string}
        */
       enterprise_custom_properties_for_organizations?:
-        | 'read'
-        | 'write'
-        | 'admin';
+        'read' | 'write' | 'admin';
     };
     /**
      * Simple User
@@ -23721,10 +23719,7 @@ export interface components {
        * @enum {string}
        */
       advanced_security?:
-        | 'enabled'
-        | 'disabled'
-        | 'code_security'
-        | 'secret_protection';
+        'enabled' | 'disabled' | 'code_security' | 'secret_protection';
       /**
        * @description The enablement status of Dependency Graph
        * @enum {string}
@@ -23755,10 +23750,7 @@ export interface components {
        * @enum {string|null}
        */
       dependabot_delegated_alert_dismissal?:
-        | 'enabled'
-        | 'disabled'
-        | 'not_set'
-        | null;
+        'enabled' | 'disabled' | 'not_set' | null;
       /** @description Feature options for code scanning */
       code_scanning_options?: {
         /** @description Whether to allow repos which use advanced setup */
@@ -23784,9 +23776,7 @@ export interface components {
        * @enum {string}
        */
       code_scanning_delegated_alert_dismissal?:
-        | 'enabled'
-        | 'disabled'
-        | 'not_set';
+        'enabled' | 'disabled' | 'not_set';
       /**
        * @description The enablement status of secret scanning
        * @enum {string}
@@ -23833,9 +23823,7 @@ export interface components {
        * @enum {string}
        */
       secret_scanning_non_provider_patterns?:
-        | 'enabled'
-        | 'disabled'
-        | 'not_set';
+        'enabled' | 'disabled' | 'not_set';
       /**
        * @description The enablement status of Copilot secret scanning
        * @enum {string}
@@ -23846,9 +23834,7 @@ export interface components {
        * @enum {string}
        */
       secret_scanning_delegated_alert_dismissal?:
-        | 'enabled'
-        | 'disabled'
-        | 'not_set';
+        'enabled' | 'disabled' | 'not_set';
       /**
        * @description The enablement status of secret scanning extended metadata
        * @enum {string}
@@ -24381,11 +24367,7 @@ export interface components {
          * @enum {string|null}
          */
         readonly relationship?:
-          | 'unknown'
-          | 'direct'
-          | 'transitive'
-          | 'inconclusive'
-          | null;
+          'unknown' | 'direct' | 'transitive' | 'inconclusive' | null;
       };
       security_advisory: components['schemas']['dependabot-alert-security-advisory'];
       security_vulnerability: components['schemas']['dependabot-alert-security-vulnerability'];
@@ -25328,11 +25310,7 @@ export interface components {
        * @enum {string|null}
        */
       state_reason?:
-        | 'completed'
-        | 'reopened'
-        | 'not_planned'
-        | 'duplicate'
-        | null;
+        'completed' | 'reopened' | 'not_planned' | 'duplicate' | null;
       /**
        * @description Title of the issue
        * @example Widget creation fails in Safari on OS X 10.8
@@ -26891,10 +26869,7 @@ export interface components {
          * @enum {string}
          */
         budget_scope?:
-          | 'enterprise'
-          | 'organization'
-          | 'repository'
-          | 'cost_center';
+          'enterprise' | 'organization' | 'repository' | 'cost_center';
         /**
          * @description The name of the entity to apply the budget to
          * @example example-repository-name
@@ -28125,22 +28100,13 @@ export interface components {
      * @enum {string}
      */
     'code-scanning-alert-state-query':
-      | 'open'
-      | 'closed'
-      | 'dismissed'
-      | 'fixed';
+      'open' | 'closed' | 'dismissed' | 'fixed';
     /**
      * @description Severity of a code scanning alert.
      * @enum {string}
      */
     'code-scanning-alert-severity':
-      | 'critical'
-      | 'high'
-      | 'medium'
-      | 'low'
-      | 'warning'
-      | 'note'
-      | 'error';
+      'critical' | 'high' | 'medium' | 'low' | 'warning' | 'note' | 'error';
     /**
      * Format: uri
      * @description The REST API URL for fetching the list of instances for an alert.
@@ -28156,10 +28122,7 @@ export interface components {
      * @enum {string|null}
      */
     'code-scanning-alert-dismissed-reason':
-      | 'false positive'
-      | "won't fix"
-      | 'used in tests'
-      | null;
+      'false positive' | "won't fix" | 'used in tests' | null;
     /** @description The dismissal comment associated with the dismissal of the alert. */
     'code-scanning-alert-dismissed-comment': string | null;
     'code-scanning-alert-rule-summary': {
@@ -28219,11 +28182,7 @@ export interface components {
      * @enum {string|null}
      */
     'code-scanning-alert-classification':
-      | 'source'
-      | 'generated'
-      | 'test'
-      | 'library'
-      | null;
+      'source' | 'generated' | 'test' | 'library' | null;
     'code-scanning-alert-instance': {
       ref?: components['schemas']['code-scanning-ref'];
       analysis_key?: components['schemas']['code-scanning-analysis-analysis-key'];
@@ -28797,10 +28756,7 @@ export interface components {
        * @enum {string}
        */
       seat_management_setting:
-        | 'assign_all'
-        | 'assign_selected'
-        | 'disabled'
-        | 'unconfigured';
+        'assign_all' | 'assign_selected' | 'disabled' | 'unconfigured';
       /**
        * @description The Copilot plan of the organization, or the parent enterprise, when applicable.
        * @enum {string}
@@ -29342,12 +29298,7 @@ export interface components {
        * @enum {string}
        */
       package_type:
-        | 'npm'
-        | 'maven'
-        | 'rubygems'
-        | 'docker'
-        | 'nuget'
-        | 'container';
+        'npm' | 'maven' | 'rubygems' | 'docker' | 'nuget' | 'container';
       /** @example https://api.github.com/orgs/github/packages/container/super-linter */
       url: string;
       /** @example https://github.com/orgs/github/packages/container/package/super-linter */
@@ -29533,9 +29484,7 @@ export interface components {
      * @enum {string}
      */
     'interaction-group':
-      | 'existing_users'
-      | 'contributors_only'
-      | 'collaborators_only';
+      'existing_users' | 'contributors_only' | 'collaborators_only';
     /**
      * Interaction Limits
      * @description Interaction limit settings.
@@ -29556,11 +29505,7 @@ export interface components {
      * @enum {string}
      */
     'interaction-expiry':
-      | 'one_day'
-      | 'three_days'
-      | 'one_week'
-      | 'one_month'
-      | 'six_months';
+      'one_day' | 'three_days' | 'one_week' | 'one_month' | 'six_months';
     /**
      * Interaction Restrictions
      * @description Limit interactions to a specific type of user for a specified duration
@@ -30146,12 +30091,7 @@ export interface components {
          * @enum {string}
          */
         package_type:
-          | 'npm'
-          | 'maven'
-          | 'rubygems'
-          | 'docker'
-          | 'nuget'
-          | 'container';
+          'npm' | 'maven' | 'rubygems' | 'docker' | 'nuget' | 'container';
         /** Container Metadata */
         container?: {
           tags: string[];
@@ -30469,12 +30409,7 @@ export interface components {
        * @enum {string|null}
        */
       status?:
-        | 'INACTIVE'
-        | 'ON_TRACK'
-        | 'AT_RISK'
-        | 'OFF_TRACK'
-        | 'COMPLETE'
-        | null;
+        'INACTIVE' | 'ON_TRACK' | 'AT_RISK' | 'OFF_TRACK' | 'COMPLETE' | null;
       /**
        * Format: date
        * @description The start date of the period covered by the update.
@@ -31062,11 +30997,7 @@ export interface components {
        * @enum {string}
        */
       value_type:
-        | 'string'
-        | 'single_select'
-        | 'multi_select'
-        | 'true_false'
-        | 'url';
+        'string' | 'single_select' | 'multi_select' | 'true_false' | 'url';
       /** @description Whether the property is required. */
       required?: boolean;
       /** @description Default value of the property */
@@ -31098,11 +31029,7 @@ export interface components {
        * @enum {string}
        */
       value_type:
-        | 'string'
-        | 'single_select'
-        | 'multi_select'
-        | 'true_false'
-        | 'url';
+        'string' | 'single_select' | 'multi_select' | 'true_false' | 'url';
       /** @description Whether the property is required. */
       required?: boolean;
       /** @description Default value of the property */
@@ -32323,11 +32250,7 @@ export interface components {
        * @enum {string}
        */
       security_alerts_threshold:
-        | 'none'
-        | 'critical'
-        | 'high_or_higher'
-        | 'medium_or_higher'
-        | 'all';
+        'none' | 'critical' | 'high_or_higher' | 'medium_or_higher' | 'all';
       /** @description The name of a code scanning tool */
       tool: string;
     };
@@ -32462,10 +32385,7 @@ export interface components {
        * @enum {string}
        */
       current_user_can_bypass?:
-        | 'always'
-        | 'pull_requests_only'
-        | 'never'
-        | 'exempt';
+        'always' | 'pull_requests_only' | 'never' | 'exempt';
       node_id?: string;
       _links?: {
         self?: {
@@ -32712,11 +32632,7 @@ export interface components {
      * @enum {string|null}
      */
     'secret-scanning-alert-resolution':
-      | 'false_positive'
-      | 'wont_fix'
-      | 'revoked'
-      | 'used_in_tests'
-      | null;
+      'false_positive' | 'wont_fix' | 'revoked' | 'used_in_tests' | null;
     /** @description Represents a 'commit' secret scanning location type. This location type shows that a secret was detected inside a commit to a repository. */
     'secret-scanning-location-commit': {
       /**
@@ -33174,8 +33090,7 @@ export interface components {
         readonly accepted: boolean;
       } | null;
       vulnerabilities:
-        | components['schemas']['repository-advisory-vulnerability'][]
-        | null;
+        components['schemas']['repository-advisory-vulnerability'][] | null;
       cvss: {
         /** @description The CVSS vector. */
         vector_string: string | null;
@@ -33201,8 +33116,7 @@ export interface components {
           }[]
         | null;
       readonly credits_detailed:
-        | components['schemas']['repository-advisory-credit'][]
-        | null;
+        components['schemas']['repository-advisory-credit'][] | null;
       /** @description A list of users that collaborate on the advisory. */
       collaborating_users: components['schemas']['simple-user'][] | null;
       /** @description A list of teams that collaborate on the advisory. */
@@ -34386,8 +34300,7 @@ export interface components {
        */
       run_attempt?: number;
       referenced_workflows?:
-        | components['schemas']['referenced-workflow'][]
-        | null;
+        components['schemas']['referenced-workflow'][] | null;
       /** @example push */
       event: string;
       /** @example completed */
@@ -34657,8 +34570,7 @@ export interface components {
       reviewers: {
         type?: components['schemas']['deployment-reviewer-type'];
         reviewer?:
-          | components['schemas']['simple-user']
-          | components['schemas']['team'];
+          components['schemas']['simple-user'] | components['schemas']['team'];
       }[];
     };
     /**
@@ -35909,10 +35821,7 @@ export interface components {
      * @enum {string}
      */
     'code-scanning-autofix-status':
-      | 'pending'
-      | 'error'
-      | 'success'
-      | 'outdated';
+      'pending' | 'error' | 'success' | 'outdated';
     /** @description The description of an autofix. */
     'code-scanning-autofix-description': string | null;
     /**
@@ -36156,9 +36065,7 @@ export interface components {
        * @enum {string}
        */
       failure_reason?:
-        | 'no_repos_queried'
-        | 'actions_workflow_run_failed'
-        | 'internal_error';
+        'no_repos_queried' | 'actions_workflow_run_failed' | 'internal_error';
       scanned_repositories?: {
         repository: components['schemas']['code-scanning-variant-analysis-repository'];
         analysis_status: components['schemas']['code-scanning-variant-analysis-status'];
@@ -37207,11 +37114,7 @@ export interface components {
          * @enum {string|null}
          */
         readonly relationship?:
-          | 'unknown'
-          | 'direct'
-          | 'transitive'
-          | 'inconclusive'
-          | null;
+          'unknown' | 'direct' | 'transitive' | 'inconclusive' | null;
       };
       security_advisory: components['schemas']['dependabot-alert-security-advisory'];
       security_vulnerability: components['schemas']['dependabot-alert-security-vulnerability'];
@@ -38230,11 +38133,7 @@ export interface components {
        * @enum {string|null}
        */
       state_reason?:
-        | 'completed'
-        | 'reopened'
-        | 'not_planned'
-        | 'duplicate'
-        | null;
+        'completed' | 'reopened' | 'not_planned' | 'duplicate' | null;
       /**
        * @description Title of the issue
        * @example Widget creation fails in Safari on OS X 10.8
@@ -40093,9 +39992,7 @@ export interface components {
      * @enum {string}
      */
     'secret-scanning-push-protection-bypass-reason':
-      | 'false_positive'
-      | 'used_in_tests'
-      | 'will_fix_later';
+      'false_positive' | 'used_in_tests' | 'will_fix_later';
     'secret-scanning-push-protection-bypass': {
       reason?: components['schemas']['secret-scanning-push-protection-bypass-reason'];
       /**
@@ -42252,9 +42149,7 @@ export interface components {
       ignore_approvals_from_contributors: boolean;
       /** @enum {string} */
       linear_history_requirement_enforcement_level:
-        | 'off'
-        | 'non_admins'
-        | 'everyone';
+        'off' | 'non_admins' | 'everyone';
       /**
        * @description The enforcement level of the branch lock setting. `off` means the branch is not locked, `non_admins` means the branch is read-only for non_admins, and `everyone` means the branch is read-only for everyone.
        * @enum {string}
@@ -42279,14 +42174,10 @@ export interface components {
       required_status_checks: string[];
       /** @enum {string} */
       required_status_checks_enforcement_level:
-        | 'off'
-        | 'non_admins'
-        | 'everyone';
+        'off' | 'non_admins' | 'everyone';
       /** @enum {string} */
       signature_requirement_enforcement_level:
-        | 'off'
-        | 'non_admins'
-        | 'everyone';
+        'off' | 'non_admins' | 'everyone';
       strict_required_status_checks_policy: boolean;
       /** Format: date-time */
       updated_at: string;
@@ -42955,11 +42846,7 @@ export interface components {
     webhooks_issue: {
       /** @enum {string|null} */
       active_lock_reason:
-        | 'resolved'
-        | 'off-topic'
-        | 'too heated'
-        | 'spam'
-        | null;
+        'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
       /** User */
       assignee?: {
         /** Format: uri */
@@ -43507,11 +43394,7 @@ export interface components {
     webhooks_issue_2: {
       /** @enum {string|null} */
       active_lock_reason:
-        | 'resolved'
-        | 'off-topic'
-        | 'too heated'
-        | 'spam'
-        | null;
+        'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
       /** User */
       assignee?: {
         /** Format: uri */
@@ -44108,8 +43991,7 @@ export interface components {
          * @enum {string}
          */
         notification_setting:
-          | 'notifications_enabled'
-          | 'notifications_disabled';
+          'notifications_enabled' | 'notifications_disabled';
         /** Format: uri */
         repositories_url: string;
         slug: string;
@@ -45160,12 +45042,7 @@ export interface components {
        * @enum {string|null}
        */
       status?:
-        | 'INACTIVE'
-        | 'ON_TRACK'
-        | 'AT_RISK'
-        | 'OFF_TRACK'
-        | 'COMPLETE'
-        | null;
+        'INACTIVE' | 'ON_TRACK' | 'AT_RISK' | 'OFF_TRACK' | 'COMPLETE' | null;
       /**
        * Format: date
        * @description The start date of the period covered by the update.
@@ -45281,11 +45158,7 @@ export interface components {
       };
       /** @enum {string|null} */
       active_lock_reason:
-        | 'resolved'
-        | 'off-topic'
-        | 'too heated'
-        | 'spam'
-        | null;
+        'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
       additions?: number;
       /** User */
       assignee: {
@@ -47365,8 +47238,7 @@ export interface components {
          * @enum {string}
          */
         notification_setting:
-          | 'notifications_enabled'
-          | 'notifications_disabled';
+          'notifications_enabled' | 'notifications_disabled';
         /** Format: uri */
         repositories_url: string;
         slug: string;
@@ -48598,10 +48470,7 @@ export interface components {
          * @enum {string|null}
          */
         dismissed_reason:
-          | 'false positive'
-          | "won't fix"
-          | 'used in tests'
-          | null;
+          'false positive' | "won't fix" | 'used in tests' | null;
         /** @description The time that the alert was fixed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. */
         fixed_at?: unknown;
         /**
@@ -48733,10 +48602,7 @@ export interface components {
          * @enum {string|null}
          */
         dismissed_reason:
-          | 'false positive'
-          | "won't fix"
-          | 'used in tests'
-          | null;
+          'false positive' | "won't fix" | 'used in tests' | null;
         /** @description The time that the alert was fixed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. */
         fixed_at?: unknown;
         /**
@@ -49011,10 +48877,7 @@ export interface components {
          * @enum {string|null}
          */
         dismissed_reason:
-          | 'false positive'
-          | "won't fix"
-          | 'used in tests'
-          | null;
+          'false positive' | "won't fix" | 'used in tests' | null;
         /** @description The time that the alert was fixed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. */
         fixed_at?: unknown;
         /**
@@ -49343,10 +49206,7 @@ export interface components {
          * @enum {string|null}
          */
         dismissed_reason:
-          | 'false positive'
-          | "won't fix"
-          | 'used in tests'
-          | null;
+          'false positive' | "won't fix" | 'used in tests' | null;
         /** @description The time that the alert was fixed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. */
         fixed_at?: unknown;
         /**
@@ -50894,11 +50754,7 @@ export interface components {
         run_started_at: string;
         /** @enum {string} */
         status:
-          | 'requested'
-          | 'in_progress'
-          | 'completed'
-          | 'queued'
-          | 'waiting';
+          'requested' | 'in_progress' | 'completed' | 'queued' | 'waiting';
         /** User */
         triggering_actor: {
           /** Format: uri */
@@ -53042,11 +52898,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -53642,11 +53494,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -54242,11 +54090,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -54842,11 +54686,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -55443,11 +55283,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -56125,11 +55961,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -56677,11 +56509,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -57166,11 +56994,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -57664,11 +57488,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -58255,11 +58075,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -58745,11 +58561,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -59236,11 +59048,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -59723,11 +59531,7 @@ export interface components {
         old_issue: {
           /** @enum {string|null} */
           active_lock_reason?:
-            | 'resolved'
-            | 'off-topic'
-            | 'too heated'
-            | 'spam'
-            | null;
+            'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
           /** User */
           assignee?: {
             /** Format: uri */
@@ -60461,11 +60265,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -60963,11 +60763,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -61450,11 +61246,7 @@ export interface components {
         new_issue: {
           /** @enum {string|null} */
           active_lock_reason:
-            | 'resolved'
-            | 'off-topic'
-            | 'too heated'
-            | 'spam'
-            | null;
+            'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
           /** User */
           assignee?: {
             /** Format: uri */
@@ -62241,11 +62033,7 @@ export interface components {
       issue: {
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee?: {
           /** Format: uri */
@@ -64691,11 +64479,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -65093,9 +64877,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -65452,9 +65234,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -65941,11 +65721,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -66342,9 +66118,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -66701,9 +66475,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -67191,11 +66963,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -67592,9 +67360,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -67948,9 +67714,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -68474,11 +68238,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -68875,9 +68635,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -69234,9 +68992,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -69768,11 +69524,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -70169,9 +69921,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -70528,9 +70278,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -71018,11 +70766,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -71419,9 +71163,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -71778,9 +71520,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -72267,11 +72007,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -72668,9 +72404,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -73027,9 +72761,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -73717,11 +73449,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee: {
           /** Format: uri */
@@ -74117,9 +73845,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -74469,9 +74195,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -74905,11 +74629,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee: {
           /** Format: uri */
@@ -75305,9 +75025,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -75657,9 +75375,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -76094,11 +75810,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee: {
           /** Format: uri */
@@ -76495,9 +76207,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -76847,9 +76557,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -77283,11 +76991,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee: {
           /** Format: uri */
@@ -77683,9 +77387,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -78035,9 +77737,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -78562,11 +78262,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee: {
           /** Format: uri */
@@ -79636,11 +79332,7 @@ export interface components {
             };
             /** @enum {string|null} */
             active_lock_reason:
-              | 'resolved'
-              | 'off-topic'
-              | 'too heated'
-              | 'spam'
-              | null;
+              'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
             additions?: number;
             /** User */
             assignee: {
@@ -80034,9 +79726,7 @@ export interface components {
                  * @enum {string}
                  */
                 squash_merge_commit_message?:
-                  | 'PR_BODY'
-                  | 'COMMIT_MESSAGES'
-                  | 'BLANK';
+                  'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
                 /**
                  * @description The default value for a squash merge commit title.
                  * @enum {string}
@@ -80390,9 +80080,7 @@ export interface components {
                  * @enum {string}
                  */
                 squash_merge_commit_message?:
-                  | 'PR_BODY'
-                  | 'COMMIT_MESSAGES'
-                  | 'BLANK';
+                  'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
                 /**
                  * @description The default value for a squash merge commit title:
                  *
@@ -80917,11 +80605,7 @@ export interface components {
             };
             /** @enum {string|null} */
             active_lock_reason:
-              | 'resolved'
-              | 'off-topic'
-              | 'too heated'
-              | 'spam'
-              | null;
+              'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
             additions?: number;
             /** User */
             assignee: {
@@ -81319,9 +81003,7 @@ export interface components {
                  * @enum {string}
                  */
                 squash_merge_commit_message?:
-                  | 'PR_BODY'
-                  | 'COMMIT_MESSAGES'
-                  | 'BLANK';
+                  'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
                 /**
                  * @description The default value for a squash merge commit title:
                  *
@@ -81678,9 +81360,7 @@ export interface components {
                  * @enum {string}
                  */
                 squash_merge_commit_message?:
-                  | 'PR_BODY'
-                  | 'COMMIT_MESSAGES'
-                  | 'BLANK';
+                  'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
                 /**
                  * @description The default value for a squash merge commit title:
                  *
@@ -82224,11 +81904,7 @@ export interface components {
             };
             /** @enum {string|null} */
             active_lock_reason:
-              | 'resolved'
-              | 'off-topic'
-              | 'too heated'
-              | 'spam'
-              | null;
+              'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
             additions?: number;
             /** User */
             assignee: {
@@ -82626,9 +82302,7 @@ export interface components {
                  * @enum {string}
                  */
                 squash_merge_commit_message?:
-                  | 'PR_BODY'
-                  | 'COMMIT_MESSAGES'
-                  | 'BLANK';
+                  'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
                 /**
                  * @description The default value for a squash merge commit title:
                  *
@@ -82985,9 +82659,7 @@ export interface components {
                  * @enum {string}
                  */
                 squash_merge_commit_message?:
-                  | 'PR_BODY'
-                  | 'COMMIT_MESSAGES'
-                  | 'BLANK';
+                  'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
                 /**
                  * @description The default value for a squash merge commit title:
                  *
@@ -83512,11 +83184,7 @@ export interface components {
             };
             /** @enum {string|null} */
             active_lock_reason:
-              | 'resolved'
-              | 'off-topic'
-              | 'too heated'
-              | 'spam'
-              | null;
+              'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
             additions?: number;
             /** User */
             assignee: {
@@ -83914,9 +83582,7 @@ export interface components {
                  * @enum {string}
                  */
                 squash_merge_commit_message?:
-                  | 'PR_BODY'
-                  | 'COMMIT_MESSAGES'
-                  | 'BLANK';
+                  'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
                 /**
                  * @description The default value for a squash merge commit title:
                  *
@@ -84273,9 +83939,7 @@ export interface components {
                  * @enum {string}
                  */
                 squash_merge_commit_message?:
-                  | 'PR_BODY'
-                  | 'COMMIT_MESSAGES'
-                  | 'BLANK';
+                  'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
                 /**
                  * @description The default value for a squash merge commit title:
                  *
@@ -84816,11 +84480,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee: {
           /** Format: uri */
@@ -85216,9 +84876,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -85568,9 +85226,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -86005,11 +85661,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee: {
           /** Format: uri */
@@ -87265,11 +86917,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         /** User */
         assignee: {
           /** Format: uri */
@@ -88528,11 +88176,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -88929,9 +88573,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -89281,9 +88923,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -89771,11 +89411,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -90172,9 +89808,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -90531,9 +90165,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -91021,11 +90653,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -91422,9 +91050,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -91774,9 +91400,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -92263,11 +91887,7 @@ export interface components {
         };
         /** @enum {string|null} */
         active_lock_reason:
-          | 'resolved'
-          | 'off-topic'
-          | 'too heated'
-          | 'spam'
-          | null;
+          'resolved' | 'off-topic' | 'too heated' | 'spam' | null;
         additions?: number;
         /** User */
         assignee: {
@@ -92664,9 +92284,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -93023,9 +92641,7 @@ export interface components {
              * @enum {string}
              */
             squash_merge_commit_message?:
-              | 'PR_BODY'
-              | 'COMMIT_MESSAGES'
-              | 'BLANK';
+              'PR_BODY' | 'COMMIT_MESSAGES' | 'BLANK';
             /**
              * @description The default value for a squash merge commit title:
              *
@@ -95050,10 +94666,7 @@ export interface components {
        * @enum {string|null}
        */
       custom_pattern_scope?:
-        | 'repository'
-        | 'organization'
-        | 'enterprise'
-        | null;
+        'repository' | 'organization' | 'enterprise' | null;
       repository?: components['schemas']['repository-webhooks'];
       enterprise?: components['schemas']['enterprise-webhooks'];
       installation?: components['schemas']['simple-installation'];
@@ -97128,11 +96741,7 @@ export interface components {
           started_at: string | null;
           /** @enum {string} */
           status:
-            | 'completed'
-            | 'in_progress'
-            | 'queued'
-            | 'pending'
-            | 'waiting';
+            'completed' | 'in_progress' | 'queued' | 'pending' | 'waiting';
         }[];
         /** Format: uri */
         url: string;
@@ -98027,11 +97636,7 @@ export interface components {
         run_started_at: string;
         /** @enum {string} */
         status:
-          | 'requested'
-          | 'in_progress'
-          | 'completed'
-          | 'queued'
-          | 'pending';
+          'requested' | 'in_progress' | 'completed' | 'queued' | 'pending';
         /** User */
         triggering_actor: {
           /** Format: uri */
@@ -99521,8 +99126,7 @@ export interface components {
      *     Multiple `has` filters can be passed to filter for alerts that have all of the values.
      */
     'dependabot-alert-org-scope-comma-separated-has':
-      | string
-      | ('patch' | 'deployment')[];
+      string | ('patch' | 'deployment')[];
     /**
      * @description A comma-separated list of runtime risk strings. If specified, only alerts for repositories with deployment records matching these risks will be returned.
      *
@@ -99594,12 +99198,7 @@ export interface components {
     'package-visibility': 'public' | 'private' | 'internal';
     /** @description The type of supported package. Packages in GitHub's Gradle registry have the type `maven`. Docker images pushed to GitHub's Container registry (`ghcr.io`) have the type `container`. You can use the type `docker` to find images that were pushed to GitHub's Docker registry (`docker.pkg.github.com`), even if these have now been migrated to the Container registry. */
     'package-type':
-      | 'npm'
-      | 'maven'
-      | 'rubygems'
-      | 'docker'
-      | 'nuget'
-      | 'container';
+      'npm' | 'maven' | 'rubygems' | 'docker' | 'nuget' | 'container';
     /** @description The name of the package. */
     'package-name': string;
     /** @description Unique identifier of the package version. */
@@ -99736,9 +99335,7 @@ export interface components {
     'actions-cache-key': string;
     /** @description The property to sort the results by. `created_at` means when the cache was created. `last_accessed_at` means when the cache was last accessed. `size_in_bytes` is the size of the cache in bytes. */
     'actions-cache-list-sort':
-      | 'created_at'
-      | 'last_accessed_at'
-      | 'size_in_bytes';
+      'created_at' | 'last_accessed_at' | 'size_in_bytes';
     /** @description A key for identifying the cache. */
     'actions-cache-key-required': string;
     /** @description The unique identifier of the GitHub Actions cache. */
@@ -102729,10 +102326,7 @@ export interface operations {
            * @enum {string}
            */
           advanced_security?:
-            | 'enabled'
-            | 'disabled'
-            | 'code_security'
-            | 'secret_protection';
+            'enabled' | 'disabled' | 'code_security' | 'secret_protection';
           /**
            * @description The enablement status of GitHub Code Security features.
            * @enum {string}
@@ -102750,9 +102344,7 @@ export interface operations {
            * @enum {string}
            */
           dependency_graph_autosubmit_action?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /** @description Feature options for Automatic dependency submission */
           dependency_graph_autosubmit_action_options?: {
             /**
@@ -102787,9 +102379,7 @@ export interface operations {
            * @enum {string}
            */
           code_scanning_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of GitHub Secret Protection features.
            * @enum {string}
@@ -102819,9 +102409,7 @@ export interface operations {
            * @enum {string}
            */
           secret_scanning_non_provider_patterns?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of Copilot secret scanning
            * @default disabled
@@ -102834,18 +102422,14 @@ export interface operations {
            * @enum {string}
            */
           secret_scanning_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of secret scanning extended metadata
            * @default disabled
            * @enum {string}
            */
           secret_scanning_extended_metadata?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of private vulnerability reporting
            * @default disabled
@@ -102975,10 +102559,7 @@ export interface operations {
            * @enum {string}
            */
           advanced_security?:
-            | 'enabled'
-            | 'disabled'
-            | 'code_security'
-            | 'secret_protection';
+            'enabled' | 'disabled' | 'code_security' | 'secret_protection';
           /**
            * @description The enablement status of GitHub Code Security features.
            * @enum {string}
@@ -102994,9 +102575,7 @@ export interface operations {
            * @enum {string}
            */
           dependency_graph_autosubmit_action?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /** @description Feature options for Automatic dependency submission */
           dependency_graph_autosubmit_action_options?: {
             /** @description Whether to use runners labeled with 'dependency-submission' or standard GitHub runners. */
@@ -103025,9 +102604,7 @@ export interface operations {
            * @enum {string}
            */
           code_scanning_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of GitHub Secret Protection features.
            * @enum {string}
@@ -103053,9 +102630,7 @@ export interface operations {
            * @enum {string}
            */
           secret_scanning_non_provider_patterns?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of Copilot secret scanning
            * @default disabled
@@ -103068,18 +102643,14 @@ export interface operations {
            * @enum {string}
            */
           secret_scanning_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of secret scanning extended metadata
            * @default disabled
            * @enum {string}
            */
           secret_scanning_extended_metadata?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of private vulnerability reporting
            * @enum {string}
@@ -103159,10 +102730,7 @@ export interface operations {
            * @enum {string}
            */
           default_for_new_repos?:
-            | 'all'
-            | 'none'
-            | 'private_and_internal'
-            | 'public';
+            'all' | 'none' | 'private_and_internal' | 'public';
         };
       };
     };
@@ -103179,10 +102747,7 @@ export interface operations {
              * @enum {string}
              */
             default_for_new_repos?:
-              | 'all'
-              | 'none'
-              | 'private_and_internal'
-              | 'public';
+              'all' | 'none' | 'private_and_internal' | 'public';
             configuration?: components['schemas']['code-security-configuration'];
           };
         };
@@ -103726,8 +103291,7 @@ export interface operations {
            * @enum {string}
            */
           notification_setting?:
-            | 'notifications_enabled'
-            | 'notifications_disabled';
+            'notifications_enabled' | 'notifications_disabled';
         };
       };
     };
@@ -104193,8 +103757,7 @@ export interface operations {
            * @enum {string}
            */
           notification_setting?:
-            | 'notifications_enabled'
-            | 'notifications_disabled';
+            'notifications_enabled' | 'notifications_disabled';
         };
       };
     };
@@ -104976,12 +104539,7 @@ export interface operations {
       query?: {
         /** @description Indicates which sorts of issues to return. `assigned` means issues assigned to you. `created` means issues created by you. `mentioned` means issues mentioning you. `subscribed` means issues you're subscribed to updates for. `all` or `repos` means all issues you can see, regardless of participation or creation. */
         filter?:
-          | 'assigned'
-          | 'created'
-          | 'mentioned'
-          | 'subscribed'
-          | 'repos'
-          | 'all';
+          'assigned' | 'created' | 'mentioned' | 'subscribed' | 'repos' | 'all';
         /** @description Indicates the state of the issues to return. */
         state?: 'open' | 'closed' | 'all';
         /** @description A list of comma separated label names. Example: `bug,ui,@high` */
@@ -105875,10 +105433,7 @@ export interface operations {
            * @enum {string}
            */
           budget_scope?:
-            | 'organization'
-            | 'repository'
-            | 'multi_user_customer'
-            | 'user';
+            'organization' | 'repository' | 'multi_user_customer' | 'user';
           /**
            * @description The name of the entity to apply the budget to
            * @default
@@ -110658,10 +110213,7 @@ export interface operations {
            * @enum {string}
            */
           advanced_security?:
-            | 'enabled'
-            | 'disabled'
-            | 'code_security'
-            | 'secret_protection';
+            'enabled' | 'disabled' | 'code_security' | 'secret_protection';
           /**
            * @description The enablement status of GitHub Code Security features.
            * @enum {string}
@@ -110679,9 +110231,7 @@ export interface operations {
            * @enum {string}
            */
           dependency_graph_autosubmit_action?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /** @description Feature options for Automatic dependency submission */
           dependency_graph_autosubmit_action_options?: {
             /**
@@ -110708,9 +110258,7 @@ export interface operations {
            * @enum {string}
            */
           dependabot_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           code_scanning_options?: components['schemas']['code-scanning-options'];
           /**
            * @description The enablement status of code scanning default setup
@@ -110725,9 +110273,7 @@ export interface operations {
            * @enum {string}
            */
           code_scanning_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of GitHub Secret Protection features.
            * @enum {string}
@@ -110782,9 +110328,7 @@ export interface operations {
            * @enum {string}
            */
           secret_scanning_non_provider_patterns?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of Copilot secret scanning
            * @default disabled
@@ -110796,17 +110340,13 @@ export interface operations {
            * @enum {string}
            */
           secret_scanning_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of secret scanning extended metadata
            * @enum {string}
            */
           secret_scanning_extended_metadata?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of private vulnerability reporting
            * @default disabled
@@ -110962,10 +110502,7 @@ export interface operations {
            * @enum {string}
            */
           advanced_security?:
-            | 'enabled'
-            | 'disabled'
-            | 'code_security'
-            | 'secret_protection';
+            'enabled' | 'disabled' | 'code_security' | 'secret_protection';
           /**
            * @description The enablement status of GitHub Code Security features.
            * @enum {string}
@@ -110981,9 +110518,7 @@ export interface operations {
            * @enum {string}
            */
           dependency_graph_autosubmit_action?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /** @description Feature options for Automatic dependency submission */
           dependency_graph_autosubmit_action_options?: {
             /** @description Whether to use runners labeled with 'dependency-submission' or standard GitHub runners. */
@@ -111004,9 +110539,7 @@ export interface operations {
            * @enum {string}
            */
           dependabot_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of code scanning default setup
            * @enum {string}
@@ -111020,9 +110553,7 @@ export interface operations {
            * @enum {string}
            */
           code_scanning_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of GitHub Secret Protection features.
            * @enum {string}
@@ -111072,9 +110603,7 @@ export interface operations {
            * @enum {string}
            */
           secret_scanning_non_provider_patterns?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of Copilot secret scanning
            * @enum {string}
@@ -111085,17 +110614,13 @@ export interface operations {
            * @enum {string}
            */
           secret_scanning_delegated_alert_dismissal?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of secret scanning extended metadata
            * @enum {string}
            */
           secret_scanning_extended_metadata?:
-            | 'enabled'
-            | 'disabled'
-            | 'not_set';
+            'enabled' | 'disabled' | 'not_set';
           /**
            * @description The enablement status of private vulnerability reporting
            * @enum {string}
@@ -111182,10 +110707,7 @@ export interface operations {
            * @enum {string}
            */
           default_for_new_repos?:
-            | 'all'
-            | 'none'
-            | 'private_and_internal'
-            | 'public';
+            'all' | 'none' | 'private_and_internal' | 'public';
         };
       };
     };
@@ -111202,10 +110724,7 @@ export interface operations {
              * @enum {string}
              */
             default_for_new_repos?:
-              | 'all'
-              | 'none'
-              | 'private_and_internal'
-              | 'public';
+              'all' | 'none' | 'private_and_internal' | 'public';
             configuration?: components['schemas']['code-security-configuration'];
           };
         };
@@ -114702,12 +114221,7 @@ export interface operations {
       query?: {
         /** @description Indicates which sorts of issues to return. `assigned` means issues assigned to you. `created` means issues created by you. `mentioned` means issues mentioning you. `subscribed` means issues you're subscribed to updates for. `all` or `repos` means all issues you can see, regardless of participation or creation. */
         filter?:
-          | 'assigned'
-          | 'created'
-          | 'mentioned'
-          | 'subscribed'
-          | 'repos'
-          | 'all';
+          'assigned' | 'created' | 'mentioned' | 'subscribed' | 'repos' | 'all';
         /** @description Indicates the state of the issues to return. */
         state?: 'open' | 'closed' | 'all';
         /** @description A list of comma separated label names. Example: `bug,ui,@high` */
@@ -115753,12 +115267,7 @@ export interface operations {
       query: {
         /** @description The type of supported package. Packages in GitHub's Gradle registry have the type `maven`. Docker images pushed to GitHub's Container registry (`ghcr.io`) have the type `container`. You can use the type `docker` to find images that were pushed to GitHub's Docker registry (`docker.pkg.github.com`), even if these have now been migrated to the Container registry. */
         package_type:
-          | 'npm'
-          | 'maven'
-          | 'rubygems'
-          | 'docker'
-          | 'nuget'
-          | 'container';
+          'npm' | 'maven' | 'rubygems' | 'docker' | 'nuget' | 'container';
         /**
          * @description The selected visibility of the packages.  This parameter is optional and only filters an existing result set.
          *
@@ -118760,8 +118269,7 @@ export interface operations {
            * @enum {string}
            */
           notification_setting?:
-            | 'notifications_enabled'
-            | 'notifications_disabled';
+            'notifications_enabled' | 'notifications_disabled';
           /**
            * @description **Closing down notice**. The permission that new repositories will be added to the team with when none is specified.
            * @default pull
@@ -118873,8 +118381,7 @@ export interface operations {
            * @enum {string}
            */
           notification_setting?:
-            | 'notifications_enabled'
-            | 'notifications_disabled';
+            'notifications_enabled' | 'notifications_disabled';
           /**
            * @description **Closing down notice**. The permission that new repositories will be added to the team with when none is specified.
            * @default pull
@@ -131231,11 +130738,7 @@ export interface operations {
            * @enum {string|null}
            */
           state_reason?:
-            | 'completed'
-            | 'not_planned'
-            | 'duplicate'
-            | 'reopened'
-            | null;
+            'completed' | 'not_planned' | 'duplicate' | 'reopened' | null;
           milestone?: (string | number) | null;
           /** @description Labels to associate with this issue. Pass one or more labels to _replace_ the set of labels on this issue. Send an empty array (`[]`) to clear all labels from the issue. Only users with push access can set labels for issues. Without push access to the repository, label changes are silently dropped. */
           labels?: (
@@ -137803,8 +137306,7 @@ export interface operations {
            * @enum {string}
            */
           notification_setting?:
-            | 'notifications_enabled'
-            | 'notifications_disabled';
+            'notifications_enabled' | 'notifications_disabled';
           /**
            * @description **Closing down notice**. The permission that new repositories will be added to the team with when none is specified.
            * @default pull
@@ -139747,12 +139249,7 @@ export interface operations {
       query?: {
         /** @description Indicates which sorts of issues to return. `assigned` means issues assigned to you. `created` means issues created by you. `mentioned` means issues mentioning you. `subscribed` means issues you're subscribed to updates for. `all` or `repos` means all issues you can see, regardless of participation or creation. */
         filter?:
-          | 'assigned'
-          | 'created'
-          | 'mentioned'
-          | 'subscribed'
-          | 'repos'
-          | 'all';
+          'assigned' | 'created' | 'mentioned' | 'subscribed' | 'repos' | 'all';
         /** @description Indicates the state of the issues to return. */
         state?: 'open' | 'closed' | 'all';
         /** @description A list of comma separated label names. Example: `bug,ui,@high` */
@@ -140328,12 +139825,7 @@ export interface operations {
       query: {
         /** @description The type of supported package. Packages in GitHub's Gradle registry have the type `maven`. Docker images pushed to GitHub's Container registry (`ghcr.io`) have the type `container`. You can use the type `docker` to find images that were pushed to GitHub's Docker registry (`docker.pkg.github.com`), even if these have now been migrated to the Container registry. */
         package_type:
-          | 'npm'
-          | 'maven'
-          | 'rubygems'
-          | 'docker'
-          | 'nuget'
-          | 'container';
+          'npm' | 'maven' | 'rubygems' | 'docker' | 'nuget' | 'container';
         /**
          * @description The selected visibility of the packages.  This parameter is optional and only filters an existing result set.
          *
@@ -142684,12 +142176,7 @@ export interface operations {
       query: {
         /** @description The type of supported package. Packages in GitHub's Gradle registry have the type `maven`. Docker images pushed to GitHub's Container registry (`ghcr.io`) have the type `container`. You can use the type `docker` to find images that were pushed to GitHub's Docker registry (`docker.pkg.github.com`), even if these have now been migrated to the Container registry. */
         package_type:
-          | 'npm'
-          | 'maven'
-          | 'rubygems'
-          | 'docker'
-          | 'nuget'
-          | 'container';
+          'npm' | 'maven' | 'rubygems' | 'docker' | 'nuget' | 'container';
         /**
          * @description The selected visibility of the packages.  This parameter is optional and only filters an existing result set.
          *

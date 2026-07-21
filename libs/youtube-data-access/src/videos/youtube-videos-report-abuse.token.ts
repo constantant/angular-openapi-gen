@@ -24,8 +24,7 @@ export function provideYoutubeVideosReportAbuse(): FactoryProvider {
       const oauth2c = inject(OAUTH2C, { optional: true });
       return (
         body:
-          | YoutubeVideosReportAbuseBody
-          | Signal<YoutubeVideosReportAbuseBody>,
+          YoutubeVideosReportAbuseBody | Signal<YoutubeVideosReportAbuseBody>,
       ) =>
         httpResource<unknown>(() => ({
           url: `${base}/youtube/v3/videos/reportAbuse`,

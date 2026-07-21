@@ -1724,10 +1724,7 @@ export interface components {
        * @enum {string}
        */
       reason?:
-        | 'reasonUnspecified'
-        | 'videoFavorited'
-        | 'videoLiked'
-        | 'videoWatched';
+        'reasonUnspecified' | 'videoFavorited' | 'videoLiked' | 'videoWatched';
       /** @description The resourceId object contains information that identifies the recommended resource. */
       resourceId?: components['schemas']['ResourceId'];
       /** @description The seedResourceId object contains information about the resource that caused the recommendation. */
@@ -1858,9 +1855,7 @@ export interface components {
        * @enum {string}
        */
       failureReason?:
-        | 'unknownFormat'
-        | 'unsupportedFormat'
-        | 'processingFailed';
+        'unknownFormat' | 'unsupportedFormat' | 'processingFailed';
       /** @description Indicates whether YouTube synchronized the caption track to the audio track in the video. The value will be true if a sync was explicitly requested when the caption track was uploaded. For example, when calling the captions.insert or captions.update methods, you can set the sync parameter to true to instruct YouTube to sync the uploaded track to the video. If the value is false, YouTube uses the time codes in the uploaded caption track to determine when to display captions. */
       isAutoSynced?: boolean;
       /** @description Indicates whether the track contains closed captions for the deaf and hard of hearing. The default value is false. */
@@ -2132,9 +2127,7 @@ export interface components {
        * @enum {string}
        */
       style?:
-        | 'channelsectionStyleUnspecified'
-        | 'horizontalRow'
-        | 'verticalList';
+        'channelsectionStyleUnspecified' | 'horizontalRow' | 'verticalList';
       /** @description The channel section's title for multiple_playlists and multiple_channels. */
       title?: string;
       /**
@@ -2255,10 +2248,7 @@ export interface components {
        * @enum {string}
        */
       longUploadsStatus?:
-        | 'longUploadsUnspecified'
-        | 'allowed'
-        | 'eligible'
-        | 'disallowed';
+        'longUploadsUnspecified' | 'allowed' | 'eligible' | 'disallowed';
       madeForKids?: boolean;
       /**
        * @description Privacy status of the channel.
@@ -2343,10 +2333,7 @@ export interface components {
        * @enum {string}
        */
       moderationStatus?:
-        | 'published'
-        | 'heldForReview'
-        | 'likelySpam'
-        | 'rejected';
+        'published' | 'heldForReview' | 'likelySpam' | 'rejected';
       /** @description The unique id of the parent comment, only set for replies. */
       parentId?: string;
       /**
@@ -2614,11 +2601,7 @@ export interface components {
        * @enum {string}
        */
       cicfRating?:
-        | 'cicfUnspecified'
-        | 'cicfE'
-        | 'cicfKtEa'
-        | 'cicfKntEna'
-        | 'cicfUnrated';
+        'cicfUnspecified' | 'cicfE' | 'cicfKtEa' | 'cicfKntEna' | 'cicfUnrated';
       /**
        * @description The video's rating from Romania's CONSILIUL NATIONAL AL AUDIOVIZUALULUI (CNA).
        * @enum {string}
@@ -3294,12 +3277,7 @@ export interface components {
        * @enum {string}
        */
       rteRating?:
-        | 'rteUnspecified'
-        | 'rteGa'
-        | 'rteCh'
-        | 'rtePs'
-        | 'rteMa'
-        | 'rteUnrated';
+        'rteUnspecified' | 'rteGa' | 'rteCh' | 'rtePs' | 'rteMa' | 'rteUnrated';
       /**
        * @description The video's National Film Registry of the Russian Federation (MKRF - Russia) rating.
        * @enum {string}
@@ -3652,10 +3630,7 @@ export interface components {
        * @enum {string}
        */
       latencyPreference?:
-        | 'latencyPreferenceUnspecified'
-        | 'normal'
-        | 'low'
-        | 'ultraLow';
+        'latencyPreferenceUnspecified' | 'normal' | 'low' | 'ultraLow';
       /**
        * Format: byte
        * @description The mesh for projecting the video if projection is mesh. The mesh value must be a UTF-8 string containing the base-64 encoding of 3D mesh data that follows the Spherical Video V2 RFC specification for an mshp box, excluding the box size and type but including the following four reserved zero bytes for the version and flags.
@@ -3677,10 +3652,7 @@ export interface components {
        * @enum {string}
        */
       stereoLayout?:
-        | 'stereoLayoutUnspecified'
-        | 'mono'
-        | 'leftRight'
-        | 'topBottom';
+        'stereoLayoutUnspecified' | 'mono' | 'leftRight' | 'topBottom';
     };
     LiveBroadcastListResponse: {
       /** @description Etag of this resource. */
@@ -3773,10 +3745,7 @@ export interface components {
        * @enum {string}
        */
       liveBroadcastPriority?:
-        | 'liveBroadcastPriorityUnspecified'
-        | 'low'
-        | 'normal'
-        | 'high';
+        'liveBroadcastPriorityUnspecified' | 'low' | 'normal' | 'high';
       /** @description Whether the broadcast is made for kids or not, decided by YouTube instead of the creator. This field is read only. */
       madeForKids?: boolean;
       /**
@@ -5168,11 +5137,7 @@ export interface components {
        * @enum {string}
        */
       rotation?:
-        | 'none'
-        | 'clockwise'
-        | 'upsideDown'
-        | 'counterClockwise'
-        | 'other';
+        'none' | 'clockwise' | 'upsideDown' | 'counterClockwise' | 'other';
       /** @description A value that uniquely identifies a video vendor. Typically, the value is a four-letter vendor code. */
       vendor?: string;
       /**
@@ -5282,10 +5247,7 @@ export interface components {
        * @enum {string}
        */
       processingFailureReason?:
-        | 'uploadFailed'
-        | 'transcodeFailed'
-        | 'streamingFailed'
-        | 'other';
+        'uploadFailed' | 'transcodeFailed' | 'streamingFailed' | 'other';
       /** @description This value indicates whether the video processing engine has generated suggestions that might improve YouTube's ability to process the the video, warnings that explain video processing problems, or errors that cause video processing problems. You can retrieve these suggestions by requesting the suggestions part in your videos.list() request. */
       processingIssuesAvailability?: string;
       /** @description The processingProgress object contains information about the progress YouTube has made in processing the video. The values are really only relevant if the video's processing status is processing. */
@@ -5457,11 +5419,7 @@ export interface components {
        * @enum {string}
        */
       uploadStatus?:
-        | 'uploaded'
-        | 'processed'
-        | 'failed'
-        | 'rejected'
-        | 'deleted';
+        'uploaded' | 'processed' | 'failed' | 'rejected' | 'deleted';
     };
     /** @description Specifies suggestions on how to improve video content, including encoding hints, tag suggestions, and editor suggestions. */
     VideoSuggestions: {
@@ -6344,10 +6302,7 @@ export interface operations {
         maxResults?: number;
         /** @description Limits the returned comment threads to those with the specified moderation status. Not compatible with the 'id' filter. Valid values: published, heldForReview, likelySpam. */
         moderationStatus?:
-          | 'published'
-          | 'heldForReview'
-          | 'likelySpam'
-          | 'rejected';
+          'published' | 'heldForReview' | 'likelySpam' | 'rejected';
         order?: 'orderUnspecified' | 'time' | 'relevance';
         /** @description The *pageToken* parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved. */
         pageToken?: string;
@@ -6740,10 +6695,7 @@ export interface operations {
         id: string[];
         /** @description Specifies the requested moderation status. Note, comments can be in statuses, which are not available through this call. For example, this call does not allow to mark a comment as 'likely spam'. Valid values: MODERATION_STATUS_PUBLISHED, MODERATION_STATUS_HELD_FOR_REVIEW, MODERATION_STATUS_REJECTED. */
         moderationStatus:
-          | 'published'
-          | 'heldForReview'
-          | 'likelySpam'
-          | 'rejected';
+          'published' | 'heldForReview' | 'likelySpam' | 'rejected';
         /** @description If set to true the author of the comment gets added to the ban list. This means all future comments of the author will autmomatically be rejected. Only valid in combination with STATUS_REJECTED. */
         banAuthor?: boolean;
       };
@@ -6890,10 +6842,7 @@ export interface operations {
           | 'completed';
         /** @description Return only broadcasts with the selected type. */
         broadcastType?:
-          | 'broadcastTypeFilterUnspecified'
-          | 'all'
-          | 'event'
-          | 'persistent';
+          'broadcastTypeFilterUnspecified' | 'all' | 'event' | 'persistent';
         /** @description Return broadcasts with the given ids from Stubby or Apiary. */
         id?: string[];
         /** @description The *maxResults* parameter specifies the maximum number of items that should be returned in the result set. */
@@ -8407,20 +8356,14 @@ export interface operations {
         relevanceLanguage?: string;
         /** @description Indicates whether the search results should include restricted content as well as standard content. */
         safeSearch?:
-          | 'safeSearchSettingUnspecified'
-          | 'none'
-          | 'moderate'
-          | 'strict';
+          'safeSearchSettingUnspecified' | 'none' | 'moderate' | 'strict';
         /** @description Restrict results to a particular topic. */
         topicId?: string;
         /** @description Restrict results to a particular set of resource types from One Platform. */
         type?: string[];
         /** @description Filter on the presence of captions on the videos. */
         videoCaption?:
-          | 'videoCaptionUnspecified'
-          | 'any'
-          | 'closedCaption'
-          | 'none';
+          'videoCaptionUnspecified' | 'any' | 'closedCaption' | 'none';
         /** @description Filter on videos in a specific category. */
         videoCategoryId?: string;
         /** @description Filter on the definition of the videos. */
@@ -8429,11 +8372,7 @@ export interface operations {
         videoDimension?: 'any' | '2d' | '3d';
         /** @description Filter on the duration of the videos. */
         videoDuration?:
-          | 'videoDurationUnspecified'
-          | 'any'
-          | 'short'
-          | 'medium'
-          | 'long';
+          'videoDurationUnspecified' | 'any' | 'short' | 'medium' | 'long';
         /** @description Filter on embeddable videos. */
         videoEmbeddable?: 'videoEmbeddableUnspecified' | 'any' | 'true';
         /** @description Filter on the license of the videos. */

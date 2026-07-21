@@ -14,8 +14,7 @@ export const USERS_DELETE_ATTESTATIONS_BULK = new InjectionToken<
   (
     username: string,
     body:
-      | UsersDeleteAttestationsBulkBody
-      | Signal<UsersDeleteAttestationsBulkBody>,
+      UsersDeleteAttestationsBulkBody | Signal<UsersDeleteAttestationsBulkBody>,
   ) => ReturnType<typeof httpResource<unknown>>
 >('USERS_DELETE_ATTESTATIONS_BULK');
 
