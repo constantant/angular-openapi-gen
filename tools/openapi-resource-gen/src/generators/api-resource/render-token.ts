@@ -126,7 +126,8 @@ export function renderTokenFile(
   providedIn: 'root' | 'none' = 'none',
   schemesByName: Map<string, SecuritySchemeModel> = new Map(),
   dateType: 'string' | 'Date' | 'Temporal' = 'string',
-  readonlyResponses = false
+  readonlyResponses = false,
+  validateResponses = false
 ): string {
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
@@ -134,6 +135,8 @@ export function renderTokenFile(
   const { responseStatuses, responseVariant } = ep;
   const hasJsonResponse = responseStatuses.length > 0;
   const hasResponse = hasJsonResponse || responseVariant !== 'json';
+  const canValidate =
+    validateResponses && responseVariant === 'json' && hasResponse && ep.responseSchema != null;
 
   const applicableSchemes = ep.securitySchemeNames
     .map((name) => schemesByName.get(name))
@@ -149,6 +152,9 @@ export function renderTokenFile(
   if (providedIn === 'none') coreImports.push('FactoryProvider');
   lines.push(`import { ${coreImports.join(', ')} } from '@angular/core';`);
   lines.push(`import { httpResource } from '@angular/common/http';`);
+  if (canValidate) {
+    lines.push(`import { Validator, type Schema } from '@cfworker/json-schema';`);
+  }
   const needsComponents = ep.discriminator?.variants.some((v) => v.schemaName) ?? false;
   lines.push(`import type { paths${needsComponents ? ', components' : ''} } from '../schema.d';`);
   lines.push(`import { ${baseUrlToken} } from '../api-base-url.token';`);
@@ -327,6 +333,21 @@ export function renderTokenFile(
     }
   }
 
+  // Runtime response validation — emitted when --validateResponses is set and the
+  // dereferenced response schema could be serialized (no circular $ref).
+  if (canValidate) {
+    lines.push(`const _responseSchema: Schema = ${JSON.stringify(ep.responseSchema, null, 2)};`, '');
+    lines.push(`function _validateResponse(value: unknown): ${pascal}Response {`);
+    lines.push(`  const _result = new Validator(_responseSchema).validate(value);`);
+    lines.push(`  if (!_result.valid) {`);
+    lines.push(
+      `    throw new Error(\`${pascal} response failed schema validation: \${JSON.stringify(_result.errors)}\`);`
+    );
+    lines.push(`  }`);
+    lines.push(`  return value as ${pascal}Response;`);
+    lines.push(`}`, '');
+  }
+
   const responseT = hasResponse ? `${pascal}Response` : 'unknown';
   // Token generic and call site differ by responseVariant.
   // json  → InjectionToken<(...) => ReturnType<typeof httpResource<T>>>
@@ -389,6 +410,7 @@ export function renderTokenFile(
       .join('\n');
 
   const needsBlockBody = isGet && ep.hasQueryParams;
+  const parseOption = canValidate ? ', { parse: _validateResponse }' : '';
 
   if (providedIn === 'root') {
     lines.push(
@@ -407,7 +429,7 @@ export function renderTokenFile(
         `          url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, true);
-      lines.push(`        };`, `      });`, `  },`, `});`, '');
+      lines.push(`        };`, `      }${parseOption});`, `  },`, `});`, '');
     } else {
       lines.push(
         `    return (${fnArgs}) =>`,
@@ -415,7 +437,7 @@ export function renderTokenFile(
         `        url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '        ', headerSchemes, querySchemes, false);
-      lines.push(`      }));`, `  },`, `});`, '');
+      lines.push(`      })${parseOption});`, `  },`, `});`, '');
     }
   } else {
     lines.push('');
@@ -437,7 +459,7 @@ export function renderTokenFile(
         `            url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '            ', headerSchemes, querySchemes, true);
-      lines.push(`          };`, `        });`, `    },`, `  };`, `}`, '');
+      lines.push(`          };`, `        }${parseOption});`, `    },`, `  };`, `}`, '');
     } else {
       lines.push(
         `      return (${fnArgs}) =>`,
@@ -445,7 +467,7 @@ export function renderTokenFile(
         `          url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, false);
-      lines.push(`        }));`, `    },`, `  };`, `}`, '');
+      lines.push(`        })${parseOption});`, `    },`, `  };`, `}`, '');
     }
   }
 

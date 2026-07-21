@@ -91,6 +91,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
 | `dateType` | no | `string` | `string` (default — no change), `Date`, or `Temporal`. When set to `Date` or `Temporal`, emits a typed `XxxRevived` alias and a `reviveXxxDates()` helper per endpoint whose response contains `format: date-time` or `format: date` fields. |
 | `readonlyResponses` | no | `false` | Wrap all `XxxResponse` and `XxxError` type aliases in `Readonly<>` to prevent accidental mutation of response data. |
+| `validateResponses` | no | `false` | Validate JSON responses at runtime against the spec's response schema via `httpResource`'s `parse` hook — requires [`@cfworker/json-schema`](https://www.npmjs.com/package/@cfworker/json-schema) |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
 ---
@@ -387,6 +388,72 @@ export type UpsertOrderResponse =
 
 `--readonlyResponses` works in combination with `--dateType` — the `XxxRevived`
 alias also wraps the `Omit & { … }` shape in `Readonly<>`.
+
+---
+
+## Runtime response validation (`--validateResponses`)
+
+Types from `paths[...]` are compile-time only — they vanish at runtime. If a server's
+actual response drifts from its own OpenAPI spec (a backend bug, an undocumented field
+rename, a third-party API you don't control), `httpResource` hands the mismatched JSON
+to your component with zero verification, and the failure surfaces later as a
+`TypeError` deep in a template.
+
+Pass `--validateResponses` to close that gap. For every endpoint with a JSON response,
+the generator emits the response schema as a literal plus a validator function, wired
+into `httpResource` via its `parse` hook:
+
+```bash
+npm install @cfworker/json-schema
+
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=specs/petstore.yaml \
+  --outputDir=libs/petstore-data-access/src \
+  --baseUrlToken=PETSTORE_BASE_URL \
+  --validateResponses
+```
+
+```typescript
+// pet/get-pet.token.ts  (generated with --validateResponses)
+import { Validator, type Schema } from '@cfworker/json-schema';
+// ...
+const _responseSchema: Schema = {
+  type: 'object',
+  properties: { id: { type: 'string' }, name: { type: 'string' } },
+  required: ['id'],
+};
+
+function _validateResponse(value: unknown): GetPetResponse {
+  const _result = new Validator(_responseSchema).validate(value);
+  if (!_result.valid) {
+    throw new Error(`GetPet response failed schema validation: ${JSON.stringify(_result.errors)}`);
+  }
+  return value as GetPetResponse;
+}
+
+// ...
+httpResource<GetPetResponse>(() => ({ url: `${base}/pets/${id}` }), {
+  parse: _validateResponse,
+});
+```
+
+A failed validation throws inside `parse`, which `httpResource` surfaces through its
+`.error()` signal — same as a network failure, no extra handling needed at the call site.
+
+**Trade-offs to know before enabling this globally:**
+- It's opt-in for a reason: embedding a JSON Schema per endpoint adds to bundle size,
+  and validation costs a bit of CPU per response. It's most worth it for specs you don't
+  control (third-party APIs); for internal specs you already test against, the risk it
+  guards against is lower.
+- OAS 3.0's `nullable: true` isn't a JSON Schema keyword, so the generator rewrites it to
+  a `type` array (e.g. `type: ['string', 'null']`) before embedding — otherwise a
+  legitimately-null field would fail validation.
+- Endpoints whose dereferenced response schema contains a circular `$ref` (common in
+  specs with self-referential models) can't be serialized into the generated file. The
+  generator detects this and silently skips validation for that endpoint only — the
+  token still works exactly as it does without `--validateResponses`, just without the
+  runtime check.
+- Only JSON responses are validated; `text`/`blob` response variants are unaffected.
 
 ---
 

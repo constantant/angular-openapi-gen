@@ -62,6 +62,11 @@
       "type": "boolean",
       "default": false,
       "description": "Generate a .msw.ts file per endpoint (and index.msw.ts barrels) with MSW 2.x http.* handlers. Requires msw to be installed."
+    },
+    "validateResponses": {
+      "type": "boolean",
+      "default": false,
+      "description": "Validate JSON responses at runtime against the spec's response schema via httpResource's parse hook, throwing on mismatch. Requires @cfworker/json-schema to be installed. Endpoints whose response schema has a circular $ref are skipped."
     }
   },
   "required": ["specPath", "outputDir"]

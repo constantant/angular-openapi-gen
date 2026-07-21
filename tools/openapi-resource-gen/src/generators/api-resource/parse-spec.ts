@@ -134,6 +134,53 @@ function collectDateFields(schema: OpenAPIV3.SchemaObject | null | undefined): D
     }));
 }
 
+/**
+ * Normalize an OpenAPI schema into plain JSON Schema for runtime validation:
+ * rewrites OAS-only `nullable: true` into a `type` array/tuple including `'null'`
+ * (JSON Schema has no `nullable` keyword — a validator would otherwise reject
+ * legitimately-null fields the spec explicitly allows).
+ */
+function normalizeSchemaForValidation(schema: unknown): unknown {
+  if (Array.isArray(schema)) return schema.map(normalizeSchemaForValidation);
+  if (!schema || typeof schema !== 'object') return schema;
+
+  const record = schema as Record<string, unknown> & { nullable?: boolean; type?: unknown };
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (key === 'nullable') continue;
+    result[key] = normalizeSchemaForValidation(value);
+  }
+  if (record.nullable === true && record.type !== undefined) {
+    result['type'] = Array.isArray(record.type)
+      ? [...new Set([...(record.type as string[]), 'null'])]
+      : [record.type, 'null'];
+  }
+  return result;
+}
+
+/**
+ * Build a JSON-serializable, nullable-normalized validation schema from a dereferenced
+ * OpenAPI response schema. Returns null when the schema is absent or contains a circular
+ * `$ref` (dereferencing produces a circular JS object graph in that case, which cannot be
+ * embedded as a literal in the generated file).
+ */
+function buildResponseSchema(
+  schema: OpenAPIV3.SchemaObject | null | undefined
+): Record<string, unknown> | null {
+  if (!schema) return null;
+  try {
+    // A circular $ref produces a circular JS object graph after dereferencing;
+    // both the recursive walk and JSON.stringify below would throw for those
+    // (stack overflow / "Converting circular structure to JSON") — either way,
+    // skip runtime validation for this endpoint rather than fail generation.
+    const normalized = normalizeSchemaForValidation(schema);
+    JSON.stringify(normalized);
+    return normalized as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
 /** Collect x-enum-varnames / x-enum-descriptions from the query/path/header parameters of an operation. */
 function collectEnumExtensions(params: OpenAPIV3.ParameterObject[]): EnumExtension[] {
   const result: EnumExtension[] = [];
@@ -304,9 +351,11 @@ export function buildEndpoints(
       let discriminator: DiscriminatorModel | null = null;
       let dateFields: DateField[] = [];
       let responseIsArray = false;
+      let responseSchema: Record<string, unknown> | null = null;
       if (responseStatuses.length > 0) {
         const primaryResponseObj = operation.responses?.[responseStatuses[0]] as OpenAPIV3.ResponseObject | undefined;
         const primarySchema = primaryResponseObj?.content?.['application/json']?.schema as OpenAPIV3.SchemaObject | undefined;
+        responseSchema = buildResponseSchema(primarySchema);
         if (primarySchema) {
           // OAS 3.1 allows type to be an array (e.g. ['array', 'null']); isArrayType handles both forms.
           const schemaIsArray = isArrayType(primarySchema.type);
@@ -353,6 +402,7 @@ export function buildEndpoints(
         dateFields,
         responseIsArray,
         responseVariant,
+        responseSchema,
       });
     }
   }

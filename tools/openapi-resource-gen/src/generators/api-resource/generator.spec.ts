@@ -1539,6 +1539,124 @@ describe('api-resource generator', () => {
     });
   });
 
+  describe('runtime response validation (validateResponses)', () => {
+    it('does not emit validation by default', async () => {
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/no-validate/src',
+      });
+      const content = tree.read('libs/no-validate/src/pets/list-pets.token.ts', 'utf-8')!;
+      expect(content).not.toContain('@cfworker/json-schema');
+      expect(content).not.toContain('_validateResponse');
+    });
+
+    it('emits a Validator-based parse hook when validateResponses is true', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets/{id}': {
+            get: {
+              operationId: 'getPet',
+              tags: ['pets'],
+              parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'object',
+                        properties: { id: { type: 'string' }, name: { type: 'string' } },
+                        required: ['id'],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/validate/src',
+        validateResponses: true,
+      });
+      const content = tree.read('libs/validate/src/pets/get-pet.token.ts', 'utf-8')!;
+      expect(content).toContain("import { Validator, type Schema } from '@cfworker/json-schema';");
+      expect(content).toContain('const _responseSchema: Schema =');
+      expect(content).toContain('function _validateResponse(value: unknown): GetPetResponse {');
+      expect(content).toContain('new Validator(_responseSchema).validate(value)');
+      expect(content).toContain('{ parse: _validateResponse }');
+    });
+
+    it('rewrites OAS nullable:true to a JSON Schema type array', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets/{id}': {
+            get: {
+              operationId: 'getPet',
+              tags: ['pets'],
+              parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'object',
+                        properties: { nickname: { type: 'string', nullable: true } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/validate-nullable/src',
+        validateResponses: true,
+      });
+      const content = tree.read('libs/validate-nullable/src/pets/get-pet.token.ts', 'utf-8')!;
+      expect(content).not.toContain('nullable');
+      expect(content).toMatch(/type:\s*\[\s*'string',\s*'null'\s*\]/);
+    });
+
+    it('skips validation for a circular response schema instead of throwing', async () => {
+      const category: Record<string, unknown> = { type: 'object', properties: {} };
+      const pet: Record<string, unknown> = {
+        type: 'object',
+        properties: { category: {} },
+      };
+      (category['properties'] as Record<string, unknown>)['pet'] = pet;
+      (pet['properties'] as Record<string, unknown>)['category'] = category;
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets/{id}': {
+            get: {
+              operationId: 'getPet',
+              tags: ['pets'],
+              parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+              responses: {
+                '200': { content: { 'application/json': { schema: pet } } },
+              },
+            },
+          },
+        },
+      } as never);
+      await expect(
+        apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/validate-circular/src',
+          validateResponses: true,
+        })
+      ).resolves.not.toThrow();
+      const content = tree.read('libs/validate-circular/src/pets/get-pet.token.ts', 'utf-8')!;
+      expect(content).not.toContain('_validateResponse');
+      expect(content).not.toContain('@cfworker/json-schema');
+    });
+  });
+
   describe('date / temporal deserialization', () => {
     const USER_SPEC = {
       paths: {

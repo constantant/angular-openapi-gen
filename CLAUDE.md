@@ -225,6 +225,7 @@ provideHttpClient(withInterceptors([myapiDigestAuthInterceptor])),
   "providedIn":         "none | root (default: none)",
   "includeMocks":       "true | false (default: false) — emit *.mock.ts alongside each *.token.ts",
   "includeMswHandlers": "true | false (default: false) — emit *.msw.ts MSW 2.x handler files alongside each *.token.ts; adds /msw path alias to tsconfig.base.json",
+  "validateResponses":  "true | false (default: false) — validate JSON responses at runtime against the spec schema via httpResource's parse hook; requires @cfworker/json-schema",
   "specId":             "string — embedded in MockResourceMeta._meta; must match the specId used when importing the spec into the DevTools panel",
   "verbose":            "true | false (default: false) — print +/~/- summary of created/updated/deleted files after generation"
 }
@@ -538,6 +539,7 @@ Conventional Commits PR title (it becomes the squash commit). See
 | `/testing` entry point | `@constantant/openapi-resource-mocks/testing` exports `mockResource(TOKEN, behavior?)` returning `MockResourceHandle<T>` — a `FactoryProvider` plus `.ref`, `.calls`, `.expectCalled()`, `.expectCalledWith()`. Supports `{ sequence: [...] }` for multi-step scenarios. No `MockResourceBus`, no DOM events — pure signal state | Vitest/Jasmine component tests need zero-infrastructure mocking; sequence mode enables pagination, retry, and error-then-success patterns in a single test |
 | Scenario save/load | `SCENARIO_STORE` token (`providedIn: 'root'`) persists named `Scenario` objects to `chrome.storage.local['oarm_scenarios']`; `load()` applies via `bridge.sendControl` + `bridge.setCatchMode`; `exportJson()` serialises current mock table to JSON; `importJson()` applies without saving | Developers can commit scenario files alongside feature branches and restore a full mock state in one click, or share via JSON export |
 | History tab request inspector | `payloadSections(ev, meta)` extracts path-param names from `meta.path` `{placeholders}`, fills in actual arg values to produce `GET /pet/42` header line, labels remaining args as Query or Body based on HTTP method, renders `[FormData]`/`[Blob]` as badges instead of JSON strings | Raw `JSON.stringify(args)` was unreadable for multi-arg calls; path-template parsing gives named labels without any runtime schema |
+| `validateResponses` | Opt-in generator flag; embeds the dereferenced response JSON Schema per endpoint and wires a `_validateResponse()` function through `httpResource`'s `parse` hook (using `@cfworker/json-schema`'s `Validator` class, same as the DevTools panel). OAS `nullable: true` is rewritten to a `type` array before embedding. Endpoints with a circular `$ref` in their response schema are skipped (not thrown) — `JSON.stringify`/recursive-walk failure is caught and treated as "no validation for this endpoint" | Compile-time types vanish at runtime; a spec/server drift on a third-party API otherwise surfaces as an unhandled `TypeError` deep in a component instead of at the `httpResource` boundary. Kept opt-in because embedding a schema per endpoint has a bundle-size cost |
 
 ---
 

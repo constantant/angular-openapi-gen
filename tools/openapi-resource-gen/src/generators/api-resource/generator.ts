@@ -46,6 +46,8 @@ export interface ApiResourceGeneratorSchema {
   readonlyResponses?: boolean;
   /** Emit a *.msw.ts MSW handler file alongside each token file. Requires msw to be installed. */
   includeMswHandlers?: boolean;
+  /** Validate JSON responses at runtime against the spec schema via httpResource's `parse` hook. Requires @cfworker/json-schema to be installed. */
+  validateResponses?: boolean;
 }
 
 /** Derive a specId from the baseUrlToken: PETSTORE_BASE_URL → petstore */
@@ -200,6 +202,18 @@ export async function apiResourceGenerator(
   }
 
   const includeMswHandlers = options.includeMswHandlers ?? false;
+  const validateResponses = options.validateResponses ?? false;
+
+  if (validateResponses) {
+    try {
+      require.resolve('@cfworker/json-schema');
+    } catch {
+      throw new Error(
+        'validateResponses requires @cfworker/json-schema to be installed.\n' +
+        'Run: npm install @cfworker/json-schema',
+      );
+    }
+  }
 
   const allowedTags = tagFilter
     ? tagFilter
@@ -351,7 +365,7 @@ export async function apiResourceGenerator(
 
       for (const ep of tagEndpoints) {
         const filePath = joinPathFragments(tagDir, `${ep.fileName}.token.ts`);
-        tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName, options.dateType ?? 'string', options.readonlyResponses ?? false));
+        tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName, options.dateType ?? 'string', options.readonlyResponses ?? false, validateResponses));
         writtenFiles.add(filePath);
 
         if (includeMocks) {

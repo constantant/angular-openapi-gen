@@ -109,6 +109,13 @@ export interface EndpointModel {
   /** True when the primary JSON response type is an array. */
   responseIsArray: boolean;
   /**
+   * JSON Schema for the primary (first) 2xx JSON response, normalized for runtime
+   * validation (OAS `nullable: true` rewritten to a `type` array). Null when there is
+   * no JSON response, or when the dereferenced schema contains a circular `$ref` and
+   * therefore can't be serialized into the generated file.
+   */
+  responseSchema: Record<string, unknown> | null;
+  /**
    * How the response body should be fetched. Drives the httpResource variant used in code gen.
    * 'json' — httpResource<T>() (default JSON parsing)
    * 'text' — httpResource.text() for text/plain and other text/* content types
