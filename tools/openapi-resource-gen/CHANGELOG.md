@@ -1,3 +1,20 @@
+## 1.10.0 (2026-07-21)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** add validateResponses option for runtime response validation ([24037a7](https://github.com/constantant/angular-openapi-gen/commit/24037a7))
+
+### 🏡 Chore
+
+- bump the minor-and-patch group across 1 directory with 37 updates ([#43](https://github.com/constantant/angular-openapi-gen/pull/43))
+- bump js-yaml from 4.2.0 to 5.2.0 ([#33](https://github.com/constantant/angular-openapi-gen/pull/33))
+
+### ❤️ Thank You
+
+- Claude Sonnet 5
+- kk
+- Konstantin
+
 ## 1.9.1 (2026-06-23)
 
 ### 🩹 Fixes
