@@ -15,6 +15,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { describeResourceError, logResourceError } from '../../resource-error.util';
 
 type Order = GetOrderByIdResponse;
 interface ResourceRef<T> {
@@ -40,6 +41,8 @@ interface ResourceRef<T> {
   styleUrl: './store-page.less',
 })
 export class StorePageComponent {
+  readonly describeError = describeResourceError;
+
   private readonly injector = inject(Injector);
   private readonly getInventoryFn = inject(GET_INVENTORY);
   private readonly placeOrderFn = inject(PLACE_ORDER);
@@ -54,6 +57,11 @@ export class StorePageComponent {
     return Object.entries(inv)
       .map(([status, count]) => ({ status, count }))
       .sort((a, b) => b.count - a.count);
+  });
+
+  private readonly logInventoryError = effect(() => {
+    const error = this.inventory.error();
+    if (error) logResourceError('petstore/inventory', error);
   });
 
   // ── Place order ───────────────────────────────────────────────────────────

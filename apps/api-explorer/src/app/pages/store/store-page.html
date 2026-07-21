@@ -13,7 +13,7 @@
     @if (inventory.isLoading()) {
       <mat-progress-bar mode="indeterminate" />
     } @else if (inventory.error()) {
-      <p class="state-msg">Failed to load inventory.</p>
+      <p class="state-msg">{{ describeError(inventory.error()) }}</p>
     } @else {
       <div class="inv-grid">
         @for (entry of inventoryEntries(); track entry.status) {

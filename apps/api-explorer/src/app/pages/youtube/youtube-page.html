@@ -46,7 +46,7 @@
   }
 
   @if (results.error()) {
-    <p class="mat-body-2 error">{{ $any(results.error())?.message ?? 'Search failed' }}</p>
+    <p class="mat-body-2 error">{{ describeError(results.error()) }}</p>
   }
 
   @if (!apiKey()) {

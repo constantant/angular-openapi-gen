@@ -1,6 +1,7 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { GET_V1_FORECAST } from '@angular-openapi-gen/weather-data-access';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { describeResourceError, logResourceError } from '../../resource-error.util';
 
 function weatherEmoji(code: number): string {
   if (code === 0) return '☀️';
@@ -56,6 +57,8 @@ interface CurrentConditions {
   styleUrl: './weather-page.less',
 })
 export class WeatherPageComponent {
+  readonly describeError = describeResourceError;
+
   private getForecast = inject(GET_V1_FORECAST);
 
   readonly forecast = this.getForecast({
@@ -65,6 +68,11 @@ export class WeatherPageComponent {
     daily: ['temperature_2m_max', 'temperature_2m_min', 'precipitation_sum', 'weather_code'],
     timezone: 'Europe/Amsterdam',
     forecast_days: 3,
+  });
+
+  private readonly logForecastError = effect(() => {
+    const error = this.forecast.error();
+    if (error) logResourceError('weather', error);
   });
 
   readonly current = computed<CurrentConditions | null>(() => {

@@ -16,6 +16,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { describeResourceError, logResourceError } from '../../resource-error.util';
 
 type PetStatus = FindPetsByStatusParams['status'];
 
@@ -44,6 +45,8 @@ interface Pet {
   styleUrl: './pets-page.less',
 })
 export class PetsPageComponent {
+  readonly describeError = describeResourceError;
+
   private readonly injector = inject(Injector);
   private readonly findPetsByStatus = inject(FIND_PETS_BY_STATUS);
   private readonly addPetFn = inject(ADD_PET);
@@ -55,6 +58,11 @@ export class PetsPageComponent {
   readonly status = signal<PetStatus>('available');
   readonly pets = this.findPetsByStatus(() => ({ status: this.status() }));
   readonly petList = computed<Pet[]>(() => (this.pets.value() as Pet[] | undefined) ?? []);
+
+  private readonly logPetsError = effect(() => {
+    const error = this.pets.error();
+    if (error) logResourceError('petstore/findByStatus', error);
+  });
 
   // ── Selected ──────────────────────────────────────────────────────────────
   readonly selectedPetId = signal<number | null>(null);

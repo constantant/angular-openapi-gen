@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, effect, inject, signal, computed } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { YOUTUBE_SEARCH_LIST, YoutubeSearchListResponse } from '@angular-openapi-gen/youtube-data-access';
 import { YOUTUBE_API_KEY } from '../../app.config';
+import { describeResourceError, logResourceError } from '../../resource-error.util';
 
 type SearchItem = NonNullable<YoutubeSearchListResponse['items']>[number];
 
@@ -30,6 +31,8 @@ type SearchItem = NonNullable<YoutubeSearchListResponse['items']>[number];
   styleUrl: './youtube-page.less',
 })
 export class YoutubePageComponent {
+  readonly describeError = describeResourceError;
+
   private searchYoutube = inject(YOUTUBE_SEARCH_LIST);
   readonly apiKey = inject(YOUTUBE_API_KEY);
 
@@ -49,6 +52,11 @@ export class YoutubePageComponent {
   readonly totalResults = computed(
     () => (this.results.value() as YoutubeSearchListResponse)?.pageInfo?.totalResults ?? 0
   );
+
+  private readonly logResultsError = effect(() => {
+    const error = this.results.error();
+    if (error) logResourceError('youtube/search', error);
+  });
 
   submit(): void {
     this.query.set(this.inputValue());

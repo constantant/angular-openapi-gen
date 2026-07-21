@@ -10,7 +10,7 @@
         @if (user.isLoading() || repos.isLoading()) {
           <mat-progress-bar mode="indeterminate" />
         } @else if (user.error() || repos.error()) {
-          <p class="mat-body-2 error">API error</p>
+          <p class="mat-body-2 error">{{ describeError(user.error() ?? repos.error()) }}</p>
         } @else {
           <p class="mat-body-1">{{ $any(user.value())?.login }} · {{ $any(user.value())?.public_repos }} repos</p>
           <p class="mat-body-2">{{ ($any(repos.value()) ?? []).length }} repos loaded</p>
@@ -26,7 +26,7 @@
         @if (pets.isLoading()) {
           <mat-progress-bar mode="indeterminate" />
         } @else if (pets.error()) {
-          <p class="mat-body-2 error">API error</p>
+          <p class="mat-body-2 error">{{ describeError(pets.error()) }}</p>
         } @else {
           <p class="mat-body-1">{{ ($any(pets.value()) ?? []).length }} pets available</p>
         }
@@ -42,7 +42,7 @@
         @if (forecast.isLoading()) {
           <mat-progress-bar mode="indeterminate" />
         } @else if (forecast.error()) {
-          <p class="mat-body-2 error">API error</p>
+          <p class="mat-body-2 error">{{ describeError(forecast.error()) }}</p>
         } @else {
           <p class="mat-body-1">{{ $any(forecast.value())?.current?.temperature_2m }}°C</p>
         }

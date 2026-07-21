@@ -4,7 +4,7 @@
   @if (user.isLoading()) {
     <mat-progress-bar mode="indeterminate" />
   } @else if (user.error()) {
-    <p class="mat-body-2 error">Failed to load user</p>
+    <p class="mat-body-2 error">{{ describeError(user.error()) }}</p>
   } @else {
     <mat-card class="profile-card">
       <mat-card-content>
@@ -17,7 +17,7 @@
   @if (repos.isLoading()) {
     <mat-progress-bar mode="indeterminate" />
   } @else if (repos.error()) {
-    <p class="mat-body-2 error">Failed to load repos</p>
+    <p class="mat-body-2 error">{{ describeError(repos.error()) }}</p>
   } @else {
     <mat-list>
       @for (repo of $any(repos.value()) ?? []; track repo.id) {

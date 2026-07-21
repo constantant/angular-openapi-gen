@@ -4,7 +4,7 @@
   @if (forecast.isLoading()) {
     <mat-progress-bar mode="indeterminate" />
   } @else if (forecast.error()) {
-    <p class="mat-body-2 error">Failed to load forecast</p>
+    <p class="mat-body-2 error">{{ describeError(forecast.error()) }}</p>
   } @else {
     @if (current(); as c) {
       <div class="current-card">
