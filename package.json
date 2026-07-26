@@ -56,7 +56,7 @@
     "@types/chrome": "^0.2.2",
     "@types/express": "^5.0.6",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "25.9.3",
+    "@types/node": "26.1.1",
     "@typescript-eslint/utils": "^8.64.0",
     "angular-eslint": "^22.1.0",
     "eslint": "^10.7.0",
