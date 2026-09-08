@@ -51,6 +51,8 @@ jobs:
 
       - name: Derive SHAs for Nx affected
         uses: nrwl/nx-set-shas@v5
+        with:
+          main-branch-name: master
 
       - name: Detect affected projects
         id: affected
