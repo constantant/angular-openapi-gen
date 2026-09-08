@@ -75,7 +75,12 @@ describe('api-resource generator', () => {
   let tree: Tree;
 
   beforeEach(() => {
-    tree = createTreeWithEmptyWorkspace();
+    // Nx 23.2 defaults createTreeWithEmptyWorkspace() to seeding .oxfmtrc.json
+    // instead of .prettierrc to exercise the new oxfmt path; this workspace
+    // doesn't have oxfmt installed, so formatFiles() would silently skip
+    // formatting and leave generated output unformatted (e.g. double-quoted
+    // JSON.stringify literals) unless prettier is requested explicitly.
+    tree = createTreeWithEmptyWorkspace({ formatter: 'prettier' });
     vi.mocked(SwaggerParser.dereference).mockResolvedValue(MOCK_SPEC as never);
   });
 
