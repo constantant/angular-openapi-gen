@@ -2,7 +2,6 @@ import { build } from 'esbuild';
 import { cpSync, mkdirSync, readdirSync, rmSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '../../..');
@@ -12,14 +11,12 @@ const out  = resolve(root, 'dist/tools/openapi-resource-devtools');
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
-// 1. Build the Angular panel in production mode (optimized, small bundle)
-console.log('Building Angular panel (devtools-panel)…');
-execSync('npx nx build devtools-panel', {
-  cwd: root,
-  stdio: 'inherit',
-});
-
-// 2. Copy Angular output into the extension folder
+// 1. Copy the Angular panel's build output into the extension folder.
+// devtools-panel:build is declared as an Nx `dependsOn` for this target
+// (see project.json), so Nx always builds it first - shelling out to
+// `nx build devtools-panel` here used to cause Nx to detect a recursive
+// task invocation whenever this target was already part of a larger
+// affected/build run.
 const panelDist = resolve(root, 'dist/apps/devtools-panel/browser');
 for (const name of readdirSync(panelDist)) {
   cpSync(join(panelDist, name), join(out, name), { recursive: true });
