@@ -38,7 +38,7 @@
     "@angular/cli": "~22.1.7",
     "@angular/compiler-cli": "~22.1.5",
     "@angular/language-service": "~22.1.5",
-    "@apidevtools/swagger-parser": "^12.1.0",
+    "@apidevtools/swagger-parser": "^13.0.0",
     "@eslint/js": "^10.0.1",
     "@nx/angular": "23.2.0",
     "@nx/devkit": "23.2.0",
