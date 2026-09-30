@@ -33,7 +33,7 @@
         "styles": [
           "apps/devtools-panel/src/theme.scss",
           "apps/devtools-panel/src/styles.less"
-        ],
+        ]
       },
       "configurations": {
         "production": {
