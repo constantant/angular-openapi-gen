@@ -63,6 +63,20 @@
       "default": false,
       "description": "Generate a .msw.ts file per endpoint (and index.msw.ts barrels) with MSW 2.x http.* handlers. Requires msw to be installed."
     },
+    "clientType": {
+      "type": "string",
+      "enum": ["httpResource", "httpClient"],
+      "default": "httpResource",
+      "description": "HTTP primitive wrapped by generated tokens. httpClient: the token yields a function returning a cold Observable<T> via HttpClient."
+    },
+    "httpClientTags": {
+      "type": "string",
+      "description": "Comma-separated OpenAPI tags whose endpoints use HttpClient, overriding clientType."
+    },
+    "httpClientOperations": {
+      "type": "string",
+      "description": "Comma-separated operationIds that use HttpClient, overriding clientType."
+    },
     "validateResponses": {
       "type": "boolean",
       "default": false,

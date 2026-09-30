@@ -39,6 +39,6 @@ test.describe('Dashboard (mock)', () => {
   test('shows API error when GitHub mock fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).toHaveCount(0);
     await page.evaluate(() => openApiMock('USERS_GET_BY_USERNAME').fail(new Error('401')));
-    await expect(page.getByText('API error').first()).toBeVisible();
+    await expect(page.getByText("Backend response doesn't match its own API spec — 401").first()).toBeVisible();
   });
 });

@@ -34,7 +34,7 @@ test.describe('Store page (mock)', () => {
   test('shows error when inventory fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).toBeHidden();
     await page.evaluate(() => openApiMock('GET_INVENTORY').fail(new Error('500')));
-    await expect(page.getByText('Failed to load inventory')).toBeVisible();
+    await expect(page.getByText("Backend response doesn't match its own API spec — 500")).toBeVisible();
   });
 
   test('place order section is visible', async ({ page }) => {

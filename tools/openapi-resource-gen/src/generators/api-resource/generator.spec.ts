@@ -23,6 +23,7 @@ vi.mock('http', () => ({
 import SwaggerParser from '@apidevtools/swagger-parser';
 import * as https from 'https';
 import { apiResourceGenerator } from './generator';
+import { renderMockFile } from './render-mock-file';
 
 const MOCK_SPEC = {
   paths: {
@@ -1950,6 +1951,105 @@ describe('api-resource generator', () => {
       expect(tsconfig.compilerOptions.paths['@myorg/petstore/msw']).toEqual([
         'libs/petstore/src/index.msw.ts',
       ]);
+    });
+  });
+  describe('HttpClient tokens (clientType)', () => {
+    const read = (f: string) => tree.read(`libs/petstore/src/pets/${f}.token.ts`, 'utf-8')!;
+    const gen = (extra: Record<string, unknown>) =>
+      apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        ...extra,
+      });
+
+    it('defaults to httpResource', async () => {
+      await gen({});
+      expect(read('list-pets')).toContain('httpResource');
+      expect(read('list-pets')).not.toContain('HttpClient');
+    });
+
+    it('clientType=httpClient: GET returns Observable with plain params', async () => {
+      await gen({ clientType: 'httpClient' });
+      const c = read('list-pets');
+      expect(c).toContain("import { HttpClient } from '@angular/common/http'");
+      expect(c).toContain("import type { Observable } from 'rxjs'");
+      expect(c).not.toContain('httpResource');
+      expect(c).toMatch(/\(params\?: ListPetsParams\) => Observable<ListPetsResponse>/);
+      expect(c).toContain("http.request<ListPetsResponse>('GET'");
+      expect(c).toContain('params: params as unknown as Record');
+      expect(c).not.toContain('typeof params');
+    });
+
+    it('clientType=httpClient: mutation passes body and method positionally', async () => {
+      await gen({ clientType: 'httpClient' });
+      const c = read('create-pet');
+      expect(c).toContain('(body: CreatePetBody) => Observable<CreatePetResponse>');
+      expect(c).not.toContain('Signal');
+      expect(c).toContain("http.request<CreatePetResponse>('POST'");
+      expect(c).toMatch(/\n\s+body,/);
+      expect(c).not.toContain("method: 'POST'");
+    });
+
+    it('clientType=httpClient: path params and no-response endpoints', async () => {
+      await gen({ clientType: 'httpClient' });
+      expect(read('get-pet-by-id')).toContain('`${base}/pets/${id}`');
+      expect(read('delete-pet')).toContain('Observable<unknown>');
+      expect(read('delete-pet')).toContain("'DELETE'");
+    });
+
+    it('httpClientTags selects only matching tags', async () => {
+      await gen({ httpClientTags: 'pets' });
+      expect(read('list-pets')).toContain('HttpClient');
+    });
+
+    it('httpClientOperations selects individual endpoints', async () => {
+      await gen({ httpClientOperations: 'listPets' });
+      expect(read('list-pets')).toContain('HttpClient');
+      expect(read('create-pet')).toContain('httpResource');
+      expect(read('create-pet')).not.toContain('HttpClient');
+    });
+
+    it('throws when a selected tag or operationId matches nothing', async () => {
+      await expect(gen({ httpClientTags: 'nope' })).rejects.toThrow(/tag "nope"/);
+      await expect(gen({ httpClientOperations: 'nope' })).rejects.toThrow(/operationId "nope"/);
+    });
+
+    it('providedIn root registers the factory on the token', async () => {
+      await gen({ clientType: 'httpClient', providedIn: 'root' });
+      const c = read('list-pets');
+      expect(c).toContain("providedIn: 'root'");
+      expect(c).toContain('inject(HttpClient)');
+      expect(c).not.toContain('FactoryProvider');
+    });
+
+    it('validateResponses pipes through map()', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/pets': {
+            get: {
+              operationId: 'listPets',
+              tags: ['pets'],
+              responses: {
+                '200': { content: { 'application/json': { schema: { type: 'array', items: { type: 'string' } } } } },
+              },
+            },
+          },
+        },
+      } as never);
+      await gen({ clientType: 'httpClient', validateResponses: true });
+      const c = read('list-pets');
+      expect(c).toContain("import { map, type Observable } from 'rxjs'");
+      expect(c).toContain('.pipe(map(_validateResponse))');
+      expect(c).not.toContain('parse:');
+    });
+
+    it('mock file uses provideMockObservable for httpClient, provideMockResource otherwise', () => {
+      const ep = { operationId: 'listPets', tokenName: 'LIST_PETS', fileName: 'list-pets', apiPath: '/pets', method: 'get', tag: 'pets', hasResponse: true } as never;
+      const obs = renderMockFile(ep, 'petstore', 'httpClient');
+      expect(obs).toContain("import { provideMockObservable } from '@constantant/openapi-resource-mocks'");
+      expect(obs).toContain("return provideMockObservable(LIST_PETS, 'LIST_PETS'");
+      expect(obs).not.toContain('provideMockResource');
+      expect(renderMockFile(ep, 'petstore')).toContain('provideMockResource(LIST_PETS');
     });
   });
 });

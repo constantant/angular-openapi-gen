@@ -38,8 +38,10 @@ test.describe('Weather page (mock)', () => {
   });
 
   test('shows error message when mock fails', async ({ page }) => {
-    await expect(page.locator('mat-progress-bar')).toBeHidden();
+    // GET_V1_FORECAST is an HttpClient (Observable) token: a cold call that has already
+    // emitted and completed can't be changed, so fail it while the request is in flight.
+    await expect(page.locator('mat-progress-bar')).toBeVisible();
     await page.evaluate(() => openApiMock('GET_V1_FORECAST').fail(new Error('503')));
-    await expect(page.getByText('Failed to load forecast')).toBeVisible();
+    await expect(page.getByText("Backend response doesn't match its own API spec — 503")).toBeVisible();
   });
 });

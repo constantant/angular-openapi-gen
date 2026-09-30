@@ -462,6 +462,16 @@ The optional `options` argument is a `MockProviderOptions` object — see below.
 | `{ error: unknown }` | Fails immediately |
 | `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
 
+### `provideMockObservable(token, key, initialBehavior?, meta?, options?)`
+
+Same as `provideMockResource`, for tokens generated with `clientType: 'httpClient'` (functions
+returning `Observable<T>`). The key is registered when the function is called; every
+**subscription** counts as a request. The observable emits once and completes on `resolve`, or
+errors on `fail`; catch mode, delays and the DevTools controls behave as for resources, with one
+difference: like a real `HttpClient` call, the observable is finished once it has emitted, so
+`resolve` / `fail` from DevTools only reach a request that is still pending (loading, delayed or
+caught). Use catch mode to hold a request open while you choose its response. Requires `rxjs` ^7.8.
+
 ### `MockProviderOptions`
 
 Passed as the fifth argument to `provideMockResource()` and as the second argument to generated `provide{Operation}Mock()` wrappers.
