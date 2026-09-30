@@ -20,10 +20,15 @@ vi.mock('http', () => ({
 }));
 
 
+// includeMocks needs @constantant/openapi-resource-mocks to resolve, which it can't here
+// (the package isn't built in this workspace). The real check is covered in ensure-package.spec.ts.
+vi.mock('./ensure-package', () => ({ ensurePackageInstalled: vi.fn() }));
+
 import SwaggerParser from '@apidevtools/swagger-parser';
 import * as https from 'https';
 import { apiResourceGenerator } from './generator';
 import { renderMockFile } from './render-mock-file';
+import { ensurePackageInstalled } from './ensure-package';
 
 const MOCK_SPEC = {
   paths: {
@@ -2203,6 +2208,112 @@ describe('api-resource generator', () => {
         expect(read('files', 'download-file')).toContain('httpResource.blob');
         expect(read('files', 'get-report-text')).not.toContain('responseType');
       });
+    });
+  });
+  describe('mock generation (includeMocks)', () => {
+    const gen = (extra: Record<string, unknown> = {}) =>
+      apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        baseUrlToken: 'PETSTORE_BASE_URL',
+        includeMocks: true,
+        ...extra,
+      });
+    const mock = (f: string) => tree.read(`libs/petstore/src/pets/${f}.mock.ts`, 'utf-8')!;
+
+    it('checks that the mocks package is installed (as a dev dependency)', async () => {
+      await gen();
+      expect(ensurePackageInstalled).toHaveBeenCalledWith(
+        '@constantant/openapi-resource-mocks',
+        'includeMocks',
+        { dev: true },
+      );
+    });
+
+    it('does not check for it, or emit mocks, when includeMocks is off', async () => {
+      vi.mocked(ensurePackageInstalled).mockClear();
+      await gen({ includeMocks: false });
+      expect(ensurePackageInstalled).not.toHaveBeenCalledWith(
+        '@constantant/openapi-resource-mocks',
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(tree.exists('libs/petstore/src/pets/list-pets.mock.ts')).toBe(false);
+      expect(tree.exists('libs/petstore/src/mocks.manifest.json')).toBe(false);
+    });
+
+    it('propagates the error when the package is missing', async () => {
+      vi.mocked(ensurePackageInstalled).mockImplementationOnce(() => {
+        throw new Error('includeMocks requires @constantant/openapi-resource-mocks to be installed.');
+      });
+      await expect(gen()).rejects.toThrow(/includeMocks requires/);
+    });
+
+    it('emits one mock file per endpoint plus tag and root barrels', async () => {
+      await gen();
+      for (const f of ['list-pets', 'create-pet', 'get-pet-by-id', 'delete-pet']) {
+        expect(tree.exists(`libs/petstore/src/pets/${f}.mock.ts`)).toBe(true);
+      }
+      expect(tree.read('libs/petstore/src/pets/index.mock.ts', 'utf-8')).toContain(
+        "export * from './list-pets.mock'",
+      );
+      expect(tree.read('libs/petstore/src/index.mock.ts', 'utf-8')).toContain(
+        "export * from './pets/index.mock'",
+      );
+    });
+
+    it('embeds MockResourceMeta with the derived specId', async () => {
+      await gen();
+      const c = mock('get-pet-by-id');
+      expect(c).toContain("specId: 'petstore'");
+      expect(c).toContain("operationId: 'getPetById'");
+      expect(c).toContain("path: '/pets/{id}'");
+      expect(c).toContain("method: 'get'");
+      expect(c).toContain("tag: 'pets'");
+      expect(c).toContain('export function provideGetPetByIdMock');
+    });
+
+    it('uses an explicit specId when given', async () => {
+      await gen({ specId: 'custom' });
+      expect(mock('list-pets')).toContain("specId: 'custom'");
+    });
+
+    it('writes mocks.manifest.json listing every endpoint', async () => {
+      await gen();
+      const manifest = JSON.parse(tree.read('libs/petstore/src/mocks.manifest.json', 'utf-8')!);
+      expect(manifest.specId).toBe('petstore');
+      expect(manifest.mocks.map((m: { tokenName: string }) => m.tokenName).sort()).toEqual([
+        'CREATE_PET',
+        'DELETE_PET',
+        'GET_PET_BY_ID',
+        'LIST_PETS',
+      ]);
+      expect(manifest.mocks.find((m: { tokenName: string }) => m.tokenName === 'LIST_PETS')).toMatchObject({
+        operationId: 'listPets',
+        path: '/pets',
+        method: 'get',
+        tag: 'pets',
+      });
+    });
+
+    it('picks the provider per endpoint when clients are mixed', async () => {
+      await gen({ httpClientOperations: 'listPets,createPet' });
+      const flat = (f: string) => mock(f).replace(/\s+/g, '');
+      expect(flat('list-pets')).toContain('provideMockObservable(LIST_PETS');
+      expect(flat('create-pet')).toContain('provideMockObservable(CREATE_PET');
+      expect(flat('get-pet-by-id')).toContain('provideMockResource(GET_PET_BY_ID');
+      expect(flat('delete-pet')).toContain('provideMockResource(DELETE_PET');
+    });
+
+    it('removes stale mock files when an endpoint disappears', async () => {
+      await gen();
+      expect(tree.exists('libs/petstore/src/pets/delete-pet.mock.ts')).toBe(true);
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: { '/pets': { get: MOCK_SPEC.paths['/pets'].get } },
+      } as never);
+      await gen();
+      expect(tree.exists('libs/petstore/src/pets/delete-pet.mock.ts')).toBe(false);
+      expect(tree.exists('libs/petstore/src/pets/list-pets.mock.ts')).toBe(true);
     });
   });
 });
