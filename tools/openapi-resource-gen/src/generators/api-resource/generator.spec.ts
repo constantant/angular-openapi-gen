@@ -2052,4 +2052,157 @@ describe('api-resource generator', () => {
       expect(renderMockFile(ep, 'petstore')).toContain('provideMockResource(LIST_PETS');
     });
   });
+  describe('request shapes (httpResource and httpClient)', () => {
+    const json = (schema: unknown = {}) => ({ 'application/json': { schema } });
+    const SHAPES_SPEC = {
+      security: [{ bearer: [] }],
+      components: {
+        securitySchemes: {
+          bearer: { type: 'http', scheme: 'bearer' },
+          keyHeader: { type: 'apiKey', in: 'header', name: 'X-Key' },
+          keyQuery: { type: 'apiKey', in: 'query', name: 'api_key' },
+        },
+      },
+      paths: {
+        '/items': {
+          get: {
+            operationId: 'listItems',
+            tags: ['items'],
+            security: [{ keyHeader: [] }, { keyQuery: [] }],
+            parameters: [
+              { in: 'query', name: 'limit', schema: { type: 'integer' } },
+              { in: 'query', name: 'ids', style: 'pipeDelimited', explode: false, schema: { type: 'array', items: { type: 'string' } } },
+              { in: 'header', name: 'X-Api-Version', required: true, schema: { type: 'string' } },
+              { in: 'header', name: 'Accept-Language', schema: { type: 'string' } },
+              { in: 'cookie', name: 'session', required: true, schema: { type: 'string' } },
+              { in: 'cookie', name: 'theme', schema: { type: 'string' } },
+            ],
+            responses: { '200': { content: json({ type: 'array' }) } },
+          },
+          post: {
+            operationId: 'createItem',
+            tags: ['items'],
+            deprecated: true,
+            parameters: [{ in: 'header', name: 'X-Trace', schema: { type: 'string' } }],
+            requestBody: { content: json() },
+            responses: { '201': { content: json() } },
+          },
+        },
+        '/report': {
+          get: {
+            operationId: 'getReportText',
+            tags: ['files'],
+            responses: { '200': { content: { 'text/plain': { schema: { type: 'string' } } } } },
+          },
+        },
+        '/file': {
+          get: {
+            operationId: 'downloadFile',
+            tags: ['files'],
+            responses: { '200': { content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } } },
+          },
+          put: {
+            operationId: 'uploadFile',
+            tags: ['files'],
+            requestBody: { content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } },
+            responses: { '200': { content: json() } },
+          },
+        },
+      },
+    };
+
+    const gen = async (client: 'httpResource' | 'httpClient') => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(SHAPES_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/shapes/src',
+        baseUrlToken: 'SHAPES_BASE_URL',
+        clientType: client,
+      });
+    };
+    const read = (tag: string, f: string) =>
+      tree.read(`libs/shapes/src/${tag}/${f}.token.ts`, 'utf-8')!;
+    const squash = (c: string) => c.replace(/\s+/g, ' ');
+
+    describe.each(['httpResource', 'httpClient'] as const)('%s', (client) => {
+      it('puts required args before optional ones (no TS1016)', async () => {
+        await gen(client);
+        const list = read('items', 'list-items').replace(/\s+/g, '');
+        expect(list).toContain(
+          '(xApiVersion:string,session:string,acceptLanguage?:string,theme?:string,params?:ListItemsParams',
+        );
+        // Optional header must not precede the required body.
+        const create = squash(read('items', 'create-item'));
+        expect(create).toMatch(/\(body: CreateItemBody(?: \| Signal<CreateItemBody>)?, xTrace\?: string\) =>/);
+      });
+
+      it('combines cookie params into one Cookie header', async () => {
+        await gen(client);
+        const list = squash(read('items', 'list-items'));
+        expect(list).toContain('`session=${session}`');
+        expect(list).toContain('...(theme != null ? [`theme=${theme}`] : [])');
+        expect(list).toMatch(/Cookie: \[.*\]\.join\('; '\)/);
+      });
+
+      it('renders header params, apiKey header/query auth and serializes pipe-delimited params', async () => {
+        await gen(client);
+        const list = squash(read('items', 'list-items'));
+        expect(list).toContain("'X-Api-Version': xApiVersion");
+        expect(list).toContain("...(acceptLanguage != null ? { 'Accept-Language': acceptLanguage } : {})");
+        expect(list).toContain("...(keyHeader?.() != null ? { 'X-Key': `${keyHeader()}` } : {})");
+        expect(list).toContain('...(keyQuery?.() != null ? { api_key: `${keyQuery()}` } : {})');
+        expect(list).toContain('_serializeParams');
+        expect(list).toContain('join("|")'.replace(/"/g, "'"));
+      });
+
+      it('emits @deprecated above the token', async () => {
+        await gen(client);
+        expect(read('items', 'create-item')).toMatch(/\/\*\* @deprecated \*\/\s+export const CREATE_ITEM/);
+      });
+
+      it('injects global bearer auth when the operation has no override', async () => {
+        await gen(client);
+        const report = squash(read('files', 'get-report-text'));
+        expect(report).toContain("inject(BEARER, { optional: true })");
+        expect(report).toContain('Authorization: `Bearer ${bearer()}`');
+      });
+    });
+
+    describe('httpClient only', () => {
+      it('uses the requested responseType for text and blob responses', async () => {
+        await gen('httpClient');
+        const text = squash(read('files', 'get-report-text'));
+        expect(text).toContain('() => Observable<string>');
+        expect(text).toContain("responseType: 'text'");
+        expect(text).not.toContain('http.request<');
+        const blob = squash(read('files', 'download-file'));
+        expect(blob).toContain('() => Observable<Blob>');
+        expect(blob).toContain("responseType: 'blob'");
+      });
+
+      it('binary upload body is Blob | ArrayBuffer and passed as body', async () => {
+        await gen('httpClient');
+        const up = read('files', 'upload-file');
+        expect(up).toContain('export type UploadFileBody = Blob | ArrayBuffer');
+        expect(squash(up)).toContain("http.request<UploadFileResponse>('PUT'");
+        expect(up).toMatch(/\n\s+body,/);
+      });
+
+      it('passes params as a plain value and merges apiKey query auth into them', async () => {
+        await gen('httpClient');
+        const list = squash(read('items', 'list-items'));
+        expect(list).toContain('..._serializeParams(params)');
+        expect(list).not.toContain("typeof params === 'function'");
+      });
+    });
+
+    describe('httpResource only', () => {
+      it('keeps responseType out and uses httpResource.text / .blob', async () => {
+        await gen('httpResource');
+        expect(read('files', 'get-report-text')).toContain('httpResource.text');
+        expect(read('files', 'download-file')).toContain('httpResource.blob');
+        expect(read('files', 'get-report-text')).not.toContain('responseType');
+      });
+    });
+  });
 });
