@@ -41,6 +41,7 @@ const _responseSchema: Schema = {
           type: 'string',
         },
         moderatorDetails: {
+          description: 'Details about the moderator.',
           properties: {
             channelId: {
               description: 'The YouTube channel ID.',
@@ -60,7 +61,6 @@ const _responseSchema: Schema = {
             },
           },
           type: 'object',
-          description: 'Details about the moderator.',
         },
       },
       type: 'object',

@@ -49,6 +49,7 @@ const _responseSchema: Schema = {
                 type: 'string',
               },
               memberDetails: {
+                description: 'Details about the member.',
                 properties: {
                   channelId: {
                     description: 'The YouTube channel ID.',
@@ -68,7 +69,6 @@ const _responseSchema: Schema = {
                   },
                 },
                 type: 'object',
-                description: 'Details about the member.',
               },
               membershipsDetails: {
                 description: "Details about the user's membership.",

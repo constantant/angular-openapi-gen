@@ -112,6 +112,7 @@ const _responseSchema: Schema = {
                 type: 'object',
               },
               supporterDetails: {
+                description: 'Details about the supporter.',
                 properties: {
                   channelId: {
                     description: 'The YouTube channel ID.',
@@ -131,7 +132,6 @@ const _responseSchema: Schema = {
                   },
                 },
                 type: 'object',
-                description: 'Details about the supporter.',
               },
             },
             type: 'object',

@@ -522,7 +522,7 @@ const _responseSchema: Schema = {
           type: 'string',
         },
         localized: {
-          description: 'Channel localization setting',
+          description: 'Localized title and description, read-only.',
           properties: {
             description: {
               description: "The localized strings for channel's description.",
