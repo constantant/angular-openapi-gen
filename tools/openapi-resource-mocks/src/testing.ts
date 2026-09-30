@@ -1,5 +1,6 @@
 import { InjectionToken, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { createMockResourceRef } from './lib/mock-resource-ref';
 import type { MockResourceRef, MockResourceRefInternal } from './lib/mock-resource-ref';
 import type { ProviderInitialBehavior } from './lib/provide-mock-resource';
@@ -52,6 +53,27 @@ function deepEqual(a: unknown, b: unknown): boolean {
       (b as Record<string, unknown>)[k],
     ),
   );
+}
+
+function assertCalled(calls: readonly unknown[][]): void {
+  if (calls.length === 0) {
+    throw new Error(
+      `Expected mock token to have been called at least once, but it was never called.`,
+    );
+  }
+}
+
+function assertCalledWith(calls: readonly unknown[][], expected: unknown[]): void {
+  const found = calls.some(
+    (call) =>
+      call.length === expected.length && expected.every((arg, i) => deepEqual(arg, call[i])),
+  );
+  if (!found) {
+    throw new Error(
+      `Expected mock to have been called with ${JSON.stringify(expected)}, ` +
+        `but actual calls were: ${JSON.stringify(calls)}`,
+    );
+  }
 }
 
 /**
@@ -113,26 +135,99 @@ export function mockResource<T>(
       return calls as readonly unknown[][];
     },
     expectCalled() {
-      if (calls.length === 0) {
-        throw new Error(
-          `Expected mock token to have been called at least once, but it was never called.`,
-        );
-      }
+      assertCalled(calls);
     },
     expectCalledWith(...expected: unknown[]) {
-      const found = calls.some(
-        (call) =>
-          call.length === expected.length &&
-          expected.every((arg, i) => deepEqual(arg, call[i])),
-      );
-      if (!found) {
-        throw new Error(
-          `Expected mock to have been called with ${JSON.stringify(expected)}, ` +
-            `but actual calls were: ${JSON.stringify(calls)}`,
-        );
-      }
+      assertCalledWith(calls, expected);
     },
   };
 
   return handle;
+}
+
+/** A FactoryProvider for an Observable (HttpClient) token, with call history for assertions. */
+export interface MockObservableHandle extends FactoryProvider {
+  /** Every set of args the injected function was called with. */
+  readonly calls: readonly unknown[][];
+  /** Number of subscriptions made to observables returned by the function. */
+  readonly subscriptions: number;
+  /** Throws if the token function was never called. */
+  expectCalled(): void;
+  /** Throws if no call matches all provided args (deep equality). */
+  expectCalledWith(...args: unknown[]): void;
+}
+
+/**
+ * Creates a lightweight mock provider for a token generated with `clientType: 'httpClient'`
+ * (a function returning `Observable<T>`). No MockResourceBus, no DOM events.
+ *
+ * The observable is cold, like `HttpClient`: each **subscription** consumes the next
+ * behavior. `{ value }` emits once and completes, `{ error }` errors, `{ loading: true }`
+ * never emits; `delay` defers the emission by that many ms.
+ *
+ * ```ts
+ * const petsMock = mockObservable(FIND_PETS_BY_STATUS, { value: [] });
+ * TestBed.configureTestingModule({ providers: [petsMock] });
+ * petsMock.expectCalledWith({ status: 'available' });
+ *
+ * // retry scenario: fail once, then succeed
+ * const retry = mockObservable(FIND_PETS_BY_STATUS, {
+ *   sequence: [{ error: new Error('timeout') }, { value: pets }],
+ * });
+ * ```
+ */
+export function mockObservable<T>(
+  token: InjectionToken<(...args: unknown[]) => Observable<T>>,
+  behaviorOrOptions?: ProviderInitialBehavior<T> | { sequence: MockSequenceEntry<T>[] },
+): MockObservableHandle {
+  const calls: unknown[][] = [];
+  let subscriptions = 0;
+
+  const nextBehavior = (): ProviderInitialBehavior<T> | undefined => {
+    if (!behaviorOrOptions) return undefined;
+    if ('sequence' in behaviorOrOptions) {
+      const { sequence } = behaviorOrOptions;
+      return sequence[Math.min(subscriptions - 1, sequence.length - 1)];
+    }
+    return behaviorOrOptions;
+  };
+
+  return {
+    provide: token,
+    useFactory: () =>
+      (...args: unknown[]): Observable<T> => {
+        calls.push(args);
+        return new Observable<T>((subscriber) => {
+          subscriptions++;
+          const behavior = nextBehavior();
+          if (!behavior || 'loading' in behavior) return undefined; // never settles
+          const settle = (): void => {
+            if ('error' in behavior) {
+              subscriber.error(behavior.error);
+            } else {
+              subscriber.next(behavior.value as T);
+              subscriber.complete();
+            }
+          };
+          if (!behavior.delay) {
+            settle();
+            return undefined;
+          }
+          const timer = setTimeout(settle, behavior.delay);
+          return () => clearTimeout(timer);
+        });
+      },
+    get calls() {
+      return calls as readonly unknown[][];
+    },
+    get subscriptions() {
+      return subscriptions;
+    },
+    expectCalled() {
+      assertCalled(calls);
+    },
+    expectCalledWith(...expected: unknown[]) {
+      assertCalledWith(calls, expected);
+    },
+  };
 }

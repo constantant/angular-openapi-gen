@@ -654,17 +654,35 @@ function emitHttpClientToken(lines: string[], ep: EndpointModel, ctx: HttpClient
 }
 
 function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean, useHttpClient = false): string {
-  // Order: required path params, header params, cookie params, query params / body
-  const args: string[] = ep.pathParams.map((p) => `${toCamelCase(p)}: string`);
-  for (const h of ep.headerParams) {
-    args.push(h.required ? `${toCamelCase(h.name)}: string` : `${toCamelCase(h.name)}?: string`);
+  // Natural order: path params, header params, cookie params, query params / body.
+  const args: Array<{ text: string; required: boolean }> = ep.pathParams.map((p) => ({
+    text: `${toCamelCase(p)}: string`,
+    required: true,
+  }));
+  for (const h of [...ep.headerParams, ...ep.cookieParams]) {
+    args.push({
+      text: h.required ? `${toCamelCase(h.name)}: string` : `${toCamelCase(h.name)}?: string`,
+      required: h.required,
+    });
   }
-  for (const c of ep.cookieParams) {
-    args.push(c.required ? `${toCamelCase(c.name)}: string` : `${toCamelCase(c.name)}?: string`);
+  if (isGet && ep.hasQueryParams) {
+    args.push({
+      text: useHttpClient
+        ? `params?: ${pascal}Params`
+        : `params?: ${pascal}Params | (() => ${pascal}Params | undefined)`,
+      required: false,
+    });
   }
-  if (isGet && ep.hasQueryParams)
-    args.push(useHttpClient ? `params?: ${pascal}Params` : `params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);
-  if (!isGet && ep.hasBody)
-    args.push(useHttpClient ? `body: ${pascal}Body` : `body: ${pascal}Body | Signal<${pascal}Body>`);
-  return args.join(', ');
+  if (!isGet && ep.hasBody) {
+    args.push({
+      text: useHttpClient ? `body: ${pascal}Body` : `body: ${pascal}Body | Signal<${pascal}Body>`,
+      required: true,
+    });
+  }
+  // TypeScript forbids a required parameter after an optional one (e.g. an optional
+  // header before a required cookie or body), so stably move required args first. A
+  // signature that was already valid (required…, optional…) keeps its order unchanged.
+  return [...args.filter((a) => a.required), ...args.filter((a) => !a.required)]
+    .map((a) => a.text)
+    .join(', ');
 }
