@@ -181,7 +181,7 @@ const _responseSchema: Schema = {
           type: 'boolean',
         },
         topLevelComment: {
-          description: 'A *comment* represents a single YouTube comment.',
+          description: 'The top level comment of this thread.',
           properties: {
             etag: {
               description: 'Etag of this resource.',

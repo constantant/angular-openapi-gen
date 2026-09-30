@@ -111,7 +111,7 @@ const _responseSchema: Schema = {
                 type: 'string',
               },
               localized: {
-                description: 'Playlist localization setting',
+                description: 'Localized title and description, read-only.',
                 properties: {
                   description: {
                     description:
@@ -271,8 +271,7 @@ const _responseSchema: Schema = {
       type: 'string',
     },
     pageInfo: {
-      description:
-        'Paging details for lists of resources, including total number of items available and number of resources returned in a single page.',
+      description: 'General pagination information.',
       properties: {
         resultsPerPage: {
           description: 'The number of results included in the API response.',

@@ -1616,7 +1616,7 @@ const _responseSchema: Schema = {
         },
         localized: {
           description:
-            'Localized versions of certain video properties (e.g. title).',
+            'Localized snippet selected with the hl parameter. If no such localization exists, this field is populated with the default snippet. (Read-only)',
           properties: {
             description: {
               description: "Localized version of the video's description.",
@@ -1644,7 +1644,7 @@ const _responseSchema: Schema = {
         },
         thumbnails: {
           description:
-            'Internal representation of thumbnails for a YouTube resource.',
+            'A map of thumbnail images associated with the video. For each object in the map, the key is the name of the thumbnail image, and the value is an object that contains other information about the thumbnail.',
           properties: {
             high: {
               description: 'The high quality image for this resource.',

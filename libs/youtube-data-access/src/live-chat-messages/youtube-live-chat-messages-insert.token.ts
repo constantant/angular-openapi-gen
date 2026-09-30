@@ -352,6 +352,7 @@ const _responseSchema: Schema = {
               type: 'string',
             },
             bannedUserDetails: {
+              description: 'The details of the user that was banned.',
               properties: {
                 channelId: {
                   description: 'The YouTube channel ID.',
@@ -371,7 +372,6 @@ const _responseSchema: Schema = {
                 },
               },
               type: 'object',
-              description: 'The details of the user that was banned.',
             },
           },
           type: 'object',
