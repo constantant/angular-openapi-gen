@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -127,32 +128,25 @@ function _validateResponse(value: unknown): YoutubeVideoCategoriesListResponse {
 
 export const YOUTUBE_VIDEO_CATEGORIES_LIST = new InjectionToken<
   (
-    params?:
-      | YoutubeVideoCategoriesListParams
-      | (() => YoutubeVideoCategoriesListParams | undefined),
-  ) => ReturnType<typeof httpResource<YoutubeVideoCategoriesListResponse>>
+    params?: YoutubeVideoCategoriesListParams,
+  ) => Observable<YoutubeVideoCategoriesListResponse>
 >('YOUTUBE_VIDEO_CATEGORIES_LIST');
 
 export function provideYoutubeVideoCategoriesList(): FactoryProvider {
   return {
     provide: YOUTUBE_VIDEO_CATEGORIES_LIST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        params?:
-          | YoutubeVideoCategoriesListParams
-          | (() => YoutubeVideoCategoriesListParams | undefined),
-      ) =>
-        httpResource<YoutubeVideoCategoriesListResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/youtube/v3/videoCategories`,
-              params: _params as unknown as Record<
+      return (params?: YoutubeVideoCategoriesListParams) =>
+        http
+          .request<YoutubeVideoCategoriesListResponse>(
+            'GET',
+            `${base}/youtube/v3/videoCategories`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
@@ -167,10 +161,9 @@ export function provideYoutubeVideoCategoriesList(): FactoryProvider {
                   ? { Authorization: `Bearer ${oauth2c()}` }
                   : {}),
               },
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

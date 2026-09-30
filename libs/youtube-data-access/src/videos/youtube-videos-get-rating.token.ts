@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -69,32 +70,25 @@ function _validateResponse(value: unknown): YoutubeVideosGetRatingResponse {
 
 export const YOUTUBE_VIDEOS_GET_RATING = new InjectionToken<
   (
-    params?:
-      | YoutubeVideosGetRatingParams
-      | (() => YoutubeVideosGetRatingParams | undefined),
-  ) => ReturnType<typeof httpResource<YoutubeVideosGetRatingResponse>>
+    params?: YoutubeVideosGetRatingParams,
+  ) => Observable<YoutubeVideosGetRatingResponse>
 >('YOUTUBE_VIDEOS_GET_RATING');
 
 export function provideYoutubeVideosGetRating(): FactoryProvider {
   return {
     provide: YOUTUBE_VIDEOS_GET_RATING,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        params?:
-          | YoutubeVideosGetRatingParams
-          | (() => YoutubeVideosGetRatingParams | undefined),
-      ) =>
-        httpResource<YoutubeVideosGetRatingResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/youtube/v3/videos/getRating`,
-              params: _params as unknown as Record<
+      return (params?: YoutubeVideosGetRatingParams) =>
+        http
+          .request<YoutubeVideosGetRatingResponse>(
+            'GET',
+            `${base}/youtube/v3/videos/getRating`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
@@ -109,10 +103,9 @@ export function provideYoutubeVideosGetRating(): FactoryProvider {
                   ? { Authorization: `Bearer ${oauth2c()}` }
                   : {}),
               },
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

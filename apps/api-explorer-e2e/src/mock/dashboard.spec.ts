@@ -37,7 +37,9 @@ test.describe('Dashboard (mock)', () => {
   });
 
   test('shows API error when GitHub mock fails', async ({ page }) => {
-    await expect(page.locator('mat-progress-bar')).toHaveCount(0);
+    // USERS_GET_BY_USERNAME is an HttpClient (Observable) token: a finished call can't be
+    // changed, so fail it while its request is still in flight.
+    await expect(page.locator('mat-progress-bar').first()).toBeVisible();
     await page.evaluate(() => openApiMock('USERS_GET_BY_USERNAME').fail(new Error('401')));
     await expect(page.getByText("Backend response doesn't match its own API spec — 401").first()).toBeVisible();
   });

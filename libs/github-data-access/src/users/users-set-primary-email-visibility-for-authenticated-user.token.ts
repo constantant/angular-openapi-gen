@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -62,32 +63,26 @@ function _validateResponse(
 export const USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (
-      body:
-        | UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody
-        | Signal<UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody>,
-    ) => ReturnType<
-      typeof httpResource<UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse>
-    >
+      body: UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody,
+    ) => Observable<UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse>
   >('USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER');
 
 export function provideUsersSetPrimaryEmailVisibilityForAuthenticatedUser(): FactoryProvider {
   return {
     provide: USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (
-        body:
-          | UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody
-          | Signal<UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody>,
-      ) =>
-        httpResource<UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse>(
-          () => ({
-            url: `${base}/user/email/visibility`,
-            method: 'PATCH',
-            body,
-          }),
-          { parse: _validateResponse },
-        );
+      return (body: UsersSetPrimaryEmailVisibilityForAuthenticatedUserBody) =>
+        http
+          .request<UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse>(
+            'PATCH',
+            `${base}/user/email/visibility`,
+            {
+              body,
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

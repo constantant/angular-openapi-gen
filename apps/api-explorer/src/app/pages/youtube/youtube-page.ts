@@ -1,4 +1,5 @@
 import { Component, effect, inject, signal, computed } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -39,19 +40,23 @@ export class YoutubePageComponent {
   readonly query = signal('');
   readonly inputValue = signal('Angular');
 
-  readonly results = this.searchYoutube(() =>
-    this.apiKey() && this.query()
-      ? { q: this.query(), part: ['snippet'], maxResults: 12, type: ['video'], key: this.apiKey()! }
-      : undefined
+  // `params` returning undefined keeps the resource idle until there's a key and a query.
+  readonly results = rxResource({
+    params: () =>
+      this.apiKey() && this.query()
+        ? { q: this.query(), part: ['snippet'], maxResults: 12, type: ['video'], key: this.apiKey()! }
+        : undefined,
+    stream: ({ params }) => this.searchYoutube(params),
+  });
+
+  // An rxResource's value() throws while it is in an error state, so only read it when it has one.
+  private readonly response = computed(() =>
+    this.results.hasValue() ? (this.results.value() as YoutubeSearchListResponse) : undefined
   );
 
-  readonly videos = computed(() =>
-    ((this.results.value() as YoutubeSearchListResponse)?.items ?? []) as SearchItem[]
-  );
+  readonly videos = computed(() => (this.response()?.items ?? []) as SearchItem[]);
 
-  readonly totalResults = computed(
-    () => (this.results.value() as YoutubeSearchListResponse)?.pageInfo?.totalResults ?? 0
-  );
+  readonly totalResults = computed(() => this.response()?.pageInfo?.totalResults ?? 0);
 
   private readonly logResultsError = effect(() => {
     const error = this.results.error();

@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -270,27 +271,22 @@ function _validateResponse(value: unknown): UsersUpdateAuthenticatedResponse {
 
 export const USERS_UPDATE_AUTHENTICATED = new InjectionToken<
   (
-    body: UsersUpdateAuthenticatedBody | Signal<UsersUpdateAuthenticatedBody>,
-  ) => ReturnType<typeof httpResource<UsersUpdateAuthenticatedResponse>>
+    body: UsersUpdateAuthenticatedBody,
+  ) => Observable<UsersUpdateAuthenticatedResponse>
 >('USERS_UPDATE_AUTHENTICATED');
 
 export function provideUsersUpdateAuthenticated(): FactoryProvider {
   return {
     provide: USERS_UPDATE_AUTHENTICATED,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (
-        body:
-          UsersUpdateAuthenticatedBody | Signal<UsersUpdateAuthenticatedBody>,
-      ) =>
-        httpResource<UsersUpdateAuthenticatedResponse>(
-          () => ({
-            url: `${base}/user`,
-            method: 'PATCH',
+      return (body: UsersUpdateAuthenticatedBody) =>
+        http
+          .request<UsersUpdateAuthenticatedResponse>('PATCH', `${base}/user`, {
             body,
-          }),
-          { parse: _validateResponse },
-        );
+          })
+          .pipe(map(_validateResponse));
     },
   };
 }

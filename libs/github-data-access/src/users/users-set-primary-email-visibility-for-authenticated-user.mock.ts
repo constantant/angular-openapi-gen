@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockObservable } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -20,7 +20,7 @@ export function provideUsersSetPrimaryEmailVisibilityForAuthenticatedUserMock(
   initialBehavior?: ProviderInitialBehavior<UsersSetPrimaryEmailVisibilityForAuthenticatedUserResponse>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockObservable(
     USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER,
     'USERS_SET_PRIMARY_EMAIL_VISIBILITY_FOR_AUTHENTICATED_USER',
     initialBehavior,

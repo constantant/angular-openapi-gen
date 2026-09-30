@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -197,32 +198,24 @@ function _validateResponse(value: unknown): YoutubeMembersListResponse {
 }
 
 export const YOUTUBE_MEMBERS_LIST = new InjectionToken<
-  (
-    params?:
-      YoutubeMembersListParams | (() => YoutubeMembersListParams | undefined),
-  ) => ReturnType<typeof httpResource<YoutubeMembersListResponse>>
+  (params?: YoutubeMembersListParams) => Observable<YoutubeMembersListResponse>
 >('YOUTUBE_MEMBERS_LIST');
 
 export function provideYoutubeMembersList(): FactoryProvider {
   return {
     provide: YOUTUBE_MEMBERS_LIST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        params?:
-          | YoutubeMembersListParams
-          | (() => YoutubeMembersListParams | undefined),
-      ) =>
-        httpResource<YoutubeMembersListResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/youtube/v3/members`,
-              params: _params as unknown as Record<
+      return (params?: YoutubeMembersListParams) =>
+        http
+          .request<YoutubeMembersListResponse>(
+            'GET',
+            `${base}/youtube/v3/members`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
@@ -237,10 +230,9 @@ export function provideYoutubeMembersList(): FactoryProvider {
                   ? { Authorization: `Bearer ${oauth2c()}` }
                   : {}),
               },
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -54,32 +55,26 @@ function _validateResponse(
 export const USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (
-      body:
-        | UsersCreateSshSigningKeyForAuthenticatedUserBody
-        | Signal<UsersCreateSshSigningKeyForAuthenticatedUserBody>,
-    ) => ReturnType<
-      typeof httpResource<UsersCreateSshSigningKeyForAuthenticatedUserResponse>
-    >
+      body: UsersCreateSshSigningKeyForAuthenticatedUserBody,
+    ) => Observable<UsersCreateSshSigningKeyForAuthenticatedUserResponse>
   >('USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER');
 
 export function provideUsersCreateSshSigningKeyForAuthenticatedUser(): FactoryProvider {
   return {
     provide: USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (
-        body:
-          | UsersCreateSshSigningKeyForAuthenticatedUserBody
-          | Signal<UsersCreateSshSigningKeyForAuthenticatedUserBody>,
-      ) =>
-        httpResource<UsersCreateSshSigningKeyForAuthenticatedUserResponse>(
-          () => ({
-            url: `${base}/user/ssh_signing_keys`,
-            method: 'POST',
-            body,
-          }),
-          { parse: _validateResponse },
-        );
+      return (body: UsersCreateSshSigningKeyForAuthenticatedUserBody) =>
+        http
+          .request<UsersCreateSshSigningKeyForAuthenticatedUserResponse>(
+            'POST',
+            `${base}/user/ssh_signing_keys`,
+            {
+              body,
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

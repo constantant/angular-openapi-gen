@@ -21,19 +21,23 @@ test.describe('Store page (mock)', () => {
     expect(history.some((e) => e.type === 'request')).toBe(true);
   });
 
-  test('resolving new inventory data updates the display', async ({ page }) => {
+  // GET_INVENTORY is an HttpClient (Observable) token: a response set while nothing is
+  // pending is replayed by the next request, so set it, then refresh.
+  test('resolving new inventory data updates the display after a refresh', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).toBeHidden();
 
     await page.evaluate(() =>
       openApiMock('GET_INVENTORY').resolve({ available: 999, pending: 0, sold: 1 }),
     );
+    await page.getByRole('button').filter({ has: page.locator('mat-icon', { hasText: 'refresh' }) }).click();
 
     await expect(page.getByText('999')).toBeVisible();
   });
 
-  test('shows error when inventory fails', async ({ page }) => {
+  test('shows error when inventory fails on the next request', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).toBeHidden();
     await page.evaluate(() => openApiMock('GET_INVENTORY').fail(new Error('500')));
+    await page.getByRole('button').filter({ has: page.locator('mat-icon', { hasText: 'refresh' }) }).click();
     await expect(page.getByText("Backend response doesn't match its own API spec — 500")).toBeVisible();
   });
 

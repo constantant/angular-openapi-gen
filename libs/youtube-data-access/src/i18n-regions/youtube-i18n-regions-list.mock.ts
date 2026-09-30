@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockObservable } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -20,7 +20,7 @@ export function provideYoutubeI18nRegionsListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeI18nRegionsListResponse>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockObservable(
     YOUTUBE_I18N_REGIONS_LIST,
     'YOUTUBE_I18N_REGIONS_LIST',
     initialBehavior,

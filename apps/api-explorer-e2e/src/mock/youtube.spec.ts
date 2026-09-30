@@ -5,19 +5,17 @@ test.describe('YouTube page (mock)', () => {
     await page.goto('/youtube');
   });
 
-  test('YOUTUBE_SEARCH_LIST initial request resolves lambda to undefined (query not yet set)', async ({
-    page,
-  }) => {
-    // query() starts as '' — the component's lambda returns undefined to suppress the resource.
-    // Asserting undefined here confirms the suppression logic is wired correctly.
-    // Wait for the component to finish bootstrapping before reading history.
+  test('YOUTUBE_SEARCH_LIST makes no request until a query is submitted', async ({ page }) => {
+    // query() starts as '' — the rxResource's params return undefined, so it stays idle and
+    // the HttpClient token is never called (nothing is registered on the bus yet).
     await expect(page.getByRole('button', { name: 'Search' })).toBeVisible();
-    const history = await page.evaluate(() =>
-      openApiMock('YOUTUBE_SEARCH_LIST').getHistory(),
-    );
-    const req = history.find((e) => e.type === 'request');
-    expect(req).toBeTruthy();
-    expect(req?.args[0]).toBeUndefined();
+    const registered = await page.evaluate(() => 'YOUTUBE_SEARCH_LIST' in (window.__openApiMocks__ ?? {}));
+    expect(registered).toBe(false);
+
+    await page.getByRole('button', { name: 'Search' }).click();
+    await expect(page.getByText('Angular in 100 Seconds')).toBeVisible();
+    const history = await page.evaluate(() => openApiMock('YOUTUBE_SEARCH_LIST').getHistory());
+    expect(history.filter((e) => e.type === 'request')).toHaveLength(1);
   });
 
   test('shows Connected hint because API key is pre-set in mock config', async ({ page }) => {
@@ -47,10 +45,13 @@ test.describe('YouTube page (mock)', () => {
 
   test('shows error message when mock fails after search', async ({ page }) => {
     await page.getByRole('button', { name: 'Search' }).click();
-    await expect(page.locator('mat-progress-bar')).toBeHidden();
+    // HttpClient (Observable) token: fail it while the request is still in flight.
+    await expect(page.locator('mat-progress-bar')).toBeVisible();
     await page.evaluate(() =>
-      openApiMock('YOUTUBE_SEARCH_LIST').fail({ message: 'API quota exceeded' }),
+      openApiMock('YOUTUBE_SEARCH_LIST').fail(new Error('API quota exceeded')),
     );
-    await expect(page.getByText('API error')).toBeVisible();
+    await expect(
+      page.getByText("Backend response doesn't match its own API spec — API quota exceeded"),
+    ).toBeVisible();
   });
 });

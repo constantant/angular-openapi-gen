@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import type { Observable } from 'rxjs';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
@@ -14,28 +15,19 @@ export type UsersDeleteEmailForAuthenticatedUserError =
   | paths['/user/emails']['delete']['responses']['422']['content']['application/json'];
 
 export const USERS_DELETE_EMAIL_FOR_AUTHENTICATED_USER = new InjectionToken<
-  (
-    body:
-      | UsersDeleteEmailForAuthenticatedUserBody
-      | Signal<UsersDeleteEmailForAuthenticatedUserBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  (body: UsersDeleteEmailForAuthenticatedUserBody) => Observable<unknown>
 >('USERS_DELETE_EMAIL_FOR_AUTHENTICATED_USER');
 
 export function provideUsersDeleteEmailForAuthenticatedUser(): FactoryProvider {
   return {
     provide: USERS_DELETE_EMAIL_FOR_AUTHENTICATED_USER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (
-        body:
-          | UsersDeleteEmailForAuthenticatedUserBody
-          | Signal<UsersDeleteEmailForAuthenticatedUserBody>,
-      ) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/user/emails`,
-          method: 'DELETE',
+      return (body: UsersDeleteEmailForAuthenticatedUserBody) =>
+        http.request<unknown>('DELETE', `${base}/user/emails`, {
           body,
-        }));
+        });
     },
   };
 }

@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockObservable } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -19,7 +19,7 @@ export function provideUsersCheckPersonIsFollowedByAuthenticatedMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockObservable(
     USERS_CHECK_PERSON_IS_FOLLOWED_BY_AUTHENTICATED,
     'USERS_CHECK_PERSON_IS_FOLLOWED_BY_AUTHENTICATED',
     initialBehavior,

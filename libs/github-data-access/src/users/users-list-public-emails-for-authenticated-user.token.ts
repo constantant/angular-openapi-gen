@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -59,42 +60,32 @@ function _validateResponse(
 export const USERS_LIST_PUBLIC_EMAILS_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (
-      params?:
-        | UsersListPublicEmailsForAuthenticatedUserParams
-        | (() => UsersListPublicEmailsForAuthenticatedUserParams | undefined),
-    ) => ReturnType<
-      typeof httpResource<UsersListPublicEmailsForAuthenticatedUserResponse>
-    >
+      params?: UsersListPublicEmailsForAuthenticatedUserParams,
+    ) => Observable<UsersListPublicEmailsForAuthenticatedUserResponse>
   >('USERS_LIST_PUBLIC_EMAILS_FOR_AUTHENTICATED_USER');
 
 export function provideUsersListPublicEmailsForAuthenticatedUser(): FactoryProvider {
   return {
     provide: USERS_LIST_PUBLIC_EMAILS_FOR_AUTHENTICATED_USER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (
-        params?:
-          | UsersListPublicEmailsForAuthenticatedUserParams
-          | (() => UsersListPublicEmailsForAuthenticatedUserParams | undefined),
-      ) =>
-        httpResource<UsersListPublicEmailsForAuthenticatedUserResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/user/public_emails`,
-              params: _params as unknown as Record<
+      return (params?: UsersListPublicEmailsForAuthenticatedUserParams) =>
+        http
+          .request<UsersListPublicEmailsForAuthenticatedUserResponse>(
+            'GET',
+            `${base}/user/public_emails`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
                 | boolean
                 | readonly (string | number | boolean)[]
               >,
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

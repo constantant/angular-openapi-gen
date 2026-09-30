@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -44,35 +45,35 @@ function _validateResponse(value: unknown): YoutubeTestsInsertResponse {
 }
 
 export const YOUTUBE_TESTS_INSERT = new InjectionToken<
-  (
-    body: YoutubeTestsInsertBody | Signal<YoutubeTestsInsertBody>,
-  ) => ReturnType<typeof httpResource<YoutubeTestsInsertResponse>>
+  (body: YoutubeTestsInsertBody) => Observable<YoutubeTestsInsertResponse>
 >('YOUTUBE_TESTS_INSERT');
 
 export function provideYoutubeTestsInsert(): FactoryProvider {
   return {
     provide: YOUTUBE_TESTS_INSERT,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeTestsInsertBody | Signal<YoutubeTestsInsertBody>) =>
-        httpResource<YoutubeTestsInsertResponse>(
-          () => ({
-            url: `${base}/youtube/v3/tests`,
-            method: 'POST',
-            body,
-            headers: {
-              ...(oauth2?.() != null
-                ? { Authorization: `Bearer ${oauth2()}` }
-                : {}),
-              ...(oauth2c?.() != null
-                ? { Authorization: `Bearer ${oauth2c()}` }
-                : {}),
+      return (body: YoutubeTestsInsertBody) =>
+        http
+          .request<YoutubeTestsInsertResponse>(
+            'POST',
+            `${base}/youtube/v3/tests`,
+            {
+              body,
+              headers: {
+                ...(oauth2?.() != null
+                  ? { Authorization: `Bearer ${oauth2()}` }
+                  : {}),
+                ...(oauth2c?.() != null
+                  ? { Authorization: `Bearer ${oauth2c()}` }
+                  : {}),
+              },
             },
-          }),
-          { parse: _validateResponse },
-        );
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

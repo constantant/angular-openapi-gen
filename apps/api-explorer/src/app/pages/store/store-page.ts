@@ -1,4 +1,5 @@
-import { Component, Injector, computed, effect, inject, runInInjectionContext, signal, untracked } from '@angular/core';
+import { Component, Injector, computed, effect, inject, runInInjectionContext, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import {
   GET_INVENTORY,
   PLACE_ORDER,
@@ -50,7 +51,7 @@ export class StorePageComponent {
   private readonly deleteOrderFn = inject(DELETE_ORDER);
 
   // ── Inventory ─────────────────────────────────────────────────────────────
-  readonly inventory = this.getInventoryFn();
+  readonly inventory = rxResource({ stream: () => this.getInventoryFn() });
   readonly inventoryEntries = computed(() => {
     const inv = this.inventory.value() as Record<string, number> | undefined;
     if (!inv) return [];
@@ -88,30 +89,26 @@ export class StorePageComponent {
       quantity: Number(this.orderQty()) || 1,
       status: 'placed',
     };
-    const op = runInInjectionContext(this.injector, () => this.placeOrderFn(body));
-    effect(() => {
-      const s = op.status();
-      if (s === 'resolved') {
-        untracked(() => {
-          const v = op.value() as Order | undefined;
-          this.orderSuccess.set(v?.id ?? null);
-          this.orderPetId.set('');
-          this.orderLoading.set(false);
-        });
-      } else if (s === 'error') {
-        untracked(() => {
-          this.orderError.set('Failed to place order.');
-          this.orderLoading.set(false);
-        });
-      }
-    }, { injector: this.injector });
+    this.placeOrderFn(body).subscribe({
+      next: (order) => {
+        this.orderSuccess.set(order?.id ?? null);
+        this.orderPetId.set('');
+        this.orderLoading.set(false);
+      },
+      error: () => {
+        this.orderError.set('Failed to place order.');
+        this.orderLoading.set(false);
+      },
+    });
   }
 
   searchOrder(): void {
     const id = this.findId().trim();
     if (!id) return;
     this.foundOrder.set(
-      runInInjectionContext(this.injector, () => this.getOrderByIdFn(id)) as ResourceRef<Order>
+      runInInjectionContext(this.injector, () =>
+        rxResource({ stream: () => this.getOrderByIdFn(id) })
+      ) as ResourceRef<Order>
     );
   }
 
@@ -119,17 +116,12 @@ export class StorePageComponent {
     const order = this.foundOrder()?.value();
     if (!order?.id) return;
     this.deletingOrder.set(true);
-    const op = runInInjectionContext(this.injector, () => this.deleteOrderFn(String(order.id)));
-    effect(() => {
-      const s = op.status();
-      if (s === 'resolved' || s === 'error') {
-        untracked(() => {
-          this.foundOrder.set(null);
-          this.findId.set('');
-          this.deletingOrder.set(false);
-        });
-      }
-    }, { injector: this.injector });
+    const done = (): void => {
+      this.foundOrder.set(null);
+      this.findId.set('');
+      this.deletingOrder.set(false);
+    };
+    this.deleteOrderFn(String(order.id)).subscribe({ error: done, complete: done });
   }
 
   inventoryIcon(status: string): string {

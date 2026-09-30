@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -52,32 +53,26 @@ function _validateResponse(
 export const USERS_ADD_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (
-      body:
-        | UsersAddSocialAccountForAuthenticatedUserBody
-        | Signal<UsersAddSocialAccountForAuthenticatedUserBody>,
-    ) => ReturnType<
-      typeof httpResource<UsersAddSocialAccountForAuthenticatedUserResponse>
-    >
+      body: UsersAddSocialAccountForAuthenticatedUserBody,
+    ) => Observable<UsersAddSocialAccountForAuthenticatedUserResponse>
   >('USERS_ADD_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER');
 
 export function provideUsersAddSocialAccountForAuthenticatedUser(): FactoryProvider {
   return {
     provide: USERS_ADD_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (
-        body:
-          | UsersAddSocialAccountForAuthenticatedUserBody
-          | Signal<UsersAddSocialAccountForAuthenticatedUserBody>,
-      ) =>
-        httpResource<UsersAddSocialAccountForAuthenticatedUserResponse>(
-          () => ({
-            url: `${base}/user/social_accounts`,
-            method: 'POST',
-            body,
-          }),
-          { parse: _validateResponse },
-        );
+      return (body: UsersAddSocialAccountForAuthenticatedUserBody) =>
+        http
+          .request<UsersAddSocialAccountForAuthenticatedUserResponse>(
+            'POST',
+            `${base}/user/social_accounts`,
+            {
+              body,
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -77,43 +78,32 @@ function _validateResponse(
 export const USERS_LIST_PUBLIC_SSH_KEYS_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (
-      params?:
-        | UsersListPublicSshKeysForAuthenticatedUserParams
-        | (() => UsersListPublicSshKeysForAuthenticatedUserParams | undefined),
-    ) => ReturnType<
-      typeof httpResource<UsersListPublicSshKeysForAuthenticatedUserResponse>
-    >
+      params?: UsersListPublicSshKeysForAuthenticatedUserParams,
+    ) => Observable<UsersListPublicSshKeysForAuthenticatedUserResponse>
   >('USERS_LIST_PUBLIC_SSH_KEYS_FOR_AUTHENTICATED_USER');
 
 export function provideUsersListPublicSshKeysForAuthenticatedUser(): FactoryProvider {
   return {
     provide: USERS_LIST_PUBLIC_SSH_KEYS_FOR_AUTHENTICATED_USER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (
-        params?:
-          | UsersListPublicSshKeysForAuthenticatedUserParams
-          | (() =>
-              UsersListPublicSshKeysForAuthenticatedUserParams | undefined),
-      ) =>
-        httpResource<UsersListPublicSshKeysForAuthenticatedUserResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/user/keys`,
-              params: _params as unknown as Record<
+      return (params?: UsersListPublicSshKeysForAuthenticatedUserParams) =>
+        http
+          .request<UsersListPublicSshKeysForAuthenticatedUserResponse>(
+            'GET',
+            `${base}/user/keys`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
                 | boolean
                 | readonly (string | number | boolean)[]
               >,
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

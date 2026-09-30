@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -71,42 +72,36 @@ export const USERS_LIST_ATTESTATIONS = new InjectionToken<
   (
     username: string,
     subjectDigest: string,
-    params?:
-      | UsersListAttestationsParams
-      | (() => UsersListAttestationsParams | undefined),
-  ) => ReturnType<typeof httpResource<UsersListAttestationsResponse>>
+    params?: UsersListAttestationsParams,
+  ) => Observable<UsersListAttestationsResponse>
 >('USERS_LIST_ATTESTATIONS');
 
 export function provideUsersListAttestations(): FactoryProvider {
   return {
     provide: USERS_LIST_ATTESTATIONS,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (
         username: string,
         subjectDigest: string,
-        params?:
-          | UsersListAttestationsParams
-          | (() => UsersListAttestationsParams | undefined),
+        params?: UsersListAttestationsParams,
       ) =>
-        httpResource<UsersListAttestationsResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/users/${username}/attestations/${subjectDigest}`,
-              params: _params as unknown as Record<
+        http
+          .request<UsersListAttestationsResponse>(
+            'GET',
+            `${base}/users/${username}/attestations/${subjectDigest}`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
                 | boolean
                 | readonly (string | number | boolean)[]
               >,
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

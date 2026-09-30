@@ -23,7 +23,7 @@ export class DashboardComponent {
   private findPetsByStatus = inject(FIND_PETS_BY_STATUS);
   private getForecast = inject(GET_V1_FORECAST);
 
-  readonly user = this.getUser('angular');
+  readonly user = rxResource({ stream: () => this.getUser('angular') });
   readonly repos = this.listRepos('angular');
   readonly pets = this.findPetsByStatus({ status: 'available' });
   readonly forecast = rxResource({

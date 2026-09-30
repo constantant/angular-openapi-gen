@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockObservable } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -20,7 +20,7 @@ export function provideUsersListSshSigningKeysForUserMock(
   initialBehavior?: ProviderInitialBehavior<UsersListSshSigningKeysForUserResponse>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockObservable(
     USERS_LIST_SSH_SIGNING_KEYS_FOR_USER,
     'USERS_LIST_SSH_SIGNING_KEYS_FOR_USER',
     initialBehavior,

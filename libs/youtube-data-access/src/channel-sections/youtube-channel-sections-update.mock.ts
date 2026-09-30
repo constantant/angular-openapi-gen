@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockObservable } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -20,7 +20,7 @@ export function provideYoutubeChannelSectionsUpdateMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeChannelSectionsUpdateResponse>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockObservable(
     YOUTUBE_CHANNEL_SECTIONS_UPDATE,
     'YOUTUBE_CHANNEL_SECTIONS_UPDATE',
     initialBehavior,

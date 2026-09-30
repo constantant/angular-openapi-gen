@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -813,31 +814,25 @@ function _validateResponse(value: unknown): YoutubeChannelsListResponse {
 
 export const YOUTUBE_CHANNELS_LIST = new InjectionToken<
   (
-    params?:
-      YoutubeChannelsListParams | (() => YoutubeChannelsListParams | undefined),
-  ) => ReturnType<typeof httpResource<YoutubeChannelsListResponse>>
+    params?: YoutubeChannelsListParams,
+  ) => Observable<YoutubeChannelsListResponse>
 >('YOUTUBE_CHANNELS_LIST');
 
 export function provideYoutubeChannelsList(): FactoryProvider {
   return {
     provide: YOUTUBE_CHANNELS_LIST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        params?:
-          | YoutubeChannelsListParams
-          | (() => YoutubeChannelsListParams | undefined),
-      ) =>
-        httpResource<YoutubeChannelsListResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/youtube/v3/channels`,
-              params: _params as unknown as Record<
+      return (params?: YoutubeChannelsListParams) =>
+        http
+          .request<YoutubeChannelsListResponse>(
+            'GET',
+            `${base}/youtube/v3/channels`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
@@ -852,10 +847,9 @@ export function provideYoutubeChannelsList(): FactoryProvider {
                   ? { Authorization: `Bearer ${oauth2c()}` }
                   : {}),
               },
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

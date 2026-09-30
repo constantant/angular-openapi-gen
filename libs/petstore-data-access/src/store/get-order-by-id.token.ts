@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
@@ -55,21 +56,23 @@ function _validateResponse(value: unknown): GetOrderByIdResponse {
 }
 
 export const GET_ORDER_BY_ID = new InjectionToken<
-  (orderId: string) => ReturnType<typeof httpResource<GetOrderByIdResponse>>
+  (orderId: string) => Observable<GetOrderByIdResponse>
 >('GET_ORDER_BY_ID');
 
 export function provideGetOrderById(): FactoryProvider {
   return {
     provide: GET_ORDER_BY_ID,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(PETSTORE_BASE_URL);
       return (orderId: string) =>
-        httpResource<GetOrderByIdResponse>(
-          () => ({
-            url: `${base}/store/order/${orderId}`,
-          }),
-          { parse: _validateResponse },
-        );
+        http
+          .request<GetOrderByIdResponse>(
+            'GET',
+            `${base}/store/order/${orderId}`,
+            {},
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }
