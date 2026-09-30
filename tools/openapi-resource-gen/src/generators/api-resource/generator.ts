@@ -26,6 +26,7 @@ import { buildEndpoints, parseSecuritySchemes, parseWebhooks } from './parse-spe
 import { renderTokenFile, renderSecurityTokenFile, renderWebhookTokenFile } from './render-token';
 import { renderMockFile } from './render-mock-file';
 import { renderMswFile } from './render-msw-file';
+import { ensurePackageInstalled } from './ensure-package';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
@@ -201,28 +202,14 @@ export async function apiResourceGenerator(
   const specId = options.specId ?? deriveSpecId(baseUrlToken);
 
   if (includeMocks) {
-    try {
-      require.resolve('@constantant/openapi-resource-mocks');
-    } catch {
-      throw new Error(
-        'includeMocks requires @constantant/openapi-resource-mocks to be installed.\n' +
-        'Run: npm install -D @constantant/openapi-resource-mocks',
-      );
-    }
+    ensurePackageInstalled('@constantant/openapi-resource-mocks', 'includeMocks', { dev: true });
   }
 
   const includeMswHandlers = options.includeMswHandlers ?? false;
   const validateResponses = options.validateResponses ?? false;
 
   if (validateResponses) {
-    try {
-      require.resolve('@cfworker/json-schema');
-    } catch {
-      throw new Error(
-        'validateResponses requires @cfworker/json-schema to be installed.\n' +
-        'Run: npm install @cfworker/json-schema',
-      );
-    }
+    ensurePackageInstalled('@cfworker/json-schema', 'validateResponses');
   }
 
   const allowedTags = tagFilter
