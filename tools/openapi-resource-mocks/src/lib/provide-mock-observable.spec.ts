@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { InjectionToken, Injector } from '@angular/core';
 import type { Observable } from 'rxjs';
 import { MockResourceBus } from './mock-resource-bus';
@@ -87,5 +87,108 @@ describe('provideMockObservable', () => {
     fn().subscribe((v) => seen.push(v)).unsubscribe();
     window.__openApiMocks__!['LIST'].resolve(['x']);
     expect(seen).toEqual([]);
+  });
+  describe('panel-set responses replay on the next request', () => {
+    const collect = (obs: Observable<string[]>) => {
+      const out = { values: [] as string[][], error: undefined as unknown, done: false };
+      obs.subscribe({ next: (v) => out.values.push(v), error: (e) => (out.error = e), complete: () => (out.done = true) });
+      return out;
+    };
+
+    it('a resolve after completion is replayed by the next call, over initialBehavior', () => {
+      const fn = setup({ value: ['initial'] });
+      expect(collect(fn()).values).toEqual([['initial']]);
+      window.__openApiMocks__!['LIST'].resolve(['from-panel']); // nothing pending
+      expect(collect(fn()).values).toEqual([['from-panel']]);
+      expect(collect(fn()).values).toEqual([['from-panel']]); // sticks
+    });
+
+    it('a fail after completion is replayed as an error', () => {
+      const fn = setup({ value: ['initial'] });
+      collect(fn());
+      window.__openApiMocks__!['LIST'].fail('503');
+      expect(collect(fn()).error).toBe('503');
+    });
+
+    it('the latest panel edit wins', () => {
+      const fn = setup({ value: ['initial'] });
+      collect(fn());
+      window.__openApiMocks__!['LIST'].fail('503');
+      collect(fn());
+      window.__openApiMocks__!['LIST'].resolve(['fixed']);
+      expect(collect(fn()).values).toEqual([['fixed']]);
+    });
+
+    it('replays on re-subscription of an existing observable too', () => {
+      const fn = setup({ value: ['initial'] });
+      const obs = fn();
+      collect(obs);
+      window.__openApiMocks__!['LIST'].resolve(['from-panel']);
+      expect(collect(obs).values).toEqual([['from-panel']]);
+    });
+
+    it('a resolve that settles a pending request is delivered, not stored', () => {
+      const fn = setup(); // no initialBehavior: request stays pending
+      const first = collect(fn());
+      window.__openApiMocks__!['LIST'].resolve(['x']);
+      expect(first.values).toEqual([['x']]);
+      // Nothing was stored: a later call with no initialBehavior is pending again.
+      expect(collect(fn())).toEqual({ values: [], error: undefined, done: false });
+    });
+
+    it('a delayed initialBehavior completes normally and a later panel edit still replays', () => {
+      vi.useFakeTimers();
+      try {
+        const fn = setup({ value: ['initial'], delay: 100 });
+        const out = collect(fn());
+        vi.advanceTimersByTime(100);
+        expect(out.values).toEqual([['initial']]);
+        // A later panel edit (nothing pending) is what the next call returns.
+        window.__openApiMocks__!['LIST'].resolve(['edited']);
+        const next = collect(fn());
+        expect(next.values).toEqual([['edited']]);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('a panel resolve during a delayed initial behavior wins and cancels the timer', () => {
+      vi.useFakeTimers();
+      try {
+        const fn = setup({ value: ['slow'], delay: 100 });
+        const out = collect(fn());
+        window.__openApiMocks__!['LIST'].resolve(['fast']);
+        vi.advanceTimersByTime(200);
+        expect(out.values).toEqual([['fast']]); // no second emission from the timer
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('unsubscribing before a delayed initial behavior fires stores nothing', () => {
+      vi.useFakeTimers();
+      try {
+        const fn = setup({ value: ['initial'], delay: 100 });
+        fn().subscribe().unsubscribe();
+        vi.advanceTimersByTime(200);
+        vi.advanceTimersByTime(0);
+        const out = collect(fn());
+        vi.advanceTimersByTime(100);
+        expect(out.values).toEqual([['initial']]);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('catch mode still holds a request even when an override exists', () => {
+      const fn = setup({ value: ['initial'] });
+      collect(fn());
+      window.__openApiMocks__!['LIST'].resolve(['from-panel']);
+      bus.setCatchMode('LIST', true);
+      const out = collect(fn());
+      expect(out.values).toEqual([]); // held
+      window.__openApiMocks__!['LIST'].resolve(['released']);
+      expect(out.values).toEqual([['released']]);
+    });
   });
 });

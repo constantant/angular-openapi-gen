@@ -1226,6 +1226,11 @@ Nothing is sent until the returned observable is subscribed to. Use `rxResource`
 readonly pets = rxResource({ stream: () => this.findPets({ status: 'available' }) });
 ```
 
+> **`rxResource` gotcha:** unlike an `httpResource`, an `rxResource`'s `value()` **throws** while
+> the resource is in an error state. Read it behind `hasValue()` (or only inside an
+> `@else` after an `@if (res.error())` branch), or a computed that reads it can abort change
+> detection and leave the template half-rendered.
+
 Mix clients in one lib with `--httpClientTags=pet,store` or `--httpClientOperations=getPetById`.
 With `--includeMocks`, HttpClient endpoints get `provideMockObservable()` mock providers
 (the same DevTools controls work); the rest keep `provideMockResource()`.

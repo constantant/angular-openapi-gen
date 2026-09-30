@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -107,40 +108,32 @@ function _validateResponse(value: unknown): YoutubeThirdPartyLinksListResponse {
 
 export const YOUTUBE_THIRD_PARTY_LINKS_LIST = new InjectionToken<
   (
-    params?:
-      | YoutubeThirdPartyLinksListParams
-      | (() => YoutubeThirdPartyLinksListParams | undefined),
-  ) => ReturnType<typeof httpResource<YoutubeThirdPartyLinksListResponse>>
+    params?: YoutubeThirdPartyLinksListParams,
+  ) => Observable<YoutubeThirdPartyLinksListResponse>
 >('YOUTUBE_THIRD_PARTY_LINKS_LIST');
 
 export function provideYoutubeThirdPartyLinksList(): FactoryProvider {
   return {
     provide: YOUTUBE_THIRD_PARTY_LINKS_LIST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
-      return (
-        params?:
-          | YoutubeThirdPartyLinksListParams
-          | (() => YoutubeThirdPartyLinksListParams | undefined),
-      ) =>
-        httpResource<YoutubeThirdPartyLinksListResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/youtube/v3/thirdPartyLinks`,
-              params: _params as unknown as Record<
+      return (params?: YoutubeThirdPartyLinksListParams) =>
+        http
+          .request<YoutubeThirdPartyLinksListResponse>(
+            'GET',
+            `${base}/youtube/v3/thirdPartyLinks`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
                 | boolean
                 | readonly (string | number | boolean)[]
               >,
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

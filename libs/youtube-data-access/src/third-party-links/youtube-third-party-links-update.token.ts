@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -92,30 +93,26 @@ function _validateResponse(
 
 export const YOUTUBE_THIRD_PARTY_LINKS_UPDATE = new InjectionToken<
   (
-    body:
-      | YoutubeThirdPartyLinksUpdateBody
-      | Signal<YoutubeThirdPartyLinksUpdateBody>,
-  ) => ReturnType<typeof httpResource<YoutubeThirdPartyLinksUpdateResponse>>
+    body: YoutubeThirdPartyLinksUpdateBody,
+  ) => Observable<YoutubeThirdPartyLinksUpdateResponse>
 >('YOUTUBE_THIRD_PARTY_LINKS_UPDATE');
 
 export function provideYoutubeThirdPartyLinksUpdate(): FactoryProvider {
   return {
     provide: YOUTUBE_THIRD_PARTY_LINKS_UPDATE,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
-      return (
-        body:
-          | YoutubeThirdPartyLinksUpdateBody
-          | Signal<YoutubeThirdPartyLinksUpdateBody>,
-      ) =>
-        httpResource<YoutubeThirdPartyLinksUpdateResponse>(
-          () => ({
-            url: `${base}/youtube/v3/thirdPartyLinks`,
-            method: 'PUT',
-            body,
-          }),
-          { parse: _validateResponse },
-        );
+      return (body: YoutubeThirdPartyLinksUpdateBody) =>
+        http
+          .request<YoutubeThirdPartyLinksUpdateResponse>(
+            'PUT',
+            `${base}/youtube/v3/thirdPartyLinks`,
+            {
+              body,
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

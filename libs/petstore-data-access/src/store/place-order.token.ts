@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
@@ -59,25 +60,21 @@ function _validateResponse(value: unknown): PlaceOrderResponse {
 }
 
 export const PLACE_ORDER = new InjectionToken<
-  (
-    body: PlaceOrderBody | Signal<PlaceOrderBody>,
-  ) => ReturnType<typeof httpResource<PlaceOrderResponse>>
+  (body: PlaceOrderBody) => Observable<PlaceOrderResponse>
 >('PLACE_ORDER');
 
 export function providePlaceOrder(): FactoryProvider {
   return {
     provide: PLACE_ORDER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(PETSTORE_BASE_URL);
-      return (body: PlaceOrderBody | Signal<PlaceOrderBody>) =>
-        httpResource<PlaceOrderResponse>(
-          () => ({
-            url: `${base}/store/order`,
-            method: 'POST',
+      return (body: PlaceOrderBody) =>
+        http
+          .request<PlaceOrderResponse>('POST', `${base}/store/order`, {
             body,
-          }),
-          { parse: _validateResponse },
-        );
+          })
+          .pipe(map(_validateResponse));
     },
   };
 }

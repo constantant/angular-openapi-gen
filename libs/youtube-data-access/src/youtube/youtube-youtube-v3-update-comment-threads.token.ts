@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -326,32 +327,26 @@ function _validateResponse(
 
 export const YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS = new InjectionToken<
   (
-    body:
-      | YoutubeYoutubeV3UpdateCommentThreadsBody
-      | Signal<YoutubeYoutubeV3UpdateCommentThreadsBody>,
-  ) => ReturnType<
-    typeof httpResource<YoutubeYoutubeV3UpdateCommentThreadsResponse>
-  >
+    body: YoutubeYoutubeV3UpdateCommentThreadsBody,
+  ) => Observable<YoutubeYoutubeV3UpdateCommentThreadsResponse>
 >('YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS');
 
 export function provideYoutubeYoutubeV3UpdateCommentThreads(): FactoryProvider {
   return {
     provide: YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
-      return (
-        body:
-          | YoutubeYoutubeV3UpdateCommentThreadsBody
-          | Signal<YoutubeYoutubeV3UpdateCommentThreadsBody>,
-      ) =>
-        httpResource<YoutubeYoutubeV3UpdateCommentThreadsResponse>(
-          () => ({
-            url: `${base}/youtube/v3/commentThreads`,
-            method: 'PUT',
-            body,
-          }),
-          { parse: _validateResponse },
-        );
+      return (body: YoutubeYoutubeV3UpdateCommentThreadsBody) =>
+        http
+          .request<YoutubeYoutubeV3UpdateCommentThreadsResponse>(
+            'PUT',
+            `${base}/youtube/v3/commentThreads`,
+            {
+              body,
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import type { Observable } from 'rxjs';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
@@ -10,19 +11,21 @@ export type UsersDeleteGpgKeyForAuthenticatedUserError =
   | paths['/user/gpg_keys/{gpg_key_id}']['delete']['responses']['422']['content']['application/json'];
 
 export const USERS_DELETE_GPG_KEY_FOR_AUTHENTICATED_USER = new InjectionToken<
-  (gpgKeyId: string) => ReturnType<typeof httpResource<unknown>>
+  (gpgKeyId: string) => Observable<unknown>
 >('USERS_DELETE_GPG_KEY_FOR_AUTHENTICATED_USER');
 
 export function provideUsersDeleteGpgKeyForAuthenticatedUser(): FactoryProvider {
   return {
     provide: USERS_DELETE_GPG_KEY_FOR_AUTHENTICATED_USER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (gpgKeyId: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/user/gpg_keys/${gpgKeyId}`,
-          method: 'DELETE',
-        }));
+        http.request<unknown>(
+          'DELETE',
+          `${base}/user/gpg_keys/${gpgKeyId}`,
+          {},
+        );
     },
   };
 }

@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockObservable } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -19,7 +19,7 @@ export function provideYoutubeCommentsSetModerationStatusMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockObservable(
     YOUTUBE_COMMENTS_SET_MODERATION_STATUS,
     'YOUTUBE_COMMENTS_SET_MODERATION_STATUS',
     initialBehavior,

@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import type { Observable } from 'rxjs';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
@@ -8,22 +9,21 @@ export type UsersDeleteAttestationsByIdError =
   | paths['/users/{username}/attestations/{attestation_id}']['delete']['responses']['404']['content']['application/json'];
 
 export const USERS_DELETE_ATTESTATIONS_BY_ID = new InjectionToken<
-  (
-    username: string,
-    attestationId: string,
-  ) => ReturnType<typeof httpResource<unknown>>
+  (username: string, attestationId: string) => Observable<unknown>
 >('USERS_DELETE_ATTESTATIONS_BY_ID');
 
 export function provideUsersDeleteAttestationsById(): FactoryProvider {
   return {
     provide: USERS_DELETE_ATTESTATIONS_BY_ID,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (username: string, attestationId: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/users/${username}/attestations/${attestationId}`,
-          method: 'DELETE',
-        }));
+        http.request<unknown>(
+          'DELETE',
+          `${base}/users/${username}/attestations/${attestationId}`,
+          {},
+        );
     },
   };
 }

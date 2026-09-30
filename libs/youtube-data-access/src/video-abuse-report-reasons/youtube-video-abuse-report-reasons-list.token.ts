@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -109,34 +110,25 @@ function _validateResponse(
 
 export const YOUTUBE_VIDEO_ABUSE_REPORT_REASONS_LIST = new InjectionToken<
   (
-    params?:
-      | YoutubeVideoAbuseReportReasonsListParams
-      | (() => YoutubeVideoAbuseReportReasonsListParams | undefined),
-  ) => ReturnType<
-    typeof httpResource<YoutubeVideoAbuseReportReasonsListResponse>
-  >
+    params?: YoutubeVideoAbuseReportReasonsListParams,
+  ) => Observable<YoutubeVideoAbuseReportReasonsListResponse>
 >('YOUTUBE_VIDEO_ABUSE_REPORT_REASONS_LIST');
 
 export function provideYoutubeVideoAbuseReportReasonsList(): FactoryProvider {
   return {
     provide: YOUTUBE_VIDEO_ABUSE_REPORT_REASONS_LIST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        params?:
-          | YoutubeVideoAbuseReportReasonsListParams
-          | (() => YoutubeVideoAbuseReportReasonsListParams | undefined),
-      ) =>
-        httpResource<YoutubeVideoAbuseReportReasonsListResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/youtube/v3/videoAbuseReportReasons`,
-              params: _params as unknown as Record<
+      return (params?: YoutubeVideoAbuseReportReasonsListParams) =>
+        http
+          .request<YoutubeVideoAbuseReportReasonsListResponse>(
+            'GET',
+            `${base}/youtube/v3/videoAbuseReportReasons`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
@@ -151,10 +143,9 @@ export function provideYoutubeVideoAbuseReportReasonsList(): FactoryProvider {
                   ? { Authorization: `Bearer ${oauth2c()}` }
                   : {}),
               },
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

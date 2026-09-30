@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -50,23 +51,23 @@ export const USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (
       sshSigningKeyId: string,
-    ) => ReturnType<
-      typeof httpResource<UsersGetSshSigningKeyForAuthenticatedUserResponse>
-    >
+    ) => Observable<UsersGetSshSigningKeyForAuthenticatedUserResponse>
   >('USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER');
 
 export function provideUsersGetSshSigningKeyForAuthenticatedUser(): FactoryProvider {
   return {
     provide: USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (sshSigningKeyId: string) =>
-        httpResource<UsersGetSshSigningKeyForAuthenticatedUserResponse>(
-          () => ({
-            url: `${base}/user/ssh_signing_keys/${sshSigningKeyId}`,
-          }),
-          { parse: _validateResponse },
-        );
+        http
+          .request<UsersGetSshSigningKeyForAuthenticatedUserResponse>(
+            'GET',
+            `${base}/user/ssh_signing_keys/${sshSigningKeyId}`,
+            {},
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

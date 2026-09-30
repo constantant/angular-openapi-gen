@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -145,35 +146,24 @@ function _validateResponse(value: unknown): UsersListResponse {
 }
 
 export const USERS_LIST = new InjectionToken<
-  (
-    params?: UsersListParams | (() => UsersListParams | undefined),
-  ) => ReturnType<typeof httpResource<UsersListResponse>>
+  (params?: UsersListParams) => Observable<UsersListResponse>
 >('USERS_LIST');
 
 export function provideUsersList(): FactoryProvider {
   return {
     provide: USERS_LIST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (params?: UsersListParams | (() => UsersListParams | undefined)) =>
-        httpResource<UsersListResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/users`,
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-            };
-          },
-          { parse: _validateResponse },
-        );
+      return (params?: UsersListParams) =>
+        http
+          .request<UsersListResponse>('GET', `${base}/users`, {
+            params: params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          })
+          .pipe(map(_validateResponse));
     },
   };
 }

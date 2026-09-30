@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import type { Observable } from 'rxjs';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
@@ -10,25 +11,19 @@ export type YoutubeVideosReportAbuseBody = NonNullable<
 >['content']['application/json'];
 
 export const YOUTUBE_VIDEOS_REPORT_ABUSE = new InjectionToken<
-  (
-    body: YoutubeVideosReportAbuseBody | Signal<YoutubeVideosReportAbuseBody>,
-  ) => ReturnType<typeof httpResource<unknown>>
+  (body: YoutubeVideosReportAbuseBody) => Observable<unknown>
 >('YOUTUBE_VIDEOS_REPORT_ABUSE');
 
 export function provideYoutubeVideosReportAbuse(): FactoryProvider {
   return {
     provide: YOUTUBE_VIDEOS_REPORT_ABUSE,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        body:
-          YoutubeVideosReportAbuseBody | Signal<YoutubeVideosReportAbuseBody>,
-      ) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/youtube/v3/videos/reportAbuse`,
-          method: 'POST',
+      return (body: YoutubeVideosReportAbuseBody) =>
+        http.request<unknown>('POST', `${base}/youtube/v3/videos/reportAbuse`, {
           body,
           headers: {
             ...(oauth2?.() != null
@@ -38,7 +33,7 @@ export function provideYoutubeVideosReportAbuse(): FactoryProvider {
               ? { Authorization: `Bearer ${oauth2c()}` }
               : {}),
           },
-        }));
+        });
     },
   };
 }

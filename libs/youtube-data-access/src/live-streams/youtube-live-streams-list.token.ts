@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -314,32 +315,25 @@ function _validateResponse(value: unknown): YoutubeLiveStreamsListResponse {
 
 export const YOUTUBE_LIVE_STREAMS_LIST = new InjectionToken<
   (
-    params?:
-      | YoutubeLiveStreamsListParams
-      | (() => YoutubeLiveStreamsListParams | undefined),
-  ) => ReturnType<typeof httpResource<YoutubeLiveStreamsListResponse>>
+    params?: YoutubeLiveStreamsListParams,
+  ) => Observable<YoutubeLiveStreamsListResponse>
 >('YOUTUBE_LIVE_STREAMS_LIST');
 
 export function provideYoutubeLiveStreamsList(): FactoryProvider {
   return {
     provide: YOUTUBE_LIVE_STREAMS_LIST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        params?:
-          | YoutubeLiveStreamsListParams
-          | (() => YoutubeLiveStreamsListParams | undefined),
-      ) =>
-        httpResource<YoutubeLiveStreamsListResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/youtube/v3/liveStreams`,
-              params: _params as unknown as Record<
+      return (params?: YoutubeLiveStreamsListParams) =>
+        http
+          .request<YoutubeLiveStreamsListResponse>(
+            'GET',
+            `${base}/youtube/v3/liveStreams`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
@@ -354,10 +348,9 @@ export function provideYoutubeLiveStreamsList(): FactoryProvider {
                   ? { Authorization: `Bearer ${oauth2c()}` }
                   : {}),
               },
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

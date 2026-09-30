@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -93,32 +94,25 @@ function _validateResponse(value: unknown): YoutubeI18nLanguagesListResponse {
 
 export const YOUTUBE_I18N_LANGUAGES_LIST = new InjectionToken<
   (
-    params?:
-      | YoutubeI18nLanguagesListParams
-      | (() => YoutubeI18nLanguagesListParams | undefined),
-  ) => ReturnType<typeof httpResource<YoutubeI18nLanguagesListResponse>>
+    params?: YoutubeI18nLanguagesListParams,
+  ) => Observable<YoutubeI18nLanguagesListResponse>
 >('YOUTUBE_I18N_LANGUAGES_LIST');
 
 export function provideYoutubeI18nLanguagesList(): FactoryProvider {
   return {
     provide: YOUTUBE_I18N_LANGUAGES_LIST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        params?:
-          | YoutubeI18nLanguagesListParams
-          | (() => YoutubeI18nLanguagesListParams | undefined),
-      ) =>
-        httpResource<YoutubeI18nLanguagesListResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/youtube/v3/i18nLanguages`,
-              params: _params as unknown as Record<
+      return (params?: YoutubeI18nLanguagesListParams) =>
+        http
+          .request<YoutubeI18nLanguagesListResponse>(
+            'GET',
+            `${base}/youtube/v3/i18nLanguages`,
+            {
+              params: params as unknown as Record<
                 string,
                 | string
                 | number
@@ -133,10 +127,9 @@ export function provideYoutubeI18nLanguagesList(): FactoryProvider {
                   ? { Authorization: `Bearer ${oauth2c()}` }
                   : {}),
               },
-            };
-          },
-          { parse: _validateResponse },
-        );
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

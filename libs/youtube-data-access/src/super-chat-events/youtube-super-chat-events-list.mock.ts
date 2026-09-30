@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockObservable } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -20,7 +20,7 @@ export function provideYoutubeSuperChatEventsListMock(
   initialBehavior?: ProviderInitialBehavior<YoutubeSuperChatEventsListResponse>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockObservable(
     YOUTUBE_SUPER_CHAT_EVENTS_LIST,
     'YOUTUBE_SUPER_CHAT_EVENTS_LIST',
     initialBehavior,

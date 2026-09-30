@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
@@ -27,25 +28,24 @@ function _validateResponse(value: unknown): GetInventoryResponse {
 }
 
 export const GET_INVENTORY = new InjectionToken<
-  () => ReturnType<typeof httpResource<GetInventoryResponse>>
+  () => Observable<GetInventoryResponse>
 >('GET_INVENTORY');
 
 export function provideGetInventory(): FactoryProvider {
   return {
     provide: GET_INVENTORY,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(PETSTORE_BASE_URL);
       const apiKey = inject(API_KEY, { optional: true });
       return () =>
-        httpResource<GetInventoryResponse>(
-          () => ({
-            url: `${base}/store/inventory`,
+        http
+          .request<GetInventoryResponse>('GET', `${base}/store/inventory`, {
             headers: {
               ...(apiKey?.() != null ? { api_key: `${apiKey()}` } : {}),
             },
-          }),
-          { parse: _validateResponse },
-        );
+          })
+          .pipe(map(_validateResponse));
     },
   };
 }

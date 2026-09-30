@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -89,28 +90,26 @@ function _validateResponse(value: unknown): UsersListAttestationsBulkResponse {
 export const USERS_LIST_ATTESTATIONS_BULK = new InjectionToken<
   (
     username: string,
-    body: UsersListAttestationsBulkBody | Signal<UsersListAttestationsBulkBody>,
-  ) => ReturnType<typeof httpResource<UsersListAttestationsBulkResponse>>
+    body: UsersListAttestationsBulkBody,
+  ) => Observable<UsersListAttestationsBulkResponse>
 >('USERS_LIST_ATTESTATIONS_BULK');
 
 export function provideUsersListAttestationsBulk(): FactoryProvider {
   return {
     provide: USERS_LIST_ATTESTATIONS_BULK,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
-      return (
-        username: string,
-        body:
-          UsersListAttestationsBulkBody | Signal<UsersListAttestationsBulkBody>,
-      ) =>
-        httpResource<UsersListAttestationsBulkResponse>(
-          () => ({
-            url: `${base}/users/${username}/attestations/bulk-list`,
-            method: 'POST',
-            body,
-          }),
-          { parse: _validateResponse },
-        );
+      return (username: string, body: UsersListAttestationsBulkBody) =>
+        http
+          .request<UsersListAttestationsBulkResponse>(
+            'POST',
+            `${base}/users/${username}/attestations/bulk-list`,
+            {
+              body,
+            },
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

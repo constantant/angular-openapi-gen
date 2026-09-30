@@ -1,5 +1,6 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -323,39 +324,36 @@ function _validateResponse(value: unknown): YoutubeSubscriptionsInsertResponse {
 
 export const YOUTUBE_SUBSCRIPTIONS_INSERT = new InjectionToken<
   (
-    body:
-      YoutubeSubscriptionsInsertBody | Signal<YoutubeSubscriptionsInsertBody>,
-  ) => ReturnType<typeof httpResource<YoutubeSubscriptionsInsertResponse>>
+    body: YoutubeSubscriptionsInsertBody,
+  ) => Observable<YoutubeSubscriptionsInsertResponse>
 >('YOUTUBE_SUBSCRIPTIONS_INSERT');
 
 export function provideYoutubeSubscriptionsInsert(): FactoryProvider {
   return {
     provide: YOUTUBE_SUBSCRIPTIONS_INSERT,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (
-        body:
-          | YoutubeSubscriptionsInsertBody
-          | Signal<YoutubeSubscriptionsInsertBody>,
-      ) =>
-        httpResource<YoutubeSubscriptionsInsertResponse>(
-          () => ({
-            url: `${base}/youtube/v3/subscriptions`,
-            method: 'POST',
-            body,
-            headers: {
-              ...(oauth2?.() != null
-                ? { Authorization: `Bearer ${oauth2()}` }
-                : {}),
-              ...(oauth2c?.() != null
-                ? { Authorization: `Bearer ${oauth2c()}` }
-                : {}),
+      return (body: YoutubeSubscriptionsInsertBody) =>
+        http
+          .request<YoutubeSubscriptionsInsertResponse>(
+            'POST',
+            `${base}/youtube/v3/subscriptions`,
+            {
+              body,
+              headers: {
+                ...(oauth2?.() != null
+                  ? { Authorization: `Bearer ${oauth2()}` }
+                  : {}),
+                ...(oauth2c?.() != null
+                  ? { Authorization: `Bearer ${oauth2c()}` }
+                  : {}),
+              },
             },
-          }),
-          { parse: _validateResponse },
-        );
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

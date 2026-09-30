@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import type { Observable } from 'rxjs';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
@@ -10,19 +11,17 @@ export type UsersBlockError =
   | paths['/user/blocks/{username}']['put']['responses']['422']['content']['application/json'];
 
 export const USERS_BLOCK = new InjectionToken<
-  (username: string) => ReturnType<typeof httpResource<unknown>>
+  (username: string) => Observable<unknown>
 >('USERS_BLOCK');
 
 export function provideUsersBlock(): FactoryProvider {
   return {
     provide: USERS_BLOCK,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (username: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/user/blocks/${username}`,
-          method: 'PUT',
-        }));
+        http.request<unknown>('PUT', `${base}/user/blocks/${username}`, {});
     },
   };
 }

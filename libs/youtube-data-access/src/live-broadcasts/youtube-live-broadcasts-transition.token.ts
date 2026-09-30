@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
@@ -380,32 +381,34 @@ function _validateResponse(
 }
 
 export const YOUTUBE_LIVE_BROADCASTS_TRANSITION = new InjectionToken<
-  () => ReturnType<typeof httpResource<YoutubeLiveBroadcastsTransitionResponse>>
+  () => Observable<YoutubeLiveBroadcastsTransitionResponse>
 >('YOUTUBE_LIVE_BROADCASTS_TRANSITION');
 
 export function provideYoutubeLiveBroadcastsTransition(): FactoryProvider {
   return {
     provide: YOUTUBE_LIVE_BROADCASTS_TRANSITION,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
       return () =>
-        httpResource<YoutubeLiveBroadcastsTransitionResponse>(
-          () => ({
-            url: `${base}/youtube/v3/liveBroadcasts/transition`,
-            method: 'POST',
-            headers: {
-              ...(oauth2?.() != null
-                ? { Authorization: `Bearer ${oauth2()}` }
-                : {}),
-              ...(oauth2c?.() != null
-                ? { Authorization: `Bearer ${oauth2c()}` }
-                : {}),
+        http
+          .request<YoutubeLiveBroadcastsTransitionResponse>(
+            'POST',
+            `${base}/youtube/v3/liveBroadcasts/transition`,
+            {
+              headers: {
+                ...(oauth2?.() != null
+                  ? { Authorization: `Bearer ${oauth2()}` }
+                  : {}),
+                ...(oauth2c?.() != null
+                  ? { Authorization: `Bearer ${oauth2c()}` }
+                  : {}),
+              },
             },
-          }),
-          { parse: _validateResponse },
-        );
+          )
+          .pipe(map(_validateResponse));
     },
   };
 }

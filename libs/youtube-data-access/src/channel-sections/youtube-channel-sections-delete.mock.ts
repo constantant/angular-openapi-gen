@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockObservable } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -19,7 +19,7 @@ export function provideYoutubeChannelSectionsDeleteMock(
   initialBehavior?: ProviderInitialBehavior<unknown>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockObservable(
     YOUTUBE_CHANNEL_SECTIONS_DELETE,
     'YOUTUBE_CHANNEL_SECTIONS_DELETE',
     initialBehavior,

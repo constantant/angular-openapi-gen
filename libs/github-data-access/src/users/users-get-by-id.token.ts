@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths, components } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
@@ -482,21 +483,19 @@ function _validateResponse(value: unknown): UsersGetByIdResponse {
 }
 
 export const USERS_GET_BY_ID = new InjectionToken<
-  (accountId: string) => ReturnType<typeof httpResource<UsersGetByIdResponse>>
+  (accountId: string) => Observable<UsersGetByIdResponse>
 >('USERS_GET_BY_ID');
 
 export function provideUsersGetById(): FactoryProvider {
   return {
     provide: USERS_GET_BY_ID,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (accountId: string) =>
-        httpResource<UsersGetByIdResponse>(
-          () => ({
-            url: `${base}/user/${accountId}`,
-          }),
-          { parse: _validateResponse },
-        );
+        http
+          .request<UsersGetByIdResponse>('GET', `${base}/user/${accountId}`, {})
+          .pipe(map(_validateResponse));
     },
   };
 }
