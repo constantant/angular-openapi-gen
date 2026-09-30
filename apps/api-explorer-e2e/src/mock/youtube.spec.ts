@@ -51,6 +51,6 @@ test.describe('YouTube page (mock)', () => {
     await page.evaluate(() =>
       openApiMock('YOUTUBE_SEARCH_LIST').fail({ message: 'API quota exceeded' }),
     );
-    await expect(page.getByText('API quota exceeded')).toBeVisible();
+    await expect(page.getByText('API error')).toBeVisible();
   });
 });

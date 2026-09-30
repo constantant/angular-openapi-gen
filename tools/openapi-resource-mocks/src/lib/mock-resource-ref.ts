@@ -38,6 +38,8 @@ export interface MockResourceRef<T> {
 
 export interface MockResourceRefInternal<T> extends MockResourceRef<T> {
   _notifyRequest(args: unknown[]): void;
+  /** Called synchronously on resolve() / fail(). Used by Observable-based mocks to emit. */
+  _onSettle(cb: (outcome: { value: T } | { error: unknown }) => void): () => void;
 }
 
 export function createMockResourceRef<T>(
@@ -49,6 +51,7 @@ export function createMockResourceRef<T>(
   const _progress = signal<MockProgress | undefined>(undefined);
   const _requestCount = signal(0);
   const requestListeners = new Set<(args: unknown[]) => void>();
+  const settleListeners = new Set<(outcome: { value: T } | { error: unknown }) => void>();
 
   if (initialState) {
     if ('value' in initialState) {
@@ -78,6 +81,7 @@ export function createMockResourceRef<T>(
       _error.set(undefined);
       _progress.set(undefined);
       _status.set('resolved');
+      settleListeners.forEach((cb) => cb({ value: v }));
     },
     resolveAfter(ms: number, v: T): void {
       ref.setLoading();
@@ -91,6 +95,7 @@ export function createMockResourceRef<T>(
       _error.set(e);
       // progress intentionally kept — shows where transfer was when it failed
       _status.set('error');
+      settleListeners.forEach((cb) => cb({ error: e }));
     },
     reset(): void {
       _value.set(undefined);
@@ -139,6 +144,10 @@ export function createMockResourceRef<T>(
     onRequest: (cb) => {
       requestListeners.add(cb);
       return () => requestListeners.delete(cb);
+    },
+    _onSettle: (cb) => {
+      settleListeners.add(cb);
+      return () => settleListeners.delete(cb);
     },
     _notifyRequest: (rawArgs) => {
       _requestCount.update((n) => n + 1);

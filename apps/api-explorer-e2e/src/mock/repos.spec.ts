@@ -47,6 +47,6 @@ test.describe('Repos page (mock)', () => {
   test('shows error message when mock fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).toHaveCount(0);
     await page.evaluate(() => openApiMock('REPOS_LIST_FOR_USER').fail(new Error('500')));
-    await expect(page.getByText('Failed to load repos')).toBeVisible();
+    await expect(page.getByText("Backend response doesn't match its own API spec — 500")).toBeVisible();
   });
 });

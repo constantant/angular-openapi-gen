@@ -1,4 +1,5 @@
 import { Component, effect, inject } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import {
@@ -25,11 +26,14 @@ export class DashboardComponent {
   readonly user = this.getUser('angular');
   readonly repos = this.listRepos('angular');
   readonly pets = this.findPetsByStatus({ status: 'available' });
-  readonly forecast = this.getForecast({
-    latitude: '52.374',
-    longitude: '4.89',
-    current: ['temperature_2m', 'weather_code'],
-    timezone: 'Europe/Amsterdam',
+  readonly forecast = rxResource({
+    stream: () =>
+      this.getForecast({
+      latitude: '52.374',
+      longitude: '4.89',
+      current: ['temperature_2m', 'weather_code'],
+      timezone: 'Europe/Amsterdam',
+      }),
   });
 
   private readonly logUserError = effect(() => {
