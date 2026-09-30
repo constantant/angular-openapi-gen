@@ -491,9 +491,16 @@ Same as `provideMockResource`, for tokens generated with `clientType: 'httpClien
 returning `Observable<T>`). The key is registered when the function is called; every
 **subscription** counts as a request. The observable emits once and completes on `resolve`, or
 errors on `fail`; catch mode, delays and the DevTools controls behave as for resources, with one
-difference: like a real `HttpClient` call, the observable is finished once it has emitted, so
-`resolve` / `fail` from DevTools only reach a request that is still pending (loading, delayed or
-caught). Use catch mode to hold a request open while you choose its response. Requires `rxjs` ^7.8.
+difference: like a real `HttpClient` call, an observable is finished once it has emitted. So:
+
+- a `resolve` / `fail` that arrives while a request is **pending** (loading, delayed or caught)
+  answers that request;
+- one that arrives when **nothing is pending** (e.g. from the DevTools Respond tab after the page
+  loaded) is remembered per key and replayed by the **next** request, ahead of `initialBehavior`.
+  Trigger that request with the app's own reload / refetch. The latest panel edit wins and it
+  sticks until the page reloads.
+
+Use catch mode to hold a request open while you choose its response. Requires `rxjs` ^7.8.
 
 ### `MockProviderOptions`
 
