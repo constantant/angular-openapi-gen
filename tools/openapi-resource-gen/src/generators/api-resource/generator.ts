@@ -48,6 +48,16 @@ export interface ApiResourceGeneratorSchema {
   includeMswHandlers?: boolean;
   /** Validate JSON responses at runtime against the spec schema via httpResource's `parse` hook. Requires @cfworker/json-schema to be installed. */
   validateResponses?: boolean;
+  /** HTTP primitive wrapped by generated tokens. `httpClient` yields `Observable<T>` instead of an httpResource. Default: httpResource. */
+  clientType?: 'httpResource' | 'httpClient';
+  /** Comma-separated tags whose endpoints use HttpClient regardless of `clientType`. */
+  httpClientTags?: string;
+  /** Comma-separated operationIds that use HttpClient regardless of `clientType`. */
+  httpClientOperations?: string;
+}
+
+function splitList(v: string | undefined): Set<string> {
+  return new Set((v ?? '').split(',').map((t) => t.trim()).filter(Boolean));
 }
 
 /** Derive a specId from the baseUrlToken: PETSTORE_BASE_URL → petstore */
@@ -352,6 +362,25 @@ export async function apiResourceGenerator(
 
     const endpoints = buildEndpoints(api, allowedTags, namingConvention);
 
+    // Per-endpoint client selection: lib-wide default, overridden per tag / operationId.
+    const httpClientTags = splitList(options.httpClientTags);
+    const httpClientOps = splitList(options.httpClientOperations);
+    const unmatched = [
+      ...[...httpClientTags].filter((t) => !endpoints.some((e) => e.tag === t)).map((t) => `tag "${t}"`),
+      ...[...httpClientOps].filter((o) => !endpoints.some((e) => e.operationId === o)).map((o) => `operationId "${o}"`),
+    ];
+    if (unmatched.length > 0) {
+      throw new Error(
+        `httpClientTags/httpClientOperations matched no endpoints: ${unmatched.join(', ')}`,
+      );
+    }
+    const clientFor = (ep: (typeof endpoints)[number]): 'httpResource' | 'httpClient' =>
+      options.clientType === 'httpClient' ||
+      httpClientTags.has(ep.tag) ||
+      httpClientOps.has(ep.operationId)
+        ? 'httpClient'
+        : 'httpResource';
+
     // 6. Group by tag
     const byTag = new Map<string, typeof endpoints>();
     for (const ep of endpoints) {
@@ -365,12 +394,20 @@ export async function apiResourceGenerator(
 
       for (const ep of tagEndpoints) {
         const filePath = joinPathFragments(tagDir, `${ep.fileName}.token.ts`);
-        tree.write(filePath, renderTokenFile(ep, baseUrlToken, providedIn, schemesByName, options.dateType ?? 'string', options.readonlyResponses ?? false, validateResponses));
+        const client = clientFor(ep);
+        tree.write(filePath, renderTokenFile(ep, baseUrlToken, {
+          providedIn,
+          schemesByName,
+          dateType: options.dateType ?? 'string',
+          readonlyResponses: options.readonlyResponses ?? false,
+          validateResponses,
+          client,
+        }));
         writtenFiles.add(filePath);
 
         if (includeMocks) {
           const mockPath = joinPathFragments(tagDir, `${ep.fileName}.mock.ts`);
-          tree.write(mockPath, renderMockFile(ep, specId));
+          tree.write(mockPath, renderMockFile(ep, specId, clientFor(ep)));
           writtenFiles.add(mockPath);
         }
 

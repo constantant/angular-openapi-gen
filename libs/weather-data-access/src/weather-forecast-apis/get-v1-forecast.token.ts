@@ -1,5 +1,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { WEATHER_BASE_URL } from '../api-base-url.token';
@@ -4298,37 +4299,24 @@ function _serializeParams(
 }
 
 export const GET_V1_FORECAST = new InjectionToken<
-  (
-    params?: GetV1ForecastParams | (() => GetV1ForecastParams | undefined),
-  ) => ReturnType<typeof httpResource<GetV1ForecastResponse>>
+  (params?: GetV1ForecastParams) => Observable<GetV1ForecastResponse>
 >('GET_V1_FORECAST');
 
 export function provideGetV1Forecast(): FactoryProvider {
   return {
     provide: GET_V1_FORECAST,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(WEATHER_BASE_URL);
-      return (
-        params?: GetV1ForecastParams | (() => GetV1ForecastParams | undefined),
-      ) =>
-        httpResource<GetV1ForecastResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/v1/forecast`,
-              params: _serializeParams(_params) as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-            };
-          },
-          { parse: _validateResponse },
-        );
+      return (params?: GetV1ForecastParams) =>
+        http
+          .request<GetV1ForecastResponse>('GET', `${base}/v1/forecast`, {
+            params: _serializeParams(params) as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+          })
+          .pipe(map(_validateResponse));
     },
   };
 }

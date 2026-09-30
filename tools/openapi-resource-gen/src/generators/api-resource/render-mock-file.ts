@@ -1,7 +1,12 @@
 import type { EndpointModel } from './endpoint-model';
-import { toPascalCase } from './render-token';
+import { toPascalCase, type ClientType } from './render-token';
 
-export function renderMockFile(ep: EndpointModel, specId: string): string {
+export function renderMockFile(
+  ep: EndpointModel,
+  specId: string,
+  client: ClientType = 'httpResource',
+): string {
+  const provideFn = client === 'httpClient' ? 'provideMockObservable' : 'provideMockResource';
   const pascal = toPascalCase(ep.operationId);
   const responseType = ep.hasResponse ? `${pascal}Response` : null;
   const responseImport = responseType
@@ -13,7 +18,7 @@ export function renderMockFile(ep: EndpointModel, specId: string): string {
   const tagLine = ep.tag !== 'default' ? `\n  tag: '${ep.tag}',` : '';
 
   return `import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { ${provideFn} } from '@constantant/openapi-resource-mocks';
 import type { ProviderInitialBehavior, MockProviderOptions, MockResourceMeta } from '@constantant/openapi-resource-mocks';
 import { ${ep.tokenName} } from './${ep.fileName}.token';${responseImport}
 
@@ -28,7 +33,7 @@ export function provide${pascal}Mock(
   initialBehavior?: ${behaviorType},
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(${ep.tokenName}, '${ep.tokenName}', initialBehavior, _meta, options);
+  return ${provideFn}(${ep.tokenName}, '${ep.tokenName}', initialBehavior, _meta, options);
 }
 `;
 }

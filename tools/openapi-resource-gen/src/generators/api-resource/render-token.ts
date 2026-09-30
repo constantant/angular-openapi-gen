@@ -120,15 +120,31 @@ export function renderWebhookTokenFile(wh: WebhookModel): string {
   return lines.join('\n');
 }
 
+export type ClientType = 'httpResource' | 'httpClient';
+
+export interface RenderTokenOptions {
+  providedIn?: 'root' | 'none';
+  schemesByName?: Map<string, SecuritySchemeModel>;
+  dateType?: 'string' | 'Date' | 'Temporal';
+  readonlyResponses?: boolean;
+  validateResponses?: boolean;
+  /** Which Angular HTTP primitive the token's factory wraps. Default: httpResource. */
+  client?: ClientType;
+}
+
 export function renderTokenFile(
   ep: EndpointModel,
   baseUrlToken: string,
-  providedIn: 'root' | 'none' = 'none',
-  schemesByName: Map<string, SecuritySchemeModel> = new Map(),
-  dateType: 'string' | 'Date' | 'Temporal' = 'string',
-  readonlyResponses = false,
-  validateResponses = false
+  {
+    providedIn = 'none',
+    schemesByName = new Map(),
+    dateType = 'string',
+    readonlyResponses = false,
+    validateResponses = false,
+    client = 'httpResource',
+  }: RenderTokenOptions = {}
 ): string {
+  const useHttpClient = client === 'httpClient';
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
   const isGet = ep.method === 'get';
@@ -148,10 +164,15 @@ export function renderTokenFile(
 
   // Imports
   const coreImports = ['InjectionToken', 'inject'];
-  if (!isGet && ep.hasBody) coreImports.push('Signal');
+  if (!useHttpClient && !isGet && ep.hasBody) coreImports.push('Signal');
   if (providedIn === 'none') coreImports.push('FactoryProvider');
   lines.push(`import { ${coreImports.join(', ')} } from '@angular/core';`);
-  lines.push(`import { httpResource } from '@angular/common/http';`);
+  if (useHttpClient) {
+    lines.push(`import { HttpClient } from '@angular/common/http';`);
+    lines.push(canValidate ? `import { map, type Observable } from 'rxjs';` : `import type { Observable } from 'rxjs';`);
+  } else {
+    lines.push(`import { httpResource } from '@angular/common/http';`);
+  }
   if (canValidate) {
     lines.push(`import { Validator, type Schema } from '@cfworker/json-schema';`);
   }
@@ -392,6 +413,14 @@ export function renderTokenFile(
     lines.push('');
   }
 
+  if (useHttpClient) {
+    emitHttpClientToken(lines, ep, {
+      pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes,
+      headerSchemes, querySchemes, canValidate, responseT, isGet,
+    });
+    return lines.join('\n');
+  }
+
   if (ep.deprecated) {
     lines.push('/** @deprecated */');
   }
@@ -482,9 +511,14 @@ function appendResourceOptions(
   headerSchemes: SecuritySchemeModel[],
   querySchemes: SecuritySchemeModel[],
   usePrecomputedParams = false,
+  useHttpClient = false,
 ): void {
-  if (!isGet) {
+  // HttpClient.request() takes the method positionally; httpResource takes it in the config.
+  if (!isGet && !useHttpClient) {
     lines.push(`${indent}method: '${ep.method.toUpperCase()}',`);
+  }
+  if (useHttpClient && ep.responseVariant !== 'json') {
+    lines.push(`${indent}responseType: '${ep.responseVariant}',`);
   }
 
   const hasRegularParams = isGet && ep.hasQueryParams;
@@ -499,8 +533,10 @@ function appendResourceOptions(
       )
       .join(', ');
     const paramsExpr = hasSpecialParams
-      ? `_serializeParams(_params)`
-      : usePrecomputedParams
+      ? `_serializeParams(${useHttpClient ? 'params' : '_params'})`
+      : useHttpClient
+        ? 'params'
+        : usePrecomputedParams
         ? '_params'
         : `(typeof params === 'function' ? params() : params)`;
     const cast = ` as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>`;
@@ -551,7 +587,73 @@ function appendResourceOptions(
   }
 }
 
-function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean): string {
+interface HttpClientTokenCtx {
+  pascal: string;
+  urlTemplate: string;
+  baseUrlToken: string;
+  providedIn: 'root' | 'none';
+  applicableSchemes: SecuritySchemeModel[];
+  headerSchemes: SecuritySchemeModel[];
+  querySchemes: SecuritySchemeModel[];
+  canValidate: boolean;
+  responseT: string;
+  isGet: boolean;
+}
+
+/**
+ * Emits the token + provider for `client: 'httpClient'`. The factory returns a plain
+ * function that calls `HttpClient.request()` and yields a cold `Observable<T>`; params
+ * and body are plain values (no thunks / signals), and auth signals are read per call.
+ */
+function emitHttpClientToken(lines: string[], ep: EndpointModel, ctx: HttpClientTokenCtx): void {
+  const { pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes, canValidate, responseT, isGet } = ctx;
+  const observableT = ep.responseVariant === 'text' ? 'string' : ep.responseVariant === 'blob' ? 'Blob' : responseT;
+  // Text/blob responses are selected via responseType, which fixes the result type, so no generic.
+  const requestGeneric = ep.responseVariant === 'json' ? `<${responseT}>` : '';
+  const fnArgs = buildFnArgs(ep, pascal, isGet, true);
+  const pipe = canValidate ? '.pipe(map(_validateResponse))' : '';
+
+  if (ep.deprecated) lines.push('/** @deprecated */');
+  lines.push(
+    `export const ${ep.tokenName} = new InjectionToken<`,
+    `  (${fnArgs}) => Observable<${observableT}>`,
+    `>('${ep.tokenName}'${providedIn === 'root' ? `, {` : ')'}`,
+  );
+
+  const i = providedIn === 'root' ? '  ' : '    ';
+  const body: string[] = [
+    `${i}const http = inject(HttpClient);`,
+    `${i}const base = inject(${baseUrlToken});`,
+  ];
+  for (const s of applicableSchemes) {
+    body.push(`${i}const ${toCamelCase(s.schemeName)} = inject(${s.tokenName}, { optional: true });`);
+  }
+  body.push(
+    `${i}return (${fnArgs}) =>`,
+    `${i}  http.request${requestGeneric}('${ep.method.toUpperCase()}', \`\${base}${urlTemplate}\`, {`,
+  );
+  appendResourceOptions(body, ep, isGet, `${i}    `, ctx.headerSchemes, ctx.querySchemes, false, true);
+  body.push(`${i}  })${pipe};`);
+
+  if (providedIn === 'root') {
+    lines.push(`  providedIn: 'root',`, `  factory: () => {`, ...body, `  },`, `});`, '');
+  } else {
+    lines.push(
+      '',
+      `export function provide${pascal}(): FactoryProvider {`,
+      `  return {`,
+      `    provide: ${ep.tokenName},`,
+      `    useFactory: () => {`,
+      ...body,
+      `    },`,
+      `  };`,
+      `}`,
+      '',
+    );
+  }
+}
+
+function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean, useHttpClient = false): string {
   // Order: required path params, header params, cookie params, query params / body
   const args: string[] = ep.pathParams.map((p) => `${toCamelCase(p)}: string`);
   for (const h of ep.headerParams) {
@@ -561,8 +663,8 @@ function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean): string 
     args.push(c.required ? `${toCamelCase(c.name)}: string` : `${toCamelCase(c.name)}?: string`);
   }
   if (isGet && ep.hasQueryParams)
-    args.push(`params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);
+    args.push(useHttpClient ? `params?: ${pascal}Params` : `params?: ${pascal}Params | (() => ${pascal}Params | undefined)`);
   if (!isGet && ep.hasBody)
-    args.push(`body: ${pascal}Body | Signal<${pascal}Body>`);
+    args.push(useHttpClient ? `body: ${pascal}Body` : `body: ${pascal}Body | Signal<${pascal}Body>`);
   return args.join(', ');
 }

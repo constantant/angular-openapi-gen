@@ -92,6 +92,9 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `dateType` | no | `string` | `string` (default — no change), `Date`, or `Temporal`. When set to `Date` or `Temporal`, emits a typed `XxxRevived` alias and a `reviveXxxDates()` helper per endpoint whose response contains `format: date-time` or `format: date` fields. |
 | `readonlyResponses` | no | `false` | Wrap all `XxxResponse` and `XxxError` type aliases in `Readonly<>` to prevent accidental mutation of response data. |
 | `validateResponses` | no | `false` | Validate JSON responses at runtime against the spec's response schema via `httpResource`'s `parse` hook — requires [`@cfworker/json-schema`](https://www.npmjs.com/package/@cfworker/json-schema) |
+| `clientType` | no | `httpResource` | `httpResource` or `httpClient`. With `httpClient` each token yields a function returning a cold `Observable<T>` via `HttpClient.request()` — `params` / `body` are plain values (no thunks or `Signal`s), auth signals are read per call, and `validateResponses` runs in a `map()`. |
+| `httpClientTags` | no | — | Comma-separated tags whose endpoints use `HttpClient`, overriding `clientType`. Errors if a tag matches no endpoint. |
+| `httpClientOperations` | no | — | Comma-separated `operationId`s that use `HttpClient`, overriding `clientType`. Errors if an id matches no endpoint. |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
 ---
@@ -1206,3 +1209,23 @@ Nx workspace. Issues and pull requests are welcome — see
 ## License
 
 [MIT](https://github.com/constantant/angular-openapi-gen/blob/master/LICENSE)
+
+## HttpClient tokens (`--clientType=httpClient`)
+
+```typescript
+// generated with --clientType=httpClient
+export const FIND_PETS_BY_STATUS = new InjectionToken<
+  (params?: FindPetsByStatusParams) => Observable<FindPetsByStatusResponse>
+>('FIND_PETS_BY_STATUS');
+```
+
+Nothing is sent until the returned observable is subscribed to. Use `rxResource` /
+`toSignal` if you want signals:
+
+```typescript
+readonly pets = rxResource({ stream: () => this.findPets({ status: 'available' }) });
+```
+
+Mix clients in one lib with `--httpClientTags=pet,store` or `--httpClientOperations=getPetById`.
+With `--includeMocks`, HttpClient endpoints get `provideMockObservable()` mock providers
+(the same DevTools controls work); the rest keep `provideMockResource()`.
