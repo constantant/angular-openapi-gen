@@ -3,6 +3,11 @@
   "version": "1.10.0",
   "description": "Mock bus for @constantant/openapi-resource-gen tokens — unit tests, E2E, and Chrome Extension devtools",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/constantant/angular-openapi-gen.git",
+    "directory": "tools/openapi-resource-mocks"
+  },
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "exports": {
