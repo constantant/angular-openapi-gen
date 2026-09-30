@@ -3,6 +3,11 @@
   "version": "1.11.0",
   "description": "Nx generator: one InjectionToken per OpenAPI endpoint — tree-shakeable Angular data-access libs via httpResource",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/constantant/angular-openapi-gen.git",
+    "directory": "tools/openapi-resource-gen"
+  },
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "generators": "./generators.json",
