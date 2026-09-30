@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { InjectionToken } from '@angular/core';
-import { mockResource } from './testing';
+import type { Observable } from 'rxjs';
+import { mockResource, mockObservable } from './testing';
 
 type FakeFn = (...args: unknown[]) => unknown;
 const TOKEN = new InjectionToken<FakeFn>('TEST_TOKEN');
@@ -261,5 +262,97 @@ describe('mockResource', () => {
       expect(handle.ref.value()).toBe('slow');
       vi.useRealTimers();
     });
+  });
+});
+
+describe('mockObservable', () => {
+  const setup = (...args: Parameters<typeof mockObservable<string[]>>[1][]) => {
+    const handle = mockObservable<string[]>(TOKEN as never, ...args);
+    const fn = handle.useFactory!() as (...a: unknown[]) => Observable<string[]>;
+    return { handle, fn };
+  };
+  const collect = (obs: Observable<string[]>) => {
+    const out = { values: [] as string[][], error: undefined as unknown, done: false };
+    obs.subscribe({
+      next: (v) => out.values.push(v),
+      error: (e) => (out.error = e),
+      complete: () => (out.done = true),
+    });
+    return out;
+  };
+
+  it('provides the token', () => {
+    expect(mockObservable(TOKEN as never).provide).toBe(TOKEN);
+  });
+
+  it('emits a value once and completes', () => {
+    const { fn } = setup({ value: ['a'] });
+    expect(collect(fn())).toEqual({ values: [['a']], error: undefined, done: true });
+  });
+
+  it('errors on an error behavior', () => {
+    const { fn } = setup({ error: 'boom' });
+    const out = collect(fn());
+    expect(out.error).toBe('boom');
+    expect(out.values).toEqual([]);
+  });
+
+  it('never settles on { loading: true } or with no behavior', () => {
+    for (const b of [{ loading: true as const }, undefined]) {
+      const out = collect(setup(b).fn());
+      expect(out).toEqual({ values: [], error: undefined, done: false });
+    }
+  });
+
+  it('is cold: nothing happens until subscribed, and each subscription counts', () => {
+    const { handle, fn } = setup({ value: ['a'] });
+    const obs = fn();
+    expect(handle.subscriptions).toBe(0);
+    collect(obs);
+    collect(obs);
+    expect(handle.subscriptions).toBe(2);
+  });
+
+  it('delays the emission', () => {
+    vi.useFakeTimers();
+    try {
+      const { fn } = setup({ value: ['late'], delay: 100 });
+      const out = collect(fn());
+      expect(out.values).toEqual([]);
+      vi.advanceTimersByTime(100);
+      expect(out.values).toEqual([['late']]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('unsubscribing cancels a pending delayed emission', () => {
+    vi.useFakeTimers();
+    try {
+      const { fn } = setup({ value: ['late'], delay: 100 });
+      const seen: string[][] = [];
+      fn().subscribe((v) => seen.push(v)).unsubscribe();
+      vi.advanceTimersByTime(200);
+      expect(seen).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('sequence: each subscription consumes the next entry and the last repeats', () => {
+    const { fn } = setup({ sequence: [{ error: 'first' }, { value: ['ok'] }] });
+    expect(collect(fn()).error).toBe('first');
+    expect(collect(fn()).values).toEqual([['ok']]);
+    expect(collect(fn()).values).toEqual([['ok']]);
+  });
+
+  it('records calls and supports expectCalled / expectCalledWith', () => {
+    const { handle, fn } = setup({ value: [] });
+    expect(() => handle.expectCalled()).toThrow(/never called/);
+    fn({ status: 'available' });
+    handle.expectCalled();
+    handle.expectCalledWith({ status: 'available' });
+    expect(() => handle.expectCalledWith({ status: 'sold' })).toThrow(/called with/);
+    expect(handle.calls).toEqual([[{ status: 'available' }]]);
   });
 });

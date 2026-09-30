@@ -168,6 +168,29 @@ const mock = mockResource(FIND_PETS_BY_STATUS, {
 });
 ```
 
+### `mockObservable<T>(token, behaviorOrOptions?)`
+
+The same idea for tokens generated with `clientType: 'httpClient'` (functions returning
+`Observable<T>`). Returns a `MockObservableHandle` (a `FactoryProvider` with `.calls`,
+`.subscriptions`, `.expectCalled()` and `.expectCalledWith()` — there is no `.ref`, since the
+result isn't a resource).
+
+The observable is cold, like `HttpClient`: each **subscription** consumes the next behavior.
+
+| Shape | Effect |
+|-------|--------|
+| `{ value: T }` | Emits once, then completes |
+| `{ value: T, delay: ms }` | Emits after `ms` ms (unsubscribing cancels it) |
+| `{ error: unknown }` | Errors |
+| `{ loading: true }` (or no behavior) | Never emits |
+| `{ sequence: [...] }` | One entry per subscription; the last repeats — e.g. fail once, then succeed on retry |
+
+```typescript
+const petsMock = mockObservable(FIND_PETS_BY_STATUS, {
+  sequence: [{ error: new Error('timeout') }, { value: pets }],
+});
+```
+
 ### `MockResourceHandle<T>`
 
 | Member | Description |
