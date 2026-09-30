@@ -1,3 +1,29 @@
+## 1.11.0 (2026-09-30)
+
+### 🚀 Features
+
+- **api-explorer:** convert more demo libs to HttpClient; replay panel edits in Observable mocks ([#68](https://github.com/constantant/angular-openapi-gen/pull/68))
+- **openapi-resource-gen:** add HttpClient token generation ([#64](https://github.com/constantant/angular-openapi-gen/pull/64))
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** order required args before optional; add mockObservable ([#65](https://github.com/constantant/angular-openapi-gen/pull/65))
+
+### 🏡 Chore
+
+- bump @apidevtools/swagger-parser from 12.1.0 to 13.1.0 ([#60](https://github.com/constantant/angular-openapi-gen/pull/60))
+- bump the minor-and-patch group across 1 directory with 35 updates ([#63](https://github.com/constantant/angular-openapi-gen/pull/63))
+- bump minor/patch dev dependencies ([#54](https://github.com/constantant/angular-openapi-gen/pull/54))
+- bump the minor-and-patch group across 1 directory with 41 updates ([#52](https://github.com/constantant/angular-openapi-gen/pull/52))
+
+### ✅ Tests
+
+- **openapi-resource-gen:** cover includeMocks through the generator ([#67](https://github.com/constantant/angular-openapi-gen/pull/67))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.10.0 (2026-07-21)
 
 ### 🚀 Features

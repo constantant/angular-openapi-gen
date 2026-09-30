@@ -1,3 +1,18 @@
+## 1.10.0 (2026-09-30)
+
+### 🚀 Features
+
+- **api-explorer:** convert more demo libs to HttpClient; replay panel edits in Observable mocks ([#68](https://github.com/constantant/angular-openapi-gen/pull/68))
+- **openapi-resource-gen:** add HttpClient token generation ([#64](https://github.com/constantant/angular-openapi-gen/pull/64))
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** order required args before optional; add mockObservable ([#65](https://github.com/constantant/angular-openapi-gen/pull/65))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.9.0 (2026-06-19)
 
 ### 🚀 Features
