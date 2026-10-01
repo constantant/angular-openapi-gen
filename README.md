@@ -301,7 +301,7 @@ What the workflow does:
 2. Pushes the version commit and tag to `master`
 3. Creates a GitHub Release with changelog notes extracted from `CHANGELOG.md`
 4. Builds the package with `nx build openapi-resource-gen --skip-nx-cache`
-5. Publishes to npm as `@constantant/openapi-resource-gen` using `NPM_TOKEN` stored in GitHub secrets
+5. Publishes `@constantant/openapi-resource-gen` and `@constantant/openapi-resource-mocks` to npm with provenance, authenticating through [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC): each package has a trusted publisher configured on npmjs.com (`constantant/angular-openapi-gen`, workflow `release.yml`), so there is no npm token to rotate
 
 The workflow is idempotent — if the current version is already on npm it skips publishing gracefully.
 
