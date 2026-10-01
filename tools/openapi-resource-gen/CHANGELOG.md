@@ -1,3 +1,17 @@
+## 1.12.0 (2026-10-01)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** reportProgress option (HttpEvent tokens + provideMockHttpEvents) and an upload-progress example ([#72](https://github.com/constantant/angular-openapi-gen/pull/72))
+
+### 🤖 CI
+
+- publish with npm provenance and prepare for trusted publishing (OIDC) ([#71](https://github.com/constantant/angular-openapi-gen/pull/71))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.11.0 (2026-09-30)
 
 ### 🚀 Features
