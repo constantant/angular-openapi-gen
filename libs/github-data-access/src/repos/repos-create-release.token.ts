@@ -529,11 +529,17 @@ export function provideReposCreateRelease(): FactoryProvider {
         body: ReposCreateReleaseBody | Signal<ReposCreateReleaseBody>,
       ) =>
         httpResource<ReposCreateReleaseResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/releases`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateReleaseBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/releases`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

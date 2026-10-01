@@ -128,7 +128,8 @@ Rules:
 - `inject()` inside factory only — no constructor DI.
 - Types always sourced from `paths[...]['get']['responses']['200'][...]` — never hand-written.
 - Mutations (POST/PUT/PATCH/DELETE): factory returns `(body: Signal<T> | T) => httpResource(...)`,
-  add `method: 'POST'` (etc.) and `body` to the resource config.
+  add `method: 'POST'` (etc.) and `body` to the resource config. A `Signal` body is unwrapped
+  **inside** the reactive lambda (`_body`), so it is sent as its value and re-fires when it changes.
 - Query params on mutations: a `params` argument after the body (`(id, body, params?)`). It is
   **required** when the spec has a required query param (YouTube's `part`); GET keeps its optional
   `params?`. Required args always precede optional ones.

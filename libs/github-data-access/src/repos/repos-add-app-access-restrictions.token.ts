@@ -358,11 +358,17 @@ export function provideReposAddAppAccessRestrictions(): FactoryProvider {
           | Signal<ReposAddAppAccessRestrictionsBody>,
       ) =>
         httpResource<ReposAddAppAccessRestrictionsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/apps`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposAddAppAccessRestrictionsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/apps`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

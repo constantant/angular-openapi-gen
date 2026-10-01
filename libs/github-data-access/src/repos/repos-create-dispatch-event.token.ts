@@ -30,11 +30,17 @@ export function provideReposCreateDispatchEvent(): FactoryProvider {
         body:
           ReposCreateDispatchEventBody | Signal<ReposCreateDispatchEventBody>,
       ) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/repos/${owner}/${repo}/dispatches`,
-          method: 'POST',
-          body,
-        }));
+        httpResource<unknown>(() => {
+          const _body =
+            typeof body === 'function'
+              ? (body as Signal<ReposCreateDispatchEventBody>)()
+              : body;
+          return {
+            url: `${base}/repos/${owner}/${repo}/dispatches`,
+            method: 'POST',
+            body: _body,
+          };
+        });
     },
   };
 }

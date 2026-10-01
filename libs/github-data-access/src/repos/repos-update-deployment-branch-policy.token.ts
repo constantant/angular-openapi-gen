@@ -81,11 +81,17 @@ export function provideReposUpdateDeploymentBranchPolicy(): FactoryProvider {
           | Signal<ReposUpdateDeploymentBranchPolicyBody>,
       ) =>
         httpResource<ReposUpdateDeploymentBranchPolicyResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateDeploymentBranchPolicyBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

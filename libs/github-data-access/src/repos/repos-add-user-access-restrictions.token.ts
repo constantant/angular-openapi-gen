@@ -176,11 +176,17 @@ export function provideReposAddUserAccessRestrictions(): FactoryProvider {
           | Signal<ReposAddUserAccessRestrictionsBody>,
       ) =>
         httpResource<ReposAddUserAccessRestrictionsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposAddUserAccessRestrictionsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

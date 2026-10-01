@@ -2533,6 +2533,69 @@ describe('api-resource generator', () => {
       });
     });
 
+    describe('signal bodies (httpResource mutations accept body: T | Signal<T>)', () => {
+      const gen = async (client: 'httpResource' | 'httpClient') => {
+        vi.mocked(SwaggerParser.dereference).mockResolvedValue(QUERY_SPEC as never);
+        await apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/q/src',
+          baseUrlToken: 'Q_BASE_URL',
+          clientType: client,
+        });
+      };
+
+      it('httpResource reads the signal inside the reactive lambda and sends the unwrapped value', async () => {
+        await gen('httpResource');
+        const c = read('create-plain');
+        expect(c).toContain("const_body=typeofbody==='function'?(bodyasSignal<CreatePlainBody>)():body;");
+        expect(c).toContain('body:_body,');
+        // The raw argument must never be placed in the request config: it would send the signal.
+        expect(c).not.toMatch(/[{,]body,/);
+      });
+
+      it('unwraps the body after the params guard when both are present', async () => {
+        await gen('httpResource');
+        const c = read('create-thing');
+        const guard = c.indexOf('if(typeofparams===');
+        const body = c.indexOf('const_body=');
+        expect(guard).toBeGreaterThan(-1);
+        expect(body).toBeGreaterThan(guard);
+        expect(c).toContain('body:_body,');
+      });
+
+      it('applies to binary bodies too', async () => {
+        vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+          paths: {
+            '/file': {
+              put: {
+                operationId: 'uploadThing',
+                tags: ['things'],
+                requestBody: { content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } },
+                responses: { '200': { content: json() } },
+              },
+            },
+          },
+        } as never);
+        await apiResourceGenerator(tree, { specPath: 'specs/petstore.yaml', outputDir: 'libs/q/src', baseUrlToken: 'Q_BASE_URL' });
+        expect(read('upload-thing')).toContain("const_body=typeofbody==='function'?(bodyasSignal<UploadThingBody>)():body;");
+      });
+
+      it('leaves endpoints without a body, and GETs, on the shorthand lambda', async () => {
+        await gen('httpResource');
+        // delete has query params but no body; list is a GET
+        expect(read('delete-thing')).not.toContain('_body');
+        expect(read('list-things')).not.toContain('_body');
+      });
+
+      it('httpClient takes a plain body and is unaffected', async () => {
+        await gen('httpClient');
+        const c = read('create-plain');
+        expect(c).not.toContain('_body');
+        expect(c).toContain('(body:CreatePlainBody)');
+        expect(c).toMatch(/[{,]body,/);
+      });
+    });
+
     it('httpResource keeps the suppress-when-undefined thunk semantics for mutations', async () => {
       vi.mocked(SwaggerParser.dereference).mockResolvedValue(QUERY_SPEC as never);
       await apiResourceGenerator(tree, {

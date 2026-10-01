@@ -107,11 +107,17 @@ export function provideReposCreateDeploymentProtectionRule(): FactoryProvider {
           | Signal<ReposCreateDeploymentProtectionRuleBody>,
       ) =>
         httpResource<ReposCreateDeploymentProtectionRuleResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateDeploymentProtectionRuleBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

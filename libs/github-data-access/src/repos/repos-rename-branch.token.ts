@@ -2679,11 +2679,17 @@ export function provideReposRenameBranch(): FactoryProvider {
         body: ReposRenameBranchBody | Signal<ReposRenameBranchBody>,
       ) =>
         httpResource<ReposRenameBranchResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/rename`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposRenameBranchBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/rename`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

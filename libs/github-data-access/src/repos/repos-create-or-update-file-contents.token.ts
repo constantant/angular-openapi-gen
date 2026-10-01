@@ -205,11 +205,17 @@ export function provideReposCreateOrUpdateFileContents(): FactoryProvider {
           | Signal<ReposCreateOrUpdateFileContentsBody>,
       ) =>
         httpResource<ReposCreateOrUpdateFileContentsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/contents/${path}`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateOrUpdateFileContentsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

@@ -1088,11 +1088,17 @@ export function provideReposUpdateInvitation(): FactoryProvider {
         body: ReposUpdateInvitationBody | Signal<ReposUpdateInvitationBody>,
       ) =>
         httpResource<ReposUpdateInvitationResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
-            method: 'PATCH',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateInvitationBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
+              method: 'PATCH',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

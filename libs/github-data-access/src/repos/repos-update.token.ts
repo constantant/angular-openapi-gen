@@ -3590,11 +3590,17 @@ export function provideReposUpdate(): FactoryProvider {
         body: ReposUpdateBody | Signal<ReposUpdateBody>,
       ) =>
         httpResource<ReposUpdateResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}`,
-            method: 'PATCH',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}`,
+              method: 'PATCH',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

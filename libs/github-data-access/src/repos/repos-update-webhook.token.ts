@@ -181,11 +181,17 @@ export function provideReposUpdateWebhook(): FactoryProvider {
         body: ReposUpdateWebhookBody | Signal<ReposUpdateWebhookBody>,
       ) =>
         httpResource<ReposUpdateWebhookResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/hooks/${hookId}`,
-            method: 'PATCH',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateWebhookBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/hooks/${hookId}`,
+              method: 'PATCH',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

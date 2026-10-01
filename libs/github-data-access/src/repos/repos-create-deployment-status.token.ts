@@ -583,11 +583,17 @@ export function provideReposCreateDeploymentStatus(): FactoryProvider {
           | Signal<ReposCreateDeploymentStatusBody>,
       ) =>
         httpResource<ReposCreateDeploymentStatusResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}/statuses`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateDeploymentStatusBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}/statuses`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

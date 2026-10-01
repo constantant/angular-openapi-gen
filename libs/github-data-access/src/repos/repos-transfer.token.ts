@@ -776,11 +776,17 @@ export function provideReposTransfer(): FactoryProvider {
         body: ReposTransferBody | Signal<ReposTransferBody>,
       ) =>
         httpResource<ReposTransferResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/transfer`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposTransferBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/transfer`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

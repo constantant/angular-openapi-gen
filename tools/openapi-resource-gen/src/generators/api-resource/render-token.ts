@@ -469,7 +469,22 @@ export function renderTokenFile(
       )
       .join('\n');
 
-  const needsBlockBody = ep.hasQueryParams;
+  // httpResource mutations accept `body: T | Signal<T>`. The signal has to be read *inside* the
+  // reactive lambda — passing it through would send the signal function itself as the body and
+  // never re-fire when it changes — so a block body unwraps it, like `params` below.
+  const signalBody = !isGet && ep.hasBody;
+  const needsBlockBody = ep.hasQueryParams || signalBody;
+  const blockPrelude = (ind: string): string[] => [
+    ...(ep.hasQueryParams
+      ? [
+          `${ind}const _params = typeof params === 'function' ? params() : params;`,
+          `${ind}if (typeof params === 'function' && _params === undefined) return undefined;`,
+        ]
+      : []),
+    ...(signalBody
+      ? [`${ind}const _body = typeof body === 'function' ? (body as Signal<${pascal}Body>)() : body;`]
+      : []),
+  ];
   const parseOption = canValidate ? ', { parse: _validateResponse }' : '';
 
   if (providedIn === 'root') {
@@ -483,8 +498,7 @@ export function renderTokenFile(
       lines.push(
         `    return (${fnArgs}) =>`,
         `      ${resourceCall}(() => {`,
-        `        const _params = typeof params === 'function' ? params() : params;`,
-        `        if (typeof params === 'function' && _params === undefined) return undefined;`,
+        ...blockPrelude('        '),
         `        return {`,
         `          url: \`\${base}${urlTemplate}\`,`,
       );
@@ -513,8 +527,7 @@ export function renderTokenFile(
       lines.push(
         `      return (${fnArgs}) =>`,
         `        ${resourceCall}(() => {`,
-        `          const _params = typeof params === 'function' ? params() : params;`,
-        `          if (typeof params === 'function' && _params === undefined) return undefined;`,
+        ...blockPrelude('          '),
         `          return {`,
         `            url: \`\${base}${urlTemplate}\`,`,
       );
@@ -586,7 +599,8 @@ function appendResourceOptions(
   }
 
   if (!isGet && ep.hasBody) {
-    lines.push(`${indent}body,`);
+    // httpResource reads the (possibly signal) body inside its reactive lambda as `_body`.
+    lines.push(`${indent}${useHttpClient ? 'body' : 'body: _body'},`);
   }
 
   const hasHeaderParams = ep.headerParams.length > 0;

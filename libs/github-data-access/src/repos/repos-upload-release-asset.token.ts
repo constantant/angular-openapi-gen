@@ -247,6 +247,10 @@ export function provideReposUploadReleaseAsset(): FactoryProvider {
             const _params = typeof params === 'function' ? params() : params;
             if (typeof params === 'function' && _params === undefined)
               return undefined;
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUploadReleaseAssetBody>)()
+                : body;
             return {
               url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
               method: 'POST',
@@ -257,7 +261,7 @@ export function provideReposUploadReleaseAsset(): FactoryProvider {
                 | boolean
                 | readonly (string | number | boolean)[]
               >,
-              body,
+              body: _body,
             };
           },
           { parse: _validateResponse },

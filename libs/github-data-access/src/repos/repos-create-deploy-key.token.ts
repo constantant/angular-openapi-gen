@@ -91,11 +91,17 @@ export function provideReposCreateDeployKey(): FactoryProvider {
         body: ReposCreateDeployKeyBody | Signal<ReposCreateDeployKeyBody>,
       ) =>
         httpResource<ReposCreateDeployKeyResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/keys`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateDeployKeyBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/keys`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

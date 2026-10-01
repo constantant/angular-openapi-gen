@@ -81,11 +81,17 @@ export function provideCreateUsersWithListInput(): FactoryProvider {
           CreateUsersWithListInputBody | Signal<CreateUsersWithListInputBody>,
       ) =>
         httpResource<CreateUsersWithListInputResponse>(
-          () => ({
-            url: `${base}/user/createWithList`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<CreateUsersWithListInputBody>)()
+                : body;
+            return {
+              url: `${base}/user/createWithList`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

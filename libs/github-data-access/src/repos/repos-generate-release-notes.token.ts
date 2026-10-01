@@ -63,11 +63,17 @@ export function provideReposGenerateReleaseNotes(): FactoryProvider {
           ReposGenerateReleaseNotesBody | Signal<ReposGenerateReleaseNotesBody>,
       ) =>
         httpResource<ReposGenerateReleaseNotesResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/releases/generate-notes`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposGenerateReleaseNotesBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/releases/generate-notes`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

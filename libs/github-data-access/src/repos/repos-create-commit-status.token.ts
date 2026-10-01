@@ -216,11 +216,17 @@ export function provideReposCreateCommitStatus(): FactoryProvider {
         body: ReposCreateCommitStatusBody | Signal<ReposCreateCommitStatusBody>,
       ) =>
         httpResource<ReposCreateCommitStatusResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/statuses/${sha}`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateCommitStatusBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/statuses/${sha}`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

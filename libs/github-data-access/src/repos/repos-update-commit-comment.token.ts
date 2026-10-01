@@ -294,11 +294,17 @@ export function provideReposUpdateCommitComment(): FactoryProvider {
           ReposUpdateCommitCommentBody | Signal<ReposUpdateCommitCommentBody>,
       ) =>
         httpResource<ReposUpdateCommitCommentResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/comments/${commentId}`,
-            method: 'PATCH',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateCommitCommentBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/comments/${commentId}`,
+              method: 'PATCH',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

@@ -59,11 +59,17 @@ export function provideReposRemoveStatusCheckContexts(): FactoryProvider {
           | Signal<ReposRemoveStatusCheckContextsBody>,
       ) =>
         httpResource<ReposRemoveStatusCheckContextsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
-            method: 'DELETE',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposRemoveStatusCheckContextsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
+              method: 'DELETE',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

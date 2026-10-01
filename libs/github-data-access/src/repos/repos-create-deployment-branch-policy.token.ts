@@ -79,11 +79,17 @@ export function provideReposCreateDeploymentBranchPolicy(): FactoryProvider {
           | Signal<ReposCreateDeploymentBranchPolicyBody>,
       ) =>
         httpResource<ReposCreateDeploymentBranchPolicyResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateDeploymentBranchPolicyBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

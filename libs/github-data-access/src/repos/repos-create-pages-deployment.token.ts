@@ -88,11 +88,17 @@ export function provideReposCreatePagesDeployment(): FactoryProvider {
           | Signal<ReposCreatePagesDeploymentBody>,
       ) =>
         httpResource<ReposCreatePagesDeploymentResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/pages/deployments`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreatePagesDeploymentBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/pages/deployments`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

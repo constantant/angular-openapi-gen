@@ -589,11 +589,17 @@ export function provideReposMerge(): FactoryProvider {
         body: ReposMergeBody | Signal<ReposMergeBody>,
       ) =>
         httpResource<ReposMergeResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/merges`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposMergeBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/merges`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

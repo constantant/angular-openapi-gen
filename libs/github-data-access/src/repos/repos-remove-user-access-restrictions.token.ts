@@ -178,11 +178,17 @@ export function provideReposRemoveUserAccessRestrictions(): FactoryProvider {
           | Signal<ReposRemoveUserAccessRestrictionsBody>,
       ) =>
         httpResource<ReposRemoveUserAccessRestrictionsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
-            method: 'DELETE',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposRemoveUserAccessRestrictionsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
+              method: 'DELETE',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

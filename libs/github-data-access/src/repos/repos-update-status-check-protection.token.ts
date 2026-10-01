@@ -100,11 +100,17 @@ export function provideReposUpdateStatusCheckProtection(): FactoryProvider {
           | Signal<ReposUpdateStatusCheckProtectionBody>,
       ) =>
         httpResource<ReposUpdateStatusCheckProtectionResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks`,
-            method: 'PATCH',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateStatusCheckProtectionBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks`,
+              method: 'PATCH',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

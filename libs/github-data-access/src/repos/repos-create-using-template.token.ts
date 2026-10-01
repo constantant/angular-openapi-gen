@@ -3586,11 +3586,17 @@ export function provideReposCreateUsingTemplate(): FactoryProvider {
           ReposCreateUsingTemplateBody | Signal<ReposCreateUsingTemplateBody>,
       ) =>
         httpResource<ReposCreateUsingTemplateResponse>(
-          () => ({
-            url: `${base}/repos/${templateOwner}/${templateRepo}/generate`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateUsingTemplateBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${templateOwner}/${templateRepo}/generate`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

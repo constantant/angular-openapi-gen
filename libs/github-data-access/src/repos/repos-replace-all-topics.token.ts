@@ -59,11 +59,17 @@ export function provideReposReplaceAllTopics(): FactoryProvider {
         body: ReposReplaceAllTopicsBody | Signal<ReposReplaceAllTopicsBody>,
       ) =>
         httpResource<ReposReplaceAllTopicsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/topics`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposReplaceAllTopicsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/topics`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

@@ -261,11 +261,17 @@ export function provideReposRemoveTeamAccessRestrictions(): FactoryProvider {
           | Signal<ReposRemoveTeamAccessRestrictionsBody>,
       ) =>
         httpResource<ReposRemoveTeamAccessRestrictionsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/teams`,
-            method: 'DELETE',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposRemoveTeamAccessRestrictionsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/teams`,
+              method: 'DELETE',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

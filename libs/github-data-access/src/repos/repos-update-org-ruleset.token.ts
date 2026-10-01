@@ -1248,11 +1248,17 @@ export function provideReposUpdateOrgRuleset(): FactoryProvider {
         body: ReposUpdateOrgRulesetBody | Signal<ReposUpdateOrgRulesetBody>,
       ) =>
         httpResource<ReposUpdateOrgRulesetResponse>(
-          () => ({
-            url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateOrgRulesetBody>)()
+                : body;
+            return {
+              url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },
