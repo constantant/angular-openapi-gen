@@ -34,11 +34,17 @@ export function provideReposUpdateInformationAboutPagesSite(): FactoryProvider {
           | ReposUpdateInformationAboutPagesSiteBody
           | Signal<ReposUpdateInformationAboutPagesSiteBody>,
       ) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/repos/${owner}/${repo}/pages`,
-          method: 'PUT',
-          body,
-        }));
+        httpResource<unknown>(() => {
+          const _body =
+            typeof body === 'function'
+              ? (body as Signal<ReposUpdateInformationAboutPagesSiteBody>)()
+              : body;
+          return {
+            url: `${base}/repos/${owner}/${repo}/pages`,
+            method: 'PUT',
+            body: _body,
+          };
+        });
     },
   };
 }

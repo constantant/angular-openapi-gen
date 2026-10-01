@@ -3591,11 +3591,17 @@ export function provideReposCreateFork(): FactoryProvider {
         body: ReposCreateForkBody | Signal<ReposCreateForkBody>,
       ) =>
         httpResource<ReposCreateForkResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/forks`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateForkBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/forks`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

@@ -3587,11 +3587,17 @@ export function provideReposCreateInOrg(): FactoryProvider {
         body: ReposCreateInOrgBody | Signal<ReposCreateInOrgBody>,
       ) =>
         httpResource<ReposCreateInOrgResponse>(
-          () => ({
-            url: `${base}/orgs/${org}/repos`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateInOrgBody>)()
+                : body;
+            return {
+              url: `${base}/orgs/${org}/repos`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

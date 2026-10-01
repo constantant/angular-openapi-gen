@@ -1248,11 +1248,17 @@ export function provideReposCreateRepoRuleset(): FactoryProvider {
         body: ReposCreateRepoRulesetBody | Signal<ReposCreateRepoRulesetBody>,
       ) =>
         httpResource<ReposCreateRepoRulesetResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/rulesets`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateRepoRulesetBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/rulesets`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

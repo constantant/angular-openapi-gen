@@ -78,11 +78,17 @@ export function provideCreateUser(): FactoryProvider {
       const base = inject(PETSTORE_BASE_URL);
       return (body: CreateUserBody | Signal<CreateUserBody>) =>
         httpResource<CreateUserResponse>(
-          () => ({
-            url: `${base}/user`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<CreateUserBody>)()
+                : body;
+            return {
+              url: `${base}/user`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

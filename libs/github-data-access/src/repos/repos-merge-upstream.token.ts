@@ -58,11 +58,17 @@ export function provideReposMergeUpstream(): FactoryProvider {
         body: ReposMergeUpstreamBody | Signal<ReposMergeUpstreamBody>,
       ) =>
         httpResource<ReposMergeUpstreamResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/merge-upstream`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposMergeUpstreamBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/merge-upstream`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

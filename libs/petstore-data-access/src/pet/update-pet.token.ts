@@ -110,16 +110,22 @@ export function provideUpdatePet(): FactoryProvider {
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
       return (body: UpdatePetBody | Signal<UpdatePetBody>) =>
         httpResource<UpdatePetResponse>(
-          () => ({
-            url: `${base}/pet`,
-            method: 'PUT',
-            body,
-            headers: {
-              ...(petstoreAuth?.() != null
-                ? { Authorization: `Bearer ${petstoreAuth()}` }
-                : {}),
-            },
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<UpdatePetBody>)()
+                : body;
+            return {
+              url: `${base}/pet`,
+              method: 'PUT',
+              body: _body,
+              headers: {
+                ...(petstoreAuth?.() != null
+                  ? { Authorization: `Bearer ${petstoreAuth()}` }
+                  : {}),
+              },
+            };
+          },
           { parse: _validateResponse },
         );
     },

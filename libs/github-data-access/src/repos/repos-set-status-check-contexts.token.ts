@@ -58,11 +58,17 @@ export function provideReposSetStatusCheckContexts(): FactoryProvider {
           | Signal<ReposSetStatusCheckContextsBody>,
       ) =>
         httpResource<ReposSetStatusCheckContextsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposSetStatusCheckContextsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

@@ -23,11 +23,17 @@ export function provideUpdateUser(): FactoryProvider {
         username: string,
         body: UpdateUserBody | Signal<UpdateUserBody>,
       ) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/user/${username}`,
-          method: 'PUT',
-          body,
-        }));
+        httpResource<unknown>(() => {
+          const _body =
+            typeof body === 'function'
+              ? (body as Signal<UpdateUserBody>)()
+              : body;
+          return {
+            url: `${base}/user/${username}`,
+            method: 'PUT',
+            body: _body,
+          };
+        });
     },
   };
 }

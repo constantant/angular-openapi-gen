@@ -567,11 +567,17 @@ export function provideReposCreateOrUpdateEnvironment(): FactoryProvider {
           | Signal<ReposCreateOrUpdateEnvironmentBody>,
       ) =>
         httpResource<ReposCreateOrUpdateEnvironmentResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateOrUpdateEnvironmentBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

@@ -236,11 +236,17 @@ export function provideReposUpdateReleaseAsset(): FactoryProvider {
         body: ReposUpdateReleaseAssetBody | Signal<ReposUpdateReleaseAssetBody>,
       ) =>
         httpResource<ReposUpdateReleaseAssetResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/releases/assets/${assetId}`,
-            method: 'PATCH',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateReleaseAssetBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/releases/assets/${assetId}`,
+              method: 'PATCH',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

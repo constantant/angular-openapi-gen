@@ -180,11 +180,17 @@ export function provideReposCreateWebhook(): FactoryProvider {
         body: ReposCreateWebhookBody | Signal<ReposCreateWebhookBody>,
       ) =>
         httpResource<ReposCreateWebhookResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/hooks`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateWebhookBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/hooks`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

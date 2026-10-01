@@ -77,11 +77,17 @@ export function provideReposCreateAutolink(): FactoryProvider {
         body: ReposCreateAutolinkBody | Signal<ReposCreateAutolinkBody>,
       ) =>
         httpResource<ReposCreateAutolinkResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/autolinks`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateAutolinkBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/autolinks`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

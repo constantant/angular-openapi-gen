@@ -1092,11 +1092,17 @@ export function provideReposAddCollaborator(): FactoryProvider {
         body: ReposAddCollaboratorBody | Signal<ReposAddCollaboratorBody>,
       ) =>
         httpResource<ReposAddCollaboratorResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/collaborators/${username}`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposAddCollaboratorBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/collaborators/${username}`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

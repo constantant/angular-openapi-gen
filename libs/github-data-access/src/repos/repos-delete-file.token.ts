@@ -199,11 +199,17 @@ export function provideReposDeleteFile(): FactoryProvider {
         body: ReposDeleteFileBody | Signal<ReposDeleteFileBody>,
       ) =>
         httpResource<ReposDeleteFileResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/contents/${path}`,
-            method: 'DELETE',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposDeleteFileBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+              method: 'DELETE',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

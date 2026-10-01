@@ -2043,11 +2043,17 @@ export function provideReposUpdateBranchProtection(): FactoryProvider {
           | Signal<ReposUpdateBranchProtectionBody>,
       ) =>
         httpResource<ReposUpdateBranchProtectionResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdateBranchProtectionBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

@@ -295,11 +295,17 @@ export function provideReposCreateCommitComment(): FactoryProvider {
           ReposCreateCommitCommentBody | Signal<ReposCreateCommitCommentBody>,
       ) =>
         httpResource<ReposCreateCommitCommentResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/comments`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateCommitCommentBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/comments`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

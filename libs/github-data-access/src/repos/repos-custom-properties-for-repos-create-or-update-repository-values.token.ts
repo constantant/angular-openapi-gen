@@ -37,11 +37,19 @@ export function provideReposCustomPropertiesForReposCreateOrUpdateRepositoryValu
           | ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody
           | Signal<ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody>,
       ) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/repos/${owner}/${repo}/properties/values`,
-          method: 'PATCH',
-          body,
-        }));
+        httpResource<unknown>(() => {
+          const _body =
+            typeof body === 'function'
+              ? (
+                  body as Signal<ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody>
+                )()
+              : body;
+          return {
+            url: `${base}/repos/${owner}/${repo}/properties/values`,
+            method: 'PATCH',
+            body: _body,
+          };
+        });
     },
   };
 }

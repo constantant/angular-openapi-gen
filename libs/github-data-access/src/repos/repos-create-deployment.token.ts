@@ -582,11 +582,17 @@ export function provideReposCreateDeployment(): FactoryProvider {
         body: ReposCreateDeploymentBody | Signal<ReposCreateDeploymentBody>,
       ) =>
         httpResource<ReposCreateDeploymentResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/deployments`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateDeploymentBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/deployments`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

@@ -259,11 +259,17 @@ export function provideReposSetTeamAccessRestrictions(): FactoryProvider {
           | Signal<ReposSetTeamAccessRestrictionsBody>,
       ) =>
         httpResource<ReposSetTeamAccessRestrictionsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/teams`,
-            method: 'PUT',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposSetTeamAccessRestrictionsBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/teams`,
+              method: 'PUT',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

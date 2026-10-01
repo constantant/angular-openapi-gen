@@ -3,12 +3,20 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import {
+  ADD_PET,
   PETSTORE_BASE_URL,
   UPDATE_PET_WITH_FORM,
   UPLOAD_FILE,
+  provideAddPet,
   provideUpdatePetWithForm,
   provideUploadFile,
+  type AddPetBody,
 } from '@angular-openapi-gen/petstore-data-access';
+import {
+  GITHUB_BASE_URL,
+  REPOS_UPLOAD_RELEASE_ASSET,
+  provideReposUploadReleaseAsset,
+} from '@angular-openapi-gen/github-data-access';
 import {
   YOUTUBE_BASE_URL,
   YOUTUBE_PLAYLISTS_INSERT,
@@ -35,6 +43,9 @@ describe('generated tokens: query params on mutations', () => {
         { provide: YOUTUBE_BASE_URL, useValue: 'https://yt.test' },
         provideUploadFile(),
         provideUpdatePetWithForm(),
+        provideAddPet(),
+        { provide: GITHUB_BASE_URL, useValue: 'https://gh.test' },
+        provideReposUploadReleaseAsset(),
         provideYoutubeVideosInsert(),
         provideYoutubePlaylistsInsert(),
       ],
@@ -113,6 +124,71 @@ describe('generated tokens: query params on mutations', () => {
       const req = http.expectOne((r) => r.url === 'https://pets.test/pet/7');
       expect(req.request.params.get('name')).toBe('Rex');
       req.flush({});
+    });
+  });
+  /**
+   * httpResource mutations are typed `body: T | Signal<T>`. The signal used to be passed through
+   * as the request body — sending the signal function itself (serialized as the string
+   * "[Signal (body): …]") and never re-firing when it changed.
+   */
+  describe('httpResource signal bodies', () => {
+    const base = 'https://pets.test/pet';
+    const pet = (name: string) => ({ name, photoUrls: [] }) as AddPetBody;
+
+    it('a plain body is sent as-is', () => {
+      TestBed.runInInjectionContext(() => TestBed.inject(ADD_PET)(pet('Rex')));
+      TestBed.tick();
+      const req = http.expectOne((r) => r.url === base);
+      expect(req.request.body).toEqual(pet('Rex'));
+      req.flush({});
+    });
+
+    it('a Signal body is read inside the reactive lambda and its value is sent', () => {
+      const body = signal(pet('Rex'));
+      TestBed.runInInjectionContext(() => TestBed.inject(ADD_PET)(body));
+      TestBed.tick();
+
+      const req = http.expectOne((r) => r.url === base);
+      expect(typeof req.request.body).toBe('object'); // not the signal function
+      expect(req.request.body).toEqual(pet('Rex'));
+      expect(req.request.serializeBody()).toBe(JSON.stringify(pet('Rex')));
+      req.flush({});
+    });
+
+    it('changing the Signal re-fires the request with the new value', () => {
+      const body = signal(pet('Rex'));
+      TestBed.runInInjectionContext(() => TestBed.inject(ADD_PET)(body));
+      TestBed.tick();
+      http.expectOne((r) => r.url === base).flush({});
+
+      body.set(pet('Max'));
+      TestBed.tick();
+      const again = http.expectOne((r) => r.url === base);
+      expect(again.request.body).toEqual(pet('Max'));
+      again.flush({});
+    });
+
+    it('works together with query params (binary body + required `name`)', () => {
+      const first = new Blob(['one']);
+      const second = new Blob(['two']);
+      const body = signal(first);
+      TestBed.runInInjectionContext(() =>
+        TestBed.inject(REPOS_UPLOAD_RELEASE_ASSET)('o', 'r', '9', body, { name: 'app.zip' }),
+      );
+      TestBed.tick();
+
+      const url = (r: { url: string }) => r.url === 'https://gh.test/repos/o/r/releases/9/assets';
+      const req = http.expectOne(url);
+      expect(req.request.params.get('name')).toBe('app.zip');
+      expect(req.request.body).toBe(first);
+      req.flush({});
+
+      body.set(second);
+      TestBed.tick();
+      const again = http.expectOne(url);
+      expect(again.request.body).toBe(second);
+      expect(again.request.params.get('name')).toBe('app.zip');
+      again.flush({});
     });
   });
 });

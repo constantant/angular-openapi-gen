@@ -1246,11 +1246,17 @@ export function provideReposCreateOrgRuleset(): FactoryProvider {
         body: ReposCreateOrgRulesetBody | Signal<ReposCreateOrgRulesetBody>,
       ) =>
         httpResource<ReposCreateOrgRulesetResponse>(
-          () => ({
-            url: `${base}/orgs/${org}/rulesets`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateOrgRulesetBody>)()
+                : body;
+            return {
+              url: `${base}/orgs/${org}/rulesets`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

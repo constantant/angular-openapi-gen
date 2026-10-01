@@ -1419,11 +1419,17 @@ export function provideReposUpdatePullRequestReviewProtection(): FactoryProvider
           | Signal<ReposUpdatePullRequestReviewProtectionBody>,
       ) =>
         httpResource<ReposUpdatePullRequestReviewProtectionResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_pull_request_reviews`,
-            method: 'PATCH',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposUpdatePullRequestReviewProtectionBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_pull_request_reviews`,
+              method: 'PATCH',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

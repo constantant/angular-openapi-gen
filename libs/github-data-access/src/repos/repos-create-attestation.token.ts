@@ -54,11 +54,17 @@ export function provideReposCreateAttestation(): FactoryProvider {
         body: ReposCreateAttestationBody | Signal<ReposCreateAttestationBody>,
       ) =>
         httpResource<ReposCreateAttestationResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/attestations`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateAttestationBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/attestations`,
+              method: 'POST',
+              body: _body,
+            };
+          },
           { parse: _validateResponse },
         );
     },
