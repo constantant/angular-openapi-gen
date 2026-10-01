@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { provideMockHttpEvents } from '@constantant/openapi-resource-mocks';
 import type {
   ProviderInitialBehavior,
   MockProviderOptions,
@@ -20,7 +20,7 @@ export function provideUploadFileMock(
   initialBehavior?: ProviderInitialBehavior<UploadFileResponse>,
   options?: MockProviderOptions,
 ): FactoryProvider {
-  return provideMockResource(
+  return provideMockHttpEvents(
     UPLOAD_FILE,
     'UPLOAD_FILE',
     initialBehavior,

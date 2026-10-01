@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { appRoutes } from './app.routes';
 import {
@@ -56,7 +56,9 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideAnimationsAsync(),
     provideRouter(appRoutes),
-    provideHttpClient(withFetch()),
+    // XHR instead of the default fetch backend: fetch can't report *upload* progress, which the
+    // Pets page's photo upload shows. (Client-only app — don't use withXhr() with SSR.)
+    provideHttpClient(withXhr()),
     { provide: GITHUB_BASE_URL, useValue: 'https://api.github.com' },
     { provide: PETSTORE_BASE_URL, useValue: 'https://petstore.swagger.io/v2' },
     { provide: WEATHER_BASE_URL, useValue: 'https://api.open-meteo.com' },

@@ -1,5 +1,10 @@
-import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { InjectionToken, inject, FactoryProvider } from '@angular/core';
+import {
+  HttpClient,
+  HttpEventType,
+  type HttpEvent,
+} from '@angular/common/http';
+import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
@@ -42,30 +47,40 @@ function _validateResponse(value: unknown): UploadFileResponse {
 export const UPLOAD_FILE = new InjectionToken<
   (
     petId: string,
-    body: UploadFileBody | Signal<UploadFileBody>,
-  ) => ReturnType<typeof httpResource<UploadFileResponse>>
+    body: UploadFileBody,
+  ) => Observable<HttpEvent<UploadFileResponse>>
 >('UPLOAD_FILE');
 
 export function provideUploadFile(): FactoryProvider {
   return {
     provide: UPLOAD_FILE,
     useFactory: () => {
+      const http = inject(HttpClient);
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (petId: string, body: UploadFileBody | Signal<UploadFileBody>) =>
-        httpResource<UploadFileResponse>(
-          () => ({
-            url: `${base}/pet/${petId}/uploadImage`,
-            method: 'POST',
-            body,
-            headers: {
-              ...(petstoreAuth?.() != null
-                ? { Authorization: `Bearer ${petstoreAuth()}` }
-                : {}),
+      return (petId: string, body: UploadFileBody) =>
+        http
+          .request<UploadFileResponse>(
+            'POST',
+            `${base}/pet/${petId}/uploadImage`,
+            {
+              observe: 'events',
+              reportProgress: true,
+              body,
+              headers: {
+                ...(petstoreAuth?.() != null
+                  ? { Authorization: `Bearer ${petstoreAuth()}` }
+                  : {}),
+              },
             },
-          }),
-          { parse: _validateResponse },
-        );
+          )
+          .pipe(
+            map((e) =>
+              e.type === HttpEventType.Response
+                ? e.clone({ body: _validateResponse(e.body) })
+                : e,
+            ),
+          );
     },
   };
 }
