@@ -260,6 +260,7 @@ export function buildEndpoints(
         .map((p) => ({ name: p.name, required: p.required === true }));
 
       const hasQueryParams = allParams.some((p) => p.in === 'query');
+      const hasRequiredQueryParams = allParams.some((p) => p.in === 'query' && p.required === true);
 
       // Collect query params that need non-default serialization.
       // OpenAPI default: form + explode:true (Angular handles arrays natively).
@@ -388,6 +389,7 @@ export function buildEndpoints(
         tokenName,
         fileName,
         hasQueryParams,
+        hasRequiredQueryParams,
         specialQueryParams,
         hasBody,
         hasResponse,

@@ -2407,4 +2407,142 @@ describe('api-resource generator', () => {
       expect(tree.exists('libs/petstore/src/pets/list-pets.mock.ts')).toBe(true);
     });
   });
+  describe('query params on non-GET endpoints', () => {
+    const json = (schema: unknown = {}) => ({ 'application/json': { schema } });
+    const QUERY_SPEC = {
+      paths: {
+        '/things': {
+          get: {
+            operationId: 'listThings',
+            tags: ['things'],
+            parameters: [{ in: 'query', name: 'limit', schema: { type: 'integer' } }],
+            responses: { '200': { content: json({ type: 'array' }) } },
+          },
+          post: {
+            operationId: 'createThing',
+            tags: ['things'],
+            parameters: [{ in: 'query', name: 'dryRun', schema: { type: 'boolean' } }],
+            requestBody: { content: json() },
+            responses: { '201': { content: json() } },
+          },
+        },
+        '/things/{id}': {
+          put: {
+            operationId: 'replaceThing',
+            tags: ['things'],
+            parameters: [
+              { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+              { in: 'query', name: 'part', required: true, schema: { type: 'array', items: { type: 'string' } } },
+              { in: 'header', name: 'X-Trace', schema: { type: 'string' } },
+            ],
+            requestBody: { content: json() },
+            responses: { '200': { content: json() } },
+          },
+          patch: {
+            operationId: 'patchThing',
+            tags: ['things'],
+            parameters: [
+              { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+              { in: 'query', name: 'fields', style: 'pipeDelimited', explode: false, schema: { type: 'array', items: { type: 'string' } } },
+            ],
+            requestBody: { content: json() },
+            responses: { '200': { content: json() } },
+          },
+          delete: {
+            operationId: 'deleteThing',
+            tags: ['things'],
+            parameters: [
+              { in: 'path', name: 'id', required: true, schema: { type: 'string' } },
+              { in: 'query', name: 'force', schema: { type: 'boolean' } },
+            ],
+            responses: { '204': { description: 'gone' } },
+          },
+        },
+        '/plain': {
+          post: {
+            operationId: 'createPlain',
+            tags: ['things'],
+            requestBody: { content: json() },
+            responses: { '201': { content: json() } },
+          },
+        },
+      },
+    };
+
+    // Prettier wraps long signatures and adds a trailing comma before `)`; compare modulo both.
+    const flat = (c: string) => c.replace(/\s+/g, '').replace(/,\)/g, ')');
+    const read = (f: string) => flat(tree.read(`libs/q/src/things/${f}.token.ts`, 'utf-8')!);
+
+    describe.each(['httpResource', 'httpClient'] as const)('%s', (client) => {
+      const resource = client === 'httpResource';
+      // httpResource also accepts a thunk, so the argument types differ per client.
+      const paramsType = (name: string) =>
+        resource ? `${name}|(()=>${name}|undefined)` : name;
+      const bodyType = (name: string) => (resource ? `${name}|Signal<${name}>` : name);
+
+      beforeEach(async () => {
+        vi.mocked(SwaggerParser.dereference).mockResolvedValue(QUERY_SPEC as never);
+        await apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/q/src',
+          baseUrlToken: 'Q_BASE_URL',
+          clientType: client,
+        });
+      });
+
+      it('exports a Params alias for mutations too', () => {
+        expect(read('create-thing')).toContain("exporttypeCreateThingParams=paths['/things']['post']['parameters']['query']");
+        expect(read('delete-thing')).toContain("exporttypeDeleteThingParams=paths['/things/{id}']['delete']['parameters']['query']");
+      });
+
+      it('appends an optional params argument after the body', () => {
+        expect(read('create-thing')).toContain(
+          `(body:${bodyType('CreateThingBody')},params?:${paramsType('CreateThingParams')})`,
+        );
+      });
+
+      it('appends an optional params argument after path params when there is no body', () => {
+        expect(read('delete-thing')).toContain(`(id:string,params?:${paramsType('DeleteThingParams')})`);
+      });
+
+      it('makes params required when the spec has a required query param, ahead of optional args', () => {
+        // required: id, body, params ; optional: the X-Trace header
+        expect(read('replace-thing')).toContain(
+          `(id:string,body:${bodyType('ReplaceThingBody')},params:${paramsType('ReplaceThingParams')},xTrace?:string)`,
+        );
+      });
+
+      it('leaves endpoints without query params, and GETs, unchanged', () => {
+        const plain = read('create-plain');
+        expect(plain).not.toContain('CreatePlainParams');
+        expect(plain).toContain(`(body:${bodyType('CreatePlainBody')})`);
+        expect(read('list-things')).toContain(`params?:${paramsType('ListThingsParams')}`);
+      });
+
+      it('sends the query params with the request', () => {
+        const c = read('create-thing');
+        expect(c).toContain(resource ? 'params:_paramsasunknownasRecord' : 'params:paramsasunknownasRecord');
+        expect(c).toContain(resource ? "method:'POST'" : "'POST'");
+      });
+
+      it('serializes non-default query styles on mutations', () => {
+        const c = read('patch-thing');
+        expect(c).toContain('function_serializeParams(');
+        expect(c).toContain(resource ? '_serializeParams(_params)' : '_serializeParams(params)');
+        expect(c).toContain("join('|')");
+      });
+    });
+
+    it('httpResource keeps the suppress-when-undefined thunk semantics for mutations', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(QUERY_SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/q/src',
+        baseUrlToken: 'Q_BASE_URL',
+      });
+      const c = read('delete-thing');
+      expect(c).toContain("const_params=typeofparams==='function'?params():params;");
+      expect(c).toContain("if(typeofparams==='function'&&_params===undefined)returnundefined;");
+    });
+  });
 });
