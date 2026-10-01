@@ -1,12 +1,18 @@
 import type { EndpointModel } from './endpoint-model';
-import { toPascalCase, type ClientType } from './render-token';
+import { toPascalCase, yieldsHttpEvents, type ClientType } from './render-token';
 
 export function renderMockFile(
   ep: EndpointModel,
   specId: string,
   client: ClientType = 'httpResource',
+  reportProgress = false,
 ): string {
-  const provideFn = client === 'httpClient' ? 'provideMockObservable' : 'provideMockResource';
+  // Tokens that yield Observable<HttpEvent<T>> need a mock that emits events, not bare values.
+  const provideFn = yieldsHttpEvents(ep, client, reportProgress)
+    ? 'provideMockHttpEvents'
+    : client === 'httpClient'
+      ? 'provideMockObservable'
+      : 'provideMockResource';
   const pascal = toPascalCase(ep.operationId);
   const responseType = ep.hasResponse ? `${pascal}Response` : null;
   const responseImport = responseType

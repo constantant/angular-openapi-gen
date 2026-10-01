@@ -93,6 +93,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `readonlyResponses` | no | `false` | Wrap all `XxxResponse` and `XxxError` type aliases in `Readonly<>` to prevent accidental mutation of response data. |
 | `validateResponses` | no | `false` | Validate JSON responses at runtime against the spec's response schema via `httpResource`'s `parse` hook — requires [`@cfworker/json-schema`](https://www.npmjs.com/package/@cfworker/json-schema) |
 | `clientType` | no | `httpResource` | `httpResource` or `httpClient`. With `httpClient` each token yields a function returning a cold `Observable<T>` via `HttpClient.request()` — `params` / `body` are plain values (no thunks or `Signal`s), auth signals are read per call, and `validateResponses` runs in a `map()`. |
+| `reportProgress` | no | `false` | Report transfer progress. `httpClient` binary/multipart uploads and blob downloads yield `Observable<HttpEvent<T>>`; `httpResource` blob downloads get `reportProgress: true` (see [Upload / download progress](#upload--download-progress---reportprogress)) |
 | `httpClientTags` | no | — | Comma-separated tags whose endpoints use `HttpClient`, overriding `clientType`. Errors if a tag matches no endpoint. |
 | `httpClientOperations` | no | — | Comma-separated `operationId`s that use `HttpClient`, overriding `clientType`. Errors if an id matches no endpoint. |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
@@ -1234,3 +1235,48 @@ readonly pets = rxResource({ stream: () => this.findPets({ status: 'available' }
 Mix clients in one lib with `--httpClientTags=pet,store` or `--httpClientOperations=getPetById`.
 With `--includeMocks`, HttpClient endpoints get `provideMockObservable()` mock providers
 (the same DevTools controls work); the rest keep `provideMockResource()`.
+
+## Upload / download progress (`--reportProgress`)
+
+Angular's `httpResource().progress()` carries **download** progress only — it ignores upload
+progress. So the option behaves differently per client:
+
+| Endpoint | Client | Result |
+|----------|--------|--------|
+| binary / `multipart/*` upload, blob download | `httpClient` | token yields `Observable<HttpEvent<T>>`: `Sent`, `UploadProgress` / `DownloadProgress`, then the `Response` |
+| blob download | `httpResource` | `reportProgress: true`, so `.progress()` is populated |
+| anything else (JSON bodies, text, plain GETs) | either | unchanged |
+
+```bash
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=specs/petstore.yaml --outputDir=libs/petstore-data-access/src \
+  --baseUrlToken=PETSTORE_BASE_URL --httpClientOperations=uploadFile --reportProgress=true
+```
+
+```typescript
+// pet/upload-file.token.ts  (generated)
+export const UPLOAD_FILE = new InjectionToken<
+  (petId: string, body: UploadFileBody) => Observable<HttpEvent<UploadFileResponse>>
+>('UPLOAD_FILE');
+```
+
+```typescript
+this.uploadFile('7', file).subscribe({           // a File is a Blob
+  next: (event) => {
+    if (event.type === HttpEventType.UploadProgress) {
+      this.percent.set(event.total ? Math.round((event.loaded / event.total) * 100) : null);
+    } else if (event.type === HttpEventType.Response) {
+      this.result.set(event.body);
+    }
+  },
+});
+// sub.unsubscribe() aborts the request
+```
+
+> **Upload progress needs the XHR backend.** `HttpClient` defaults to `fetch`, and the Fetch
+> API has no upload-progress events, so with the default (or `withFetch()`) you only ever get
+> the `Sent` and `Response` events. Use `provideHttpClient(withXhr())`. Don't use `withXhr()`
+> with SSR — Angular deprecates XHR on the server.
+
+With `--validateResponses`, only the final `Response` event's body is validated. With
+`--includeMocks`, events-yielding endpoints get `provideMockHttpEvents()`.

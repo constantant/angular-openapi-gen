@@ -69,6 +69,11 @@
       "default": "httpResource",
       "description": "HTTP primitive wrapped by generated tokens. httpClient: the token yields a function returning a cold Observable<T> via HttpClient."
     },
+    "reportProgress": {
+      "type": "boolean",
+      "default": false,
+      "description": "Emit reportProgress: true on httpResource tokens that upload a binary/multipart body or download a blob, so httpResource().progress() reports transfer progress. Has no effect on httpClient endpoints."
+    },
     "httpClientTags": {
       "type": "string",
       "description": "Comma-separated OpenAPI tags whose endpoints use HttpClient, overriding clientType."
