@@ -5,6 +5,9 @@ import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 
+export type YoutubeYoutubeV3UpdateCommentThreadsParams =
+  paths['/youtube/v3/commentThreads']['put']['parameters']['query'];
+
 export type YoutubeYoutubeV3UpdateCommentThreadsBody = NonNullable<
   paths['/youtube/v3/commentThreads']['put']['requestBody']
 >['content']['application/json'];
@@ -328,6 +331,7 @@ function _validateResponse(
 export const YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS = new InjectionToken<
   (
     body: YoutubeYoutubeV3UpdateCommentThreadsBody,
+    params?: YoutubeYoutubeV3UpdateCommentThreadsParams,
   ) => Observable<YoutubeYoutubeV3UpdateCommentThreadsResponse>
 >('YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS');
 
@@ -337,12 +341,22 @@ export function provideYoutubeYoutubeV3UpdateCommentThreads(): FactoryProvider {
     useFactory: () => {
       const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
-      return (body: YoutubeYoutubeV3UpdateCommentThreadsBody) =>
+      return (
+        body: YoutubeYoutubeV3UpdateCommentThreadsBody,
+        params?: YoutubeYoutubeV3UpdateCommentThreadsParams,
+      ) =>
         http
           .request<YoutubeYoutubeV3UpdateCommentThreadsResponse>(
             'PUT',
             `${base}/youtube/v3/commentThreads`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
             },
           )

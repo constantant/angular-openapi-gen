@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeChannelSectionsInsertParams =
+  paths['/youtube/v3/channelSections']['post']['parameters']['query'];
+
 export type YoutubeChannelSectionsInsertBody = NonNullable<
   paths['/youtube/v3/channelSections']['post']['requestBody']
 >['content']['application/json'];
@@ -183,6 +186,7 @@ function _validateResponse(
 export const YOUTUBE_CHANNEL_SECTIONS_INSERT = new InjectionToken<
   (
     body: YoutubeChannelSectionsInsertBody,
+    params: YoutubeChannelSectionsInsertParams,
   ) => Observable<YoutubeChannelSectionsInsertResponse>
 >('YOUTUBE_CHANNEL_SECTIONS_INSERT');
 
@@ -194,12 +198,22 @@ export function provideYoutubeChannelSectionsInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeChannelSectionsInsertBody) =>
+      return (
+        body: YoutubeChannelSectionsInsertBody,
+        params: YoutubeChannelSectionsInsertParams,
+      ) =>
         http
           .request<YoutubeChannelSectionsInsertResponse>(
             'POST',
             `${base}/youtube/v3/channelSections`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

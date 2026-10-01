@@ -85,6 +85,8 @@ export interface EndpointModel {
   tokenName: string;
   fileName: string;
   hasQueryParams: boolean;
+  /** True when at least one query param is `required: true` (makes a mutation's `params` argument required). */
+  hasRequiredQueryParams: boolean;
   /** Query params that need non-default serialization (deepObject, pipeDelimited, spaceDelimited, form+explode:false). */
   specialQueryParams: SpecialQueryParam[];
   hasBody: boolean;

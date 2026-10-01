@@ -4,6 +4,9 @@ import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 
+export type ReposUploadReleaseAssetParams =
+  paths['/repos/{owner}/{repo}/releases/{release_id}/assets']['post']['parameters']['query'];
+
 export type ReposUploadReleaseAssetBody = Blob | ArrayBuffer;
 
 export type ReposUploadReleaseAssetResponse =
@@ -219,6 +222,9 @@ export const REPOS_UPLOAD_RELEASE_ASSET = new InjectionToken<
     repo: string,
     releaseId: string,
     body: ReposUploadReleaseAssetBody | Signal<ReposUploadReleaseAssetBody>,
+    params:
+      | ReposUploadReleaseAssetParams
+      | (() => ReposUploadReleaseAssetParams | undefined),
   ) => ReturnType<typeof httpResource<ReposUploadReleaseAssetResponse>>
 >('REPOS_UPLOAD_RELEASE_ASSET');
 
@@ -232,13 +238,28 @@ export function provideReposUploadReleaseAsset(): FactoryProvider {
         repo: string,
         releaseId: string,
         body: ReposUploadReleaseAssetBody | Signal<ReposUploadReleaseAssetBody>,
+        params:
+          | ReposUploadReleaseAssetParams
+          | (() => ReposUploadReleaseAssetParams | undefined),
       ) =>
         httpResource<ReposUploadReleaseAssetResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
-            method: 'POST',
-            body,
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
+              method: 'POST',
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+              body,
+            };
+          },
           { parse: _validateResponse },
         );
     },

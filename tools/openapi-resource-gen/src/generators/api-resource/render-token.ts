@@ -216,7 +216,7 @@ export function renderTokenFile(
   lines.push('');
 
   // Exported type aliases sourced directly from the generated paths type.
-  if (isGet && ep.hasQueryParams) {
+  if (ep.hasQueryParams) {
     lines.push(
       `export type ${pascal}Params =`,
       `  paths['${ep.apiPath}']['${ep.method}']['parameters']['query'];`,
@@ -416,7 +416,7 @@ export function renderTokenFile(
   const fnArgs = buildFnArgs(ep, pascal, isGet);
 
   // Emit a params serializer when the spec uses non-default query param styles.
-  const hasSpecialParams = ep.specialQueryParams.length > 0 && isGet && ep.hasQueryParams;
+  const hasSpecialParams = ep.specialQueryParams.length > 0 && ep.hasQueryParams;
   if (hasSpecialParams) {
     lines.push(`function _serializeParams(p: ${pascal}Params | undefined): Record<string, string | readonly string[]> | undefined {`);
     lines.push(`  if (p == null) return undefined;`);
@@ -469,7 +469,7 @@ export function renderTokenFile(
       )
       .join('\n');
 
-  const needsBlockBody = isGet && ep.hasQueryParams;
+  const needsBlockBody = ep.hasQueryParams;
   const parseOption = canValidate ? ', { parse: _validateResponse }' : '';
 
   if (providedIn === 'root') {
@@ -556,7 +556,7 @@ function appendResourceOptions(
     lines.push(`${indent}reportProgress: true,`);
   }
 
-  const hasRegularParams = isGet && ep.hasQueryParams;
+  const hasRegularParams = ep.hasQueryParams;
   const hasAuthQueryParams = querySchemes.length > 0;
   const hasSpecialParams = ep.specialQueryParams.length > 0 && hasRegularParams;
 
@@ -700,7 +700,7 @@ function emitHttpClientToken(lines: string[], ep: EndpointModel, ctx: HttpClient
 }
 
 function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean, useHttpClient = false): string {
-  // Natural order: path params, header params, cookie params, query params / body.
+  // Natural order: path params, header params, cookie params, body, query params.
   const args: Array<{ text: string; required: boolean }> = ep.pathParams.map((p) => ({
     text: `${toCamelCase(p)}: string`,
     required: true,
@@ -711,18 +711,22 @@ function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean, useHttpC
       required: h.required,
     });
   }
-  if (isGet && ep.hasQueryParams) {
-    args.push({
-      text: useHttpClient
-        ? `params?: ${pascal}Params`
-        : `params?: ${pascal}Params | (() => ${pascal}Params | undefined)`,
-      required: false,
-    });
-  }
   if (!isGet && ep.hasBody) {
     args.push({
       text: useHttpClient ? `body: ${pascal}Body` : `body: ${pascal}Body | Signal<${pascal}Body>`,
       required: true,
+    });
+  }
+  if (ep.hasQueryParams) {
+    // GET keeps its long-standing optional `params`. A mutation's query params are new surface,
+    // so a spec-required one (e.g. YouTube's `part`) makes the argument required too.
+    const optional = isGet || !ep.hasRequiredQueryParams;
+    const q = optional ? '?' : '';
+    args.push({
+      text: useHttpClient
+        ? `params${q}: ${pascal}Params`
+        : `params${q}: ${pascal}Params | (() => ${pascal}Params | undefined)`,
+      required: !optional,
     });
   }
   // TypeScript forbids a required parameter after an optional one (e.g. an optional

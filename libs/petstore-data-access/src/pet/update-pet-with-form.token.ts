@@ -5,6 +5,9 @@ import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
+export type UpdatePetWithFormParams =
+  paths['/pet/{petId}']['post']['parameters']['query'];
+
 export type UpdatePetWithFormResponse =
   paths['/pet/{petId}']['post']['responses']['200']['content']['application/json'];
 
@@ -93,7 +96,11 @@ function _validateResponse(value: unknown): UpdatePetWithFormResponse {
 }
 
 export const UPDATE_PET_WITH_FORM = new InjectionToken<
-  (petId: string) => ReturnType<typeof httpResource<UpdatePetWithFormResponse>>
+  (
+    petId: string,
+    params?:
+      UpdatePetWithFormParams | (() => UpdatePetWithFormParams | undefined),
+  ) => ReturnType<typeof httpResource<UpdatePetWithFormResponse>>
 >('UPDATE_PET_WITH_FORM');
 
 export function provideUpdatePetWithForm(): FactoryProvider {
@@ -102,17 +109,33 @@ export function provideUpdatePetWithForm(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (petId: string) =>
+      return (
+        petId: string,
+        params?:
+          UpdatePetWithFormParams | (() => UpdatePetWithFormParams | undefined),
+      ) =>
         httpResource<UpdatePetWithFormResponse>(
-          () => ({
-            url: `${base}/pet/${petId}`,
-            method: 'POST',
-            headers: {
-              ...(petstoreAuth?.() != null
-                ? { Authorization: `Bearer ${petstoreAuth()}` }
-                : {}),
-            },
-          }),
+          () => {
+            const _params = typeof params === 'function' ? params() : params;
+            if (typeof params === 'function' && _params === undefined)
+              return undefined;
+            return {
+              url: `${base}/pet/${petId}`,
+              method: 'POST',
+              params: _params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
+              headers: {
+                ...(petstoreAuth?.() != null
+                  ? { Authorization: `Bearer ${petstoreAuth()}` }
+                  : {}),
+              },
+            };
+          },
           { parse: _validateResponse },
         );
     },

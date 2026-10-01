@@ -124,11 +124,14 @@ export function provideFindPetsByStatus(): FactoryProvider {
 
 Rules:
 
-- GET + query params uses **block-body lambda** with `_params` pre-computation and early `return undefined` guard — this makes `httpResource` idle when the thunk returns `undefined`. Shorthand `() => ({...})` would always fire because the lambda always returns an object.
+- Query params (any method) use a **block-body lambda** with `_params` pre-computation and early `return undefined` guard — this makes `httpResource` idle when the thunk returns `undefined`. Shorthand `() => ({...})` would always fire because the lambda always returns an object.
 - `inject()` inside factory only — no constructor DI.
 - Types always sourced from `paths[...]['get']['responses']['200'][...]` — never hand-written.
 - Mutations (POST/PUT/PATCH/DELETE): factory returns `(body: Signal<T> | T) => httpResource(...)`,
   add `method: 'POST'` (etc.) and `body` to the resource config.
+- Query params on mutations: a `params` argument after the body (`(id, body, params?)`). It is
+  **required** when the spec has a required query param (YouTube's `part`); GET keeps its optional
+  `params?`. Required args always precede optional ones.
 - Path params (e.g. `/pets/{id}`): become required args on the returned function,
   interpolated into the URL string inside the reactive lambda.
 - Header params (`in: header`, e.g. `X-Api-Version`): become named string args after path params.

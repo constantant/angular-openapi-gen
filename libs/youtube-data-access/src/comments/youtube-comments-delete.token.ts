@@ -6,8 +6,11 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeCommentsDeleteParams =
+  paths['/youtube/v3/comments']['delete']['parameters']['query'];
+
 export const YOUTUBE_COMMENTS_DELETE = new InjectionToken<
-  () => Observable<unknown>
+  (params: YoutubeCommentsDeleteParams) => Observable<unknown>
 >('YOUTUBE_COMMENTS_DELETE');
 
 export function provideYoutubeCommentsDelete(): FactoryProvider {
@@ -18,8 +21,12 @@ export function provideYoutubeCommentsDelete(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return () =>
+      return (params: YoutubeCommentsDeleteParams) =>
         http.request<unknown>('DELETE', `${base}/youtube/v3/comments`, {
+          params: params as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
           headers: {
             ...(oauth2?.() != null
               ? { Authorization: `Bearer ${oauth2()}` }

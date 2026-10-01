@@ -463,10 +463,16 @@ A failed validation throws inside `parse`, which `httpResource` surfaces through
 
 ## Generated token anatomy
 
-### GET with query params
+### Query params
 
-For GET endpoints with query params, the reactive lambda uses a **block-body form** so it can
+For endpoints with query params, the reactive lambda uses a **block-body form** so it can
 return `undefined` to suppress the request when a thunk returns `undefined`.
+
+Query params work on every method. On a mutation the `params` argument comes after the body —
+`updatePetWithForm(petId, params?)`, `uploadFile(petId, body, params?)` — and is **required**
+when the spec marks a query param as required, e.g. `youtubeVideosInsert(body, params)` with
+`part`. GET endpoints keep their optional `params?`. Required arguments always precede optional
+ones. The example below is a GET:
 
 ```typescript
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';

@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeLiveBroadcastsInsertCuepointParams =
+  paths['/youtube/v3/liveBroadcasts/cuepoint']['post']['parameters']['query'];
+
 export type YoutubeLiveBroadcastsInsertCuepointBody = NonNullable<
   paths['/youtube/v3/liveBroadcasts/cuepoint']['post']['requestBody']
 >['content']['application/json'];
@@ -65,6 +68,7 @@ function _validateResponse(
 export const YOUTUBE_LIVE_BROADCASTS_INSERT_CUEPOINT = new InjectionToken<
   (
     body: YoutubeLiveBroadcastsInsertCuepointBody,
+    params?: YoutubeLiveBroadcastsInsertCuepointParams,
   ) => Observable<YoutubeLiveBroadcastsInsertCuepointResponse>
 >('YOUTUBE_LIVE_BROADCASTS_INSERT_CUEPOINT');
 
@@ -76,12 +80,22 @@ export function provideYoutubeLiveBroadcastsInsertCuepoint(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeLiveBroadcastsInsertCuepointBody) =>
+      return (
+        body: YoutubeLiveBroadcastsInsertCuepointBody,
+        params?: YoutubeLiveBroadcastsInsertCuepointParams,
+      ) =>
         http
           .request<YoutubeLiveBroadcastsInsertCuepointResponse>(
             'POST',
             `${base}/youtube/v3/liveBroadcasts/cuepoint`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

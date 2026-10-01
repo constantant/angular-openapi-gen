@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeChannelBannersInsertParams =
+  paths['/youtube/v3/channelBanners/insert']['post']['parameters']['query'];
+
 export type YoutubeChannelBannersInsertBody = Blob | ArrayBuffer;
 
 export type YoutubeChannelBannersInsertResponse =
@@ -48,6 +51,7 @@ function _validateResponse(
 export const YOUTUBE_CHANNEL_BANNERS_INSERT = new InjectionToken<
   (
     body: YoutubeChannelBannersInsertBody,
+    params?: YoutubeChannelBannersInsertParams,
   ) => Observable<YoutubeChannelBannersInsertResponse>
 >('YOUTUBE_CHANNEL_BANNERS_INSERT');
 
@@ -59,12 +63,22 @@ export function provideYoutubeChannelBannersInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeChannelBannersInsertBody) =>
+      return (
+        body: YoutubeChannelBannersInsertBody,
+        params?: YoutubeChannelBannersInsertParams,
+      ) =>
         http
           .request<YoutubeChannelBannersInsertResponse>(
             'POST',
             `${base}/youtube/v3/channelBanners/insert`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null
