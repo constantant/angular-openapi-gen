@@ -43,13 +43,20 @@ jobs:
           # so the version-bump commit/tag push would fail with the default token.
           token: ${{ secrets.GH_PAT }}
 
-      # registry-url writes an .npmrc pointing at registry.npmjs.org and
-      # sets up NODE_AUTH_TOKEN forwarding for npm publish.
+      # No registry-url on purpose: with it, setup-node injects a placeholder NODE_AUTH_TOKEN that
+      # breaks npm trusted publishing (OIDC) with a misleading E404. npm publishes to
+      # registry.npmjs.org by default, and authenticates with the workflow's OIDC identity.
       - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
-          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm >= 11.5.1. Fail now rather than after the version bump,
+      # tags and GitHub Releases have already been created.
+      - name: Check npm supports trusted publishing
+        run: |
+          npm -v
+          node -e "const v=require('child_process').execSync('npm -v').toString().trim().split('.').map(Number);if(v[0]<11||(v[0]===11&&(v[1]<5||(v[1]===5&&v[2]<1)))){console.error('npm '+v.join('.')+' is older than 11.5.1: trusted publishing is unavailable');process.exit(1)}"
 
       - name: Install dependencies
         run: npm ci
@@ -124,8 +131,9 @@ jobs:
       # Pre-release versions (1.2.0-beta.1) are published under the "next" dist-tag
       # so that `npm install @constantant/openapi-resource-gen` still gets the stable release.
       # --provenance attaches a signed OIDC provenance attestation (supply-chain security).
-      # NODE_AUTH_TOKEN (NPM_TOKEN) is only a fallback: once a trusted publisher is configured
-      # for the package on npmjs.com, npm authenticates with the workflow's OIDC identity instead.
+      # Authentication is npm trusted publishing (OIDC): each package has a trusted publisher
+      # configured on npmjs.com (constantant/angular-openapi-gen, release.yml), so there is no
+      # long-lived npm token. If a publish fails with E404/E401, check that configuration first.
       - name: Publish openapi-resource-gen to npm
         if: ${{ !inputs.dryRun }}
         id: publish-gen
@@ -141,8 +149,6 @@ jobs:
             echo "published=true" >> "$GITHUB_OUTPUT"
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish openapi-resource-mocks to npm
         if: ${{ !inputs.dryRun }}
@@ -159,8 +165,6 @@ jobs:
             echo "published=true" >> "$GITHUB_OUTPUT"
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Write job summary
         if: always()
