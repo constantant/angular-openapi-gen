@@ -5,6 +5,9 @@ import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 
+export type YoutubeThirdPartyLinksInsertParams =
+  paths['/youtube/v3/thirdPartyLinks']['post']['parameters']['query'];
+
 export type YoutubeThirdPartyLinksInsertBody = NonNullable<
   paths['/youtube/v3/thirdPartyLinks']['post']['requestBody']
 >['content']['application/json'];
@@ -94,6 +97,7 @@ function _validateResponse(
 export const YOUTUBE_THIRD_PARTY_LINKS_INSERT = new InjectionToken<
   (
     body: YoutubeThirdPartyLinksInsertBody,
+    params: YoutubeThirdPartyLinksInsertParams,
   ) => Observable<YoutubeThirdPartyLinksInsertResponse>
 >('YOUTUBE_THIRD_PARTY_LINKS_INSERT');
 
@@ -103,12 +107,22 @@ export function provideYoutubeThirdPartyLinksInsert(): FactoryProvider {
     useFactory: () => {
       const http = inject(HttpClient);
       const base = inject(YOUTUBE_BASE_URL);
-      return (body: YoutubeThirdPartyLinksInsertBody) =>
+      return (
+        body: YoutubeThirdPartyLinksInsertBody,
+        params: YoutubeThirdPartyLinksInsertParams,
+      ) =>
         http
           .request<YoutubeThirdPartyLinksInsertResponse>(
             'POST',
             `${base}/youtube/v3/thirdPartyLinks`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
             },
           )

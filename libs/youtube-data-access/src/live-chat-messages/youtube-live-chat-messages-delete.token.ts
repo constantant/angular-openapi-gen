@@ -6,8 +6,11 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeLiveChatMessagesDeleteParams =
+  paths['/youtube/v3/liveChat/messages']['delete']['parameters']['query'];
+
 export const YOUTUBE_LIVE_CHAT_MESSAGES_DELETE = new InjectionToken<
-  () => Observable<unknown>
+  (params: YoutubeLiveChatMessagesDeleteParams) => Observable<unknown>
 >('YOUTUBE_LIVE_CHAT_MESSAGES_DELETE');
 
 export function provideYoutubeLiveChatMessagesDelete(): FactoryProvider {
@@ -18,11 +21,15 @@ export function provideYoutubeLiveChatMessagesDelete(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return () =>
+      return (params: YoutubeLiveChatMessagesDeleteParams) =>
         http.request<unknown>(
           'DELETE',
           `${base}/youtube/v3/liveChat/messages`,
           {
+            params: params as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
             headers: {
               ...(oauth2?.() != null
                 ? { Authorization: `Bearer ${oauth2()}` }

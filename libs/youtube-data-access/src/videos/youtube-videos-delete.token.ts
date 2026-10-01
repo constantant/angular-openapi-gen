@@ -6,8 +6,11 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeVideosDeleteParams =
+  paths['/youtube/v3/videos']['delete']['parameters']['query'];
+
 export const YOUTUBE_VIDEOS_DELETE = new InjectionToken<
-  () => Observable<unknown>
+  (params: YoutubeVideosDeleteParams) => Observable<unknown>
 >('YOUTUBE_VIDEOS_DELETE');
 
 export function provideYoutubeVideosDelete(): FactoryProvider {
@@ -18,8 +21,12 @@ export function provideYoutubeVideosDelete(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return () =>
+      return (params: YoutubeVideosDeleteParams) =>
         http.request<unknown>('DELETE', `${base}/youtube/v3/videos`, {
+          params: params as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
           headers: {
             ...(oauth2?.() != null
               ? { Authorization: `Bearer ${oauth2()}` }

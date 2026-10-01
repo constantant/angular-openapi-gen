@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeCaptionsInsertParams =
+  paths['/youtube/v3/captions']['post']['parameters']['query'];
+
 export type YoutubeCaptionsInsertBody = Blob | ArrayBuffer;
 
 export type YoutubeCaptionsInsertResponse =
@@ -121,7 +124,10 @@ function _validateResponse(value: unknown): YoutubeCaptionsInsertResponse {
 }
 
 export const YOUTUBE_CAPTIONS_INSERT = new InjectionToken<
-  (body: YoutubeCaptionsInsertBody) => Observable<YoutubeCaptionsInsertResponse>
+  (
+    body: YoutubeCaptionsInsertBody,
+    params: YoutubeCaptionsInsertParams,
+  ) => Observable<YoutubeCaptionsInsertResponse>
 >('YOUTUBE_CAPTIONS_INSERT');
 
 export function provideYoutubeCaptionsInsert(): FactoryProvider {
@@ -132,12 +138,22 @@ export function provideYoutubeCaptionsInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeCaptionsInsertBody) =>
+      return (
+        body: YoutubeCaptionsInsertBody,
+        params: YoutubeCaptionsInsertParams,
+      ) =>
         http
           .request<YoutubeCaptionsInsertResponse>(
             'POST',
             `${base}/youtube/v3/captions`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeCommentsUpdateParams =
+  paths['/youtube/v3/comments']['put']['parameters']['query'];
+
 export type YoutubeCommentsUpdateBody = NonNullable<
   paths['/youtube/v3/comments']['put']['requestBody']
 >['content']['application/json'];
@@ -131,7 +134,10 @@ function _validateResponse(value: unknown): YoutubeCommentsUpdateResponse {
 }
 
 export const YOUTUBE_COMMENTS_UPDATE = new InjectionToken<
-  (body: YoutubeCommentsUpdateBody) => Observable<YoutubeCommentsUpdateResponse>
+  (
+    body: YoutubeCommentsUpdateBody,
+    params: YoutubeCommentsUpdateParams,
+  ) => Observable<YoutubeCommentsUpdateResponse>
 >('YOUTUBE_COMMENTS_UPDATE');
 
 export function provideYoutubeCommentsUpdate(): FactoryProvider {
@@ -142,12 +148,22 @@ export function provideYoutubeCommentsUpdate(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeCommentsUpdateBody) =>
+      return (
+        body: YoutubeCommentsUpdateBody,
+        params: YoutubeCommentsUpdateParams,
+      ) =>
         http
           .request<YoutubeCommentsUpdateResponse>(
             'PUT',
             `${base}/youtube/v3/comments`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

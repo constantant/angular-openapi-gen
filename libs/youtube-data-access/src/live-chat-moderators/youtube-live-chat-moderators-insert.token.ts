@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeLiveChatModeratorsInsertParams =
+  paths['/youtube/v3/liveChat/moderators']['post']['parameters']['query'];
+
 export type YoutubeLiveChatModeratorsInsertBody = NonNullable<
   paths['/youtube/v3/liveChat/moderators']['post']['requestBody']
 >['content']['application/json'];
@@ -85,6 +88,7 @@ function _validateResponse(
 export const YOUTUBE_LIVE_CHAT_MODERATORS_INSERT = new InjectionToken<
   (
     body: YoutubeLiveChatModeratorsInsertBody,
+    params: YoutubeLiveChatModeratorsInsertParams,
   ) => Observable<YoutubeLiveChatModeratorsInsertResponse>
 >('YOUTUBE_LIVE_CHAT_MODERATORS_INSERT');
 
@@ -96,12 +100,22 @@ export function provideYoutubeLiveChatModeratorsInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeLiveChatModeratorsInsertBody) =>
+      return (
+        body: YoutubeLiveChatModeratorsInsertBody,
+        params: YoutubeLiveChatModeratorsInsertParams,
+      ) =>
         http
           .request<YoutubeLiveChatModeratorsInsertResponse>(
             'POST',
             `${base}/youtube/v3/liveChat/moderators`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

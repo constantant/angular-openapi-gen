@@ -10,6 +10,9 @@ import type { paths } from '../schema.d';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
+export type UploadFileParams =
+  paths['/pet/{petId}/uploadImage']['post']['parameters']['query'];
+
 export type UploadFileBody = Blob | ArrayBuffer;
 
 export type UploadFileResponse =
@@ -48,6 +51,7 @@ export const UPLOAD_FILE = new InjectionToken<
   (
     petId: string,
     body: UploadFileBody,
+    params?: UploadFileParams,
   ) => Observable<HttpEvent<UploadFileResponse>>
 >('UPLOAD_FILE');
 
@@ -58,7 +62,7 @@ export function provideUploadFile(): FactoryProvider {
       const http = inject(HttpClient);
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (petId: string, body: UploadFileBody) =>
+      return (petId: string, body: UploadFileBody, params?: UploadFileParams) =>
         http
           .request<UploadFileResponse>(
             'POST',
@@ -66,6 +70,13 @@ export function provideUploadFile(): FactoryProvider {
             {
               observe: 'events',
               reportProgress: true,
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(petstoreAuth?.() != null

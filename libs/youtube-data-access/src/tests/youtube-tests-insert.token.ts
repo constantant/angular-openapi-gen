@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeTestsInsertParams =
+  paths['/youtube/v3/tests']['post']['parameters']['query'];
+
 export type YoutubeTestsInsertBody = NonNullable<
   paths['/youtube/v3/tests']['post']['requestBody']
 >['content']['application/json'];
@@ -45,7 +48,10 @@ function _validateResponse(value: unknown): YoutubeTestsInsertResponse {
 }
 
 export const YOUTUBE_TESTS_INSERT = new InjectionToken<
-  (body: YoutubeTestsInsertBody) => Observable<YoutubeTestsInsertResponse>
+  (
+    body: YoutubeTestsInsertBody,
+    params: YoutubeTestsInsertParams,
+  ) => Observable<YoutubeTestsInsertResponse>
 >('YOUTUBE_TESTS_INSERT');
 
 export function provideYoutubeTestsInsert(): FactoryProvider {
@@ -56,12 +62,19 @@ export function provideYoutubeTestsInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeTestsInsertBody) =>
+      return (body: YoutubeTestsInsertBody, params: YoutubeTestsInsertParams) =>
         http
           .request<YoutubeTestsInsertResponse>(
             'POST',
             `${base}/youtube/v3/tests`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

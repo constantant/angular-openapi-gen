@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeLiveStreamsInsertParams =
+  paths['/youtube/v3/liveStreams']['post']['parameters']['query'];
+
 export type YoutubeLiveStreamsInsertBody = NonNullable<
   paths['/youtube/v3/liveStreams']['post']['requestBody']
 >['content']['application/json'];
@@ -255,6 +258,7 @@ function _validateResponse(value: unknown): YoutubeLiveStreamsInsertResponse {
 export const YOUTUBE_LIVE_STREAMS_INSERT = new InjectionToken<
   (
     body: YoutubeLiveStreamsInsertBody,
+    params: YoutubeLiveStreamsInsertParams,
   ) => Observable<YoutubeLiveStreamsInsertResponse>
 >('YOUTUBE_LIVE_STREAMS_INSERT');
 
@@ -266,12 +270,22 @@ export function provideYoutubeLiveStreamsInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeLiveStreamsInsertBody) =>
+      return (
+        body: YoutubeLiveStreamsInsertBody,
+        params: YoutubeLiveStreamsInsertParams,
+      ) =>
         http
           .request<YoutubeLiveStreamsInsertResponse>(
             'POST',
             `${base}/youtube/v3/liveStreams`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

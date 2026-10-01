@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubePlaylistsUpdateParams =
+  paths['/youtube/v3/playlists']['put']['parameters']['query'];
+
 export type YoutubePlaylistsUpdateBody = NonNullable<
   paths['/youtube/v3/playlists']['put']['requestBody']
 >['content']['application/json'];
@@ -253,6 +256,7 @@ function _validateResponse(value: unknown): YoutubePlaylistsUpdateResponse {
 export const YOUTUBE_PLAYLISTS_UPDATE = new InjectionToken<
   (
     body: YoutubePlaylistsUpdateBody,
+    params: YoutubePlaylistsUpdateParams,
   ) => Observable<YoutubePlaylistsUpdateResponse>
 >('YOUTUBE_PLAYLISTS_UPDATE');
 
@@ -264,12 +268,22 @@ export function provideYoutubePlaylistsUpdate(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubePlaylistsUpdateBody) =>
+      return (
+        body: YoutubePlaylistsUpdateBody,
+        params: YoutubePlaylistsUpdateParams,
+      ) =>
         http
           .request<YoutubePlaylistsUpdateResponse>(
             'PUT',
             `${base}/youtube/v3/playlists`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

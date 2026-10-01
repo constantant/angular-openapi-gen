@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubePlaylistItemsInsertParams =
+  paths['/youtube/v3/playlistItems']['post']['parameters']['query'];
+
 export type YoutubePlaylistItemsInsertBody = NonNullable<
   paths['/youtube/v3/playlistItems']['post']['requestBody']
 >['content']['application/json'];
@@ -258,6 +261,7 @@ function _validateResponse(value: unknown): YoutubePlaylistItemsInsertResponse {
 export const YOUTUBE_PLAYLIST_ITEMS_INSERT = new InjectionToken<
   (
     body: YoutubePlaylistItemsInsertBody,
+    params: YoutubePlaylistItemsInsertParams,
   ) => Observable<YoutubePlaylistItemsInsertResponse>
 >('YOUTUBE_PLAYLIST_ITEMS_INSERT');
 
@@ -269,12 +273,22 @@ export function provideYoutubePlaylistItemsInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubePlaylistItemsInsertBody) =>
+      return (
+        body: YoutubePlaylistItemsInsertBody,
+        params: YoutubePlaylistItemsInsertParams,
+      ) =>
         http
           .request<YoutubePlaylistItemsInsertResponse>(
             'POST',
             `${base}/youtube/v3/playlistItems`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

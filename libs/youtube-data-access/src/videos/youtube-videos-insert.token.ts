@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeVideosInsertParams =
+  paths['/youtube/v3/videos']['post']['parameters']['query'];
+
 export type YoutubeVideosInsertBody = Blob | ArrayBuffer;
 
 export type YoutubeVideosInsertResponse =
@@ -1994,7 +1997,10 @@ function _validateResponse(value: unknown): YoutubeVideosInsertResponse {
 }
 
 export const YOUTUBE_VIDEOS_INSERT = new InjectionToken<
-  (body: YoutubeVideosInsertBody) => Observable<YoutubeVideosInsertResponse>
+  (
+    body: YoutubeVideosInsertBody,
+    params: YoutubeVideosInsertParams,
+  ) => Observable<YoutubeVideosInsertResponse>
 >('YOUTUBE_VIDEOS_INSERT');
 
 export function provideYoutubeVideosInsert(): FactoryProvider {
@@ -2005,12 +2011,22 @@ export function provideYoutubeVideosInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeVideosInsertBody) =>
+      return (
+        body: YoutubeVideosInsertBody,
+        params: YoutubeVideosInsertParams,
+      ) =>
         http
           .request<YoutubeVideosInsertResponse>(
             'POST',
             `${base}/youtube/v3/videos`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

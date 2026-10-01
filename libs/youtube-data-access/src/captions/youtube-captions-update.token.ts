@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeCaptionsUpdateParams =
+  paths['/youtube/v3/captions']['put']['parameters']['query'];
+
 export type YoutubeCaptionsUpdateBody = Blob | ArrayBuffer;
 
 export type YoutubeCaptionsUpdateResponse =
@@ -121,7 +124,10 @@ function _validateResponse(value: unknown): YoutubeCaptionsUpdateResponse {
 }
 
 export const YOUTUBE_CAPTIONS_UPDATE = new InjectionToken<
-  (body: YoutubeCaptionsUpdateBody) => Observable<YoutubeCaptionsUpdateResponse>
+  (
+    body: YoutubeCaptionsUpdateBody,
+    params: YoutubeCaptionsUpdateParams,
+  ) => Observable<YoutubeCaptionsUpdateResponse>
 >('YOUTUBE_CAPTIONS_UPDATE');
 
 export function provideYoutubeCaptionsUpdate(): FactoryProvider {
@@ -132,12 +138,22 @@ export function provideYoutubeCaptionsUpdate(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeCaptionsUpdateBody) =>
+      return (
+        body: YoutubeCaptionsUpdateBody,
+        params: YoutubeCaptionsUpdateParams,
+      ) =>
         http
           .request<YoutubeCaptionsUpdateResponse>(
             'PUT',
             `${base}/youtube/v3/captions`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeLiveChatMessagesInsertParams =
+  paths['/youtube/v3/liveChat/messages']['post']['parameters']['query'];
+
 export type YoutubeLiveChatMessagesInsertBody = NonNullable<
   paths['/youtube/v3/liveChat/messages']['post']['requestBody']
 >['content']['application/json'];
@@ -399,6 +402,7 @@ function _validateResponse(
 export const YOUTUBE_LIVE_CHAT_MESSAGES_INSERT = new InjectionToken<
   (
     body: YoutubeLiveChatMessagesInsertBody,
+    params: YoutubeLiveChatMessagesInsertParams,
   ) => Observable<YoutubeLiveChatMessagesInsertResponse>
 >('YOUTUBE_LIVE_CHAT_MESSAGES_INSERT');
 
@@ -410,12 +414,22 @@ export function provideYoutubeLiveChatMessagesInsert(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeLiveChatMessagesInsertBody) =>
+      return (
+        body: YoutubeLiveChatMessagesInsertBody,
+        params: YoutubeLiveChatMessagesInsertParams,
+      ) =>
         http
           .request<YoutubeLiveChatMessagesInsertResponse>(
             'POST',
             `${base}/youtube/v3/liveChat/messages`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null

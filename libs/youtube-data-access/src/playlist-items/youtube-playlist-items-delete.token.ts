@@ -6,8 +6,11 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubePlaylistItemsDeleteParams =
+  paths['/youtube/v3/playlistItems']['delete']['parameters']['query'];
+
 export const YOUTUBE_PLAYLIST_ITEMS_DELETE = new InjectionToken<
-  () => Observable<unknown>
+  (params: YoutubePlaylistItemsDeleteParams) => Observable<unknown>
 >('YOUTUBE_PLAYLIST_ITEMS_DELETE');
 
 export function provideYoutubePlaylistItemsDelete(): FactoryProvider {
@@ -18,8 +21,12 @@ export function provideYoutubePlaylistItemsDelete(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return () =>
+      return (params: YoutubePlaylistItemsDeleteParams) =>
         http.request<unknown>('DELETE', `${base}/youtube/v3/playlistItems`, {
+          params: params as unknown as Record<
+            string,
+            string | number | boolean | readonly (string | number | boolean)[]
+          >,
           headers: {
             ...(oauth2?.() != null
               ? { Authorization: `Bearer ${oauth2()}` }

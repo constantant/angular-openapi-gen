@@ -7,6 +7,9 @@ import { YOUTUBE_BASE_URL } from '../api-base-url.token';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
+export type YoutubeLiveBroadcastsUpdateParams =
+  paths['/youtube/v3/liveBroadcasts']['put']['parameters']['query'];
+
 export type YoutubeLiveBroadcastsUpdateBody = NonNullable<
   paths['/youtube/v3/liveBroadcasts']['put']['requestBody']
 >['content']['application/json'];
@@ -387,6 +390,7 @@ function _validateResponse(
 export const YOUTUBE_LIVE_BROADCASTS_UPDATE = new InjectionToken<
   (
     body: YoutubeLiveBroadcastsUpdateBody,
+    params: YoutubeLiveBroadcastsUpdateParams,
   ) => Observable<YoutubeLiveBroadcastsUpdateResponse>
 >('YOUTUBE_LIVE_BROADCASTS_UPDATE');
 
@@ -398,12 +402,22 @@ export function provideYoutubeLiveBroadcastsUpdate(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
-      return (body: YoutubeLiveBroadcastsUpdateBody) =>
+      return (
+        body: YoutubeLiveBroadcastsUpdateBody,
+        params: YoutubeLiveBroadcastsUpdateParams,
+      ) =>
         http
           .request<YoutubeLiveBroadcastsUpdateResponse>(
             'PUT',
             `${base}/youtube/v3/liveBroadcasts`,
             {
+              params: params as unknown as Record<
+                string,
+                | string
+                | number
+                | boolean
+                | readonly (string | number | boolean)[]
+              >,
               body,
               headers: {
                 ...(oauth2?.() != null
