@@ -165,7 +165,20 @@
                       (click)="uploadPhoto()">
                 @if (uploadLoading()) { Uploading… } @else { Upload }
               </button>
+              @if (uploadLoading()) {
+                <button mat-stroked-button data-testid="upload-cancel" (click)="cancelUpload()">
+                  Cancel
+                </button>
+              }
             </div>
+            @if (uploadLoading()) {
+              <mat-progress-bar data-testid="upload-progress"
+                                [mode]="uploadPercent() === null ? 'indeterminate' : 'determinate'"
+                                [value]="uploadPercent() ?? 0" />
+              <p class="upload-feedback upload-meta" data-testid="upload-progress-text">
+                @if (uploadPercent() !== null) { {{ uploadPercent() }}% · {{ uploadBytes() }} } @else { Starting… }
+              </p>
+            }
             @if (uploadSuccess()) {
               <p class="upload-feedback upload-ok">✓ {{ uploadSuccess() }}</p>
             }

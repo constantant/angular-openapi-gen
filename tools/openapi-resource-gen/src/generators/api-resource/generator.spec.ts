@@ -2201,6 +2201,97 @@ describe('api-resource generator', () => {
       });
     });
 
+    describe('reportProgress', () => {
+      const genWith = async (extra: Record<string, unknown>) => {
+        vi.mocked(SwaggerParser.dereference).mockResolvedValue(SHAPES_SPEC as never);
+        await apiResourceGenerator(tree, {
+          specPath: 'specs/petstore.yaml',
+          outputDir: 'libs/shapes/src',
+          baseUrlToken: 'SHAPES_BASE_URL',
+          ...extra,
+        });
+      };
+
+      it('is off by default: no progress for any client', async () => {
+        await gen('httpResource');
+        expect(read('files', 'download-file')).not.toContain('reportProgress');
+        await gen('httpClient');
+        expect(read('files', 'upload-file')).not.toContain('HttpEvent');
+        expect(read('files', 'upload-file')).not.toContain("observe: 'events'");
+      });
+
+      describe('httpClient: yields Observable<HttpEvent<T>>', () => {
+        it('for binary uploads and blob downloads', async () => {
+          await genWith({ reportProgress: true, clientType: 'httpClient' });
+          const up = squash(read('files', 'upload-file'));
+          expect(up).toContain("import { HttpClient, type HttpEvent } from '@angular/common/http'");
+          expect(up).toContain('(body: UploadFileBody) => Observable<HttpEvent<UploadFileResponse>>');
+          expect(up).toContain("observe: 'events'");
+          expect(up).toContain('reportProgress: true');
+          expect(up).toContain("http.request<UploadFileResponse>('PUT'");
+          const down = squash(read('files', 'download-file'));
+          expect(down).toContain('() => Observable<HttpEvent<Blob>>');
+          expect(down).toContain("responseType: 'blob'");
+          expect(down).toContain("observe: 'events'");
+        });
+
+        it('leaves JSON-body mutations, text responses and plain GETs as plain Observable<T>', async () => {
+          await genWith({ reportProgress: true, clientType: 'httpClient' });
+          expect(squash(read('items', 'create-item'))).toContain('=> Observable<CreateItemResponse>');
+          expect(read('items', 'create-item')).not.toContain('HttpEvent');
+          expect(squash(read('items', 'list-items'))).toContain('=> Observable<ListItemsResponse>');
+          expect(squash(read('files', 'get-report-text'))).toContain('() => Observable<string>');
+        });
+
+        it('validates only the Response event when validateResponses is on', async () => {
+          await genWith({ reportProgress: true, clientType: 'httpClient', validateResponses: true });
+          const up = read('files', 'upload-file').replace(/\s+/g, '');
+          expect(up).toContain("import{HttpClient,HttpEventType,typeHttpEvent,}from'@angular/common/http'");
+          expect(up).toContain('e.type===HttpEventType.Response');
+          expect(up).toContain('e.clone({body:_validateResponse(e.body)})'.replace(/\s+/g, ''));
+        });
+
+        it('works with providedIn: root', async () => {
+          await genWith({ reportProgress: true, clientType: 'httpClient', providedIn: 'root' });
+          const up = squash(read('files', 'upload-file'));
+          expect(up).toContain("providedIn: 'root'");
+          expect(up).toContain('Observable<HttpEvent<UploadFileResponse>>');
+        });
+      });
+
+      describe('httpResource: download progress only', () => {
+        it('flags blob downloads with reportProgress but not uploads (httpResource ignores upload progress)', async () => {
+          await genWith({ reportProgress: true });
+          expect(read('files', 'download-file')).toMatch(/\n\s+reportProgress: true,/);
+          expect(read('files', 'upload-file')).not.toContain('reportProgress');
+        });
+
+        it('leaves JSON bodies, text responses and plain GETs alone', async () => {
+          await genWith({ reportProgress: true });
+          for (const [tag, f] of [['items', 'create-item'], ['items', 'list-items'], ['files', 'get-report-text']]) {
+            expect(read(tag, f)).not.toContain('reportProgress');
+          }
+        });
+      });
+
+      it('applies per endpoint in a mixed lib', async () => {
+        await genWith({ reportProgress: true, httpClientOperations: 'uploadFile' });
+        expect(read('files', 'upload-file')).toContain('HttpEvent<UploadFileResponse>');
+        expect(read('files', 'download-file')).toMatch(/\n\s+reportProgress: true,/);
+        expect(read('files', 'download-file')).not.toContain('HttpEvent');
+      });
+
+      it('mock file uses provideMockHttpEvents exactly when the token yields events', () => {
+        const upload = { operationId: 'uploadFile', tokenName: 'UPLOAD_FILE', fileName: 'upload-file', apiPath: '/file', method: 'put', tag: 'files', hasResponse: true, hasBody: true, isBinaryBody: true, bodyContentType: 'application/octet-stream', responseVariant: 'json' } as never;
+        const json = { operationId: 'createItem', tokenName: 'CREATE_ITEM', fileName: 'create-item', apiPath: '/items', method: 'post', tag: 'items', hasResponse: true, hasBody: true, isBinaryBody: false, bodyContentType: 'application/json', responseVariant: 'json' } as never;
+        const flat = (c: string) => c.replace(/\s+/g, '');
+        expect(flat(renderMockFile(upload, 'x', 'httpClient', true))).toContain('provideMockHttpEvents(UPLOAD_FILE');
+        expect(flat(renderMockFile(upload, 'x', 'httpClient', false))).toContain('provideMockObservable(UPLOAD_FILE');
+        expect(flat(renderMockFile(upload, 'x', 'httpResource', true))).toContain('provideMockResource(UPLOAD_FILE');
+        expect(flat(renderMockFile(json, 'x', 'httpClient', true))).toContain('provideMockObservable(CREATE_ITEM');
+      });
+    });
+
     describe('httpResource only', () => {
       it('keeps responseType out and uses httpResource.text / .blob', async () => {
         await gen('httpResource');

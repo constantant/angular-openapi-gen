@@ -130,6 +130,25 @@ export interface RenderTokenOptions {
   validateResponses?: boolean;
   /** Which Angular HTTP primitive the token's factory wraps. Default: httpResource. */
   client?: ClientType;
+  /**
+   * Report transfer progress. For `httpClient` endpoints that upload a binary / multipart body or
+   * download a blob, the token yields `Observable<HttpEvent<T>>` (upload/download progress +
+   * response). For `httpResource` it emits `reportProgress: true` on blob downloads only, because
+   * `httpResource().progress()` carries download progress but ignores upload progress.
+   */
+  reportProgress?: boolean;
+}
+
+/** Endpoints where transfer progress is meaningful: binary/multipart uploads and blob downloads. */
+function transfersFiles(ep: EndpointModel): boolean {
+  const uploads =
+    ep.hasBody && (ep.isBinaryBody || (ep.bodyContentType?.startsWith('multipart/') ?? false));
+  return uploads || ep.responseVariant === 'blob';
+}
+
+/** True when the token for `ep` yields `Observable<HttpEvent<T>>` rather than `Observable<T>`. */
+export function yieldsHttpEvents(ep: EndpointModel, client: ClientType, reportProgress: boolean): boolean {
+  return reportProgress && client === 'httpClient' && transfersFiles(ep);
 }
 
 export function renderTokenFile(
@@ -142,9 +161,13 @@ export function renderTokenFile(
     readonlyResponses = false,
     validateResponses = false,
     client = 'httpResource',
+    reportProgress = false,
   }: RenderTokenOptions = {}
 ): string {
   const useHttpClient = client === 'httpClient';
+  const httpEvents = yieldsHttpEvents(ep, client, reportProgress);
+  // httpResource().progress() only carries *download* progress, so only blob downloads get the flag.
+  const withProgress = reportProgress && !useHttpClient && ep.responseVariant === 'blob';
   const pascal = toPascalCase(ep.operationId);
   const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
   const isGet = ep.method === 'get';
@@ -168,7 +191,15 @@ export function renderTokenFile(
   if (providedIn === 'none') coreImports.push('FactoryProvider');
   lines.push(`import { ${coreImports.join(', ')} } from '@angular/core';`);
   if (useHttpClient) {
-    lines.push(`import { HttpClient } from '@angular/common/http';`);
+    if (httpEvents) {
+      lines.push(
+        canValidate
+          ? `import { HttpClient, HttpEventType, type HttpEvent } from '@angular/common/http';`
+          : `import { HttpClient, type HttpEvent } from '@angular/common/http';`,
+      );
+    } else {
+      lines.push(`import { HttpClient } from '@angular/common/http';`);
+    }
     lines.push(canValidate ? `import { map, type Observable } from 'rxjs';` : `import type { Observable } from 'rxjs';`);
   } else {
     lines.push(`import { httpResource } from '@angular/common/http';`);
@@ -416,7 +447,7 @@ export function renderTokenFile(
   if (useHttpClient) {
     emitHttpClientToken(lines, ep, {
       pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes,
-      headerSchemes, querySchemes, canValidate, responseT, isGet,
+      headerSchemes, querySchemes, canValidate, responseT, isGet, httpEvents,
     });
     return lines.join('\n');
   }
@@ -457,7 +488,7 @@ export function renderTokenFile(
         `        return {`,
         `          url: \`\${base}${urlTemplate}\`,`,
       );
-      appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, true);
+      appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, true, false, withProgress);
       lines.push(`        };`, `      }${parseOption});`, `  },`, `});`, '');
     } else {
       lines.push(
@@ -465,7 +496,7 @@ export function renderTokenFile(
         `      ${resourceCall}(() => ({`,
         `        url: \`\${base}${urlTemplate}\`,`,
       );
-      appendResourceOptions(lines, ep, isGet, '        ', headerSchemes, querySchemes, false);
+      appendResourceOptions(lines, ep, isGet, '        ', headerSchemes, querySchemes, false, false, withProgress);
       lines.push(`      })${parseOption});`, `  },`, `});`, '');
     }
   } else {
@@ -487,7 +518,7 @@ export function renderTokenFile(
         `          return {`,
         `            url: \`\${base}${urlTemplate}\`,`,
       );
-      appendResourceOptions(lines, ep, isGet, '            ', headerSchemes, querySchemes, true);
+      appendResourceOptions(lines, ep, isGet, '            ', headerSchemes, querySchemes, true, false, withProgress);
       lines.push(`          };`, `        }${parseOption});`, `    },`, `  };`, `}`, '');
     } else {
       lines.push(
@@ -495,7 +526,7 @@ export function renderTokenFile(
         `        ${resourceCall}(() => ({`,
         `          url: \`\${base}${urlTemplate}\`,`,
       );
-      appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, false);
+      appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, false, false, withProgress);
       lines.push(`        })${parseOption});`, `    },`, `  };`, `}`, '');
     }
   }
@@ -512,6 +543,7 @@ function appendResourceOptions(
   querySchemes: SecuritySchemeModel[],
   usePrecomputedParams = false,
   useHttpClient = false,
+  withProgress = false,
 ): void {
   // HttpClient.request() takes the method positionally; httpResource takes it in the config.
   if (!isGet && !useHttpClient) {
@@ -519,6 +551,9 @@ function appendResourceOptions(
   }
   if (useHttpClient && ep.responseVariant !== 'json') {
     lines.push(`${indent}responseType: '${ep.responseVariant}',`);
+  }
+  if (withProgress) {
+    lines.push(`${indent}reportProgress: true,`);
   }
 
   const hasRegularParams = isGet && ep.hasQueryParams;
@@ -598,6 +633,8 @@ interface HttpClientTokenCtx {
   canValidate: boolean;
   responseT: string;
   isGet: boolean;
+  /** Yield Observable<HttpEvent<T>> (progress + response) instead of Observable<T>. */
+  httpEvents: boolean;
 }
 
 /**
@@ -606,12 +643,18 @@ interface HttpClientTokenCtx {
  * and body are plain values (no thunks / signals), and auth signals are read per call.
  */
 function emitHttpClientToken(lines: string[], ep: EndpointModel, ctx: HttpClientTokenCtx): void {
-  const { pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes, canValidate, responseT, isGet } = ctx;
-  const observableT = ep.responseVariant === 'text' ? 'string' : ep.responseVariant === 'blob' ? 'Blob' : responseT;
+  const { pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes, canValidate, responseT, isGet, httpEvents } = ctx;
+  const bodyT = ep.responseVariant === 'text' ? 'string' : ep.responseVariant === 'blob' ? 'Blob' : responseT;
+  const observableT = httpEvents ? `HttpEvent<${bodyT}>` : bodyT;
   // Text/blob responses are selected via responseType, which fixes the result type, so no generic.
   const requestGeneric = ep.responseVariant === 'json' ? `<${responseT}>` : '';
   const fnArgs = buildFnArgs(ep, pascal, isGet, true);
-  const pipe = canValidate ? '.pipe(map(_validateResponse))' : '';
+  // With events, only the final Response event carries a body to validate.
+  const pipe = !canValidate
+    ? ''
+    : httpEvents
+      ? '.pipe(map((e) => (e.type === HttpEventType.Response ? e.clone({ body: _validateResponse(e.body) }) : e)))'
+      : '.pipe(map(_validateResponse))';
 
   if (ep.deprecated) lines.push('/** @deprecated */');
   lines.push(
@@ -632,6 +675,9 @@ function emitHttpClientToken(lines: string[], ep: EndpointModel, ctx: HttpClient
     `${i}return (${fnArgs}) =>`,
     `${i}  http.request${requestGeneric}('${ep.method.toUpperCase()}', \`\${base}${urlTemplate}\`, {`,
   );
+  if (httpEvents) {
+    body.push(`${i}    observe: 'events',`, `${i}    reportProgress: true,`);
+  }
   appendResourceOptions(body, ep, isGet, `${i}    `, ctx.headerSchemes, ctx.querySchemes, false, true);
   body.push(`${i}  })${pipe};`);
 

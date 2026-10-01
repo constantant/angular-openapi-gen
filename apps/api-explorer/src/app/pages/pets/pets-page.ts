@@ -1,4 +1,6 @@
-import { Component, Injector, computed, effect, inject, runInInjectionContext, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, Injector, computed, effect, inject, runInInjectionContext, signal, untracked } from '@angular/core';
+import { HttpEventType } from '@angular/common/http';
+import type { Subscription } from 'rxjs';
 import {
   FIND_PETS_BY_STATUS,
   ADD_PET,
@@ -6,7 +8,6 @@ import {
   UPLOAD_FILE,
   type FindPetsByStatusParams,
   type AddPetBody,
-  type UploadFileBody,
 } from '@angular-openapi-gen/petstore-data-access';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -19,6 +20,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { describeResourceError, logResourceError } from '../../resource-error.util';
 
 type PetStatus = FindPetsByStatusParams['status'];
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 interface Pet {
   id: number;
@@ -53,6 +60,10 @@ export class PetsPageComponent {
   private readonly deletePetFn = inject(DELETE_PET);
   private readonly uploadFileFn = inject(UPLOAD_FILE);
 
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.uploadSub?.unsubscribe());
+  }
+
   // ── List ──────────────────────────────────────────────────────────────────
   readonly statusOptions: PetStatus[] = ['available', 'pending', 'sold'];
   readonly status = signal<PetStatus>('available');
@@ -84,6 +95,23 @@ export class PetsPageComponent {
   readonly uploadLoading = signal(false);
   readonly uploadSuccess = signal<string | null>(null);
   readonly uploadError = signal<string | null>(null);
+  /**
+   * Latest `UploadProgress` event of the current upload. Kept after a failure so the message can
+   * say where it stopped. UPLOAD_FILE is generated with `--clientType=httpClient --reportProgress`,
+   * so it yields `Observable<HttpEvent<T>>`: progress events, then the response.
+   */
+  readonly uploadProgress = signal<{ loaded: number; total?: number } | null>(null);
+  private uploadSub: Subscription | null = null;
+  /** 0–100, or null while the total is unknown (e.g. before the first progress event). */
+  readonly uploadPercent = computed(() => {
+    const p = this.uploadProgress();
+    return p?.total ? Math.min(100, Math.round((p.loaded / p.total) * 100)) : null;
+  });
+  readonly uploadBytes = computed(() => {
+    const p = this.uploadProgress();
+    if (!p) return null;
+    return p.total ? `${formatBytes(p.loaded)} / ${formatBytes(p.total)}` : formatBytes(p.loaded);
+  });
 
   // ── Delete (optimistic) ───────────────────────────────────────────────────
   readonly deletingIds = signal(new Set<number>());
@@ -93,9 +121,11 @@ export class PetsPageComponent {
 
   selectPet(id: number): void {
     this.selectedPetId.update(cur => (cur === id ? null : id));
+    this.cancelUpload();
     this.uploadFile.set(null);
     this.uploadSuccess.set(null);
     this.uploadError.set(null);
+    this.uploadProgress.set(null);
   }
 
   onFileSelected(event: Event): void {
@@ -103,6 +133,7 @@ export class PetsPageComponent {
     this.uploadFile.set(file);
     this.uploadSuccess.set(null);
     this.uploadError.set(null);
+    this.uploadProgress.set(null);
   }
 
   uploadPhoto(): void {
@@ -110,34 +141,40 @@ export class PetsPageComponent {
     const petId = this.selectedPetId();
     if (!file || petId == null || this.uploadLoading()) return;
     this.uploadError.set(null);
+    this.uploadSuccess.set(null);
+    this.uploadProgress.set(null);
     this.uploadLoading.set(true);
 
-    const fd = new FormData();
-    fd.append('file', file);
-
-    const op = runInInjectionContext(this.injector, () =>
-      this.uploadFileFn(String(petId), fd as unknown as UploadFileBody),
-    );
-    effect(
-      () => {
-        const s = op.status();
-        if (s === 'resolved') {
-          untracked(() => {
-            const msg = (op.value() as { message?: string } | undefined)?.message ?? 'Uploaded';
-            this.uploadSuccess.set(msg);
-            this.uploadFile.set(null);
-            this.uploadLoading.set(false);
-            this.pets.reload();
-          });
-        } else if (s === 'error') {
-          untracked(() => {
-            this.uploadError.set('Upload failed.');
-            this.uploadLoading.set(false);
-          });
+    // The endpoint takes the raw bytes (Blob | ArrayBuffer); a File is a Blob.
+    this.uploadSub = this.uploadFileFn(String(petId), file).subscribe({
+      next: (event) => {
+        if (event.type === HttpEventType.UploadProgress) {
+          this.uploadProgress.set({ loaded: event.loaded, total: event.total });
+        } else if (event.type === HttpEventType.Response) {
+          this.uploadSuccess.set((event.body as { message?: string } | null)?.message ?? 'Uploaded');
+          this.uploadFile.set(null);
+          this.uploadProgress.set(null);
+          this.uploadLoading.set(false);
+          this.pets.reload();
         }
       },
-      { injector: this.injector },
-    );
+      error: () => {
+        const pct = this.uploadPercent();
+        this.uploadError.set(pct != null ? `Upload failed at ${pct}%.` : 'Upload failed.');
+        this.uploadLoading.set(false);
+      },
+    });
+  }
+
+  /** Unsubscribing aborts the in-flight request. */
+  cancelUpload(): void {
+    if (!this.uploadSub) return;
+    this.uploadSub.unsubscribe();
+    this.uploadSub = null;
+    if (this.uploadLoading()) {
+      this.uploadLoading.set(false);
+      this.uploadError.set('Upload cancelled.');
+    }
   }
 
   submitAdd(): void {

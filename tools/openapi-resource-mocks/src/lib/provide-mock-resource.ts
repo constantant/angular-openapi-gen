@@ -1,5 +1,5 @@
 import { InjectionToken, inject, effect, untracked, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpEventType, HttpResponse, httpResource, type HttpEvent } from '@angular/common/http';
 import { Observable, type Subscriber } from 'rxjs';
 import { MockResourceBus } from './mock-resource-bus';
 import { createMockResourceRef, type MockResourceRef, type MockResourceRefInternal } from './mock-resource-ref';
@@ -116,6 +116,37 @@ export function provideMockObservable<T>(
   meta?: MockResourceMeta,
   options?: MockProviderOptions,
 ): FactoryProvider {
+  return createObservableProvider<T>(token, key, initialBehavior, meta, options, false);
+}
+
+/**
+ * Like {@link provideMockObservable}, for tokens generated with `reportProgress` whose function
+ * returns `Observable<HttpEvent<T>>` (file uploads / blob downloads over `httpClient`).
+ *
+ * It emits what a real `HttpClient` call with `reportProgress: true` emits: a `Sent` event on
+ * subscribe, `UploadProgress` / `DownloadProgress` events for every `setProgress()` /
+ * `simulateProgress()` step (from DevTools, e2e or unit tests), and finally a `Response` event
+ * carrying the resolved value, then completes. `fail()` errors the observable. `initialBehavior`
+ * and the replay of panel edits work as for `provideMockObservable`.
+ */
+export function provideMockHttpEvents<T>(
+  token: InjectionToken<(...args: unknown[]) => Observable<HttpEvent<T>>>,
+  key: string,
+  initialBehavior?: ProviderInitialBehavior<T>,
+  meta?: MockResourceMeta,
+  options?: MockProviderOptions,
+): FactoryProvider {
+  return createObservableProvider<T>(token, key, initialBehavior, meta, options, true);
+}
+
+function createObservableProvider<T>(
+  token: InjectionToken<unknown>,
+  key: string,
+  initialBehavior: ProviderInitialBehavior<T> | undefined,
+  meta: MockResourceMeta | undefined,
+  options: MockProviderOptions | undefined,
+  asEvents: boolean,
+): FactoryProvider {
   return {
     provide: token,
     useFactory: () => {
@@ -125,18 +156,22 @@ export function provideMockObservable<T>(
       // every call of the token function creates a fresh ref.
       const overrides = new Map<string, Outcome<T>>();
 
-      return (...args: unknown[]): Observable<T> => {
+      return (...args: unknown[]): Observable<unknown> => {
         const effectiveKey = discriminator ? `${key}:${discriminator()}` : key;
         const ref = createMockResourceRef<T>();
         bus.register(effectiveKey, ref, meta);
         const internal = ref as MockResourceRefInternal<T>;
 
-        const subscribers = new Set<Subscriber<T>>();
+        const subscribers = new Set<Subscriber<unknown>>();
         const deliver = (outcome: Outcome<T>): void => {
           for (const sub of [...subscribers]) {
             subscribers.delete(sub);
-            if ('error' in outcome) sub.error(outcome.error);
-            else { sub.next(outcome.value); sub.complete(); }
+            if ('error' in outcome) {
+              sub.error(outcome.error);
+            } else {
+              sub.next(asEvents ? new HttpResponse<T>({ body: outcome.value, status: 200 }) : outcome.value);
+              sub.complete();
+            }
           }
         };
 
@@ -147,6 +182,17 @@ export function provideMockObservable<T>(
           if (subscribers.size === 0) overrides.set(effectiveKey, outcome);
           deliver(outcome);
         });
+
+        if (asEvents) {
+          internal._onProgress((p) => {
+            const event = {
+              type: p.type === 'upload' ? HttpEventType.UploadProgress : HttpEventType.DownloadProgress,
+              loaded: p.loaded,
+              total: p.total,
+            };
+            for (const sub of subscribers) sub.next(event);
+          });
+        }
 
         // Applies `behavior` to the ref. Returns a canceller for a pending delay.
         const apply = (behavior: ProviderInitialBehavior<T> | Outcome<T>): (() => void) | undefined => {
@@ -166,8 +212,9 @@ export function provideMockObservable<T>(
           return () => clearTimeout(timer);
         };
 
-        return new Observable<T>((subscriber) => {
+        return new Observable<unknown>((subscriber) => {
           subscribers.add(subscriber);
+          if (asEvents) subscriber.next({ type: HttpEventType.Sent });
           // Notify first: the bus listener records the request and, in catch mode, holds it.
           internal._notifyRequest(args);
 

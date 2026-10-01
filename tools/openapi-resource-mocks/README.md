@@ -502,6 +502,28 @@ difference: like a real `HttpClient` call, an observable is finished once it has
 
 Use catch mode to hold a request open while you choose its response. Requires `rxjs` ^7.8.
 
+### `provideMockHttpEvents(token, key, initialBehavior?, meta?, options?)`
+
+For tokens generated with `--reportProgress` whose function returns
+`Observable<HttpEvent<T>>` (file uploads / blob downloads over `httpClient`). It behaves like
+`provideMockObservable` but emits what a real `HttpClient` call with `reportProgress: true` emits:
+
+1. a `Sent` event on subscribe,
+2. `UploadProgress` / `DownloadProgress` events for every `setProgress()` /
+   `simulateProgress()` step — from DevTools, e2e, or `injectMockResource` in unit tests,
+3. a `Response` event (status 200) carrying the resolved value, then completion.
+
+`fail()` errors the observable (the progress events seen so far are kept), unsubscribing stops
+delivery (a cancelled upload), and catch mode, delays, `initialBehavior` and the replay of panel
+edits work as for `provideMockObservable`. The generator picks this provider automatically.
+
+```typescript
+// e2e: hold the request, then drive the progress bar deterministically
+await page.evaluate(() => openApiMock('UPLOAD_FILE').setProgress('upload', 1_000_000, 4_000_000));
+await expect(bar).toHaveAttribute('aria-valuenow', '25');
+await page.evaluate(() => openApiMock('UPLOAD_FILE').resolve({ code: 200, message: 'stored' }));
+```
+
 ### `MockProviderOptions`
 
 Passed as the fifth argument to `provideMockResource()` and as the second argument to generated `provide{Operation}Mock()` wrappers.

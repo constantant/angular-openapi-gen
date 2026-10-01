@@ -51,6 +51,8 @@ export interface ApiResourceGeneratorSchema {
   validateResponses?: boolean;
   /** HTTP primitive wrapped by generated tokens. `httpClient` yields `Observable<T>` instead of an httpResource. Default: httpResource. */
   clientType?: 'httpResource' | 'httpClient';
+  /** Report transfer progress: httpClient binary/multipart uploads and blob downloads yield Observable<HttpEvent<T>>; httpResource blob downloads get `reportProgress: true` (its `.progress()` ignores uploads). */
+  reportProgress?: boolean;
   /** Comma-separated tags whose endpoints use HttpClient regardless of `clientType`. */
   httpClientTags?: string;
   /** Comma-separated operationIds that use HttpClient regardless of `clientType`. */
@@ -389,12 +391,13 @@ export async function apiResourceGenerator(
           readonlyResponses: options.readonlyResponses ?? false,
           validateResponses,
           client,
+          reportProgress: options.reportProgress ?? false,
         }));
         writtenFiles.add(filePath);
 
         if (includeMocks) {
           const mockPath = joinPathFragments(tagDir, `${ep.fileName}.mock.ts`);
-          tree.write(mockPath, renderMockFile(ep, specId, clientFor(ep)));
+          tree.write(mockPath, renderMockFile(ep, specId, clientFor(ep), options.reportProgress ?? false));
           writtenFiles.add(mockPath);
         }
 

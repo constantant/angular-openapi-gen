@@ -6,5 +6,6 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['tools/openapi-resource-mocks/src/**/*.spec.ts'],
     root: '.',
+    setupFiles: ['tools/openapi-resource-mocks/vitest.setup.ts'],
   },
 });
