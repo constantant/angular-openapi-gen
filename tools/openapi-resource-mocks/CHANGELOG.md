@@ -2,11 +2,11 @@
 
 ### 🚀 Features
 
-- **openapi-resource-gen:** reportProgress option (HttpEvent tokens + provideMockHttpEvents) and an upload-progress example ([#72](https://github.com/constantant/angular-openapi-gen/pull/72))
+- **`provideMockHttpEvents()`** — a mock provider for tokens that yield `Observable<HttpEvent<T>>`, i.e. file uploads and blob downloads generated with `openapi-resource-gen --clientType=httpClient --reportProgress`. It emits what a real `HttpClient` call with `reportProgress: true` emits: a `Sent` event on subscribe, `UploadProgress` / `DownloadProgress` for every `setProgress()` / `simulateProgress()` step (from DevTools, e2e or unit tests), then a `Response` event (status 200) carrying the resolved value, then completion. `fail()` errors the stream (the progress seen so far is kept), unsubscribing — a cancelled upload — stops delivery, and catch mode, delays, `initialBehavior` and the replay of panel edits behave as for `provideMockObservable`. Generated mock files select it automatically; they need `@constantant/openapi-resource-gen` **1.12.0 or newer** to be generated. ([#72](https://github.com/constantant/angular-openapi-gen/pull/72))
 
-### 🤖 CI
+### 🤖 CI / Packaging
 
-- publish with npm provenance and prepare for trusted publishing (OIDC) ([#71](https://github.com/constantant/angular-openapi-gen/pull/71))
+- Releases are now published with npm provenance attestations (this is the first version that has one) through npm trusted publishing (OIDC). The published `package.json` now declares `repository`. ([#71](https://github.com/constantant/angular-openapi-gen/pull/71), [#73](https://github.com/constantant/angular-openapi-gen/pull/73))
 
 ### ❤️ Thank You
 

@@ -2,11 +2,14 @@
 
 ### 🚀 Features
 
-- **openapi-resource-gen:** reportProgress option (HttpEvent tokens + provideMockHttpEvents) and an upload-progress example ([#72](https://github.com/constantant/angular-openapi-gen/pull/72))
+- **Upload / download progress (`--reportProgress`).** New opt-in option (default off). `httpClient` endpoints that upload a binary or `multipart/*` body, or download a blob, now yield `Observable<HttpEvent<T>>` — `Sent`, `UploadProgress` / `DownloadProgress`, then the `Response` — instead of `Observable<T>`. `--validateResponses` validates only the final `Response` event. `httpResource` endpoints get `reportProgress: true` on blob downloads only, because Angular's `httpResource().progress()` carries download progress and ignores uploads. JSON bodies, text responses and plain GETs are unchanged. ([#72](https://github.com/constantant/angular-openapi-gen/pull/72))
+  - **Upload progress needs the XHR backend:** `provideHttpClient(withXhr())`. The default `fetch` backend can't report upload progress, so you'd only ever see `Sent` and `Response`. Don't use `withXhr()` with SSR.
+  - **With `--includeMocks`,** these endpoints get `provideMockHttpEvents()`, which needs `@constantant/openapi-resource-mocks` **1.11.0 or newer** — older versions don't export it, so regenerated mock files for them would fail to compile.
+  - A working example is the Pets page in `apps/api-explorer`: a determinate progress bar with percent and bytes, "Upload failed at N%", and a Cancel button.
 
-### 🤖 CI
+### 🤖 CI / Packaging
 
-- publish with npm provenance and prepare for trusted publishing (OIDC) ([#71](https://github.com/constantant/angular-openapi-gen/pull/71))
+- Releases are now published with npm provenance attestations (this is the first version that has one) through npm trusted publishing (OIDC), so there is no long-lived npm token. The published `package.json` now declares `repository`. ([#71](https://github.com/constantant/angular-openapi-gen/pull/71), [#73](https://github.com/constantant/angular-openapi-gen/pull/73))
 
 ### ❤️ Thank You
 
