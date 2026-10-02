@@ -13,6 +13,7 @@ const _meta: MockResourceMeta = {
   path: '/pet/{petId}',
   method: 'delete',
   tag: 'pet',
+  args: ['petId', 'apiKey', 'options'],
 };
 
 export function provideDeletePetMock(

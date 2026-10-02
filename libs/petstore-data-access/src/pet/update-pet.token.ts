@@ -2,6 +2,11 @@ import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
@@ -96,11 +101,14 @@ function _validateResponse(value: unknown): UpdatePetResponse {
   return value as UpdatePetResponse;
 }
 
-export const UPDATE_PET = new InjectionToken<
-  (
-    body: UpdatePetBody | Signal<UpdatePetBody>,
-  ) => ReturnType<typeof httpResource<UpdatePetResponse>>
->('UPDATE_PET');
+export type UpdatePetOptions = ResourceCallOptions<UpdatePetResponse>;
+
+export type UpdatePetFn = <O extends UpdatePetOptions = UpdatePetOptions>(
+  body: UpdatePetBody | Signal<UpdatePetBody>,
+  options?: O,
+) => ResourceRefFor<UpdatePetResponse, O>;
+
+export const UPDATE_PET = new InjectionToken<UpdatePetFn>('UPDATE_PET');
 
 export function provideUpdatePet(): FactoryProvider {
   return {
@@ -108,14 +116,19 @@ export function provideUpdatePet(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (body: UpdatePetBody | Signal<UpdatePetBody>) =>
-        httpResource<UpdatePetResponse>(
+      return ((
+        body: UpdatePetBody | Signal<UpdatePetBody>,
+        options?: UpdatePetOptions,
+      ) => {
+        const _opts = splitCallOptions<UpdatePetResponse>(options);
+        return httpResource<UpdatePetResponse>(
           () => {
             const _body =
               typeof body === 'function'
                 ? (body as Signal<UpdatePetBody>)()
                 : body;
             return {
+              ..._opts.request,
               url: `${base}/pet`,
               method: 'PUT',
               body: _body,
@@ -123,11 +136,13 @@ export function provideUpdatePet(): FactoryProvider {
                 ...(petstoreAuth?.() != null
                   ? { Authorization: `Bearer ${petstoreAuth()}` }
                   : {}),
+                ..._opts.headers,
               },
             };
           },
-          { parse: _validateResponse },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as UpdatePetFn;
     },
   };
 }

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import { splitCallOptions, type CallOptions } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
 export type GetOrderByIdResponse =
@@ -55,9 +56,14 @@ function _validateResponse(value: unknown): GetOrderByIdResponse {
   return value as GetOrderByIdResponse;
 }
 
-export const GET_ORDER_BY_ID = new InjectionToken<
-  (orderId: string) => Observable<GetOrderByIdResponse>
->('GET_ORDER_BY_ID');
+export type GetOrderByIdFn = (
+  orderId: string,
+  options?: CallOptions,
+) => Observable<GetOrderByIdResponse>;
+
+export const GET_ORDER_BY_ID = new InjectionToken<GetOrderByIdFn>(
+  'GET_ORDER_BY_ID',
+);
 
 export function provideGetOrderById(): FactoryProvider {
   return {
@@ -65,14 +71,21 @@ export function provideGetOrderById(): FactoryProvider {
     useFactory: () => {
       const http = inject(HttpClient);
       const base = inject(PETSTORE_BASE_URL);
-      return (orderId: string) =>
-        http
+      return (orderId: string, options?: CallOptions) => {
+        const _opts = splitCallOptions(options);
+        return http
           .request<GetOrderByIdResponse>(
             'GET',
             `${base}/store/order/${orderId}`,
-            {},
+            {
+              ..._opts.request,
+              headers: {
+                ..._opts.headers,
+              },
+            },
           )
           .pipe(map(_validateResponse));
+      };
     },
   };
 }

@@ -13,6 +13,7 @@ const _meta: MockResourceMeta = {
   path: '/user/{username}',
   method: 'put',
   tag: 'user',
+  args: ['username', 'body', 'options'],
 };
 
 export function provideUpdateUserMock(

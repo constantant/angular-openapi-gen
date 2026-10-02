@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/user/createWithList',
   method: 'post',
   tag: 'user',
+  args: ['body', 'options'],
 };
 
 export function provideCreateUsersWithListInputMock(

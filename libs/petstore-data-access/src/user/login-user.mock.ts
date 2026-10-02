@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/user/login',
   method: 'get',
   tag: 'user',
+  args: ['params', 'options'],
 };
 
 export function provideLoginUserMock(

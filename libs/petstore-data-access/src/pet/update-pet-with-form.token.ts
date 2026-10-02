@@ -2,6 +2,11 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
@@ -95,13 +100,21 @@ function _validateResponse(value: unknown): UpdatePetWithFormResponse {
   return value as UpdatePetWithFormResponse;
 }
 
-export const UPDATE_PET_WITH_FORM = new InjectionToken<
-  (
-    petId: string,
-    params?:
-      UpdatePetWithFormParams | (() => UpdatePetWithFormParams | undefined),
-  ) => ReturnType<typeof httpResource<UpdatePetWithFormResponse>>
->('UPDATE_PET_WITH_FORM');
+export type UpdatePetWithFormOptions =
+  ResourceCallOptions<UpdatePetWithFormResponse>;
+
+export type UpdatePetWithFormFn = <
+  O extends UpdatePetWithFormOptions = UpdatePetWithFormOptions,
+>(
+  petId: string,
+  params?:
+    UpdatePetWithFormParams | (() => UpdatePetWithFormParams | undefined),
+  options?: O,
+) => ResourceRefFor<UpdatePetWithFormResponse, O>;
+
+export const UPDATE_PET_WITH_FORM = new InjectionToken<UpdatePetWithFormFn>(
+  'UPDATE_PET_WITH_FORM',
+);
 
 export function provideUpdatePetWithForm(): FactoryProvider {
   return {
@@ -109,17 +122,20 @@ export function provideUpdatePetWithForm(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (
+      return ((
         petId: string,
         params?:
           UpdatePetWithFormParams | (() => UpdatePetWithFormParams | undefined),
-      ) =>
-        httpResource<UpdatePetWithFormResponse>(
+        options?: UpdatePetWithFormOptions,
+      ) => {
+        const _opts = splitCallOptions<UpdatePetWithFormResponse>(options);
+        return httpResource<UpdatePetWithFormResponse>(
           () => {
             const _params = typeof params === 'function' ? params() : params;
             if (typeof params === 'function' && _params === undefined)
               return undefined;
             return {
+              ..._opts.request,
               url: `${base}/pet/${petId}`,
               method: 'POST',
               params: _params as unknown as Record<
@@ -133,11 +149,13 @@ export function provideUpdatePetWithForm(): FactoryProvider {
                 ...(petstoreAuth?.() != null
                   ? { Authorization: `Bearer ${petstoreAuth()}` }
                   : {}),
+                ..._opts.headers,
               },
             };
           },
-          { parse: _validateResponse },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as UpdatePetWithFormFn;
     },
   };
 }

@@ -13,6 +13,7 @@ const _meta: MockResourceMeta = {
   path: '/store/order/{orderId}',
   method: 'delete',
   tag: 'store',
+  args: ['orderId', 'options'],
 };
 
 export function provideDeleteOrderMock(

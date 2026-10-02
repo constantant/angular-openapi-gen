@@ -13,6 +13,7 @@ const _meta: MockResourceMeta = {
   path: '/user/logout',
   method: 'get',
   tag: 'user',
+  args: ['options'],
 };
 
 export function provideLogoutUserMock(

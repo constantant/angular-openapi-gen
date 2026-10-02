@@ -2,6 +2,11 @@ import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
 export type CreateUserBody = NonNullable<
@@ -65,32 +70,44 @@ function _validateResponse(value: unknown): CreateUserResponse {
   return value as CreateUserResponse;
 }
 
-export const CREATE_USER = new InjectionToken<
-  (
-    body: CreateUserBody | Signal<CreateUserBody>,
-  ) => ReturnType<typeof httpResource<CreateUserResponse>>
->('CREATE_USER');
+export type CreateUserOptions = ResourceCallOptions<CreateUserResponse>;
+
+export type CreateUserFn = <O extends CreateUserOptions = CreateUserOptions>(
+  body: CreateUserBody | Signal<CreateUserBody>,
+  options?: O,
+) => ResourceRefFor<CreateUserResponse, O>;
+
+export const CREATE_USER = new InjectionToken<CreateUserFn>('CREATE_USER');
 
 export function provideCreateUser(): FactoryProvider {
   return {
     provide: CREATE_USER,
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
-      return (body: CreateUserBody | Signal<CreateUserBody>) =>
-        httpResource<CreateUserResponse>(
+      return ((
+        body: CreateUserBody | Signal<CreateUserBody>,
+        options?: CreateUserOptions,
+      ) => {
+        const _opts = splitCallOptions<CreateUserResponse>(options);
+        return httpResource<CreateUserResponse>(
           () => {
             const _body =
               typeof body === 'function'
                 ? (body as Signal<CreateUserBody>)()
                 : body;
             return {
+              ..._opts.request,
               url: `${base}/user`,
               method: 'POST',
               body: _body,
+              headers: {
+                ..._opts.headers,
+              },
             };
           },
-          { parse: _validateResponse },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as CreateUserFn;
     },
   };
 }

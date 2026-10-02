@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/store/order',
   method: 'post',
   tag: 'store',
+  args: ['body', 'options'],
 };
 
 export function providePlaceOrderMock(

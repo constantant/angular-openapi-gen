@@ -2,6 +2,11 @@ import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
@@ -96,11 +101,14 @@ function _validateResponse(value: unknown): AddPetResponse {
   return value as AddPetResponse;
 }
 
-export const ADD_PET = new InjectionToken<
-  (
-    body: AddPetBody | Signal<AddPetBody>,
-  ) => ReturnType<typeof httpResource<AddPetResponse>>
->('ADD_PET');
+export type AddPetOptions = ResourceCallOptions<AddPetResponse>;
+
+export type AddPetFn = <O extends AddPetOptions = AddPetOptions>(
+  body: AddPetBody | Signal<AddPetBody>,
+  options?: O,
+) => ResourceRefFor<AddPetResponse, O>;
+
+export const ADD_PET = new InjectionToken<AddPetFn>('ADD_PET');
 
 export function provideAddPet(): FactoryProvider {
   return {
@@ -108,14 +116,19 @@ export function provideAddPet(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (body: AddPetBody | Signal<AddPetBody>) =>
-        httpResource<AddPetResponse>(
+      return ((
+        body: AddPetBody | Signal<AddPetBody>,
+        options?: AddPetOptions,
+      ) => {
+        const _opts = splitCallOptions<AddPetResponse>(options);
+        return httpResource<AddPetResponse>(
           () => {
             const _body =
               typeof body === 'function'
                 ? (body as Signal<AddPetBody>)()
                 : body;
             return {
+              ..._opts.request,
               url: `${base}/pet`,
               method: 'POST',
               body: _body,
@@ -123,11 +136,13 @@ export function provideAddPet(): FactoryProvider {
                 ...(petstoreAuth?.() != null
                   ? { Authorization: `Bearer ${petstoreAuth()}` }
                   : {}),
+                ..._opts.headers,
               },
             };
           },
-          { parse: _validateResponse },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as AddPetFn;
     },
   };
 }

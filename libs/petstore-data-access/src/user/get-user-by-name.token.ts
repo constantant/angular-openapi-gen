@@ -2,6 +2,11 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
 export type GetUserByNameResponse =
@@ -61,22 +66,39 @@ function _validateResponse(value: unknown): GetUserByNameResponse {
   return value as GetUserByNameResponse;
 }
 
-export const GET_USER_BY_NAME = new InjectionToken<
-  (username: string) => ReturnType<typeof httpResource<GetUserByNameResponse>>
->('GET_USER_BY_NAME');
+export type GetUserByNameOptions = ResourceCallOptions<GetUserByNameResponse>;
+
+export type GetUserByNameFn = <
+  O extends GetUserByNameOptions = GetUserByNameOptions,
+>(
+  username: string,
+  options?: O,
+) => ResourceRefFor<GetUserByNameResponse, O>;
+
+export const GET_USER_BY_NAME = new InjectionToken<GetUserByNameFn>(
+  'GET_USER_BY_NAME',
+);
 
 export function provideGetUserByName(): FactoryProvider {
   return {
     provide: GET_USER_BY_NAME,
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
-      return (username: string) =>
-        httpResource<GetUserByNameResponse>(
-          () => ({
-            url: `${base}/user/${username}`,
-          }),
-          { parse: _validateResponse },
+      return ((username: string, options?: GetUserByNameOptions) => {
+        const _opts = splitCallOptions<GetUserByNameResponse>(options);
+        return httpResource<GetUserByNameResponse>(
+          () => {
+            return {
+              ..._opts.request,
+              url: `${base}/user/${username}`,
+              headers: {
+                ..._opts.headers,
+              },
+            };
+          },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as GetUserByNameFn;
     },
   };
 }
