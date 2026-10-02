@@ -1,0 +1,58 @@
+name: Compat
+
+# Proves the supported version ranges: the generated libs and the mocks package against several
+# Angular versions, and the generator against several Nx versions. Each job builds a throwaway
+# workspace with that exact version (tools/compat/run.mjs) — it does not install this repository.
+# Not a required check; it runs when the code under test changes and weekly, to catch new
+# Angular / Nx releases.
+
+on:
+  pull_request:
+    paths:
+      - 'tools/**'
+      - 'libs/**'
+      - 'specs/petstore.yaml'
+      - 'apps/api-explorer/src/app/generated-query-params.spec.ts'
+      - '.github/workflows/compat.yml'
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: compat-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  angular:
+    name: Angular ${{ matrix.key }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        key: ['20-min', '20', '21', '22']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: node tools/compat/run.mjs angular ${{ matrix.key }}
+
+  nx:
+    name: Nx ${{ matrix.key }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        key: ['20', '21', '22', '23']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: node tools/compat/run.mjs nx ${{ matrix.key }}

@@ -1,0 +1,14 @@
+{
+  "angular": {
+    "20-min": { "angular": "20.0.0", "typescript": "~5.8.0", "zone": true,  "note": "the first Angular 20 release: guards the declared floor" },
+    "20":     { "angular": "~20.3.0", "typescript": "~5.9.0", "zone": true,  "note": "latest 20.x" },
+    "21":     { "angular": "~21.2.0", "typescript": "~5.9.0", "zone": false, "note": "latest 21.x" },
+    "22":     { "angular": "~22.2.0", "typescript": "~6.0.0", "zone": false, "note": "latest 22.x" }
+  },
+  "nx": {
+    "20": { "nx": "~20.8.0", "note": "latest 20.x" },
+    "21": { "nx": "~21.6.0", "note": "latest 21.x" },
+    "22": { "nx": "~22.7.0", "note": "latest 22.x" },
+    "23": { "nx": "~23.2.0", "note": "latest 23.x" }
+  }
+}
