@@ -41,6 +41,8 @@ for now; if you need **Zod schemas for request bodies** or **generated fake data
 have them and we do not; if you want a **non-Angular** client, this is not the tool.
 (Comparison read in October 2026; tools change, so check their docs.)
 
+Bundle size: the one-file-per-endpoint design tree-shakes cleanly (8 endpoints cost about 0.2 kB more than 1), but the default `httpResource` flavour carries Angular's own `httpResource` runtime (about +7 kB gzip). The [benchmark](docs/benchmarks/bundle-size.md) has the numbers and a script to reproduce them.
+
 Coming from another tool? See the migration guides:
 [from ng-openapi-gen](docs/06-migrate-from-ng-openapi-gen.md) · [from Orval](docs/07-migrate-from-orval.md).
 

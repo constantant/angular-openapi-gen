@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "compat": "node tools/compat/run.mjs"
+    "compat": "node tools/compat/run.mjs",
+    "bench": "node tools/bench/run.mjs"
   },
   "private": true,
   "workspaces": [
