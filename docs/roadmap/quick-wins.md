@@ -3,6 +3,13 @@
 _Written 2026-10-02 after a competitive review of Angular/OpenAPI tooling. This is a plan, not a
 commitment: every item lists what to verify first and what "done" means._
 
+**Status (2026-10-02):** #1–#4 shipped in `openapi-resource-gen` 1.14.0 / `openapi-resource-mocks`
+1.13.0 (PRs #80–#83); the temp-file leak under _Housekeeping_ is fixed (#84). #5 is partly done:
+README comparison, migration guides and the bundle-size benchmark are in (#85, #86); the runnable
+demo, directory listings and the follow-up article remain. The benchmark showed that the default
+`httpResource` flavour is not the smallest bundle (most of its cost is Angular's own
+`httpResource`), see [`docs/benchmarks/bundle-size.md`](../benchmarks/bundle-size.md).
+
 ## Why these five
 
 A review of the competing tools, their issue trackers and download numbers (details in the
@@ -22,11 +29,11 @@ A review of the competing tools, their issue trackers and download numbers (deta
 
 | #   | Quick win                                                            | Effort     | Release impact      | Depends on         |
 | --- | -------------------------------------------------------------------- | ---------- | ------------------- | ------------------ |
-| 1   | Verify and lower the Angular / Nx compatibility floor                | M          | minor (peer ranges) | —                  |
-| 2   | Per-call request options (`HttpContext`, headers, `defaultValue`, …) | M–L        | minor               | #1 (CI matrix)     |
-| 3   | `readOnly` / `writeOnly` via `readWriteMarkers`                      | S–M        | minor, opt-in       | —                  |
-| 4   | Swagger 2.0 input (auto-upgrade)                                     | S–M        | minor               | —                  |
-| 5   | Distribution and positioning                                         | M, ongoing | none (docs)         | #1 (honest claims) |
+| 1   | ✅ Verify and lower the Angular / Nx compatibility floor (#80)        | M          | minor (peer ranges) | —                  |
+| 2   | ✅ Per-call request options (`HttpContext`, headers, …) (#83)         | M–L        | minor               | #1 (CI matrix)     |
+| 3   | ✅ `readOnly` / `writeOnly` via `readWriteMarkers` (#81)              | S–M        | minor, opt-in       | —                  |
+| 4   | ✅ Swagger 2.0 input (auto-upgrade) (#82)                             | S–M        | minor               | —                  |
+| 5   | 🟡 Distribution and positioning (docs and benchmark done)             | M, ongoing | none (docs)         | #1 (honest claims) |
 
 Suggested order: **#1 first** (it unblocks the audience and gives a CI matrix that validates the
 others), **#3 and #4 in parallel** (small, independent), then **#2** (largest), with **#5**
@@ -264,7 +271,7 @@ traffic to the migration guides. Review monthly.
 
 ## Housekeeping found during the review
 
-- **Temp-file leak in tests.** Every run of `nx test openapi-resource-gen` leaves an empty
+- **Temp-file leak in tests (fixed in #84).** Every run of `nx test openapi-resource-gen` leaves an empty
   `_tmp_oas_download_<timestamp>.yaml` in the repo root (27 had accumulated; one more appeared on a
   single run). They are gitignored, but the URL-download path should clean up after itself, and
   tests should not write to the workspace root. Reproduce, fix, and add an assertion that nothing is
