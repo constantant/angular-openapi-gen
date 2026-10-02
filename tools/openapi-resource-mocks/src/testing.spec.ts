@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { InjectionToken } from '@angular/core';
 import type { Observable } from 'rxjs';
-import { mockResource, mockObservable } from './testing';
+import { HttpEventType, HttpResponse, type HttpEvent } from '@angular/common/http';
+import { mockResource, mockObservable, mockHttpEvents } from './testing';
 
 type FakeFn = (...args: unknown[]) => unknown;
 const TOKEN = new InjectionToken<FakeFn>('TEST_TOKEN');
@@ -354,5 +355,131 @@ describe('mockObservable', () => {
     handle.expectCalledWith({ status: 'available' });
     expect(() => handle.expectCalledWith({ status: 'sold' })).toThrow(/called with/);
     expect(handle.calls).toEqual([[{ status: 'available' }]]);
+  });
+});
+
+describe('mockHttpEvents', () => {
+  interface Stored { message: string }
+  const up = (loaded: number, total?: number) => ({ type: 'upload' as const, loaded, total });
+  const setup = (...args: Parameters<typeof mockHttpEvents<Stored>>[1][]) => {
+    const handle = mockHttpEvents<Stored>(TOKEN as never, ...args);
+    const fn = handle.useFactory!() as (...a: unknown[]) => Observable<HttpEvent<Stored>>;
+    return { handle, fn };
+  };
+  const collect = (obs: Observable<HttpEvent<Stored>>) => {
+    const out = { events: [] as HttpEvent<Stored>[], error: undefined as unknown, done: false };
+    const sub = obs.subscribe({
+      next: (e) => out.events.push(e),
+      error: (e) => (out.error = e),
+      complete: () => (out.done = true),
+    });
+    return { out, sub };
+  };
+  const types = (events: HttpEvent<Stored>[]) => events.map((e) => e.type);
+
+  it('provides the token', () => {
+    expect(mockHttpEvents(TOKEN as never).provide).toBe(TOKEN);
+  });
+
+  it('emits Sent first and stays open with no behavior', () => {
+    const { out } = collect(setup().fn());
+    expect(types(out.events)).toEqual([HttpEventType.Sent]);
+    expect(out.done).toBe(false);
+  });
+
+  it('emits Sent, then a Response carrying the value (status 200), then completes', () => {
+    const { out } = collect(setup({ value: { message: 'ok' } }).fn());
+    expect(types(out.events)).toEqual([HttpEventType.Sent, HttpEventType.Response]);
+    const res = out.events[1] as HttpResponse<Stored>;
+    expect(res).toBeInstanceOf(HttpResponse);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ message: 'ok' });
+    expect(out.done).toBe(true);
+  });
+
+  it('emits the progress events, in order, between Sent and the Response', () => {
+    const { out } = collect(
+      setup({ progress: [up(1_000, 4_000), up(4_000, 4_000)], value: { message: 'done' } }).fn(),
+    );
+    expect(types(out.events)).toEqual([
+      HttpEventType.Sent,
+      HttpEventType.UploadProgress,
+      HttpEventType.UploadProgress,
+      HttpEventType.Response,
+    ]);
+    expect(out.events.slice(1, 3)).toEqual([
+      { type: HttpEventType.UploadProgress, loaded: 1_000, total: 4_000 },
+      { type: HttpEventType.UploadProgress, loaded: 4_000, total: 4_000 },
+    ]);
+  });
+
+  it('maps download progress, with an unknown total', () => {
+    const { out } = collect(setup({ progress: [{ type: 'download', loaded: 512 }], value: { message: 'x' } }).fn());
+    expect(out.events[1]).toEqual({ type: HttpEventType.DownloadProgress, loaded: 512, total: undefined });
+  });
+
+  it('{ loading: true } emits Sent and the progress, then stays open (hold a bar at 25 %)', () => {
+    const { out } = collect(setup({ loading: true, progress: [up(1_000, 4_000)] }).fn());
+    expect(types(out.events)).toEqual([HttpEventType.Sent, HttpEventType.UploadProgress]);
+    expect(out.done).toBe(false);
+    expect(out.error).toBeUndefined();
+  });
+
+  it('{ error } errors after the progress, which stays visible to the subscriber', () => {
+    const { out } = collect(setup({ progress: [up(2_000, 4_000)], error: 'connection reset' }).fn());
+    expect(types(out.events)).toEqual([HttpEventType.Sent, HttpEventType.UploadProgress]);
+    expect(out.error).toBe('connection reset');
+  });
+
+  it('delay defers the response but not Sent or the progress; unsubscribing cancels it', () => {
+    vi.useFakeTimers();
+    try {
+      const { fn } = setup({ progress: [up(1, 2)], value: { message: 'late' }, delay: 100 });
+      const first = collect(fn());
+      expect(types(first.out.events)).toEqual([HttpEventType.Sent, HttpEventType.UploadProgress]);
+      vi.advanceTimersByTime(100);
+      expect(types(first.out.events)).toEqual([HttpEventType.Sent, HttpEventType.UploadProgress, HttpEventType.Response]);
+
+      const second = collect(fn());
+      second.sub.unsubscribe();
+      vi.advanceTimersByTime(200);
+      expect(types(second.out.events)).toEqual([HttpEventType.Sent, HttpEventType.UploadProgress]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('is cold: nothing is emitted until subscribed, and each subscription counts', () => {
+    const { handle, fn } = setup({ value: { message: 'ok' } });
+    const obs = fn();
+    expect(handle.subscriptions).toBe(0);
+    collect(obs);
+    collect(obs);
+    expect(handle.subscriptions).toBe(2);
+  });
+
+  it('sequence: each subscription consumes the next entry (fail at 50 %, then succeed)', () => {
+    const { fn } = setup({
+      sequence: [
+        { progress: [up(2_000, 4_000)], error: 'timeout' },
+        { progress: [up(4_000, 4_000)], value: { message: 'stored' } },
+      ],
+    });
+    const first = collect(fn());
+    expect(first.out.error).toBe('timeout');
+    const second = collect(fn());
+    expect(types(second.out.events)).toEqual([HttpEventType.Sent, HttpEventType.UploadProgress, HttpEventType.Response]);
+    expect((second.out.events[2] as HttpResponse<Stored>).body).toEqual({ message: 'stored' });
+  });
+
+  it('records calls and supports expectCalled / expectCalledWith', () => {
+    const { handle, fn } = setup({ value: { message: 'ok' } });
+    expect(() => handle.expectCalled()).toThrow(/never called/);
+    const file = new Blob(['x']);
+    fn('7', file);
+    handle.expectCalled();
+    handle.expectCalledWith('7', file);
+    expect(() => handle.expectCalledWith('8', file)).toThrow(/called with/);
+    expect(handle.calls).toEqual([['7', file]]);
   });
 });
