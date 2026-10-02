@@ -1,7 +1,7 @@
 {
   "name": "@constantant/openapi-resource-mocks",
   "version": "1.13.0",
-  "description": "Mock bus for @constantant/openapi-resource-gen tokens — unit tests, E2E, and Chrome Extension devtools",
+  "description": "Mocks and test helpers for @constantant/openapi-resource-gen tokens: unit tests, Playwright E2E and a Chrome DevTools panel",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -33,12 +33,24 @@
   },
   "keywords": [
     "angular",
+    "angular-testing",
     "testing",
     "mock",
-    "httpResource",
-    "InjectionToken",
+    "mocking",
+    "msw",
     "openapi",
+    "httpResource",
+    "http-resource",
+    "InjectionToken",
+    "signals",
     "e2e",
-    "devtools"
-  ]
+    "playwright",
+    "vitest",
+    "devtools",
+    "chrome-extension"
+  ],
+  "homepage": "https://github.com/constantant/angular-openapi-gen/tree/master/tools/openapi-resource-mocks#readme",
+  "bugs": {
+    "url": "https://github.com/constantant/angular-openapi-gen/issues"
+  }
 }

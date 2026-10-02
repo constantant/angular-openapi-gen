@@ -1,7 +1,7 @@
 {
   "name": "@constantant/openapi-resource-gen",
   "version": "1.14.0",
-  "description": "Nx generator: one InjectionToken per OpenAPI endpoint — tree-shakeable Angular data-access libs via httpResource",
+  "description": "Nx generator: OpenAPI 3.x and Swagger 2.0 to a tree-shakeable Angular API client, one InjectionToken per endpoint via httpResource or HttpClient",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,14 +13,28 @@
   "generators": "./generators.json",
   "executors": "./executors.json",
   "keywords": [
+    "angular",
+    "angular-signals",
     "nx",
     "nx-plugin",
-    "angular",
+    "nx-generator",
     "openapi",
-    "generator",
+    "openapi3",
+    "swagger",
+    "swagger2",
+    "openapi-generator",
+    "openapi-typescript",
+    "api-client",
+    "codegen",
+    "code-generator",
+    "typescript",
     "httpResource",
+    "http-resource",
+    "httpclient",
+    "signals",
     "InjectionToken",
-    "tree-shaking"
+    "tree-shaking",
+    "rest"
   ],
   "publishConfig": {
     "access": "public"
@@ -36,5 +50,9 @@
     "openapi-types": "^12.1.3",
     "openapi-typescript": "^7.13.0",
     "tslib": "^2.3.0"
+  },
+  "homepage": "https://github.com/constantant/angular-openapi-gen/tree/master/tools/openapi-resource-gen#readme",
+  "bugs": {
+    "url": "https://github.com/constantant/angular-openapi-gen/issues"
   }
 }
