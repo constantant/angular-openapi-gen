@@ -14,7 +14,7 @@ Provides zero-HTTP, pure-DI mocks for Angular `InjectionToken`-based data-access
 npm install -D @constantant/openapi-resource-mocks
 ```
 
-Peer dependencies: `@angular/core >=22`, `@angular/common >=22`.
+Peer dependencies: `@angular/core >=20`, `@angular/common >=20`, `rxjs ^7.8` — verified in CI against Angular 20.0.0 through 22.x (see the [compatibility table](../../README.md#compatibility)).
 
 ---
 

@@ -4,11 +4,10 @@
 [![npm: openapi-resource-gen](https://img.shields.io/npm/v/@constantant/openapi-resource-gen?label=openapi-resource-gen)](https://www.npmjs.com/package/@constantant/openapi-resource-gen)
 [![npm: openapi-resource-mocks](https://img.shields.io/npm/v/@constantant/openapi-resource-mocks?label=openapi-resource-mocks)](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Angular 22+](https://img.shields.io/badge/Angular-22%2B-dd0031?logo=angular&logoColor=white)](https://angular.dev)
+[![Angular 20+](https://img.shields.io/badge/Angular-20%2B-dd0031?logo=angular&logoColor=white)](#compatibility)
 
-> **Requires Angular 22+ and Nx 22+.**
-> The generated code uses [`httpResource()`](https://angular.dev/guide/http/http-resource),
-> which is only available from Angular 22 onwards.
+> **Requires Angular 20+ and Nx 20+** — verified in CI, see [Compatibility](#compatibility).
+> The generated code uses [`httpResource()`](https://angular.dev/guide/http/http-resource).
 
 An Angular 22 · Nx monorepo that demonstrates **tree-shakeable, signal-native API clients** generated from OpenAPI 3.x specs.
 
@@ -326,6 +325,27 @@ never hand-edited** (fix the generator and regenerate instead).
 - Questions & ideas: [GitHub Discussions](https://github.com/constantant/angular-openapi-gen/discussions)
 
 ---
+
+## Compatibility
+
+Every range below is exercised in CI ([`.github/workflows/compat.yml`](.github/workflows/compat.yml),
+run locally with `npm run compat -- angular 21` or `npm run compat -- nx 22`). Each job builds a
+throwaway workspace with that exact version and runs the code under test, including wire-level
+tests against a real `HttpClient`.
+
+| What | Supported | Verified against |
+|------|-----------|------------------|
+| Generated data-access libs (the code the generator emits) | Angular **20+** | 20.0.0, 20.x, 21.x, 22.x |
+| `@constantant/openapi-resource-mocks` | Angular **20+** | 20.0.0, 20.x, 21.x, 22.x |
+| `@constantant/openapi-resource-gen` (the Nx generator) | Nx **20+** | 20.x, 21.x, 22.x, 23.x |
+
+Notes:
+- Angular 20 is the floor because the mock `Resource` mirrors `ResourceStatus` as string values
+  (`'idle'`, `'resolved'`, …), which Angular 19 declares as a numeric enum. The generated libs alone
+  also compile and pass the wire tests on 19.2, but that isn't a supported or CI-tested range.
+- **Upload progress** (`--reportProgress`) needs an XHR-backed `HttpClient`. On Angular 20 and 21 that
+  is the default; on **Angular 22+** the default is `fetch`, which cannot report upload progress, so
+  use `provideHttpClient(withXhr())`.
 
 ## Angular 22 patterns used
 
