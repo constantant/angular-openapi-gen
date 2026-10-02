@@ -1,9 +1,10 @@
 import { InjectionToken, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpEventType, HttpResponse, httpResource, type HttpEvent } from '@angular/common/http';
+import { Observable, type Subscriber, type TeardownLogic } from 'rxjs';
 import { createMockResourceRef } from './lib/mock-resource-ref';
 import type { MockResourceRef, MockResourceRefInternal } from './lib/mock-resource-ref';
 import type { ProviderInitialBehavior } from './lib/provide-mock-resource';
+import type { MockProgress } from './lib/mock-events';
 
 /** One step in a response sequence — same shape as the single initialBehavior. */
 export type MockSequenceEntry<T> = ProviderInitialBehavior<T>;
@@ -158,6 +159,63 @@ export interface MockObservableHandle extends FactoryProvider {
 }
 
 /**
+ * Shared core of the Observable mocks: records calls, counts subscriptions, and picks the
+ * behavior for each subscription (a single behavior, or the next entry of a sequence — the last
+ * one repeats). `run` turns a behavior into emissions.
+ */
+function createObservableMock<B>(
+  token: InjectionToken<unknown>,
+  behaviorOrOptions: B | { sequence: B[] } | undefined,
+  run: (behavior: B | undefined, subscriber: Subscriber<unknown>) => TeardownLogic,
+): MockObservableHandle {
+  const calls: unknown[][] = [];
+  let subscriptions = 0;
+
+  const nextBehavior = (): B | undefined => {
+    if (!behaviorOrOptions) return undefined;
+    if (typeof behaviorOrOptions === 'object' && 'sequence' in behaviorOrOptions) {
+      const { sequence } = behaviorOrOptions as { sequence: B[] };
+      return sequence[Math.min(subscriptions - 1, sequence.length - 1)];
+    }
+    return behaviorOrOptions as B;
+  };
+
+  return {
+    provide: token,
+    useFactory: () =>
+      (...args: unknown[]): Observable<unknown> => {
+        calls.push(args);
+        return new Observable<unknown>((subscriber) => {
+          subscriptions++;
+          return run(nextBehavior(), subscriber);
+        });
+      },
+    get calls() {
+      return calls as readonly unknown[][];
+    },
+    get subscriptions() {
+      return subscriptions;
+    },
+    expectCalled() {
+      assertCalled(calls);
+    },
+    expectCalledWith(...expected: unknown[]) {
+      assertCalledWith(calls, expected);
+    },
+  };
+}
+
+/** Runs `settle` now, or after `delay` ms (cancelled on unsubscribe). */
+function settleAfter(delay: number | undefined, settle: () => void): TeardownLogic {
+  if (!delay) {
+    settle();
+    return undefined;
+  }
+  const timer = setTimeout(settle, delay);
+  return () => clearTimeout(timer);
+}
+
+/**
  * Creates a lightweight mock provider for a token generated with `clientType: 'httpClient'`
  * (a function returning `Observable<T>`). No MockResourceBus, no DOM events.
  *
@@ -180,54 +238,75 @@ export function mockObservable<T>(
   token: InjectionToken<(...args: unknown[]) => Observable<T>>,
   behaviorOrOptions?: ProviderInitialBehavior<T> | { sequence: MockSequenceEntry<T>[] },
 ): MockObservableHandle {
-  const calls: unknown[][] = [];
-  let subscriptions = 0;
+  return createObservableMock<ProviderInitialBehavior<T>>(token, behaviorOrOptions, (behavior, subscriber) => {
+    if (!behavior || 'loading' in behavior) return undefined; // never settles
+    return settleAfter(behavior.delay, () => {
+      if ('error' in behavior) {
+        subscriber.error(behavior.error);
+      } else {
+        subscriber.next(behavior.value as T);
+        subscriber.complete();
+      }
+    });
+  });
+}
 
-  const nextBehavior = (): ProviderInitialBehavior<T> | undefined => {
-    if (!behaviorOrOptions) return undefined;
-    if ('sequence' in behaviorOrOptions) {
-      const { sequence } = behaviorOrOptions;
-      return sequence[Math.min(subscriptions - 1, sequence.length - 1)];
+/**
+ * A behavior for {@link mockHttpEvents}: the same shapes as `mockObservable`, plus an optional
+ * list of progress events to emit before the response settles.
+ */
+export type MockHttpEventsBehavior<T> = ProviderInitialBehavior<T> & {
+  /** `UploadProgress` / `DownloadProgress` events emitted, in order, right after `Sent`. */
+  progress?: MockProgress[];
+};
+
+/**
+ * Like {@link mockObservable}, for tokens generated with `--reportProgress` whose function
+ * returns `Observable<HttpEvent<T>>` (file uploads / blob downloads over `httpClient`).
+ *
+ * Each subscription emits what a real `HttpClient` call with `reportProgress: true` emits: a
+ * `Sent` event, then the behavior's `progress` events, then — unless it is `{ loading: true }` —
+ * a `Response` event (status 200) carrying `value`, then completion; `{ error }` errors instead.
+ * `delay` defers the final response / error.
+ *
+ * ```ts
+ * // a component test that asserts the progress bar, holding the upload open at 25 %
+ * const upload = mockHttpEvents(UPLOAD_FILE, {
+ *   loading: true,
+ *   progress: [{ type: 'upload', loaded: 1_000_000, total: 4_000_000 }],
+ * });
+ *
+ * // a complete upload: 50 %, 100 %, then the response
+ * const done = mockHttpEvents(UPLOAD_FILE, {
+ *   progress: [
+ *     { type: 'upload', loaded: 2_000_000, total: 4_000_000 },
+ *     { type: 'upload', loaded: 4_000_000, total: 4_000_000 },
+ *   ],
+ *   value: { code: 200, message: 'stored' },
+ * });
+ * ```
+ */
+export function mockHttpEvents<T>(
+  token: InjectionToken<(...args: unknown[]) => Observable<HttpEvent<T>>>,
+  behaviorOrOptions?: MockHttpEventsBehavior<T> | { sequence: MockHttpEventsBehavior<T>[] },
+): MockObservableHandle {
+  return createObservableMock<MockHttpEventsBehavior<T>>(token, behaviorOrOptions, (behavior, subscriber) => {
+    subscriber.next({ type: HttpEventType.Sent });
+    for (const p of behavior?.progress ?? []) {
+      subscriber.next({
+        type: p.type === 'upload' ? HttpEventType.UploadProgress : HttpEventType.DownloadProgress,
+        loaded: p.loaded,
+        total: p.total,
+      });
     }
-    return behaviorOrOptions;
-  };
-
-  return {
-    provide: token,
-    useFactory: () =>
-      (...args: unknown[]): Observable<T> => {
-        calls.push(args);
-        return new Observable<T>((subscriber) => {
-          subscriptions++;
-          const behavior = nextBehavior();
-          if (!behavior || 'loading' in behavior) return undefined; // never settles
-          const settle = (): void => {
-            if ('error' in behavior) {
-              subscriber.error(behavior.error);
-            } else {
-              subscriber.next(behavior.value as T);
-              subscriber.complete();
-            }
-          };
-          if (!behavior.delay) {
-            settle();
-            return undefined;
-          }
-          const timer = setTimeout(settle, behavior.delay);
-          return () => clearTimeout(timer);
-        });
-      },
-    get calls() {
-      return calls as readonly unknown[][];
-    },
-    get subscriptions() {
-      return subscriptions;
-    },
-    expectCalled() {
-      assertCalled(calls);
-    },
-    expectCalledWith(...expected: unknown[]) {
-      assertCalledWith(calls, expected);
-    },
-  };
+    if (!behavior || 'loading' in behavior) return undefined; // stays open after Sent / progress
+    return settleAfter(behavior.delay, () => {
+      if ('error' in behavior) {
+        subscriber.error(behavior.error);
+      } else {
+        subscriber.next(new HttpResponse<T>({ body: behavior.value as T, status: 200 }));
+        subscriber.complete();
+      }
+    });
+  });
 }

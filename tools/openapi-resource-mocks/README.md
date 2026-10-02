@@ -191,6 +191,37 @@ const petsMock = mockObservable(FIND_PETS_BY_STATUS, {
 });
 ```
 
+### `mockHttpEvents<T>(token, behaviorOrOptions?)`
+
+`mockObservable` for tokens generated with `--reportProgress` that return
+`Observable<HttpEvent<T>>` (file uploads and blob downloads over `httpClient`). Each subscription
+emits what a real `HttpClient` call with `reportProgress: true` emits: a `Sent` event, the
+behavior's `progress` events, then a `Response` event (status 200) carrying `value`, then
+completion. It returns the same handle as `mockObservable` (`.calls`, `.subscriptions`,
+`.expectCalled()`, `.expectCalledWith()`).
+
+| Shape | Effect |
+|-------|--------|
+| `{ value, progress? }` | `Sent`, the progress events, then the `Response`, then completes |
+| `{ error, progress? }` | `Sent`, the progress events, then errors |
+| `{ loading: true, progress? }` | `Sent` and the progress events, then stays open — hold a progress bar at a given percentage |
+| `delay: ms` | defers the final response / error; `Sent` and progress are immediate |
+| `{ sequence: [...] }` | one entry per subscription; the last repeats — e.g. fail at 50 %, then succeed on retry |
+
+`progress` entries are `{ type: 'upload' | 'download', loaded, total? }`.
+
+```typescript
+// Component test: assert the progress bar while the upload is held at 25 %
+const upload = mockHttpEvents(UPLOAD_FILE, {
+  loading: true,
+  progress: [{ type: 'upload', loaded: 1_000_000, total: 4_000_000 }],
+});
+TestBed.configureTestingModule({ imports: [PetsPage], providers: [upload] });
+// ... trigger the upload ...
+upload.expectCalledWith('7', file);
+expect(bar.getAttribute('aria-valuenow')).toBe('25');
+```
+
 ### `MockResourceHandle<T>`
 
 | Member | Description |
