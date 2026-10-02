@@ -7,6 +7,7 @@ import {
   updateJson,
 } from '@nx/devkit';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as https from 'https';
 import * as http from 'http';
 import * as jsYaml from 'js-yaml';
@@ -115,12 +116,9 @@ function stripNonSchemaRefs(obj: unknown): unknown {
 function fetchSpecUrl(url: string, destPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const proto = url.startsWith('https://') ? https : http;
-    const file = fs.createWriteStream(destPath);
     proto
       .get(url, (res) => {
         if (res.statusCode !== 200) {
-          file.close();
-          fs.unlink(destPath, () => undefined);
           reject(
             new Error(
               `Failed to fetch spec from ${url}: HTTP ${res.statusCode ?? 'unknown'}`
@@ -128,12 +126,13 @@ function fetchSpecUrl(url: string, destPath: string): Promise<void> {
           );
           return;
         }
+        // Opened only for a 200, so a failed download never leaves an empty file behind.
+        const file = fs.createWriteStream(destPath);
         res.pipe(file);
         file.on('finish', () => file.close(() => resolve()));
+        file.on('error', (err) => reject(new Error(`Failed to write spec from ${url}: ${err.message}`)));
       })
       .on('error', (err) => {
-        file.close();
-        fs.unlink(destPath, () => undefined);
         reject(new Error(`Failed to fetch spec from ${url}: ${err.message}`));
       });
   });
@@ -210,6 +209,20 @@ export async function apiResourceGenerator(
   tree: Tree,
   options: ApiResourceGeneratorSchema
 ): Promise<void> {
+  const scratch: { downloadDir?: string } = {};
+  try {
+    await generateApiResources(tree, options, scratch);
+  } finally {
+    // Covers every exit, including a failed download or an invalid spec.
+    if (scratch.downloadDir) fs.rmSync(scratch.downloadDir, { recursive: true, force: true });
+  }
+}
+
+async function generateApiResources(
+  tree: Tree,
+  options: ApiResourceGeneratorSchema,
+  scratch: { downloadDir?: string }
+): Promise<void> {
   const {
     specPath,
     outputDir,
@@ -262,11 +275,11 @@ export async function apiResourceGenerator(
   const isUrl =
     specPath.startsWith('http://') || specPath.startsWith('https://');
 
-  // For URL specs, download to a temp file alongside the workspace root so
-  // relative file $refs in the spec (rare for remote specs) still resolve.
-  const tmpDownload = isUrl
-    ? path.join(process.cwd(), `_tmp_oas_download_${Date.now()}.yaml`).replace(/\\/g, '/')
-    : null;
+  // URL specs are downloaded into a private OS temp dir (removed in the
+  // finally below, whatever happens) instead of the working directory.
+  const downloadDir = isUrl ? fs.mkdtempSync(path.join(os.tmpdir(), 'oas-download-')) : null;
+  if (downloadDir) scratch.downloadDir = downloadDir;
+  const tmpDownload = downloadDir ? path.join(downloadDir, 'spec.yaml') : null;
 
   // 1. Parse spec with js-yaml, strip any $refs pointing to non-spec files
   //    (e.g. x-topics.$ref: ./docs/getting-started.md in the travel spec).
@@ -534,13 +547,6 @@ export async function apiResourceGenerator(
       fs.unlinkSync(tmpClean);
     } catch {
       /* ignore */
-    }
-    if (tmpDownload) {
-      try {
-        fs.unlinkSync(tmpDownload);
-      } catch {
-        /* ignore */
-      }
     }
   }
 
