@@ -305,6 +305,8 @@ What the workflow does:
 
 The workflow is idempotent — if the current version is already on npm it skips publishing gracefully.
 
+Inputs: `specifier` / `preid` force the bump, `projects` limits the release to some packages (e.g. `openapi-resource-gen`), `dryRun` stops before pushing or publishing, and `skipVersioning` re-runs only the build and publish after a failed publish. **A forced `specifier` bumps every package unless `projects` is set**, including ones with no changes.
+
 **Note on nx release commit detection**: nx release counts only commits that touch files within `tools/openapi-resource-gen/`. Workflow-only changes (e.g. editing `.github/`) do not trigger a version bump.
 
 **Note on branch protection**: `master` is protected (PRs require CI + a code-owner review, linear history). The release workflow checks out with `GH_PAT` (a repo admin PAT stored in GitHub secrets) instead of `GITHUB_TOKEN` — `GITHUB_TOKEN` cannot bypass branch protection's required status checks even with `enforce_admins: off`, so the version-bump commit and tag push would fail without a PAT.
