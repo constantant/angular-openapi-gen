@@ -1,3 +1,18 @@
+## 1.13.0 (2026-10-02)
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** unwrap Signal bodies inside the httpResource lambda ([#76](https://github.com/constantant/angular-openapi-gen/pull/76))
+- **openapi-resource-gen:** send query params on POST/PUT/PATCH/DELETE endpoints (required ones make params required) ([#75](https://github.com/constantant/angular-openapi-gen/pull/75))
+
+### 📖 Documentation
+
+- rewrite the changelog entries for gen 1.12.0 and mocks 1.11.0 ([#74](https://github.com/constantant/angular-openapi-gen/pull/74))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.12.0 (2026-10-01)
 
 ### 🚀 Features
