@@ -609,8 +609,23 @@ interface MockResourceMeta {
   path: string;         // API path, e.g. '/pet/findByStatus'
   method: string;       // HTTP method, lowercase
   tag?: string;         // OpenAPI tag (omitted for untagged operations)
+  args?: readonly string[]; // names of the token function's arguments, in order (emitted by --callOptions)
 }
 ```
+
+`args` (for example `['petId', 'body', 'params', 'options']`) does two things:
+
+- **DevTools** labels each argument of a recorded request by name (`Body`, `Query`, `Options`, or the
+  argument's own name) instead of guessing "Body [0]", "Body [1]".
+- **`provideMockResource`** uses it to find the per-call `options` argument and honour its
+  `defaultValue` exactly like the real resource: `value()` returns it until something resolves, and
+  again after `reset()`. Only the argument named `options` counts, so a body that merely has a
+  `defaultValue` field is never mistaken for it.
+
+Per-call options can hold values that cannot be sent to the extension (an `HttpContext`, an
+`Injector`, an equality function). The bus keeps the parts that can cross and replaces the rest with a
+placeholder such as `[HttpContext]` or `[Function]`, so such a request still shows up in DevTools.
+`window.__openApiMocks__[key].getHistory()` keeps the raw arguments.
 
 The DevTools panel resolves the response schema by looking up `specId` in its Specs store and then matching `operationId`. Import the spec (or its `mocks.manifest.json`) in the panel's **Specs** tab to enable schema-aware features.
 

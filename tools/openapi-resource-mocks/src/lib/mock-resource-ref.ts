@@ -38,6 +38,11 @@ export interface MockResourceRef<T> {
 
 export interface MockResourceRefInternal<T> extends MockResourceRef<T> {
   _notifyRequest(args: unknown[]): void;
+  /**
+   * The `defaultValue` option of a call made with `--callOptions`: what `value()` returns while there
+   * is no resolved value (idle, loading, error or after `reset()`), as the real httpResource does.
+   */
+  _setDefaultValue(value: T | undefined): void;
   /** Called synchronously on resolve() / fail(). Used by Observable-based mocks to emit. */
   _onSettle(cb: (outcome: { value: T } | { error: unknown }) => void): () => void;
   /** Called synchronously on setProgress() (and so on every simulateProgress() step). */
@@ -49,6 +54,7 @@ export function createMockResourceRef<T>(
 ): MockResourceRef<T> {
   const _status = signal<ResourceStatus>('idle');
   const _value = signal<T | undefined>(undefined);
+  const _default = signal<T | undefined>(undefined);
   const _error = signal<unknown>(undefined);
   const _progress = signal<MockProgress | undefined>(undefined);
   const _requestCount = signal(0);
@@ -69,7 +75,7 @@ export function createMockResourceRef<T>(
   }
 
   const ref: MockResourceRefInternal<T> = {
-    value: _value.asReadonly(),
+    value: computed(() => _value() ?? _default()),
     status: _status.asReadonly(),
     error: _error.asReadonly(),
     progress: _progress.asReadonly(),
@@ -150,6 +156,7 @@ export function createMockResourceRef<T>(
       requestListeners.add(cb);
       return () => requestListeners.delete(cb);
     },
+    _setDefaultValue: (v) => _default.set(v),
     _onProgress: (cb) => {
       progressListeners.add(cb);
       return () => progressListeners.delete(cb);

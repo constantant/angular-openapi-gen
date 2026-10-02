@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createMockResourceRef } from './mock-resource-ref';
+import { createMockResourceRef, type MockResourceRefInternal } from './mock-resource-ref';
 
 describe('createMockResourceRef', () => {
   describe('initial states', () => {
@@ -257,6 +257,24 @@ describe('createMockResourceRef', () => {
       const ref = createMockResourceRef({ value: 'x' });
       ref.reload();
       expect(ref.requestCount()).toBe(1);
+    });
+  });
+  describe('_setDefaultValue (the defaultValue call option)', () => {
+    it('is the value while nothing has resolved', () => {
+      const ref = createMockResourceRef<string[]>() as MockResourceRefInternal<string[]>;
+      expect(ref.value()).toBeUndefined();
+      ref._setDefaultValue([]);
+      expect(ref.value()).toEqual([]);
+      expect(ref.hasValue()).toBe(false); // there is still no real value
+    });
+
+    it('is replaced by a resolved value and restored by reset()', () => {
+      const ref = createMockResourceRef<string[]>() as MockResourceRefInternal<string[]>;
+      ref._setDefaultValue(['default']);
+      ref.resolve(['real']);
+      expect(ref.value()).toEqual(['real']);
+      ref.reset();
+      expect(ref.value()).toEqual(['default']);
     });
   });
 });

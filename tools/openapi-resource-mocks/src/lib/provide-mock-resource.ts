@@ -57,6 +57,13 @@ export function provideMockResource<T>(
         const ref = createMockResourceRef<T>();
         bus.register(effectiveKey, ref, meta);
         const internal = ref as MockResourceRefInternal<T>;
+        // Honour the per-call `defaultValue` option (`--callOptions`) like the real resource. Only the
+        // argument named `options` counts, so a body that merely has a `defaultValue` field is not mistaken for it.
+        const optionsIndex = meta?.args?.indexOf('options') ?? -1;
+        const callOptions = optionsIndex >= 0 ? (args[optionsIndex] as { defaultValue?: T } | undefined) : undefined;
+        if (callOptions && typeof callOptions === 'object' && callOptions.defaultValue !== undefined) {
+          internal._setDefaultValue(callOptions.defaultValue);
+        }
 
         if (initialBehavior) {
           // Re-apply on every request (initial, param change, reload) unless catch mode

@@ -145,7 +145,32 @@ export class MockResourceBus {
     if (typeof File !== 'undefined' && arg instanceof File) return `[File: ${(arg as File).name}]`;
     if (typeof Blob !== 'undefined' && arg instanceof Blob) return '[Blob]';
     if (typeof ArrayBuffer !== 'undefined' && arg instanceof ArrayBuffer) return '[ArrayBuffer]';
+    if (typeof arg === 'function') return '[Function]';
+    // Per-call options (`--callOptions`) can hold an HttpContext, an Injector or an equality
+    // function. The event is cloned across the extension's worlds and one uncloneable value would
+    // null the whole thing, so keep what can cross and name the rest.
+    if (arg !== null && typeof arg === 'object' && !Array.isArray(arg) && !this.isCloneable(arg)) {
+      return Object.fromEntries(
+        Object.entries(arg).map(([k, v]) => [k, this.isCloneable(v) ? v : this.describeUncloneable(v)]),
+      );
+    }
     return arg;
+  }
+
+  private isCloneable(value: unknown): boolean {
+    if (typeof structuredClone !== 'function') return true;
+    try {
+      structuredClone(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private describeUncloneable(value: unknown): string {
+    if (typeof value === 'function') return '[Function]';
+    const name = (value as { constructor?: { name?: string } } | null)?.constructor?.name;
+    return `[${name && name !== 'Object' ? name : 'Object'}]`;
   }
 
   private sanitizeEventForDom(event: MockEvent): MockEvent {

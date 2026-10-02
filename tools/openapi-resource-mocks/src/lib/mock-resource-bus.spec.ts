@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { MockResourceBus } from './mock-resource-bus';
-import { createMockResourceRef } from './mock-resource-ref';
+import { createMockResourceRef, type MockResourceRefInternal } from './mock-resource-ref';
 
 describe('MockResourceBus', () => {
   let bus: MockResourceBus;
@@ -335,6 +335,57 @@ describe('MockResourceBus', () => {
         }),
       );
       expect(window.__openApiMocks__!['MY_TOKEN'].getHistory()).toHaveLength(0);
+    });
+  });
+  describe('request event argument sanitizing (what crosses to the DevTools extension)', () => {
+    /** Fires a `request` through the ref and returns the args carried by the DOM event. */
+    function sentArgs(args: unknown[]): unknown[] {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      const events: CustomEvent[] = [];
+      const listener = (e: Event): void => { events.push(e as CustomEvent); };
+      document.addEventListener('openapi-mock-event', listener);
+      (ref as MockResourceRefInternal<string>)._notifyRequest(args);
+      document.removeEventListener('openapi-mock-event', listener);
+      const request = events.find((e) => e.detail.event.type === 'request');
+      return request!.detail.event.args as unknown[];
+    }
+
+    class HttpContextLike {
+      private readonly map = new Map();
+      get = (): unknown => this.map; // an own function property makes the instance uncloneable
+    }
+
+    it('replaces binary and form arguments with a readable placeholder', () => {
+      const args = sentArgs(['7', new File(['x'], 'photo.jpg'), new Blob(['x']), new FormData()]);
+      expect(args).toEqual(['7', '[File: photo.jpg]', '[Blob]', '[FormData]']);
+    });
+
+    it('leaves a plain, cloneable options object untouched', () => {
+      const options = { withCredentials: true, defaultValue: [] };
+      expect(sentArgs([options])[0]).toBe(options);
+    });
+
+    it('keeps the cloneable parts of an options object and names the rest', () => {
+      const options = { withCredentials: true, defaultValue: [1], equal: () => true, context: new HttpContextLike() };
+      const [sent] = sentArgs(['7', options]).slice(1);
+      expect(sent).toEqual({ withCredentials: true, defaultValue: [1], equal: '[Function]', context: '[HttpContextLike]' });
+    });
+
+    it('produces an event that can be structured-cloned (what an uncloneable arg would break)', () => {
+      const options = { equal: () => true, context: new HttpContextLike() };
+      expect(() => structuredClone(sentArgs([options]))).not.toThrow();
+      // ...which the raw options would not survive
+      expect(() => structuredClone(options)).toThrow();
+    });
+
+    it('keeps the raw arguments in the history exposed on window', () => {
+      const ref = createMockResourceRef<string>();
+      bus.register('MY_TOKEN', ref);
+      const equal = (): boolean => true;
+      (ref as MockResourceRefInternal<string>)._notifyRequest([{ equal }]);
+      const history = window.__openApiMocks__!['MY_TOKEN'].getHistory();
+      expect((history[0] as unknown as { args: [{ equal: unknown }] }).args[0].equal).toBe(equal);
     });
   });
 });
