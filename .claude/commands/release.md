@@ -47,6 +47,7 @@ Use `gh workflow run release.yml` with the inputs from step 3.
 Flags to pass:
 - `--field specifier=<value>` — only if the user chose to override (leave empty for auto)
 - `--field preid=<value>` — only if a preid was specified
+- `--field projects=<name[,name]>` — only to release a subset (e.g. `openapi-resource-gen`). Needed whenever `specifier` is forced: a forced specifier bumps *every* package, including ones with no changes. Packages not listed keep their version and the GitHub Release / npm publish steps skip them
 - `--field dryRun=true` — only if the user asked for dry run
 
 Examples:
@@ -56,6 +57,9 @@ gh workflow run release.yml
 
 # Force a specific bump
 gh workflow run release.yml --field specifier=patch
+
+# Force a bump for one package only (the other keeps its version)
+gh workflow run release.yml --field specifier=minor --field projects=openapi-resource-gen
 
 # Pre-release beta
 gh workflow run release.yml --field specifier=prerelease --field preid=beta

@@ -11,6 +11,10 @@ on:
         description: 'Pre-release id (alpha / beta / rc) — only used with pre* specifier'
         type: string
         default: ''
+      projects:
+        description: 'Only release these projects (comma-separated, e.g. openapi-resource-gen). Empty = every package. Anything not listed keeps its version; its GitHub Release / npm publish steps then find the existing version and skip.'
+        type: string
+        default: ''
       dryRun:
         description: 'Dry run — skip git push and npm publish'
         type: boolean
@@ -73,13 +77,25 @@ jobs:
       # --yes: skip interactive confirmation prompts.
       - name: Bump version and generate changelog
         if: ${{ !inputs.skipVersioning }}
+        # Inputs go through env vars (not interpolated into the script) and are validated, so a
+        # crafted value can't inject shell.
         run: |
           FLAGS="--skip-publish"
-          [[ -n "${{ inputs.specifier }}" ]] && FLAGS="$FLAGS --specifier=${{ inputs.specifier }}"
-          [[ -n "${{ inputs.preid }}" ]] && FLAGS="$FLAGS --preid=${{ inputs.preid }}"
+          for pair in "specifier:$SPECIFIER" "preid:$PREID" "projects:$PROJECTS"; do
+            name="${pair%%:*}"; value="${pair#*:}"
+            [[ -z "$value" ]] && continue
+            if [[ ! "$value" =~ ^[A-Za-z0-9._,@/-]+$ ]]; then
+              echo "::error::Invalid value for input '$name': $value"; exit 1
+            fi
+            FLAGS="$FLAGS --$name=$value"
+          done
+          echo "nx release $FLAGS"
           npx nx release $FLAGS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SPECIFIER: ${{ inputs.specifier }}
+          PREID: ${{ inputs.preid }}
+          PROJECTS: ${{ inputs.projects }}
 
       # Dry-run stops here — all subsequent steps touch the remote or the npm registry.
       - name: Push version commit and tag
