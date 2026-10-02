@@ -3,7 +3,7 @@
 Step-by-step guides for `@constantant/openapi-resource-gen` and friends.
 Each guide builds on the previous one; if you're starting fresh, read them in order.
 
-**Prerequisites:** Angular 22+, Nx 22+, an existing Angular application.
+**Prerequisites:** Angular 20+, Nx 20+, an existing Angular application (see the [compatibility table](../README.md#compatibility)).
 
 ---
 

@@ -8,7 +8,7 @@ own API.
 
 ## Prerequisites
 
-- Angular 22+ project inside an Nx 22+ workspace
+- Angular 20+ project inside an Nx 20+ workspace (see the [compatibility table](../README.md#compatibility))
 - `provideHttpClient()` registered somewhere in your providers
 
 ---

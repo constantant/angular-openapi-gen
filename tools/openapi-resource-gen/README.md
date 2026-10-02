@@ -21,8 +21,8 @@ npx nx g @constantant/openapi-resource-gen:api-resource --specPath=specs/myapi.y
 ## Concept
 
 Each endpoint becomes a typed `InjectionToken` whose value is a factory function.
-Calling the token's factory function returns an `httpResource` — Angular 22's
-signal-native HTTP wrapper.
+Calling the token's factory function returns an `httpResource` — Angular's
+signal-native HTTP wrapper (Angular 20+).
 
 ```
 OpenAPI spec  →  generator  →  one .token.ts per endpoint
@@ -748,7 +748,7 @@ readonly imageUrl = computed(() => {
 });
 ```
 
-> **`httpResource.arrayBuffer`** is available in Angular 22 but the generator does
+> **`httpResource.arrayBuffer`** is available in Angular but the generator does
 > not emit it — `Blob` covers all practical binary use cases (downloads, object URLs,
 > streaming). Add `x-response-type: arraybuffer` as a vendor extension in the spec
 > if you need raw byte access; the generator will recognise it in a future release.
@@ -1279,10 +1279,11 @@ this.uploadFile('7', file).subscribe({           // a File is a Blob
 // sub.unsubscribe() aborts the request
 ```
 
-> **Upload progress needs the XHR backend.** `HttpClient` defaults to `fetch`, and the Fetch
-> API has no upload-progress events, so with the default (or `withFetch()`) you only ever get
-> the `Sent` and `Response` events. Use `provideHttpClient(withXhr())`. Don't use `withXhr()`
-> with SSR — Angular deprecates XHR on the server.
+> **Upload progress needs the XHR backend.** The Fetch API has no upload-progress events, so with a
+> `fetch`-backed `HttpClient` you only ever get the `Sent` and `Response` events. On **Angular 20 and
+> 21** XHR is the default (don't opt into `withFetch()`); on **Angular 22+** `fetch` is the default,
+> so use `provideHttpClient(withXhr())`. Don't use `withXhr()` with SSR — Angular deprecates XHR on
+> the server.
 
 With `--validateResponses`, only the final `Response` event's body is validated. With
 `--includeMocks`, events-yielding endpoints get `provideMockHttpEvents()`.
