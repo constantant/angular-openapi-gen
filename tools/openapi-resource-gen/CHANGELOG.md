@@ -1,3 +1,17 @@
+## 1.14.1 (2026-10-02)
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** stop leaking temp files from URL spec downloads ([#84](https://github.com/constantant/angular-openapi-gen/pull/84))
+
+### 📖 Documentation
+
+- improve npm metadata and add copy-ready listing text ([#88](https://github.com/constantant/angular-openapi-gen/pull/88))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.14.0 (2026-10-02)
 
 ### 🚀 Features

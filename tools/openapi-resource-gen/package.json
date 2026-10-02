@@ -1,6 +1,6 @@
 {
   "name": "@constantant/openapi-resource-gen",
-  "version": "1.14.0",
+  "version": "1.14.1",
   "description": "Nx generator: OpenAPI 3.x and Swagger 2.0 to a tree-shakeable Angular API client, one InjectionToken per endpoint via httpResource or HttpClient",
   "license": "MIT",
   "repository": {
