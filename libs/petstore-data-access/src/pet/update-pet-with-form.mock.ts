@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/pet/{petId}',
   method: 'post',
   tag: 'pet',
+  args: ['petId', 'params', 'options'],
 };
 
 export function provideUpdatePetWithFormMock(

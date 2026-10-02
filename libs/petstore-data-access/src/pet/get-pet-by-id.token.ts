@@ -2,6 +2,11 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { API_KEY } from '../api-key.security-token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
@@ -93,9 +98,14 @@ function _validateResponse(value: unknown): GetPetByIdResponse {
   return value as GetPetByIdResponse;
 }
 
-export const GET_PET_BY_ID = new InjectionToken<
-  (petId: string) => ReturnType<typeof httpResource<GetPetByIdResponse>>
->('GET_PET_BY_ID');
+export type GetPetByIdOptions = ResourceCallOptions<GetPetByIdResponse>;
+
+export type GetPetByIdFn = <O extends GetPetByIdOptions = GetPetByIdOptions>(
+  petId: string,
+  options?: O,
+) => ResourceRefFor<GetPetByIdResponse, O>;
+
+export const GET_PET_BY_ID = new InjectionToken<GetPetByIdFn>('GET_PET_BY_ID');
 
 export function provideGetPetById(): FactoryProvider {
   return {
@@ -104,19 +114,25 @@ export function provideGetPetById(): FactoryProvider {
       const base = inject(PETSTORE_BASE_URL);
       const apiKey = inject(API_KEY, { optional: true });
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (petId: string) =>
-        httpResource<GetPetByIdResponse>(
-          () => ({
-            url: `${base}/pet/${petId}`,
-            headers: {
-              ...(apiKey?.() != null ? { api_key: `${apiKey()}` } : {}),
-              ...(petstoreAuth?.() != null
-                ? { Authorization: `Bearer ${petstoreAuth()}` }
-                : {}),
-            },
-          }),
-          { parse: _validateResponse },
+      return ((petId: string, options?: GetPetByIdOptions) => {
+        const _opts = splitCallOptions<GetPetByIdResponse>(options);
+        return httpResource<GetPetByIdResponse>(
+          () => {
+            return {
+              ..._opts.request,
+              url: `${base}/pet/${petId}`,
+              headers: {
+                ...(apiKey?.() != null ? { api_key: `${apiKey()}` } : {}),
+                ...(petstoreAuth?.() != null
+                  ? { Authorization: `Bearer ${petstoreAuth()}` }
+                  : {}),
+                ..._opts.headers,
+              },
+            };
+          },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as GetPetByIdFn;
     },
   };
 }

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import { splitCallOptions, type CallOptions } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
 export type PlaceOrderBody = NonNullable<
@@ -59,9 +60,12 @@ function _validateResponse(value: unknown): PlaceOrderResponse {
   return value as PlaceOrderResponse;
 }
 
-export const PLACE_ORDER = new InjectionToken<
-  (body: PlaceOrderBody) => Observable<PlaceOrderResponse>
->('PLACE_ORDER');
+export type PlaceOrderFn = (
+  body: PlaceOrderBody,
+  options?: CallOptions,
+) => Observable<PlaceOrderResponse>;
+
+export const PLACE_ORDER = new InjectionToken<PlaceOrderFn>('PLACE_ORDER');
 
 export function providePlaceOrder(): FactoryProvider {
   return {
@@ -69,12 +73,18 @@ export function providePlaceOrder(): FactoryProvider {
     useFactory: () => {
       const http = inject(HttpClient);
       const base = inject(PETSTORE_BASE_URL);
-      return (body: PlaceOrderBody) =>
-        http
+      return (body: PlaceOrderBody, options?: CallOptions) => {
+        const _opts = splitCallOptions(options);
+        return http
           .request<PlaceOrderResponse>('POST', `${base}/store/order`, {
+            ..._opts.request,
             body,
+            headers: {
+              ..._opts.headers,
+            },
           })
           .pipe(map(_validateResponse));
+      };
     },
   };
 }

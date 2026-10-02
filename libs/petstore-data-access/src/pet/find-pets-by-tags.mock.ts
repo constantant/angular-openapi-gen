@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/pet/findByTags',
   method: 'get',
   tag: 'pet',
+  args: ['params', 'options'],
 };
 
 export function provideFindPetsByTagsMock(

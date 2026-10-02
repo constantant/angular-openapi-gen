@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/user/{username}',
   method: 'get',
   tag: 'user',
+  args: ['username', 'options'],
 };
 
 export function provideGetUserByNameMock(

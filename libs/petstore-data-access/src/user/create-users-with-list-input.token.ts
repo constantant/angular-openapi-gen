@@ -2,6 +2,11 @@ import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
 export type CreateUsersWithListInputBody = NonNullable<
@@ -65,35 +70,52 @@ function _validateResponse(value: unknown): CreateUsersWithListInputResponse {
   return value as CreateUsersWithListInputResponse;
 }
 
-export const CREATE_USERS_WITH_LIST_INPUT = new InjectionToken<
-  (
-    body: CreateUsersWithListInputBody | Signal<CreateUsersWithListInputBody>,
-  ) => ReturnType<typeof httpResource<CreateUsersWithListInputResponse>>
->('CREATE_USERS_WITH_LIST_INPUT');
+export type CreateUsersWithListInputOptions =
+  ResourceCallOptions<CreateUsersWithListInputResponse>;
+
+export type CreateUsersWithListInputFn = <
+  O extends CreateUsersWithListInputOptions = CreateUsersWithListInputOptions,
+>(
+  body: CreateUsersWithListInputBody | Signal<CreateUsersWithListInputBody>,
+  options?: O,
+) => ResourceRefFor<CreateUsersWithListInputResponse, O>;
+
+export const CREATE_USERS_WITH_LIST_INPUT =
+  new InjectionToken<CreateUsersWithListInputFn>(
+    'CREATE_USERS_WITH_LIST_INPUT',
+  );
 
 export function provideCreateUsersWithListInput(): FactoryProvider {
   return {
     provide: CREATE_USERS_WITH_LIST_INPUT,
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
-      return (
+      return ((
         body:
           CreateUsersWithListInputBody | Signal<CreateUsersWithListInputBody>,
-      ) =>
-        httpResource<CreateUsersWithListInputResponse>(
+        options?: CreateUsersWithListInputOptions,
+      ) => {
+        const _opts =
+          splitCallOptions<CreateUsersWithListInputResponse>(options);
+        return httpResource<CreateUsersWithListInputResponse>(
           () => {
             const _body =
               typeof body === 'function'
                 ? (body as Signal<CreateUsersWithListInputBody>)()
                 : body;
             return {
+              ..._opts.request,
               url: `${base}/user/createWithList`,
               method: 'POST',
               body: _body,
+              headers: {
+                ..._opts.headers,
+              },
             };
           },
-          { parse: _validateResponse },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as CreateUsersWithListInputFn;
     },
   };
 }

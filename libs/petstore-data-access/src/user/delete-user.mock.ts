@@ -13,6 +13,7 @@ const _meta: MockResourceMeta = {
   path: '/user/{username}',
   method: 'delete',
   tag: 'user',
+  args: ['username', 'options'],
 };
 
 export function provideDeleteUserMock(

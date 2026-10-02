@@ -67,8 +67,13 @@ export class PetsPageComponent {
   // ── List ──────────────────────────────────────────────────────────────────
   readonly statusOptions: PetStatus[] = ['available', 'pending', 'sold'];
   readonly status = signal<PetStatus>('available');
-  readonly pets = this.findPetsByStatus(() => ({ status: this.status() }));
-  readonly petList = computed<Pet[]>(() => (this.pets.value() as Pet[] | undefined) ?? []);
+  // Per-call options (`--callOptions`): a defaultValue makes `value()` an array from the start — no
+  // `undefined` to guard while loading — and debugName labels the resource in Angular DevTools.
+  readonly pets = this.findPetsByStatus(() => ({ status: this.status() }), {
+    defaultValue: [],
+    debugName: 'pets',
+  });
+  readonly petList = computed<Pet[]>(() => this.pets.value() as Pet[]);
 
   private readonly logPetsError = effect(() => {
     const error = this.pets.error();

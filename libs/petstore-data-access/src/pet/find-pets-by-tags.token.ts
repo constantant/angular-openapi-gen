@@ -2,6 +2,11 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
@@ -98,11 +103,18 @@ function _validateResponse(value: unknown): FindPetsByTagsResponse {
   return value as FindPetsByTagsResponse;
 }
 
-export const FIND_PETS_BY_TAGS = new InjectionToken<
-  (
-    params?: FindPetsByTagsParams | (() => FindPetsByTagsParams | undefined),
-  ) => ReturnType<typeof httpResource<FindPetsByTagsResponse>>
->('FIND_PETS_BY_TAGS');
+export type FindPetsByTagsOptions = ResourceCallOptions<FindPetsByTagsResponse>;
+
+export type FindPetsByTagsFn = <
+  O extends FindPetsByTagsOptions = FindPetsByTagsOptions,
+>(
+  params?: FindPetsByTagsParams | (() => FindPetsByTagsParams | undefined),
+  options?: O,
+) => ResourceRefFor<FindPetsByTagsResponse, O>;
+
+export const FIND_PETS_BY_TAGS = new InjectionToken<FindPetsByTagsFn>(
+  'FIND_PETS_BY_TAGS',
+);
 
 export function provideFindPetsByTags(): FactoryProvider {
   return {
@@ -110,16 +122,19 @@ export function provideFindPetsByTags(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (
+      return ((
         params?:
           FindPetsByTagsParams | (() => FindPetsByTagsParams | undefined),
-      ) =>
-        httpResource<FindPetsByTagsResponse>(
+        options?: FindPetsByTagsOptions,
+      ) => {
+        const _opts = splitCallOptions<FindPetsByTagsResponse>(options);
+        return httpResource<FindPetsByTagsResponse>(
           () => {
             const _params = typeof params === 'function' ? params() : params;
             if (typeof params === 'function' && _params === undefined)
               return undefined;
             return {
+              ..._opts.request,
               url: `${base}/pet/findByTags`,
               params: _params as unknown as Record<
                 string,
@@ -132,11 +147,13 @@ export function provideFindPetsByTags(): FactoryProvider {
                 ...(petstoreAuth?.() != null
                   ? { Authorization: `Bearer ${petstoreAuth()}` }
                   : {}),
+                ..._opts.headers,
               },
             };
           },
-          { parse: _validateResponse },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as FindPetsByTagsFn;
     },
   };
 }

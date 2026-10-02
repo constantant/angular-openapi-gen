@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/store/inventory',
   method: 'get',
   tag: 'store',
+  args: ['options'],
 };
 
 export function provideGetInventoryMock(

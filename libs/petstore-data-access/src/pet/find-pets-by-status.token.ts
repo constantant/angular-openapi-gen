@@ -2,6 +2,11 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import {
+  splitCallOptions,
+  type ResourceCallOptions,
+  type ResourceRefFor,
+} from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
@@ -98,12 +103,19 @@ function _validateResponse(value: unknown): FindPetsByStatusResponse {
   return value as FindPetsByStatusResponse;
 }
 
-export const FIND_PETS_BY_STATUS = new InjectionToken<
-  (
-    params?:
-      FindPetsByStatusParams | (() => FindPetsByStatusParams | undefined),
-  ) => ReturnType<typeof httpResource<FindPetsByStatusResponse>>
->('FIND_PETS_BY_STATUS');
+export type FindPetsByStatusOptions =
+  ResourceCallOptions<FindPetsByStatusResponse>;
+
+export type FindPetsByStatusFn = <
+  O extends FindPetsByStatusOptions = FindPetsByStatusOptions,
+>(
+  params?: FindPetsByStatusParams | (() => FindPetsByStatusParams | undefined),
+  options?: O,
+) => ResourceRefFor<FindPetsByStatusResponse, O>;
+
+export const FIND_PETS_BY_STATUS = new InjectionToken<FindPetsByStatusFn>(
+  'FIND_PETS_BY_STATUS',
+);
 
 export function provideFindPetsByStatus(): FactoryProvider {
   return {
@@ -111,16 +123,19 @@ export function provideFindPetsByStatus(): FactoryProvider {
     useFactory: () => {
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (
+      return ((
         params?:
           FindPetsByStatusParams | (() => FindPetsByStatusParams | undefined),
-      ) =>
-        httpResource<FindPetsByStatusResponse>(
+        options?: FindPetsByStatusOptions,
+      ) => {
+        const _opts = splitCallOptions<FindPetsByStatusResponse>(options);
+        return httpResource<FindPetsByStatusResponse>(
           () => {
             const _params = typeof params === 'function' ? params() : params;
             if (typeof params === 'function' && _params === undefined)
               return undefined;
             return {
+              ..._opts.request,
               url: `${base}/pet/findByStatus`,
               params: _params as unknown as Record<
                 string,
@@ -133,11 +148,13 @@ export function provideFindPetsByStatus(): FactoryProvider {
                 ...(petstoreAuth?.() != null
                   ? { Authorization: `Bearer ${petstoreAuth()}` }
                   : {}),
+                ..._opts.headers,
               },
             };
           },
-          { parse: _validateResponse },
+          { ..._opts.resource, parse: _validateResponse },
         );
+      }) as FindPetsByStatusFn;
     },
   };
 }

@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/store/order/{orderId}',
   method: 'get',
   tag: 'store',
+  args: ['orderId', 'options'],
 };
 
 export function provideGetOrderByIdMock(

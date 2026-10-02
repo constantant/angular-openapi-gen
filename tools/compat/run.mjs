@@ -10,7 +10,8 @@
  *   add --keep to leave the workspace behind for debugging
  *
  * angular: type-checks (strict) and tests the generated libs, the generated mock files and the
- *          mocks package against that Angular version — the wire-level tests use a real HttpClient.
+ *          mocks package against that Angular version — the wire-level tests (every
+ *          apps/api-explorer/src/app/generated-*.spec.ts) use a real HttpClient.
  * nx:      runs the generator's test suite plus a real end-to-end generation (FsTree, Prettier)
  *          against that Nx version.
  */
@@ -91,10 +92,17 @@ async function angular() {
     `export function tick(): void {\n` +
     `  const t = TestBed as unknown as { tick?: () => void; flushEffects?: () => void };\n` +
     `  (t.tick ?? t.flushEffects)!.call(t);\n}\n`);
-  const wire = readFileSync(join(repo, 'apps', 'api-explorer', 'src', 'app', 'generated-query-params.spec.ts'), 'utf8')
-    .replace(/'@angular-openapi-gen\/([a-z]+)-data-access'/g, `'./libs/$1'`)
-    .replaceAll('TestBed.tick()', 'tick()');
-  write(join(dir, 'src', 'wire.spec.ts'), `import { tick } from './tick';\n${wire}`);
+  // Every wire-level spec the repo keeps for the generated tokens (apps/api-explorer/src/app/generated-*.spec.ts).
+  const appDir = join(repo, 'apps', 'api-explorer', 'src', 'app');
+  const wireSpecs = readdirSync(appDir).filter((f) => /^generated-.+\.spec\.ts$/.test(f));
+  if (wireSpecs.length === 0) throw new Error('no generated-*.spec.ts wire-level specs found');
+  for (const file of wireSpecs) {
+    const wire = readFileSync(join(appDir, file), 'utf8')
+      .replace(/'@angular-openapi-gen\/([a-z]+)-data-access'/g, `'./libs/$1'`)
+      .replaceAll('TestBed.tick()', 'tick()');
+    write(join(dir, 'src', file.replace(/^generated-/, 'wire-')), `import { tick } from './tick';\n${wire}`);
+  }
+  console.log(`wire-level specs: ${wireSpecs.join(', ')}`);
   write(join(dir, 'src', 'extra.spec.ts'), template('angular', 'extra.spec.ts'));
 
   write(join(dir, 'setup.ts'),

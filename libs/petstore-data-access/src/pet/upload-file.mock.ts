@@ -14,6 +14,7 @@ const _meta: MockResourceMeta = {
   path: '/pet/{petId}/uploadImage',
   method: 'post',
   tag: 'pet',
+  args: ['petId', 'body', 'params', 'options'],
 };
 
 export function provideUploadFileMock(

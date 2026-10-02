@@ -15,6 +15,9 @@ interface DetailSection {
 
 const BINARY_RE = /^\[(FormData|Blob|ArrayBuffer|File:)/;
 
+/** Display labels for the argument names a generated mock records in `MockResourceMeta.args`. */
+const ARG_LABELS: Record<string, string> = { body: 'Body', params: 'Query', options: 'Options' };
+
 function extractPathParamNames(path: string): string[] {
   return [...path.matchAll(/\{([^}]+)\}/g)].map((m) => m[1]);
 }
@@ -89,9 +92,15 @@ export class HistoryTab {
         if (rest.length) {
           const isBody = ['post', 'put', 'patch'].includes(meta.method);
           const baseLabel = isBody ? 'Body' : 'Query';
+          // With the argument names (from `--callOptions`) each argument gets its real label; without
+          // them every extra argument of a body method is guessed to be a body, and of the rest a query.
+          const names = meta.args?.slice(paramNames.length);
           rest.forEach((arg, idx) => {
             const { text, type } = formatArgValue(arg);
-            const label = rest.length > 1 ? `${baseLabel} [${idx}]` : baseLabel;
+            const name = names?.[idx];
+            const label = name
+              ? (ARG_LABELS[name] ?? name)
+              : rest.length > 1 ? `${baseLabel} [${idx}]` : baseLabel;
             sections.push({ label, json: text, type });
           });
         }

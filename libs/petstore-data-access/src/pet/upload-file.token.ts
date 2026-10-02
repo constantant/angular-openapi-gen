@@ -7,6 +7,7 @@ import {
 import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
+import { splitCallOptions, type CallOptions } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
@@ -47,13 +48,14 @@ function _validateResponse(value: unknown): UploadFileResponse {
   return value as UploadFileResponse;
 }
 
-export const UPLOAD_FILE = new InjectionToken<
-  (
-    petId: string,
-    body: UploadFileBody,
-    params?: UploadFileParams,
-  ) => Observable<HttpEvent<UploadFileResponse>>
->('UPLOAD_FILE');
+export type UploadFileFn = (
+  petId: string,
+  body: UploadFileBody,
+  params?: UploadFileParams,
+  options?: CallOptions,
+) => Observable<HttpEvent<UploadFileResponse>>;
+
+export const UPLOAD_FILE = new InjectionToken<UploadFileFn>('UPLOAD_FILE');
 
 export function provideUploadFile(): FactoryProvider {
   return {
@@ -62,12 +64,19 @@ export function provideUploadFile(): FactoryProvider {
       const http = inject(HttpClient);
       const base = inject(PETSTORE_BASE_URL);
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
-      return (petId: string, body: UploadFileBody, params?: UploadFileParams) =>
-        http
+      return (
+        petId: string,
+        body: UploadFileBody,
+        params?: UploadFileParams,
+        options?: CallOptions,
+      ) => {
+        const _opts = splitCallOptions(options);
+        return http
           .request<UploadFileResponse>(
             'POST',
             `${base}/pet/${petId}/uploadImage`,
             {
+              ..._opts.request,
               observe: 'events',
               reportProgress: true,
               params: params as unknown as Record<
@@ -82,6 +91,7 @@ export function provideUploadFile(): FactoryProvider {
                 ...(petstoreAuth?.() != null
                   ? { Authorization: `Bearer ${petstoreAuth()}` }
                   : {}),
+                ..._opts.headers,
               },
             },
           )
@@ -92,6 +102,7 @@ export function provideUploadFile(): FactoryProvider {
                 : e,
             ),
           );
+      };
     },
   };
 }

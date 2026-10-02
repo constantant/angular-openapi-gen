@@ -12,7 +12,7 @@ on:
       - 'tools/**'
       - 'libs/**'
       - 'specs/petstore.yaml'
-      - 'apps/api-explorer/src/app/generated-query-params.spec.ts'
+      - 'apps/api-explorer/src/app/generated-*.spec.ts'
       - '.github/workflows/compat.yml'
   schedule:
     - cron: '0 5 * * 1'
