@@ -14,7 +14,7 @@ import * as jsYaml from 'js-yaml';
 // v6: module.exports = fn (returns string); v7: exports.default = fn (returns ts.Node[])
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _openapiTSMod: any = require('openapi-typescript/dist/index.cjs');
-const _openapiTS: (source: string | URL) => Promise<unknown> =
+const _openapiTS: (source: string | URL, options?: { readWriteMarkers?: boolean }) => Promise<unknown> =
   typeof _openapiTSMod === 'function' ? _openapiTSMod : _openapiTSMod.default;
 const _astToString: ((nodes: unknown[]) => string) | undefined =
   typeof _openapiTSMod === 'function' ? undefined : _openapiTSMod.astToString;
@@ -45,6 +45,11 @@ export interface ApiResourceGeneratorSchema {
   dateType?: 'string' | 'Date' | 'Temporal';
   /** Wrap all XxxResponse and XxxError type aliases in Readonly<> to prevent accidental mutation. */
   readonlyResponses?: boolean;
+  /**
+   * Honor `readOnly` / `writeOnly` in the spec: request bodies drop server-generated (`readOnly`)
+   * properties and responses drop `writeOnly` ones, via openapi-typescript's `readWriteMarkers`.
+   */
+  readWriteMarkers?: boolean;
   /** Emit a *.msw.ts MSW handler file alongside each token file. Requires msw to be installed. */
   includeMswHandlers?: boolean;
   /** Validate JSON responses at runtime against the spec schema via httpResource's `parse` hook. Requires @cfworker/json-schema to be installed. */
@@ -306,7 +311,7 @@ export async function apiResourceGenerator(
     //    circular refs; openapi-typescript resolves $refs itself).
     let schemaDts: string;
     try {
-      const result = await _openapiTS(tmpCleanUrl);
+      const result = await _openapiTS(tmpCleanUrl, options.readWriteMarkers ? { readWriteMarkers: true } : undefined);
       schemaDts = typeof result === 'string' ? result : _astToString!(result as unknown[]);
     } catch (e) {
       throw new Error(`Failed to generate TypeScript types from spec: ${(e as Error).message}`, { cause: e });
@@ -389,6 +394,7 @@ export async function apiResourceGenerator(
           schemesByName,
           dateType: options.dateType ?? 'string',
           readonlyResponses: options.readonlyResponses ?? false,
+          readWriteMarkers: options.readWriteMarkers ?? false,
           validateResponses,
           client,
           reportProgress: options.reportProgress ?? false,

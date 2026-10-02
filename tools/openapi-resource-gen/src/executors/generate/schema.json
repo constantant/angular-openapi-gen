@@ -53,6 +53,11 @@
       "default": "string",
       "description": "Convert format:date-time / format:date response fields to Date or Temporal objects. Emits a typed XxxRevived alias and reviveXxxDates() helper per affected endpoint."
     },
+    "readWriteMarkers": {
+      "type": "boolean",
+      "default": false,
+      "description": "Honor readOnly / writeOnly in the spec: request body types (XxxBody) drop readOnly properties such as server-generated ids, and response types (XxxResponse, XxxError) drop writeOnly ones such as passwords. Uses openapi-typescript's readWriteMarkers, which adds the Readable<T> / Writable<T> helpers to schema.d.ts."
+    },
     "readonlyResponses": {
       "type": "boolean",
       "default": false,

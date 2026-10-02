@@ -91,6 +91,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
 | `dateType` | no | `string` | `string` (default — no change), `Date`, or `Temporal`. When set to `Date` or `Temporal`, emits a typed `XxxRevived` alias and a `reviveXxxDates()` helper per endpoint whose response contains `format: date-time` or `format: date` fields. |
 | `readonlyResponses` | no | `false` | Wrap all `XxxResponse` and `XxxError` type aliases in `Readonly<>` to prevent accidental mutation of response data. |
+| `readWriteMarkers` | no | `false` | Honor `readOnly` / `writeOnly` in the spec: request bodies drop server-generated properties (`id`, timestamps) and responses drop write-only ones (`password`). See [Read-only and write-only properties](#read-only-and-write-only-properties---readwritemarkers) |
 | `validateResponses` | no | `false` | Validate JSON responses at runtime against the spec's response schema via `httpResource`'s `parse` hook — requires [`@cfworker/json-schema`](https://www.npmjs.com/package/@cfworker/json-schema) |
 | `clientType` | no | `httpResource` | `httpResource` or `httpClient`. With `httpClient` each token yields a function returning a cold `Observable<T>` via `HttpClient.request()` — `params` / `body` are plain values (no thunks or `Signal`s), auth signals are read per call, and `validateResponses` runs in a `map()`. |
 | `reportProgress` | no | `false` | Report transfer progress. `httpClient` binary/multipart uploads and blob downloads yield `Observable<HttpEvent<T>>`; `httpResource` blob downloads get `reportProgress: true` (see [Upload / download progress](#upload--download-progress---reportprogress)) |
@@ -392,6 +393,50 @@ export type UpsertOrderResponse =
 
 `--readonlyResponses` works in combination with `--dateType` — the `XxxRevived`
 alias also wraps the `Omit & { … }` shape in `Readonly<>`.
+
+---
+
+## Read-only and write-only properties (`--readWriteMarkers`)
+
+OpenAPI lets a schema mark properties `readOnly` (the server generates them: `id`, `createdAt`) or
+`writeOnly` (the client sends them but never receives them: `password`). Without this option a
+single type is used for both directions, so a request body *requires* the server-generated `id` and
+a response *claims* to contain the `password`.
+
+```yaml
+User:
+  type: object
+  required: [id, name, password]
+  properties:
+    id:       { type: integer, readOnly: true }
+    name:     { type: string }
+    password: { type: string, writeOnly: true }
+```
+
+Pass `--readWriteMarkers` and the generator uses `openapi-typescript`'s read/write markers, then
+wraps each alias for its direction:
+
+```typescript
+// schema.d.ts gains the helpers:  $Read<T>, $Write<T>, Readable<T>, Writable<T>
+export type CreateUserBody =
+  Writable<NonNullable<paths['/users']['post']['requestBody']>['content']['application/json']>;
+export type CreateUserResponse =
+  Readable<paths['/users']['post']['responses']['201']['content']['application/json']>;
+
+const body: CreateUserBody = { name: 'Ada', password: 'secret' };      // no id required
+const bad: CreateUserBody = { id: 1, name: 'Ada', password: 'secret' }; // ✗ id is readOnly
+const user: CreateUserResponse = { id: 1, name: 'Ada' };                // no password
+```
+
+- It applies to nested objects and array items, and to JSON request bodies, `XxxResponse`, `XxxError`
+  and the per-variant types of a discriminated union. Binary bodies and text / blob responses are
+  unaffected.
+- It composes with `--readonlyResponses` (`Readonly<Readable<…>>`), `--validateResponses`,
+  `--dateType` and both `--clientType`s.
+- It is **opt-in**: without it the output is byte-identical to before. Turn it on, regenerate, and fix
+  the call sites the compiler now flags (typically a request body that was sending an `id`).
+- Query, path and header parameters are not affected.
+- **Cost:** none measurable. On the GitHub spec (a 5 MB `schema.d.ts`, where 233 of 250 token files use `Readable<>`) strict `tsc` takes about the same time and memory with and without it (run-to-run noise was larger than any difference), and the output compiles with no errors.
 
 ---
 

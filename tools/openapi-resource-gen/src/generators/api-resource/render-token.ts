@@ -127,6 +127,12 @@ export interface RenderTokenOptions {
   schemesByName?: Map<string, SecuritySchemeModel>;
   dateType?: 'string' | 'Date' | 'Temporal';
   readonlyResponses?: boolean;
+  /**
+   * The schema was generated with openapi-typescript's `readWriteMarkers`: request bodies are
+   * wrapped in `Writable<>` (drops `readOnly` properties) and response / error types in
+   * `Readable<>` (drops `writeOnly` ones).
+   */
+  readWriteMarkers?: boolean;
   validateResponses?: boolean;
   /** Which Angular HTTP primitive the token's factory wraps. Default: httpResource. */
   client?: ClientType;
@@ -159,6 +165,7 @@ export function renderTokenFile(
     schemesByName = new Map(),
     dateType = 'string',
     readonlyResponses = false,
+    readWriteMarkers = false,
     validateResponses = false,
     client = 'httpResource',
     reportProgress = false,
@@ -208,7 +215,17 @@ export function renderTokenFile(
     lines.push(`import { Validator, type Schema } from '@cfworker/json-schema';`);
   }
   const needsComponents = ep.discriminator?.variants.some((v) => v.schemaName) ?? false;
-  lines.push(`import type { paths${needsComponents ? ', components' : ''} } from '../schema.d';`);
+  // Only import the read/write helpers a file actually uses (an unused type import fails lint).
+  const usesWritable = readWriteMarkers && !isGet && ep.hasBody && !!ep.bodyContentType && !ep.isBinaryBody;
+  const usesReadable =
+    readWriteMarkers && ((hasResponse && responseVariant === 'json') || ep.errorStatuses.length > 0 || needsComponents);
+  const schemaImports = [
+    'paths',
+    ...(needsComponents ? ['components'] : []),
+    ...(usesReadable ? ['Readable'] : []),
+    ...(usesWritable ? ['Writable'] : []),
+  ];
+  lines.push(`import type { ${schemaImports.join(', ')} } from '../schema.d';`);
   lines.push(`import { ${baseUrlToken} } from '../api-base-url.token';`);
   for (const scheme of applicableSchemes) {
     lines.push(`import { ${scheme.tokenName} } from '../${scheme.fileName}';`);
@@ -248,14 +265,15 @@ export function renderTokenFile(
       // openapi-typescript types binary schemas as string | Blob which isn't useful here.
       lines.push(`export type ${pascal}Body = Blob | ArrayBuffer;`, '');
     } else {
-      lines.push(
-        `export type ${pascal}Body =`,
-        `  NonNullable<paths['${ep.apiPath}']['${ep.method}']['requestBody']>['content']['${ep.bodyContentType}'];`,
-        ''
-      );
+      const body = `NonNullable<paths['${ep.apiPath}']['${ep.method}']['requestBody']>['content']['${ep.bodyContentType}']`;
+      lines.push(`export type ${pascal}Body =`, `  ${usesWritable ? `Writable<${body}>` : body};`, '');
     }
   }
-  const ro = (expr: string) => readonlyResponses ? `Readonly<${expr}>` : expr;
+  // Response / error types: `Readable<>` first (drop writeOnly), then `Readonly<>` on request.
+  const ro = (expr: string) => {
+    const readable = readWriteMarkers ? `Readable<${expr}>` : expr;
+    return readonlyResponses ? `Readonly<${readable}>` : readable;
+  };
 
   if (hasResponse) {
     if (responseVariant === 'text') {
@@ -308,7 +326,8 @@ export function renderTokenFile(
       let typeExpr: string;
       if (v.schemaName) {
         // Mapping-based: intersect component schema with a literal discriminant tag.
-        typeExpr = `components['schemas'][${JSON.stringify(v.schemaName)}] & { ${JSON.stringify(propertyName)}: ${JSON.stringify(v.key)} }`;
+        const schema = `components['schemas'][${JSON.stringify(v.schemaName)}]`;
+        typeExpr = `${readWriteMarkers ? `Readable<${schema}>` : schema} & { ${JSON.stringify(propertyName)}: ${JSON.stringify(v.key)} }`;
       } else {
         // Enum-based fallback: narrow the response union with Extract.
         const base = isArrayResponse

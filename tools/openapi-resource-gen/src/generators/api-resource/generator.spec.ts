@@ -2608,4 +2608,136 @@ describe('api-resource generator', () => {
       expect(c).toContain("if(typeofparams==='function'&&_params===undefined)returnundefined;");
     });
   });
+  describe('readWriteMarkers (readOnly / writeOnly)', () => {
+    const gen = (extra: Record<string, unknown> = {}) =>
+      apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        baseUrlToken: 'PETSTORE_BASE_URL',
+        ...extra,
+      });
+    const read = (f: string) => tree.read(`libs/petstore/src/pets/${f}.token.ts`, 'utf-8')!;
+    const flat = (c: string) => c.replace(/\s+/g, '');
+
+    // (the generator `require()`s openapi-typescript, which vi.mock doesn't intercept, so the real
+    // library runs here — we can assert on the schema.d.ts it really emits)
+    const schema = () => tree.read('libs/petstore/src/schema.d.ts', 'utf-8')!;
+
+    it('is off by default: no read/write helpers in schema.d.ts and none in the tokens', async () => {
+      await gen();
+      expect(schema()).not.toMatch(/export type (Readable|Writable|\$Read|\$Write)</);
+      for (const f of ['list-pets', 'create-pet', 'get-pet-by-id']) {
+        expect(read(f)).not.toMatch(/\b(Readable|Writable)</);
+        expect(read(f)).not.toMatch(/import type \{[^}]*(Readable|Writable)/);
+      }
+    });
+
+    it('asks openapi-typescript for the read/write markers when enabled', async () => {
+      await gen({ readWriteMarkers: true });
+      for (const helper of ['$Read', '$Write', 'Readable', 'Writable']) {
+        expect(schema()).toMatch(new RegExp(`export type ${helper.replace('$', '\\$')}<`));
+      }
+    });
+
+    it('wraps request bodies in Writable<> and responses in Readable<>', async () => {
+      await gen({ readWriteMarkers: true });
+      const create = flat(read('create-pet'));
+      expect(create).toContain("exporttypeCreatePetBody=Writable<NonNullable<paths['/pets']['post']['requestBody']>['content']['application/json']>;");
+      expect(create).toContain("exporttypeCreatePetResponse=Readable<paths['/pets']['post']['responses']['201']['content']['application/json']>;");
+      expect(flat(read('list-pets'))).toContain("exporttypeListPetsResponse=Readable<paths['/pets']['get']['responses']['200']['content']['application/json']>;");
+    });
+
+    it('imports only the helpers a file uses', async () => {
+      await gen({ readWriteMarkers: true });
+      // GET: a response, no body
+      expect(read('list-pets')).toMatch(/import type \{ paths, Readable \} from '\.\.\/schema\.d'/);
+      // POST: body and response
+      expect(read('create-pet')).toMatch(/import type \{ paths, Readable, Writable \} from '\.\.\/schema\.d'/);
+      // DELETE with neither a body nor a JSON response
+      expect(read('delete-pet')).toMatch(/import type \{ paths \} from '\.\.\/schema\.d'/);
+    });
+
+    it('composes with readonlyResponses as Readonly<Readable<…>>', async () => {
+      await gen({ readWriteMarkers: true, readonlyResponses: true });
+      expect(flat(read('list-pets'))).toContain('exporttypeListPetsResponse=Readonly<Readable<paths[');
+    });
+
+    it('wraps every branch of a multi-status response union', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/things': {
+            put: {
+              operationId: 'putThing',
+              tags: ['pets'],
+              requestBody: { content: { 'application/json': { schema: {} } } },
+              responses: {
+                '200': { content: { 'application/json': { schema: {} } } },
+                '201': { content: { 'application/json': { schema: {} } } },
+                '400': { content: { 'application/json': { schema: {} } } },
+              },
+            },
+          },
+        },
+      } as never);
+      await gen({ readWriteMarkers: true });
+      const c = flat(read('put-thing'));
+      expect(c).toContain("|Readable<paths['/things']['put']['responses']['200']");
+      expect(c).toContain("|Readable<paths['/things']['put']['responses']['201']");
+      expect(c).toContain("exporttypePutThingError=Readable<paths['/things']['put']['responses']['400']");
+    });
+
+    it('leaves binary bodies and text/blob responses unwrapped (and unimported)', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/file': {
+            put: {
+              operationId: 'putFile',
+              tags: ['pets'],
+              requestBody: { content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } },
+              responses: { '200': { content: { 'text/plain': { schema: { type: 'string' } } } } },
+            },
+          },
+        },
+      } as never);
+      await gen({ readWriteMarkers: true });
+      const c = read('put-file');
+      expect(c).toContain('export type PutFileBody = Blob | ArrayBuffer;');
+      expect(c).toContain('export type PutFileResponse = string;');
+      expect(c).toMatch(/import type \{ paths \} from '\.\.\/schema\.d'/);
+    });
+
+    it('wraps component schemas in discriminated-union variants', async () => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+        paths: {
+          '/animals': {
+            get: {
+              operationId: 'listAnimals',
+              tags: ['pets'],
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        oneOf: [{ type: 'object' }, { type: 'object' }],
+                        discriminator: {
+                          propertyName: 'kind',
+                          mapping: { cat: '#/components/schemas/Cat', dog: '#/components/schemas/Dog' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as never);
+      await gen({ readWriteMarkers: true });
+      const c = flat(read('list-animals'));
+      // Prettier reformats { "kind": "cat" } → { kind: 'cat' }
+      expect(c).toContain("Readable<components['schemas']['Cat']>&{kind:'cat'");
+      expect(c).toContain("Readable<components['schemas']['Dog']>&{kind:'dog'");
+      expect(read('list-animals')).toMatch(/import type \{ paths, components, Readable \} from '\.\.\/schema\.d'/);
+    });
+  });
 });
