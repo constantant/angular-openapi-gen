@@ -14,6 +14,36 @@ An Angular 22 · Nx monorepo that demonstrates **tree-shakeable, signal-native A
 The core idea: one `InjectionToken` per API endpoint, each in its own `.ts` file.
 Because esbuild tree-shakes at file boundaries, any token you never `inject()` costs zero bytes in your bundle.
 
+**Why this one?**
+
+- **Resources, not services.** Each endpoint is an `InjectionToken` whose function returns a signal-native
+  `httpResource` (or, per endpoint, an `Observable` via `HttpClient`). There is no service class to
+  inject whole, so unused endpoints tree-shake away.
+- **Types come from [`openapi-typescript`](https://openapi-ts.dev)**, not from generated model classes.
+- **Testing is part of the package:** a mock bus, a `/testing` entry point, optional MSW handlers and a
+  Chrome DevTools panel to catch, answer and replay requests.
+
+### How it compares
+
+An honest summary. All of these are good tools; pick by what you need.
+
+| | This project | [ng-openapi-gen](https://github.com/cyclosproject/ng-openapi-gen) | [Orval](https://orval.dev) | [Hey API](https://heyapi.dev) |
+|---|---|---|---|---|
+| Output shape | One token + function per endpoint | Service classes + model classes | Functions or services, per config | SDK functions / classes, plugins |
+| `httpResource` | Yes (default) | Declined upstream | Yes (`httpClient`, `httpResource` or both) | Yes |
+| `HttpClient` / `Observable` | Yes, per endpoint | Yes | Yes | Yes |
+| Runs as | Nx generator | Standalone CLI | Standalone CLI | Standalone CLI |
+| Mock data / Zod / validators | Mock bus, MSW handlers, response validation (opt-in) | No | MSW + Faker, Zod (including request bodies) | Faker, MSW, validator plugins |
+| Debug UI | Chrome DevTools panel | No | No | No |
+
+Where the others are the better fit: if you are **not on Nx**, use a standalone CLI (Orval or Hey API)
+for now; if you need **Zod schemas for request bodies** or **generated fake data**, Orval and Hey API
+have them and we do not; if you want a **non-Angular** client, this is not the tool.
+(Comparison read in October 2026; tools change, so check their docs.)
+
+Coming from another tool? See the migration guides:
+[from ng-openapi-gen](docs/06-migrate-from-ng-openapi-gen.md) · [from Orval](docs/07-migrate-from-orval.md).
+
 ---
 
 ## What's in this repo
@@ -85,16 +115,26 @@ Re-run the generator command whenever your spec changes — it overwrites genera
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `specPath` | yes | — | Local path **or** `https://` URL to the OpenAPI 3.x YAML or JSON spec |
-| `outputDir` | yes | — | Output directory relative to workspace root |
-| `baseUrlToken` | no | `API_BASE_URL` | Name of the base-URL injection token |
-| `tagFilter` | no | all tags | Comma-separated list of tags to include |
-| `namingConvention` | no | `kebab` | `kebab` or `camel` — controls file names |
-| `providedIn` | no | `none` | `none` (use `provideX()` helpers) or `root` (self-registering) |
-| `includeMocks` | no | `false` | Co-generate `.mock.ts` providers, `index.mock.ts` barrels, and `mocks.manifest.json` — requires `@constantant/openapi-resource-mocks` |
-| `includeMswHandlers` | no | `false` | Co-generate `.msw.ts` MSW 2.x handler files and `index.msw.ts` barrels — requires [`msw`](https://mswjs.io) >= 2.0.0 |
-| `specId` | no | derived | Identifier embedded in `MockResourceMeta` and `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match when importing into the DevTools panel. |
-| `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
+| `specPath` | yes | — | Path or https:// URL to the OpenAPI 3.x YAML or JSON spec file |
+| `outputDir` | yes | — | Output directory for generated files (relative to workspace root) |
+| `baseUrlToken` | no | `API_BASE_URL` | Name of the InjectionToken holding the API base URL |
+| `tagFilter` | no | — | Comma-separated list of OpenAPI tags to include (empty = all tags) |
+| `namingConvention` | no | `kebab` | File naming convention: kebab-case filenames with SCREAMING_SNAKE token names |
+| `providedIn` | no | `none` | none: token has no factory; a provide{Name}() helper is exported for explicit scoped provision. root: token self-registers at root (tree-shakeable singleton, no multi-context support) |
+| `includeMocks` | no | `false` | Generate a .mock.ts file per endpoint (and index.mock.ts barrels) using @constantant/openapi-resource-mocks. Requires the package to be installed. |
+| `specId` | no | — | Identifier for this API spec, embedded in MockResourceMeta and mocks.manifest.json. Defaults to baseUrlToken lowercased with _BASE_URL stripped (e.g. PETSTORE_BASE_URL → petstore). |
+| `verbose` | no | `false` | Print a summary of created, updated, and deleted files after generation. |
+| `dateType` | no | `string` | Convert format:date-time / format:date response fields to Date or Temporal objects. Emits a typed XxxRevived alias and reviveXxxDates() helper per affected endpoint. |
+| `readWriteMarkers` | no | `false` | Honor readOnly / writeOnly in the spec: request body types (XxxBody) drop readOnly properties such as server-generated ids, and response types (XxxResponse, XxxError) drop writeOnly ones such as passwords. Uses openapi-typescript's readWriteMarkers, which adds the Readable<T> / Writable<T> helpers to schema.d.ts. |
+| `readonlyResponses` | no | `false` | Wrap all XxxResponse and XxxError type aliases in Readonly<> to prevent accidental mutation of response data. |
+| `includeMswHandlers` | no | `false` | Generate a .msw.ts file per endpoint (and index.msw.ts barrels) with MSW 2.x http.* handlers. Requires msw to be installed. |
+| `clientType` | no | `httpResource` | HTTP primitive wrapped by generated tokens. httpClient: the token yields a function returning a cold Observable<T> via HttpClient (params/body are plain values, no thunks or signals). |
+| `reportProgress` | no | `false` | Emit reportProgress: true on httpResource tokens that upload a binary/multipart body or download a blob, so httpResource().progress() reports transfer progress. Has no effect on httpClient endpoints. |
+| `callOptions` | no | `false` | Accept a trailing per-call options argument on every token function: HttpContext, headers, withCredentials and the other request fields Angular supports, plus (for httpResource tokens) defaultValue, equal, injector and debugName. A defaultValue narrows the returned resource's value to non-undefined. Emits a shared request-options.ts. |
+| `convertSwagger2` | no | `true` | Convert Swagger 2.0 specs to OpenAPI 3.0 in memory (using @scalar/openapi-upgrader) before generating. Set to false to reject Swagger 2.0 specs instead. |
+| `httpClientTags` | no | — | Comma-separated OpenAPI tags whose endpoints use HttpClient, overriding clientType. Errors if a tag matches no endpoint. |
+| `httpClientOperations` | no | — | Comma-separated operationIds that use HttpClient, overriding clientType. Errors if an operationId matches no endpoint. |
+| `validateResponses` | no | `false` | Validate JSON responses at runtime against the spec's response schema via httpResource's parse hook, throwing on mismatch. Requires @cfworker/json-schema to be installed. Endpoints whose response schema has a circular $ref are skipped. |
 
 See [`tools/openapi-resource-gen/README.md`](tools/openapi-resource-gen/README.md) for full documentation, or the [step-by-step tutorials](docs/README.md).
 
