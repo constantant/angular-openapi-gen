@@ -41,4 +41,40 @@ describe('generator end to end (real petstore spec)', () => {
     expect(out('store/get-inventory.token.ts')).toContain('HttpClient');
     expect(out('index.ts')).toContain("export * from './pet'");
   });
+
+  it('converts a Swagger 2.0 spec (loads the ESM-only upgrader from the CommonJS generator)', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'nxcompat-sw2-'));
+    fs.writeFileSync(
+      path.join(root, 'swagger2.json'),
+      JSON.stringify({
+        swagger: '2.0',
+        info: { title: 'Gadgets', version: '1' },
+        produces: ['application/json'],
+        paths: {
+          '/gadgets/{id}/photo': {
+            get: {
+              operationId: 'downloadPhoto',
+              tags: ['gadgets'],
+              produces: ['image/png'],
+              parameters: [{ name: 'id', in: 'path', required: true, type: 'integer' }],
+              responses: { '200': { description: 'png', schema: { type: 'file' } } },
+            },
+          },
+        },
+      }),
+    );
+    fs.writeFileSync(path.join(root, 'tsconfig.base.json'), JSON.stringify({ compilerOptions: { paths: {} } }));
+    fs.writeFileSync(path.join(root, 'package.json'), '{"name":"ws"}');
+    const previous = process.cwd();
+    process.chdir(root);
+    try {
+      const tree = new FsTree(root, false);
+      await apiResourceGenerator(tree, { specPath: 'swagger2.json', outputDir: 'libs/g/src', baseUrlToken: 'G_BASE_URL' } as never);
+      flushChanges(root, tree.listChanges());
+    } finally {
+      process.chdir(previous);
+    }
+    // the operation's own `produces: image/png` must win over the global one: a blob download
+    expect(fs.readFileSync(path.join(root, 'libs/g/src/gadgets/download-photo.token.ts'), 'utf8')).toContain('httpResource.blob');
+  });
 });

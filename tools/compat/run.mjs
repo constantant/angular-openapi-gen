@@ -114,7 +114,7 @@ async function nx() {
   write(join(dir, 'package.json'), JSON.stringify({ name: `compat-nx-${key}`, private: true }));
   run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error',
     `nx@${entry.nx}`, `@nx/devkit@${entry.nx}`, 'vitest@^4.1.10', 'prettier@^3', 'tslib', 'js-yaml@^5.4.2',
-    '@apidevtools/swagger-parser@^13.1.0', 'openapi-typescript@^7.13.0', 'openapi-types@^12.1.3', '@cfworker/json-schema@^4.1.1'], dir);
+    '@apidevtools/swagger-parser@^13.1.0', 'openapi-typescript@^7.13.0', 'openapi-types@^12.1.3', '@cfworker/json-schema@^4.1.1', '@scalar/openapi-upgrader@^0.4.1'], dir);
   const nxVersion = JSON.parse(readFileSync(join(dir, 'node_modules', 'nx', 'package.json'), 'utf8')).version;
   console.log(`\nNx ${nxVersion}`);
 

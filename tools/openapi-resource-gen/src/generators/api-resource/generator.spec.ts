@@ -1,6 +1,6 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { Tree } from '@nx/devkit';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 vi.mock('@apidevtools/swagger-parser', () => ({
   default: { dereference: vi.fn() },
@@ -28,6 +28,10 @@ import SwaggerParser from '@apidevtools/swagger-parser';
 import * as https from 'https';
 import { apiResourceGenerator } from './generator';
 import { renderMockFile } from './render-mock-file';
+import * as fsNode from 'fs';
+import * as osNode from 'os';
+import * as pathNode from 'path';
+import { logger } from '@nx/devkit';
 import { ensurePackageInstalled } from './ensure-package';
 
 const MOCK_SPEC = {
@@ -1809,17 +1813,6 @@ describe('api-resource generator', () => {
   });
 
   describe('descriptive errors', () => {
-    it('error message for missing openapi field includes version guidance', () => {
-      // Verify the error text is descriptive before we even hit SwaggerParser.
-      // The full code path requires mocking fs — test the message shape directly.
-      const err = new Error(
-        'Only OpenAPI 3.x specs are supported. Found: "(no openapi field)". ' +
-        'For Swagger 2.x specs, convert first with swagger2openapi.'
-      );
-      expect(err.message).toContain('Only OpenAPI 3.x specs are supported');
-      expect(err.message).toContain('swagger2openapi');
-    });
-
     it('error message for TypeScript generation failures includes context', () => {
       const inner = new Error('Unsupported feature');
       const wrapped = new Error(
@@ -2738,6 +2731,72 @@ describe('api-resource generator', () => {
       expect(c).toContain("Readable<components['schemas']['Cat']>&{kind:'cat'");
       expect(c).toContain("Readable<components['schemas']['Dog']>&{kind:'dog'");
       expect(read('list-animals')).toMatch(/import type \{ paths, components, Readable \} from '\.\.\/schema\.d'/);
+    });
+  });
+  describe('spec versions (Swagger 2.0 input)', () => {
+    let dir: string;
+    beforeEach(() => {
+      dir = fsNode.mkdtempSync(pathNode.join(osNode.tmpdir(), 'oarg-versions-'));
+    });
+    afterEach(() => {
+      vi.restoreAllMocks();
+      fsNode.rmSync(dir, { recursive: true, force: true });
+    });
+
+    const SWAGGER2 = {
+      swagger: '2.0',
+      info: { title: 'Gadgets', version: '1' },
+      host: 'api.test',
+      basePath: '/v1',
+      schemes: ['https'],
+      paths: {
+        '/gadgets': {
+          get: {
+            operationId: 'listGadgets',
+            tags: ['gadgets'],
+            responses: { '200': { description: 'ok', schema: { type: 'array', items: { type: 'string' } } } },
+          },
+        },
+      },
+    };
+    const write = (doc: unknown): string => {
+      const file = pathNode.join(dir, 'spec.json');
+      fsNode.writeFileSync(file, JSON.stringify(doc));
+      return file;
+    };
+    const gen = (doc: unknown, extra: Record<string, unknown> = {}) =>
+      apiResourceGenerator(tree, { specPath: write(doc), outputDir: 'libs/sw/src', ...extra });
+
+    it('converts a Swagger 2.0 spec instead of rejecting it (openapi-typescript sees the converted paths)', async () => {
+      await gen(SWAGGER2);
+      expect(tree.read('libs/sw/src/schema.d.ts', 'utf-8')).toMatch(/['"]\/gadgets['"]/);
+      expect(tree.exists('libs/sw/src/index.ts')).toBe(true);
+    });
+
+    it('tells the user it converted the spec', async () => {
+      const info = vi.spyOn(logger, 'info').mockImplementation(() => undefined);
+      await gen(SWAGGER2);
+      expect(info).toHaveBeenCalledWith(expect.stringMatching(/Swagger 2\.0 spec detected.*OpenAPI 3\.0/));
+    });
+
+    it('does not announce anything for an OpenAPI 3 spec', async () => {
+      const info = vi.spyOn(logger, 'info').mockImplementation(() => undefined);
+      await gen({ openapi: '3.0.3', info: { title: 't', version: '1' }, paths: { '/a': {} } });
+      expect(info).not.toHaveBeenCalledWith(expect.stringMatching(/Swagger/));
+    });
+
+    it('rejects a Swagger 2.0 spec when convertSwagger2 is false', async () => {
+      await expect(gen(SWAGGER2, { convertSwagger2: false })).rejects.toThrow(/Swagger 2\.0 spec and convertSwagger2 is false/);
+    });
+
+    it('rejects Swagger 1.x, naming what it found and what is supported', async () => {
+      await expect(gen({ swagger: '1.2', apis: [] })).rejects.toThrow(
+        'Only OpenAPI 3.x and Swagger 2.0 specs are supported. Found: "1.2".',
+      );
+    });
+
+    it('rejects a document with neither version field', async () => {
+      await expect(gen({ info: { title: 't' }, paths: {} })).rejects.toThrow(/\(no openapi or swagger field\)/);
     });
   });
 });
