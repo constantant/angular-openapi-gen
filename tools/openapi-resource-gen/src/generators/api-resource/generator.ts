@@ -3,6 +3,7 @@ import {
   formatFiles,
   generateFiles,
   joinPathFragments,
+  logger,
   updateJson,
 } from '@nx/devkit';
 import * as fs from 'fs';
@@ -27,6 +28,7 @@ import { renderTokenFile, renderSecurityTokenFile, renderWebhookTokenFile } from
 import { renderMockFile } from './render-mock-file';
 import { renderMswFile } from './render-msw-file';
 import { ensurePackageInstalled } from './ensure-package';
+import { isSwagger2, upgradeSwagger2 } from './swagger2';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
@@ -58,6 +60,11 @@ export interface ApiResourceGeneratorSchema {
   clientType?: 'httpResource' | 'httpClient';
   /** Report transfer progress: httpClient binary/multipart uploads and blob downloads yield Observable<HttpEvent<T>>; httpResource blob downloads get `reportProgress: true` (its `.progress()` ignores uploads). */
   reportProgress?: boolean;
+  /**
+   * Convert Swagger 2.0 specs to OpenAPI 3.0 in memory before generating. Default: true. Set to false
+   * to reject Swagger 2.0 specs instead.
+   */
+  convertSwagger2?: boolean;
   /** Comma-separated tags whose endpoints use HttpClient regardless of `clientType`. */
   httpClientTags?: string;
   /** Comma-separated operationIds that use HttpClient regardless of `clientType`. */
@@ -275,16 +282,31 @@ export async function apiResourceGenerator(
     throw new Error(`Failed to parse spec as YAML/JSON: ${(e as Error).message}`, { cause: e });
   }
 
-  // Validate it looks like an OpenAPI 3.x document before doing any work.
-  const specObj = rawParsed as Record<string, unknown> | null;
+  // Validate it looks like an OpenAPI 3.x (or convertible Swagger 2.0) document before doing any work.
+  let specObj = rawParsed as Record<string, unknown> | null;
   if (!specObj || typeof specObj !== 'object') {
     throw new Error(`Spec does not appear to be a valid YAML/JSON document: ${specPath}`);
+  }
+  if (isSwagger2(specObj)) {
+    if (options.convertSwagger2 === false) {
+      throw new Error(
+        `"${specPath}" is a Swagger 2.0 spec and convertSwagger2 is false. ` +
+        `Remove that option to convert it to OpenAPI 3.0 automatically, or convert it yourself first.`
+      );
+    }
+    logger.info(`Swagger ${String(specObj['swagger'])} spec detected — converting to OpenAPI 3.0 in memory.`);
+    try {
+      specObj = await upgradeSwagger2(specObj);
+    } catch (e) {
+      throw new Error(`Failed to convert the Swagger 2.0 spec to OpenAPI 3.0: ${(e as Error).message}`, { cause: e });
+    }
+    rawParsed = specObj;
   }
   const openapiVersion = String(specObj['openapi'] ?? '');
   if (!openapiVersion.startsWith('3')) {
     throw new Error(
-      `Only OpenAPI 3.x specs are supported. Found: "${openapiVersion || '(no openapi field)'}". ` +
-      `For Swagger 2.x specs, convert first with swagger2openapi.`
+      `Only OpenAPI 3.x and Swagger 2.0 specs are supported. ` +
+      `Found: "${openapiVersion || String(specObj['swagger'] ?? '') || '(no openapi or swagger field)'}".`
     );
   }
   const hasPaths = specObj['paths'] && typeof specObj['paths'] === 'object';

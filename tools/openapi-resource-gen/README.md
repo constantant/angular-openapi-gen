@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/@constantant/openapi-resource-gen)](https://www.npmjs.com/package/@constantant/openapi-resource-gen)
 
-Nx generator that reads an OpenAPI 3.x spec and emits one `InjectionToken` per
+Nx generator that reads an OpenAPI 3.x (or Swagger 2.0) spec and emits one `InjectionToken` per
 endpoint, each in its own `.ts` file. The result is a tree-shakeable Angular
 data-access library: only tokens that are actually injected end up in the bundle.
 
@@ -80,7 +80,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
-| `specPath` | yes | — | Local path **or** `https://` URL to the OpenAPI 3.x YAML or JSON spec |
+| `specPath` | yes | — | Local path **or** `https://` URL to the OpenAPI 3.x or Swagger 2.0 YAML or JSON spec |
 | `outputDir` | yes | — | Output directory relative to the workspace root |
 | `baseUrlToken` | no | `API_BASE_URL` | Name of the base-URL `InjectionToken` emitted alongside the endpoint tokens |
 | `tagFilter` | no | all tags | Comma-separated list of OpenAPI tags to include |
@@ -91,6 +91,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
 | `dateType` | no | `string` | `string` (default — no change), `Date`, or `Temporal`. When set to `Date` or `Temporal`, emits a typed `XxxRevived` alias and a `reviveXxxDates()` helper per endpoint whose response contains `format: date-time` or `format: date` fields. |
 | `readonlyResponses` | no | `false` | Wrap all `XxxResponse` and `XxxError` type aliases in `Readonly<>` to prevent accidental mutation of response data. |
+| `convertSwagger2` | no | `true` | Convert Swagger 2.0 specs to OpenAPI 3.0 in memory before generating. Set to `false` to reject them instead. See [Swagger 2.0 input](#swagger-20-input) |
 | `readWriteMarkers` | no | `false` | Honor `readOnly` / `writeOnly` in the spec: request bodies drop server-generated properties (`id`, timestamps) and responses drop write-only ones (`password`). See [Read-only and write-only properties](#read-only-and-write-only-properties---readwritemarkers) |
 | `validateResponses` | no | `false` | Validate JSON responses at runtime against the spec's response schema via `httpResource`'s `parse` hook — requires [`@cfworker/json-schema`](https://www.npmjs.com/package/@cfworker/json-schema) |
 | `clientType` | no | `httpResource` | `httpResource` or `httpClient`. With `httpClient` each token yields a function returning a cold `Observable<T>` via `HttpClient.request()` — `params` / `body` are plain values (no thunks or `Signal`s), auth signals are read per call, and `validateResponses` runs in a `map()`. |
@@ -1179,6 +1180,47 @@ navigation in and destroyed on navigation out, with no cross-route state leakage
 3. Add base URL provider and token providers to `app.config.ts`.
 
 4. Optionally, add a `generate` target to your lib's `project.json` (see the executor section above) so future regeneration is just `nx run myapi-data-access:generate`.
+
+---
+
+## Swagger 2.0 input
+
+Point `specPath` at a Swagger 2.0 spec and the generator converts it to OpenAPI 3.0 in memory
+(with [`@scalar/openapi-upgrader`](https://www.npmjs.com/package/@scalar/openapi-upgrader)), prints a
+one-line notice, and then generates as usual. Nothing is written back to your spec.
+
+```bash
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=https://petstore.swagger.io/v2/swagger.json \
+  --outputDir=libs/petstore-data-access/src --baseUrlToken=PETSTORE_BASE_URL
+# Swagger 2.0 spec detected — converting to OpenAPI 3.0 in memory.
+```
+
+What the conversion maps, and what the generator then does with it:
+
+| Swagger 2.0 | Becomes |
+|-------------|---------|
+| `definitions`, `parameters`, `responses` | `components.schemas` / `parameters` / `responses` (`$ref`s are rewritten) |
+| `host` + `basePath` + `schemes` | `servers` |
+| `in: body` parameter | a `requestBody` |
+| `in: formData` (including `type: file`) | a `multipart/form-data` or `application/x-www-form-urlencoded` body; a file is `format: binary` |
+| `collectionFormat: pipes / ssv / multi / csv` | `style` / `explode`, which the generator already serializes (see [Non-default query param serialization](#non-default-query-param-serialization)) |
+| `consumes` / `produces` | request / response content types, so a `image/*` download is a `Blob` and `text/plain` is text |
+| `securityDefinitions` | `components.securitySchemes` (one security token per scheme) |
+
+Notes:
+
+- **`produces` / `consumes` overrides.** The upgrader applies a *global* `produces` even to operations
+  that override it, which would turn a file download into JSON. The generator therefore pushes the
+  global lists down into the operations that lack their own before converting, so each operation's
+  declared types win.
+- It needs Node 20.19+ / 22.12+ for a direct `require()`; on older Node the generator falls back to a
+  dynamic `import()`, so it works there too.
+- Swagger 2.0 is an older, looser format. Skim the generated tokens the first time: constructs a
+  converter can only guess at (for example a response with no `produces` anywhere defaults to JSON)
+  are worth a glance. If you would rather convert once and keep the result, convert the spec yourself
+  and pass `--convertSwagger2=false`, which rejects Swagger 2.0 input instead.
+- Swagger 1.x is not supported.
 
 ---
 

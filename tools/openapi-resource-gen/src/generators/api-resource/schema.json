@@ -81,6 +81,11 @@
       "default": false,
       "description": "Emit reportProgress: true on httpResource tokens that upload a binary/multipart body or download a blob, so httpResource().progress() reports transfer progress. Has no effect on httpClient endpoints."
     },
+    "convertSwagger2": {
+      "type": "boolean",
+      "default": true,
+      "description": "Convert Swagger 2.0 specs to OpenAPI 3.0 in memory (using @scalar/openapi-upgrader) before generating. Set to false to reject Swagger 2.0 specs instead."
+    },
     "httpClientTags": {
       "type": "string",
       "description": "Comma-separated OpenAPI tags whose endpoints use HttpClient, overriding clientType. Errors if a tag matches no endpoint."

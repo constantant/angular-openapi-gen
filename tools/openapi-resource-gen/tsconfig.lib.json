@@ -4,7 +4,8 @@
     "outDir": "../../dist/tools/openapi-resource-gen"
   },
   "exclude": [
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "**/integration-helpers.ts"
   ],
   "angularCompilerOptions": {
     "extendedDiagnostics": {
