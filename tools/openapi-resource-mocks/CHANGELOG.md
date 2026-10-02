@@ -1,3 +1,17 @@
+## 1.12.0 (2026-10-02)
+
+### 🚀 Features
+
+- **openapi-resource-mocks:** add mockHttpEvents to /testing for component-testing upload and download progress ([#78](https://github.com/constantant/angular-openapi-gen/pull/78))
+
+### 📖 Documentation
+
+- rewrite the changelog entries for gen 1.12.0 and mocks 1.11.0 ([#74](https://github.com/constantant/angular-openapi-gen/pull/74))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.11.0 (2026-10-01)
 
 ### 🚀 Features
