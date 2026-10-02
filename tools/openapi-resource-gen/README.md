@@ -91,6 +91,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
 | `dateType` | no | `string` | `string` (default — no change), `Date`, or `Temporal`. When set to `Date` or `Temporal`, emits a typed `XxxRevived` alias and a `reviveXxxDates()` helper per endpoint whose response contains `format: date-time` or `format: date` fields. |
 | `readonlyResponses` | no | `false` | Wrap all `XxxResponse` and `XxxError` type aliases in `Readonly<>` to prevent accidental mutation of response data. |
+| `callOptions` | no | `false` | Accept a trailing per-call `options` argument on every token function: `HttpContext`, headers, `withCredentials` and the other request fields Angular supports, plus (for `httpResource` tokens) `defaultValue`, `equal`, `injector` and `debugName`. See [Per-call request options](#per-call-request-options---calloptions) |
 | `convertSwagger2` | no | `true` | Convert Swagger 2.0 specs to OpenAPI 3.0 in memory before generating. Set to `false` to reject them instead. See [Swagger 2.0 input](#swagger-20-input) |
 | `readWriteMarkers` | no | `false` | Honor `readOnly` / `writeOnly` in the spec: request bodies drop server-generated properties (`id`, timestamps) and responses drop write-only ones (`password`). See [Read-only and write-only properties](#read-only-and-write-only-properties---readwritemarkers) |
 | `validateResponses` | no | `false` | Validate JSON responses at runtime against the spec's response schema via `httpResource`'s `parse` hook — requires [`@cfworker/json-schema`](https://www.npmjs.com/package/@cfworker/json-schema) |
@@ -438,6 +439,53 @@ const user: CreateUserResponse = { id: 1, name: 'Ada' };                // no pa
   the call sites the compiler now flags (typically a request body that was sending an `id`).
 - Query, path and header parameters are not affected.
 - **Cost:** none measurable. On the GitHub spec (a 5 MB `schema.d.ts`, where 233 of 250 token files use `Readable<>`) strict `tsc` takes about the same time and memory with and without it (run-to-run noise was larger than any difference), and the output compiles with no errors.
+
+---
+
+## Per-call request options (`--callOptions`)
+
+A generated token function builds its request from the spec. Pass `--callOptions` and every token
+function also takes an optional **last argument** for the things the spec can't know: an `HttpContext`
+for your interceptors, extra headers, `withCredentials`, and — for `httpResource` tokens — the
+resource options.
+
+```typescript
+const pets = this.findPetsByStatus(() => ({ status: this.status() }), {
+  defaultValue: [],                                  // value() is never undefined
+  context: new HttpContext().set(SKIP_AUTH, true),   // read by your interceptors
+  headers: { 'X-Trace': traceId },
+  withCredentials: true,
+});
+pets.value();   // typed Pet[] (not Pet[] | undefined) because a defaultValue was passed
+```
+
+| Option | `httpResource` token | `httpClient` token |
+|--------|:---:|:---:|
+| `context`, `withCredentials`, `keepalive`, `cache`, `credentials`, `priority`, `mode`, `redirect`, … | ✓ | ✓ |
+| `headers` | ✓ | ✓ |
+| `defaultValue`, `equal`, `injector`, `debugName` | ✓ | — |
+
+- **Types follow your Angular version.** They are derived from Angular's own `HttpResourceRequest` and
+  `HttpResourceOptions`, so you get exactly the fields your Angular has (`debugName`, for example,
+  exists only from Angular 22), and the generated code compiles on every supported version.
+- **A `defaultValue` narrows the result.** Without one, `value()` is `T | undefined`; with one it is `T`.
+- **Headers.** They are merged over the generated ones (spec header params, cookies, auth), so a header
+  you pass wins on a clash.
+- **What you cannot override.** The URL, method, body, query params and `reportProgress` come from the
+  spec. The types refuse them, and the runtime drops them too, so a cast cannot turn a GET into a DELETE.
+  `parse` is also refused: it is how `--validateResponses` is wired.
+- **No change without the flag.** The argument is last and optional, and the option is off by default,
+  so existing output is byte-identical.
+
+Files and types it adds:
+
+- `request-options.ts` at the lib root (exported from the barrel): `CallOptions`,
+  `ResourceCallOptions<T>`, `ResourceRefFor<T, O>` and the small `splitCallOptions` helper.
+- Per token: `XxxOptions` and `XxxFn` (the function type), exported from the token file.
+
+With `--includeMocks`, the generated mock's `_meta` records the argument names (`args`), so the mock
+honours `defaultValue` like the real resource, and DevTools labels each argument of a recorded request
+(`Body`, `Query`, `Options`) — see the [mocks README](../openapi-resource-mocks/README.md#mockresourcemeta).
 
 ---
 

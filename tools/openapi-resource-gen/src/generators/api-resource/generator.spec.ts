@@ -2799,4 +2799,159 @@ describe('api-resource generator', () => {
       await expect(gen({ info: { title: 't' }, paths: {} })).rejects.toThrow(/\(no openapi or swagger field\)/);
     });
   });
+  describe('callOptions (per-call request options)', () => {
+    const gen = (extra: Record<string, unknown> = {}) =>
+      apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/petstore/src',
+        baseUrlToken: 'PETSTORE_BASE_URL',
+        ...extra,
+      });
+    const read = (f: string) => tree.read(`libs/petstore/src/pets/${f}.token.ts`, 'utf-8')!;
+    // Prettier wraps long lines and adds trailing commas; compare modulo both.
+    const flat = (c: string) => c.replace(/\s+/g, '').replace(/,([)>}\]])/g, '$1');
+    const exists = (f: string) => tree.exists(`libs/petstore/src/${f}`);
+
+    describe('off by default', () => {
+      it('writes no request-options.ts, no options argument and no _meta.args', async () => {
+        vi.mocked(ensurePackageInstalled).mockClear();
+        await gen({ includeMocks: true });
+        expect(exists('request-options.ts')).toBe(false);
+        expect(tree.read('libs/petstore/src/index.ts', 'utf-8')).not.toContain('request-options');
+        expect(read('list-pets')).not.toMatch(/splitCallOptions|CallOptions|ListPetsFn/);
+        expect(tree.read('libs/petstore/src/pets/list-pets.mock.ts', 'utf-8')).not.toContain('args:');
+      });
+    });
+
+    describe('shared request-options.ts', () => {
+      it('is written, exported from the root barrel, and has the helpers the tokens import', async () => {
+        await gen({ callOptions: true });
+        expect(exists('request-options.ts')).toBe(true);
+        expect(tree.read('libs/petstore/src/index.ts', 'utf-8')).toContain("export * from './request-options';");
+        const c = tree.read('libs/petstore/src/request-options.ts', 'utf-8')!;
+        for (const name of ['CallOptions', 'ResourceCallOptions', 'ResourceRefFor', 'RequestExtras', 'splitCallOptions']) {
+          expect(c).toContain(name);
+        }
+      });
+
+      it('derives its types from Angular rather than listing fields, and never names debugName in code', async () => {
+        await gen({ callOptions: true });
+        const c = tree.read('libs/petstore/src/request-options.ts', 'utf-8')!;
+        expect(c).toContain('HttpResourceRequest');
+        expect(c).toContain('HttpResourceOptions');
+        // `debugName` doesn't exist before Angular 22: it may only appear as a string in the key list.
+        const code = c.replace(/\/\*[\s\S]*?\*\//g, '');
+        expect(code.match(/\bdebugName\b/g)?.length).toBe(1);
+        expect(flat(code)).toContain("['defaultValue','equal','injector','debugName']");
+        // ...and the fields the spec controls are dropped at runtime, not only refused by the types
+        expect(flat(code)).toContain("['url','method','body','params','reportProgress']");
+      });
+
+      it('is removed again when the option is turned off (stale-file cleanup)', async () => {
+        await gen({ callOptions: true });
+        expect(exists('request-options.ts')).toBe(true);
+        await gen();
+        expect(exists('request-options.ts')).toBe(false);
+        expect(tree.read('libs/petstore/src/index.ts', 'utf-8')).not.toContain('request-options');
+      });
+    });
+
+    describe('httpResource tokens', () => {
+      it('get an options alias, a generic Fn type and a trailing options argument', async () => {
+        await gen({ callOptions: true });
+        const c = flat(read('list-pets'));
+        expect(c).toContain('exporttypeListPetsOptions=ResourceCallOptions<ListPetsResponse>;');
+        expect(c).toContain('exporttypeListPetsFn=<OextendsListPetsOptions=ListPetsOptions>(');
+        expect(c).toContain('options?:O)=>ResourceRefFor<ListPetsResponse,O>;');
+        expect(c).toContain("exportconstLIST_PETS=newInjectionToken<ListPetsFn>('LIST_PETS')");
+        expect(c).toContain("import{splitCallOptions,typeResourceCallOptions,typeResourceRefFor}from'../request-options'");
+      });
+
+      it('split the options per call and merge them into the request, spec fields winning', async () => {
+        await gen({ callOptions: true });
+        const c = flat(read('list-pets'));
+        expect(c).toContain('const_opts=splitCallOptions<ListPetsResponse>(options);');
+        // spread first, so the spec-controlled fields set after it win
+        expect(c.indexOf('..._opts.request,')).toBeGreaterThan(-1);
+        expect(c.indexOf('..._opts.request,')).toBeLessThan(c.indexOf('url:`${base}/pets`'));
+        // the caller's headers are merged last
+        expect(c).toContain('headers:{..._opts.headers}');
+        expect(c).toContain(',_opts.resource)');
+      });
+
+      it('keep the validate hook out of the caller\'s reach', async () => {
+        await gen({ callOptions: true, validateResponses: true });
+        expect(flat(read('list-pets'))).toContain('{..._opts.resource,parse:_validateResponse}');
+      });
+
+      it('put the options argument last on a mutation, after the body and params', async () => {
+        await gen({ callOptions: true });
+        const c = flat(read('create-pet'));
+        expect(c).toContain('<OextendsCreatePetOptions=CreatePetOptions>(body:CreatePetBody|Signal<CreatePetBody>,options?:O)');
+        expect(c).toContain('const_body=typeofbody===');
+        expect(c).toContain("method:'POST'");
+      });
+
+      it('work with providedIn: root', async () => {
+        await gen({ callOptions: true, providedIn: 'root' });
+        const c = flat(read('list-pets'));
+        expect(c).toContain("exportconstLIST_PETS=newInjectionToken<ListPetsFn>('LIST_PETS',{providedIn:'root'");
+        expect(c).toContain('})asListPetsFn;');
+      });
+
+      it('type text and blob responses with their value type', async () => {
+        vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+          paths: {
+            '/note': { get: { operationId: 'getNote', tags: ['pets'], responses: { '200': { content: { 'text/plain': { schema: { type: 'string' } } } } } } },
+            '/pic': { get: { operationId: 'getPic', tags: ['pets'], responses: { '200': { content: { 'image/png': { schema: { type: 'string', format: 'binary' } } } } } } },
+          },
+        } as never);
+        await gen({ callOptions: true });
+        expect(flat(read('get-note'))).toContain('ResourceCallOptions<string>');
+        expect(flat(read('get-note'))).toContain(',_opts.resourceasnever)');
+        expect(flat(read('get-pic'))).toContain('ResourceCallOptions<Blob>');
+        expect(flat(read('get-pic'))).toContain('httpResource.blob');
+      });
+    });
+
+    describe('httpClient tokens', () => {
+      it('get a plain Fn type with CallOptions and spread the options first', async () => {
+        await gen({ callOptions: true, clientType: 'httpClient' });
+        const c = flat(read('list-pets'));
+        expect(c).toContain('exporttypeListPetsFn=(params?:ListPetsParams,options?:CallOptions)=>Observable<ListPetsResponse>;');
+        expect(c).toContain("import{splitCallOptions,typeCallOptions}from'../request-options'");
+        expect(c).toContain('const_opts=splitCallOptions(options);');
+        expect(c.indexOf('..._opts.request,')).toBeLessThan(c.indexOf("headers:{"));
+        expect(c).toContain('..._opts.headers');
+      });
+
+      it('keep observe and reportProgress after the spread for event-yielding tokens', async () => {
+        vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+          paths: { '/file': { put: { operationId: 'putFile', tags: ['pets'], requestBody: { content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } } }, responses: { '200': { content: { 'application/json': { schema: {} } } } } } } },
+        } as never);
+        await gen({ callOptions: true, clientType: 'httpClient', reportProgress: true });
+        const c = flat(read('put-file'));
+        expect(c).toContain('Observable<HttpEvent<PutFileResponse>>');
+        expect(c.indexOf('..._opts.request,')).toBeLessThan(c.indexOf("observe:'events'"));
+        expect(c).toContain('reportProgress:true');
+      });
+
+      it('apply per endpoint in a mixed lib', async () => {
+        await gen({ callOptions: true, httpClientOperations: 'listPets' });
+        expect(read('list-pets')).toContain('CallOptions');
+        expect(read('list-pets')).not.toContain('ResourceRefFor');
+        expect(read('create-pet')).toContain('ResourceRefFor');
+      });
+    });
+
+    describe('mock files', () => {
+      it('record the argument names in _meta.args, in the generated order', async () => {
+        await gen({ callOptions: true, includeMocks: true });
+        const mock = (f: string) => flat(tree.read(`libs/petstore/src/pets/${f}.mock.ts`, 'utf-8')!);
+        expect(mock('list-pets')).toContain("args:['params','options']");
+        expect(mock('create-pet')).toContain("args:['body','options']");
+        expect(mock('get-pet-by-id')).toContain("args:['id','options']");
+      });
+    });
+  });
 });

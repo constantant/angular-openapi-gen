@@ -1,11 +1,12 @@
 import type { EndpointModel } from './endpoint-model';
-import { toPascalCase, yieldsHttpEvents, type ClientType } from './render-token';
+import { fnArgNames, toPascalCase, yieldsHttpEvents, type ClientType } from './render-token';
 
 export function renderMockFile(
   ep: EndpointModel,
   specId: string,
   client: ClientType = 'httpResource',
   reportProgress = false,
+  callOptions = false,
 ): string {
   // Tokens that yield Observable<HttpEvent<T>> need a mock that emits events, not bare values.
   const provideFn = yieldsHttpEvents(ep, client, reportProgress)
@@ -22,6 +23,11 @@ export function renderMockFile(
     ? `ProviderInitialBehavior<${responseType}>`
     : `ProviderInitialBehavior<unknown>`;
   const tagLine = ep.tag !== 'default' ? `\n  tag: '${ep.tag}',` : '';
+  // With call options the token takes a trailing `options` argument, which DevTools can't tell apart
+  // from a body or query argument without the names.
+  const argsLine = callOptions
+    ? `\n  args: [${fnArgNames(ep, client, callOptions).map((n) => `'${n}'`).join(', ')}],`
+    : '';
 
   return `import { FactoryProvider } from '@angular/core';
 import { ${provideFn} } from '@constantant/openapi-resource-mocks';
@@ -32,7 +38,7 @@ const _meta: MockResourceMeta = {
   specId: '${specId}',
   operationId: '${ep.operationId}',
   path: '${ep.apiPath}',
-  method: '${ep.method}',${tagLine}
+  method: '${ep.method}',${tagLine}${argsLine}
 };
 
 export function provide${pascal}Mock(

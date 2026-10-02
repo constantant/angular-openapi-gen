@@ -29,6 +29,7 @@ import { renderMockFile } from './render-mock-file';
 import { renderMswFile } from './render-msw-file';
 import { ensurePackageInstalled } from './ensure-package';
 import { isSwagger2, upgradeSwagger2 } from './swagger2';
+import { renderRequestOptionsFile } from './render-request-options';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
@@ -60,6 +61,12 @@ export interface ApiResourceGeneratorSchema {
   clientType?: 'httpResource' | 'httpClient';
   /** Report transfer progress: httpClient binary/multipart uploads and blob downloads yield Observable<HttpEvent<T>>; httpResource blob downloads get `reportProgress: true` (its `.progress()` ignores uploads). */
   reportProgress?: boolean;
+  /**
+   * Accept a trailing per-call `options` argument on every token function: `HttpContext`, headers,
+   * `withCredentials` and the other request fields Angular supports, plus (for httpResource)
+   * `defaultValue`, `equal`, `injector` and `debugName`. Emits a shared `request-options.ts`.
+   */
+  callOptions?: boolean;
   /**
    * Convert Swagger 2.0 specs to OpenAPI 3.0 in memory before generating. Default: true. Set to false
    * to reject Swagger 2.0 specs instead.
@@ -242,6 +249,7 @@ export async function apiResourceGenerator(
         f.endsWith('.token.ts') ||
         f.endsWith('.security-token.ts') ||
         f.endsWith('.webhook.ts') ||
+        f.endsWith('/request-options.ts') ||
         f.endsWith('.mock.ts') ||
         f.endsWith('.msw.ts') ||
         f.endsWith('mocks.manifest.json') ||
@@ -420,12 +428,13 @@ export async function apiResourceGenerator(
           validateResponses,
           client,
           reportProgress: options.reportProgress ?? false,
+          callOptions: options.callOptions ?? false,
         }));
         writtenFiles.add(filePath);
 
         if (includeMocks) {
           const mockPath = joinPathFragments(tagDir, `${ep.fileName}.mock.ts`);
-          tree.write(mockPath, renderMockFile(ep, specId, clientFor(ep), options.reportProgress ?? false));
+          tree.write(mockPath, renderMockFile(ep, specId, clientFor(ep), options.reportProgress ?? false, options.callOptions ?? false));
           writtenFiles.add(mockPath);
         }
 
@@ -468,12 +477,19 @@ export async function apiResourceGenerator(
     // 8. Root barrel index
     const rootBarrel =
       `export * from './api-base-url.token';\n` +
+      (options.callOptions ? `export * from './request-options';\n` : '') +
       securitySchemes.map((s) => `export * from './${s.fileName}';\n`).join('') +
       webhookModels.map((wh) => `export * from './${wh.fileName}';\n`).join('') +
       [...byTag.keys()].map((tag) => `export * from './${tag}';\n`).join('');
     const rootBarrelPath = joinPathFragments(outputDir, 'index.ts');
     tree.write(rootBarrelPath, rootBarrel);
     writtenFiles.add(rootBarrelPath);
+
+    if (options.callOptions) {
+      const requestOptionsPath = joinPathFragments(outputDir, 'request-options.ts');
+      tree.write(requestOptionsPath, renderRequestOptionsFile());
+      writtenFiles.add(requestOptionsPath);
+    }
 
     if (includeMocks) {
       const rootMockBarrel =

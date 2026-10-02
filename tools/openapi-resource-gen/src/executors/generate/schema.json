@@ -79,6 +79,11 @@
       "default": false,
       "description": "Emit reportProgress: true on httpResource tokens that upload a binary/multipart body or download a blob, so httpResource().progress() reports transfer progress. Has no effect on httpClient endpoints."
     },
+    "callOptions": {
+      "type": "boolean",
+      "default": false,
+      "description": "Accept a trailing per-call options argument on every token function: HttpContext, headers, withCredentials and the other request fields Angular supports, plus (for httpResource tokens) defaultValue, equal, injector and debugName. A defaultValue narrows the returned resource's value to non-undefined. Emits a shared request-options.ts."
+    },
     "convertSwagger2": {
       "type": "boolean",
       "default": true,

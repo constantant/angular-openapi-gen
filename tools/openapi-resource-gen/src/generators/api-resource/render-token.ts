@@ -143,6 +143,12 @@ export interface RenderTokenOptions {
    * `httpResource().progress()` carries download progress but ignores upload progress.
    */
   reportProgress?: boolean;
+  /**
+   * Accept a trailing `options` argument (HttpContext, headers, withCredentials and, for
+   * httpResource, defaultValue / equal / injector / debugName). Needs the lib-level
+   * `request-options.ts` that the generator emits alongside.
+   */
+  callOptions?: boolean;
 }
 
 /** Endpoints where transfer progress is meaningful: binary/multipart uploads and blob downloads. */
@@ -169,6 +175,7 @@ export function renderTokenFile(
     validateResponses = false,
     client = 'httpResource',
     reportProgress = false,
+    callOptions = false,
   }: RenderTokenOptions = {}
 ): string {
   const useHttpClient = client === 'httpClient';
@@ -226,6 +233,13 @@ export function renderTokenFile(
     ...(usesWritable ? ['Writable'] : []),
   ];
   lines.push(`import type { ${schemaImports.join(', ')} } from '../schema.d';`);
+  if (callOptions) {
+    lines.push(
+      useHttpClient
+        ? `import { splitCallOptions, type CallOptions } from '../request-options';`
+        : `import { splitCallOptions, type ResourceCallOptions, type ResourceRefFor } from '../request-options';`,
+    );
+  }
   lines.push(`import { ${baseUrlToken} } from '../api-base-url.token';`);
   for (const scheme of applicableSchemes) {
     lines.push(`import { ${scheme.tokenName} } from '../${scheme.fileName}';`);
@@ -466,7 +480,16 @@ export function renderTokenFile(
   if (useHttpClient) {
     emitHttpClientToken(lines, ep, {
       pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes,
-      headerSchemes, querySchemes, canValidate, responseT, isGet, httpEvents,
+      headerSchemes, querySchemes, canValidate, responseT, isGet, httpEvents, callOptions,
+    });
+    return lines.join('\n');
+  }
+
+  if (callOptions) {
+    emitResourceTokenWithCallOptions(lines, ep, {
+      pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes, headerSchemes, querySchemes,
+      canValidate, resourceCall, isGet, withProgress,
+      valueT: responseVariant === 'text' ? 'string' : responseVariant === 'blob' ? 'Blob' : responseT,
     });
     return lines.join('\n');
   }
@@ -576,6 +599,7 @@ function appendResourceOptions(
   usePrecomputedParams = false,
   useHttpClient = false,
   withProgress = false,
+  callOptions = false,
 ): void {
   // HttpClient.request() takes the method positionally; httpResource takes it in the config.
   if (!isGet && !useHttpClient) {
@@ -624,7 +648,8 @@ function appendResourceOptions(
 
   const hasHeaderParams = ep.headerParams.length > 0;
   const hasCookieParams = ep.cookieParams.length > 0;
-  if (headerSchemes.length > 0 || hasHeaderParams || hasCookieParams) {
+  // With call options the caller's `headers` are always merged last, so the block is always emitted.
+  if (headerSchemes.length > 0 || hasHeaderParams || hasCookieParams || callOptions) {
     lines.push(`${indent}headers: {`);
     // Explicit header params from the spec (e.g. X-Api-Version, Accept-Language)
     for (const h of ep.headerParams) {
@@ -651,11 +676,27 @@ function appendResourceOptions(
       const varName = toCamelCase(s.schemeName);
       lines.push(`${indent}  ...(${varName}?.() != null ? ${headerEntryForScheme(s, varName)} : {}),`);
     }
+    if (callOptions) lines.push(`${indent}  ..._opts.headers,`);
     lines.push(`${indent}},`);
   }
 }
 
-interface HttpClientTokenCtx {
+/** The statements that open a block-bodied reactive lambda: params guard, then the unwrapped body. */
+function blockPreludeLines(ep: EndpointModel, pascal: string, isGet: boolean, ind: string): string[] {
+  return [
+    ...(ep.hasQueryParams
+      ? [
+          `${ind}const _params = typeof params === 'function' ? params() : params;`,
+          `${ind}if (typeof params === 'function' && _params === undefined) return undefined;`,
+        ]
+      : []),
+    ...(!isGet && ep.hasBody
+      ? [`${ind}const _body = typeof body === 'function' ? (body as Signal<${pascal}Body>)() : body;`]
+      : []),
+  ];
+}
+
+interface ResourceCallOptionsCtx {
   pascal: string;
   urlTemplate: string;
   baseUrlToken: string;
@@ -664,55 +705,56 @@ interface HttpClientTokenCtx {
   headerSchemes: SecuritySchemeModel[];
   querySchemes: SecuritySchemeModel[];
   canValidate: boolean;
-  responseT: string;
+  /** The resource's value type: the response alias, `string`, `Blob` or `unknown`. */
+  valueT: string;
+  resourceCall: string;
   isGet: boolean;
-  /** Yield Observable<HttpEvent<T>> (progress + response) instead of Observable<T>. */
-  httpEvents: boolean;
+  withProgress: boolean;
 }
 
 /**
- * Emits the token + provider for `client: 'httpClient'`. The factory returns a plain
- * function that calls `HttpClient.request()` and yields a cold `Observable<T>`; params
- * and body are plain values (no thunks / signals), and auth signals are read per call.
+ * Emits the token + provider for an `httpResource` token generated with `callOptions`: a generic
+ * function type (so a `defaultValue` narrows the returned resource), and a factory that splits the
+ * caller's options into request fields, headers and resource options per call.
  */
-function emitHttpClientToken(lines: string[], ep: EndpointModel, ctx: HttpClientTokenCtx): void {
-  const { pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes, canValidate, responseT, isGet, httpEvents } = ctx;
-  const bodyT = ep.responseVariant === 'text' ? 'string' : ep.responseVariant === 'blob' ? 'Blob' : responseT;
-  const observableT = httpEvents ? `HttpEvent<${bodyT}>` : bodyT;
-  // Text/blob responses are selected via responseType, which fixes the result type, so no generic.
-  const requestGeneric = ep.responseVariant === 'json' ? `<${responseT}>` : '';
-  const fnArgs = buildFnArgs(ep, pascal, isGet, true);
-  // With events, only the final Response event carries a body to validate.
-  const pipe = !canValidate
-    ? ''
-    : httpEvents
-      ? '.pipe(map((e) => (e.type === HttpEventType.Response ? e.clone({ body: _validateResponse(e.body) }) : e)))'
-      : '.pipe(map(_validateResponse))';
+function emitResourceTokenWithCallOptions(lines: string[], ep: EndpointModel, ctx: ResourceCallOptionsCtx): void {
+  const { pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes, valueT, resourceCall, isGet } = ctx;
+  const genericArgs = buildFnArgs(ep, pascal, isGet, false, 'O');
+  const implArgs = buildFnArgs(ep, pascal, isGet, false, `${pascal}Options`);
+  const secondArg = ctx.canValidate
+    ? ', { ..._opts.resource, parse: _validateResponse }'
+    : ep.responseVariant === 'json'
+      ? ', _opts.resource'
+      : ', _opts.resource as never';
 
-  if (ep.deprecated) lines.push('/** @deprecated */');
   lines.push(
-    `export const ${ep.tokenName} = new InjectionToken<`,
-    `  (${fnArgs}) => Observable<${observableT}>`,
-    `>('${ep.tokenName}'${providedIn === 'root' ? `, {` : ')'}`,
+    `export type ${pascal}Options = ResourceCallOptions<${valueT}>;`,
+    '',
+    `export type ${pascal}Fn = <O extends ${pascal}Options = ${pascal}Options>(`,
+    `  ${genericArgs}`,
+    `) => ResourceRefFor<${valueT}, O>;`,
+    '',
   );
+  if (ep.deprecated) lines.push('/** @deprecated */');
+  lines.push(`export const ${ep.tokenName} = new InjectionToken<${pascal}Fn>('${ep.tokenName}'${providedIn === 'root' ? ', {' : ');'}`);
 
-  const i = providedIn === 'root' ? '  ' : '    ';
-  const body: string[] = [
-    `${i}const http = inject(HttpClient);`,
-    `${i}const base = inject(${baseUrlToken});`,
-  ];
-  for (const s of applicableSchemes) {
-    body.push(`${i}const ${toCamelCase(s.schemeName)} = inject(${s.tokenName}, { optional: true });`);
+  const b = providedIn === 'root' ? '    ' : '      ';
+  const body: string[] = [`${b}const base = inject(${baseUrlToken});`];
+  for (const sch of applicableSchemes) {
+    body.push(`${b}const ${toCamelCase(sch.schemeName)} = inject(${sch.tokenName}, { optional: true });`);
   }
   body.push(
-    `${i}return (${fnArgs}) =>`,
-    `${i}  http.request${requestGeneric}('${ep.method.toUpperCase()}', \`\${base}${urlTemplate}\`, {`,
+    `${b}return ((${implArgs}) => {`,
+    `${b}  const _opts = splitCallOptions<${valueT}>(options);`,
+    `${b}  return ${resourceCall}(() => {`,
+    ...blockPreludeLines(ep, pascal, isGet, `${b}    `),
+    `${b}    return {`,
+    // spread first: everything the spec controls (url, method, body, params) is set after it and wins
+    `${b}      ..._opts.request,`,
+    `${b}      url: \`\${base}${urlTemplate}\`,`,
   );
-  if (httpEvents) {
-    body.push(`${i}    observe: 'events',`, `${i}    reportProgress: true,`);
-  }
-  appendResourceOptions(body, ep, isGet, `${i}    `, ctx.headerSchemes, ctx.querySchemes, false, true);
-  body.push(`${i}  })${pipe};`);
+  appendResourceOptions(body, ep, isGet, `${b}      `, ctx.headerSchemes, ctx.querySchemes, true, false, ctx.withProgress, true);
+  body.push(`${b}    };`, `${b}  }${secondArg});`, `${b}}) as ${pascal}Fn;`);
 
   if (providedIn === 'root') {
     lines.push(`  providedIn: 'root',`, `  factory: () => {`, ...body, `  },`, `});`, '');
@@ -732,20 +774,137 @@ function emitHttpClientToken(lines: string[], ep: EndpointModel, ctx: HttpClient
   }
 }
 
-function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean, useHttpClient = false): string {
-  // Natural order: path params, header params, cookie params, body, query params.
-  const args: Array<{ text: string; required: boolean }> = ep.pathParams.map((p) => ({
+interface HttpClientTokenCtx {
+  pascal: string;
+  urlTemplate: string;
+  baseUrlToken: string;
+  providedIn: 'root' | 'none';
+  applicableSchemes: SecuritySchemeModel[];
+  headerSchemes: SecuritySchemeModel[];
+  querySchemes: SecuritySchemeModel[];
+  canValidate: boolean;
+  responseT: string;
+  isGet: boolean;
+  /** Yield Observable<HttpEvent<T>> (progress + response) instead of Observable<T>. */
+  httpEvents: boolean;
+  /** Accept a trailing per-call `options` argument. */
+  callOptions: boolean;
+}
+
+/**
+ * Emits the token + provider for `client: 'httpClient'`. The factory returns a plain
+ * function that calls `HttpClient.request()` and yields a cold `Observable<T>`; params
+ * and body are plain values (no thunks / signals), and auth signals are read per call.
+ */
+function emitHttpClientToken(lines: string[], ep: EndpointModel, ctx: HttpClientTokenCtx): void {
+  const { pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes, canValidate, responseT, isGet, httpEvents, callOptions } = ctx;
+  const bodyT = ep.responseVariant === 'text' ? 'string' : ep.responseVariant === 'blob' ? 'Blob' : responseT;
+  const observableT = httpEvents ? `HttpEvent<${bodyT}>` : bodyT;
+  // Text/blob responses are selected via responseType, which fixes the result type, so no generic.
+  const requestGeneric = ep.responseVariant === 'json' ? `<${responseT}>` : '';
+  const fnArgs = buildFnArgs(ep, pascal, isGet, true, callOptions ? 'CallOptions' : undefined);
+  // With events, only the final Response event carries a body to validate.
+  const pipe = !canValidate
+    ? ''
+    : httpEvents
+      ? '.pipe(map((e) => (e.type === HttpEventType.Response ? e.clone({ body: _validateResponse(e.body) }) : e)))'
+      : '.pipe(map(_validateResponse))';
+
+  if (callOptions) {
+    lines.push(`export type ${pascal}Fn = (${fnArgs}) => Observable<${observableT}>;`, '');
+    if (ep.deprecated) lines.push('/** @deprecated */');
+    lines.push(`export const ${ep.tokenName} = new InjectionToken<${pascal}Fn>('${ep.tokenName}'${providedIn === 'root' ? ', {' : ');'}`);
+  } else {
+    if (ep.deprecated) lines.push('/** @deprecated */');
+    lines.push(
+      `export const ${ep.tokenName} = new InjectionToken<`,
+      `  (${fnArgs}) => Observable<${observableT}>`,
+      `>('${ep.tokenName}'${providedIn === 'root' ? `, {` : ')'}`,
+    );
+  }
+
+  const i = providedIn === 'root' ? '  ' : '    ';
+  const body: string[] = [
+    `${i}const http = inject(HttpClient);`,
+    `${i}const base = inject(${baseUrlToken});`,
+  ];
+  for (const s of applicableSchemes) {
+    body.push(`${i}const ${toCamelCase(s.schemeName)} = inject(${s.tokenName}, { optional: true });`);
+  }
+  if (callOptions) {
+    body.push(
+      `${i}return (${fnArgs}) => {`,
+      `${i}  const _opts = splitCallOptions(options);`,
+      `${i}  return http.request${requestGeneric}('${ep.method.toUpperCase()}', \`\${base}${urlTemplate}\`, {`,
+      // spread first: everything the spec controls is set after it and wins
+      `${i}    ..._opts.request,`,
+    );
+  } else {
+    body.push(
+      `${i}return (${fnArgs}) =>`,
+      `${i}  http.request${requestGeneric}('${ep.method.toUpperCase()}', \`\${base}${urlTemplate}\`, {`,
+    );
+  }
+  if (httpEvents) {
+    body.push(`${i}    observe: 'events',`, `${i}    reportProgress: true,`);
+  }
+  appendResourceOptions(body, ep, isGet, `${i}    `, ctx.headerSchemes, ctx.querySchemes, false, true, false, callOptions);
+  body.push(`${i}  })${pipe};`);
+  if (callOptions) body.push(`${i}};`);
+
+  if (providedIn === 'root') {
+    lines.push(`  providedIn: 'root',`, `  factory: () => {`, ...body, `  },`, `});`, '');
+  } else {
+    lines.push(
+      '',
+      `export function provide${pascal}(): FactoryProvider {`,
+      `  return {`,
+      `    provide: ${ep.tokenName},`,
+      `    useFactory: () => {`,
+      ...body,
+      `    },`,
+      `  };`,
+      `}`,
+      '',
+    );
+  }
+}
+
+interface FnArg {
+  /** Parameter name, as used in the generated function. */
+  name: string;
+  /** The TypeScript parameter, e.g. `params?: ListPetsParams`. */
+  text: string;
+  required: boolean;
+}
+
+/**
+ * The generated function's parameters, in order. `optionsType` adds the trailing per-call
+ * `options` argument (only with `callOptions`).
+ */
+function buildArgList(
+  ep: EndpointModel,
+  pascal: string,
+  isGet: boolean,
+  useHttpClient = false,
+  optionsType?: string,
+): FnArg[] {
+  // Natural order: path params, header params, cookie params, body, query params, options.
+  const args: FnArg[] = ep.pathParams.map((p) => ({
+    name: toCamelCase(p),
     text: `${toCamelCase(p)}: string`,
     required: true,
   }));
   for (const h of [...ep.headerParams, ...ep.cookieParams]) {
     args.push({
+      name: toCamelCase(h.name),
       text: h.required ? `${toCamelCase(h.name)}: string` : `${toCamelCase(h.name)}?: string`,
       required: h.required,
     });
   }
   if (!isGet && ep.hasBody) {
     args.push({
+      name: 'body',
       text: useHttpClient ? `body: ${pascal}Body` : `body: ${pascal}Body | Signal<${pascal}Body>`,
       required: true,
     });
@@ -756,16 +915,34 @@ function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean, useHttpC
     const optional = isGet || !ep.hasRequiredQueryParams;
     const q = optional ? '?' : '';
     args.push({
+      name: 'params',
       text: useHttpClient
         ? `params${q}: ${pascal}Params`
         : `params${q}: ${pascal}Params | (() => ${pascal}Params | undefined)`,
       required: !optional,
     });
   }
+  if (optionsType) {
+    args.push({ name: 'options', text: `options?: ${optionsType}`, required: false });
+  }
   // TypeScript forbids a required parameter after an optional one (e.g. an optional
   // header before a required cookie or body), so stably move required args first. A
   // signature that was already valid (required…, optional…) keeps its order unchanged.
-  return [...args.filter((a) => a.required), ...args.filter((a) => !a.required)]
+  return [...args.filter((a) => a.required), ...args.filter((a) => !a.required)];
+}
+
+function buildFnArgs(ep: EndpointModel, pascal: string, isGet: boolean, useHttpClient = false, optionsType?: string): string {
+  return buildArgList(ep, pascal, isGet, useHttpClient, optionsType)
     .map((a) => a.text)
     .join(', ');
+}
+
+/**
+ * The names of the generated function's parameters, in order — embedded in a mock's
+ * `MockResourceMeta` so DevTools can label each argument of a recorded request.
+ */
+export function fnArgNames(ep: EndpointModel, client: ClientType, callOptions: boolean): string[] {
+  return buildArgList(ep, toPascalCase(ep.operationId), ep.method === 'get', client === 'httpClient', callOptions ? 'x' : undefined).map(
+    (a) => a.name,
+  );
 }
