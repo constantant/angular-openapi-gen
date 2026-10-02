@@ -16,6 +16,8 @@ Each guide builds on the previous one; if you're starting fresh, read them in or
 | 3 | [Unit tests with `/testing`](./03-unit-tests.md) | Drop-in Vitest/Jasmine mocks, `MockResourceHandle`, response sequences |
 | 4 | [E2E tests with Playwright](./04-e2e-tests.md) | Full mock bus, `page.evaluate()` control, history assertions |
 | 5 | [Chrome DevTools Extension](./05-devtools.md) | Catch mode, Respond tab, Scenarios, History inspector, local mocks |
+| 6 | [Migrating from ng-openapi-gen](./06-migrate-from-ng-openapi-gen.md) | Concept map, gradual replacement, what differs |
+| 7 | [Migrating from Orval](./07-migrate-from-orval.md) | Option mapping and what you give up |
 
 ---
 
