@@ -1,3 +1,16 @@
+## 1.14.0 (2026-10-02)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** add callOptions for per-call request options ([#83](https://github.com/constantant/angular-openapi-gen/pull/83))
+- **openapi-resource-gen:** accept Swagger 2.0 specs by converting them to OpenAPI 3.0 in memory ([#82](https://github.com/constantant/angular-openapi-gen/pull/82))
+- **openapi-resource-gen:** add readWriteMarkers for readOnly and writeOnly properties ([#81](https://github.com/constantant/angular-openapi-gen/pull/81))
+- support Angular 20+ and Nx 20+, proven by a CI compatibility matrix ([#80](https://github.com/constantant/angular-openapi-gen/pull/80))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.13.0 (2026-10-02)
 
 ### 🩹 Fixes

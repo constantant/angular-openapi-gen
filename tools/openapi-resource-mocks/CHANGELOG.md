@@ -1,3 +1,14 @@
+## 1.13.0 (2026-10-02)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** add callOptions for per-call request options ([#83](https://github.com/constantant/angular-openapi-gen/pull/83))
+- support Angular 20+ and Nx 20+, proven by a CI compatibility matrix ([#80](https://github.com/constantant/angular-openapi-gen/pull/80))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.12.0 (2026-10-02)
 
 ### 🚀 Features
