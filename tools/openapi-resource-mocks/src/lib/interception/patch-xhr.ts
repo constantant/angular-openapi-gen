@@ -44,7 +44,7 @@ export function patchXhr(target: { XMLHttpRequest: typeof XMLHttpRequest }, runt
       const interception = this._request
         ? runtime.intercept({ ...this._request, body: readRequestBody(body) })
         : undefined;
-      if (!interception) return super.send(body);
+      if (!interception) return this._sendReal(body);
 
       this._interception = interception;
       interception.onProgress((progress) => {
@@ -54,13 +54,40 @@ export function patchXhr(target: { XMLHttpRequest: typeof XMLHttpRequest }, runt
       void interception.result.then((result) => {
         if (this._interception !== interception) return; // aborted or re-opened meanwhile
         this._interception = undefined;
-        if (result === 'passthrough') return super.send(body);
+        if (result === 'passthrough') return this._sendReal(body);
         this._mock = result;
         const size = typeof result.body === 'string' ? result.body.length : 0;
         this.dispatchEvent(new Event('readystatechange'));
         this.dispatchEvent(new ProgressEvent('load', { lengthComputable: true, loaded: size, total: size }));
         this.dispatchEvent(new ProgressEvent('loadend', { lengthComputable: true, loaded: size, total: size }));
       });
+    }
+
+    /** Performs the real request and shows its response to the runtime. */
+    private _sendReal(body?: Document | XMLHttpRequestBodyInit | null): void {
+      const request = this._request;
+      if (request && runtime.wantsRealResponse(request.method, request.url)) {
+        this.addEventListener(
+          'load',
+          () => {
+            try {
+              const type = this.responseType;
+              if (type !== '' && type !== 'text' && type !== 'json') return;
+              const read = (): string => (type === 'json' ? JSON.stringify(super.response) : super.responseText);
+              void runtime.realResponse({
+                ...request,
+                status: super.status,
+                contentType: super.getResponseHeader('content-type'),
+                text: read,
+              });
+            } catch {
+              // never let bookkeeping break the app's request
+            }
+          },
+          { once: true },
+        );
+      }
+      super.send(body);
     }
 
     override abort(): void {

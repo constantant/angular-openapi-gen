@@ -152,7 +152,7 @@ After each release, if catch mode is still on, the next request is caught again.
 | ↺ Refresh | Re-queries all mock states from the page |
 | ◉ Intercept | Switches request interception on or off for the inspected site — see [Mocking a production build](#mocking-a-production-build) |
 | ⏸ Catch All | Toggles catch mode on every registered mock |
-| Clear | Removes all mocks from the panel (does not affect the page) |
+| Clear | Empties the table of mocks the app registered (does not affect the page; they are listed again on the next refresh). Mocks created in the panel are kept |
 | Reset All | Calls `reset()` on every mock |
 | Scenarios | Opens the Scenarios dialog — save named snapshots of the full mock table state, load / delete them, or export / import as JSON for cross-machine sharing |
 | Filter… | Filters the mock table by key name |
@@ -164,16 +164,25 @@ After each release, if catch mode is still on, the next request is caught again.
 The extension can install the mock runtime in the page itself, so the app does not have to bundle
 any mock code.
 
-1. Import the full OpenAPI spec in the **Specs** tab and check its **Base URL** — it must be the
-   URL your app calls (a relative one such as `/api` works).
+1. Import the full OpenAPI spec in the **Specs** tab.
 2. Click **◉ Intercept** in the toolbar. Interception is switched on for the inspected site and
    the open page is patched in place.
-3. Click **＋ New mock**, pick the spec and the operation, **Create**.
-4. Set a response in the **Respond** tab and click **Resolve**.
+3. Expand the spec and check its **Base URL** — it must be the URL your app calls (a relative one
+   such as `/api` works). Use the app for a moment: the URLs it really requests are listed under
+   the field as **Seen on this page**, with the number of spec operations seen under each. Click
+   one to use it.
+4. Use the app. Every operation of the spec that the page requests appears in the mock table by
+   itself the first time it is requested; until you give it a response its requests still reach
+   the real API. **＋ New mock** adds an operation that has not been requested yet.
+5. Select an endpoint. The **Respond** editor is pre-filled with what the real API last answered
+   for it; edit it and click **Resolve**, or switch on catch mode to hold the next request and
+   release it with the edited response.
 
 What to expect:
 
-- Only the endpoints you created are answered; every other request goes to the real API.
+- Only endpoints you gave a response (or catch mode) are answered; every other request goes to
+  the real API.
+- An automatically listed endpoint you remove with 🗑 stays away until DevTools is reopened.
 - After a reload the first request is already mocked. The runtime is injected at document start
   and holds requests for up to 1.5 s while the endpoints are delivered.
 - Endpoints, their catch mode and the response you last set are stored in `chrome.storage.local`.
@@ -181,6 +190,8 @@ What to expect:
 - Interception is **opt-in per site**: `fetch` / `XMLHttpRequest` are patched only where you
   switched it on. Chrome match patterns carry no port, so all ports of a host count as one site.
 - Switching interception off applies from the next page load.
+- Base URL suggestions only know requests made after interception started; reload the page or
+  repeat the action if none appear.
 - A response you edit while the page is open answers held requests. Refreshing data that is
   already on screen requires libs generated with `--mockHooks` (part of `--includeMocks`);
   otherwise, and for `HttpClient` endpoints, the edit applies to the next request.

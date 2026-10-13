@@ -19,7 +19,15 @@ export interface WindowMockEntry {
     steps?: number,
   ): void;
   setCatchMode(enabled: boolean): void;
-  getState(): { status: string; value: unknown; error: unknown; progress: unknown; requestCount: number };
+  /** `caught` is the request catch mode is holding open at the moment, if any. */
+  getState(): {
+    status: string;
+    value: unknown;
+    error: unknown;
+    progress: unknown;
+    requestCount: number;
+    caught?: { requestId: string; args: unknown[]; ts: number };
+  };
   getMeta(): MockResourceMeta | undefined;
   getHistory(): MockEvent[];
   clearHistory(): void;

@@ -441,6 +441,26 @@ and `--validateResponses` check, so the same mechanism can drive a **production 
   (resolve / fail / loading; `reset` clears it). An endpoint the app registers itself keeps its own rule.
 - **Base URL per spec** (`SpecEntry.baseUrl`): taken from `servers[0].url` on import, editable in
   the Specs tab. A managed endpoint without one stays `local` and cannot answer requests.
+- **Base URL suggestions.** `inject.js` calls `runtime.observeRequests()`: the runtime keeps each
+  distinct request the transports see (method + URL without query, capped at 300, in page memory
+  only). The panel pulls them on demand (`get-observed` → SW `executeScript` in the MAIN world →
+  `observed-requests`; `MockBridge.observedRequests` / `refreshObserved()`), and
+  `suggestBaseUrls()` (`apps/devtools-panel/src/app/base-url-suggestions.ts`) matches them against
+  the spec's path templates: a request ending with a template votes for the prefix before it,
+  candidates are ranked by distinct operations seen. Shown as chips under the Base URL field.
+- **Real responses.** The transports report the real response of a request to
+  `runtime.realResponse()` (fetch: a clone; XHR: on `load`) when `wantsRealResponse()` says so.
+  A JSON body ≤ 512 KB becomes the matching entry's `state.value` (unless it has an override or a
+  held request) and a `real` event; with `observeRequests()` on, bodies of unmatched requests are
+  kept too (≤ 4 MB in total, oldest dropped) and claimed by an endpoint registered later — that is
+  how an auto-listed endpoint already has data. The Respond editor pre-fills from `state.value`.
+- **Automatic listing.** The runtime also announces each new distinct request with an
+  `openapi-mock-observed` DOM event (`content.js`, now a `document_start` script, relays it as
+  `observed-request`). While the site is intercepted, an effect in `MOCK_BRIDGE` matches observed
+  requests against every spec that has a base URL (`findOperation()`) and adds each matched
+  operation as a `managed` entry with no behavior — it passes through until a response or catch
+  mode is set. Deleting one puts its key in an in-memory `dismissed` set. `clearAll()` keeps
+  managed entries (the stored record is written from the table, so dropping them would delete them).
 - The scratch check used during development (Playwright + the unpacked extension against
   `dist/apps/api-explorer/browser`) is not in the repo; there is no automated extension e2e yet.
 

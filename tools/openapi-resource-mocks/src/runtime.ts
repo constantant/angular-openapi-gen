@@ -13,6 +13,8 @@ export type {
   MockRuntimeConfig,
   ConfiguredEndpoint,
   InterceptedRequest,
+  ObservedRequest,
+  RealResponse,
   Interception,
 } from './lib/interception/mock-runtime';
 export type { EndpointRule } from './lib/interception/url-matcher';

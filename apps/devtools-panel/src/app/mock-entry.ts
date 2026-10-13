@@ -10,6 +10,14 @@ export interface MockState {
   error: unknown;
   progress: { type: string; loaded: number; total?: number } | undefined;
   requestCount?: number;
+  /** The request catch mode is holding in the page right now, as reported with the state. */
+  caught?: PendingRequest;
+}
+
+/** A request the inspected page made (method + URL without the query), reported while intercepting. */
+export interface ObservedRequest {
+  method: string;
+  url: string;
 }
 
 export interface HistoryEvent {
@@ -43,13 +51,20 @@ export interface MockEntry {
   managed: boolean;
   /** Base URL a managed endpoint is matched under; without one it cannot be registered. */
   baseUrl?: string;
+  /**
+   * The last successful response known for the endpoint — usually the real API's. Kept by the
+   * panel across page reloads (the page forgets it), as the starting point for a mock.
+   */
+  example?: unknown;
 }
 
 export type PanelMessage =
   | { type: 'mock-keys'; keys: string[]; metas?: Record<string, MockResourceMeta | null> }
   | { type: 'mock-state'; key: string; state: MockState }
   | { type: 'intercept-state'; enabled: boolean }
-  | { type: 'mock-event'; key: string; event: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; ts: number } };
+  | { type: 'observed-requests'; requests: ObservedRequest[] }
+  | { type: 'observed-request'; request: ObservedRequest }
+  | { type: 'mock-event'; key: string; event: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; status?: number; ts: number } };
 
 let _histId = 0;
 const MAX_HISTORY = 200;
@@ -70,7 +85,7 @@ export function blankEntry(key: string): MockEntry {
 
 export function applyEvent(
   entry: MockEntry,
-  ev: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; ts: number },
+  ev: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; status?: number; ts: number },
 ): MockEntry {
   const histEvent: HistoryEvent = { id: ++_histId, ts: ev.ts, type: ev.type };
   if (ev.value !== undefined) histEvent.value = ev.value;
@@ -88,6 +103,16 @@ export function applyEvent(
     case 'resolve':
       next.pendingRequest = null;
       next.state = { ...entry.state, status: 'resolved', value: ev.value };
+      break;
+    case 'real':
+      // The real API answered: shown as the endpoint's state unless a held request is waiting.
+      if (!entry.pendingRequest) {
+        const failed = (ev.status ?? 200) >= 400;
+        next.state = failed
+          ? { ...entry.state, status: 'error', error: ev.value }
+          : { ...entry.state, status: 'resolved', value: ev.value, error: undefined };
+      }
+      if ((ev.status ?? 200) < 400 && ev.value !== undefined) next.example = ev.value;
       break;
     case 'loading':
       next.state = { ...entry.state, status: 'loading' };

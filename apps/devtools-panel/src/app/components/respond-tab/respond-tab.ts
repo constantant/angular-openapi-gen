@@ -58,14 +58,22 @@ export class RespondTab {
     effect(() => {
       const key = this.bridge.selectedKey();
       const entry = untracked(() => (key ? this.bridge.mocks().get(key) : null));
-      this.json.set(
-        entry?.state.value !== undefined
-          ? JSON.stringify(entry.state.value, null, 2)
-          : '',
-      );
+      const start = entry?.state.value ?? entry?.example;
+      this.json.set(start !== undefined ? JSON.stringify(start, null, 2) : '');
       this.jsonError.set(null);
       this.validationErrors.set(null);
       this.schemaExpanded.set(false);
+    });
+
+    // A value that arrives while the mock is selected — typically the real API's response to a
+    // request that was not mocked — becomes the starting point, as long as nothing was typed yet.
+    effect(() => {
+      const entry = this.selectedEntry();
+      const value = entry?.state.value ?? entry?.example;
+      if (value === undefined) return;
+      untracked(() => {
+        if (this.json().trim() === '') this.json.set(JSON.stringify(value, null, 2));
+      });
     });
   }
 

@@ -233,6 +233,78 @@ describe('mock interception', () => {
       expect(await (await fetch(`${BASE}/pets`)).json()).toBe('real');
     });
 
+    it('switching catch mode off lets a held request continue with the endpoint behavior', async () => {
+      runtime.register('LIST', { method: 'get', baseUrl: BASE, path: '/pets' }, { behavior: { value: ['configured'] } });
+      runtime.register('OWNERS', { method: 'get', baseUrl: BASE, path: '/owners' });
+      runtime.setCatchMode('LIST', true);
+      runtime.setCatchMode('OWNERS', true);
+      const mocked = fetch(`${BASE}/pets?status=sold`).then((res) => res.json());
+      const unmocked = fetch(`${BASE}/owners`).then((res) => res.json());
+      await Promise.resolve();
+      expect(entry('LIST').getState().caught?.args).toEqual([{ status: 'sold' }]);
+
+      runtime.setCatchMode('LIST', false);
+      runtime.setCatchMode('OWNERS', false);
+      expect(await mocked).toEqual(['configured']);
+      expect(await unmocked).toBe('real'); // no behavior: released to the real API
+      expect(entry('LIST').getState().caught).toBeUndefined();
+    });
+
+    it('keeps the real JSON response of an unmocked endpoint as its state and reports a real event', async () => {
+      const json = (value: unknown, status = 200): Response =>
+        new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } });
+      nativeFetch.mockImplementation(async () => json([{ id: 1, name: 'Real Rex' }]));
+      runtime.register('LIST', { method: 'get', baseUrl: BASE, path: '/pets' });
+
+      const response = await fetch(`${BASE}/pets`);
+      expect(await response.json()).toEqual([{ id: 1, name: 'Real Rex' }]); // the caller's body is untouched
+      await vi.waitFor(() => expect(entry('LIST').getState().value).toEqual([{ id: 1, name: 'Real Rex' }]));
+      expect(entry('LIST').getState().status).toBe('resolved');
+      expect(entry('LIST').getHistory().at(-1)).toMatchObject({ type: 'real', status: 200 });
+
+      // A mock set on the endpoint is not overwritten by what the real API said before.
+      entry('LIST').resolve(['mocked']);
+      expect(await (await fetch(`${BASE}/pets`)).json()).toEqual(['mocked']);
+      expect(entry('LIST').getState().value).toEqual(['mocked']);
+    });
+
+    it('an endpoint registered later starts with the real response seen while observing', async () => {
+      nativeFetch.mockImplementation(
+        async () => new Response('{"seen":true}', { status: 200, headers: { 'content-type': 'application/json' } }),
+      );
+      await fetch(`${BASE}/pets?status=sold`);
+      runtime.register('EARLY', { method: 'get', baseUrl: BASE, path: '/pets' });
+      expect(entry('EARLY').getState().value).toBeUndefined(); // not observing: nothing was kept
+      runtime.unregister('EARLY');
+
+      runtime.observeRequests();
+      await fetch(`${BASE}/pets?status=sold`);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      runtime.register('LIST', { method: 'get', baseUrl: BASE, path: '/pets' });
+      expect(entry('LIST').getState().value).toEqual({ seen: true });
+    });
+
+    it('observeRequests() keeps each distinct request once, mocked or not, without its query', async () => {
+      await fetch(`${BASE}/owners`);
+      expect(runtime.observedRequests()).toEqual([]); // nothing is kept until asked
+
+      const announced: unknown[] = [];
+      const onObserved = (e: Event): void => void announced.push((e as CustomEvent).detail);
+      document.addEventListener('openapi-mock-observed', onObserved);
+      runtime.observeRequests();
+      runtime.register('LIST', { method: 'get', baseUrl: BASE, path: '/pets' }, { behavior: { value: [] } });
+      await fetch(`${BASE}/pets?status=available&token=secret`);
+      await fetch(`${BASE}/pets?status=sold`);
+      await fetch(`${BASE}/owners`, { method: 'post', body: '{}' });
+
+      expect(runtime.observedRequests()).toEqual([
+        { method: 'GET', url: `${BASE}/pets` },
+        { method: 'POST', url: `${BASE}/owners` },
+      ]);
+      expect(announced).toEqual(runtime.observedRequests()); // each one announced once
+      document.removeEventListener('openapi-mock-observed', onObserved);
+    });
+
     it('hold() releases to the real API when no configuration arrives', async () => {
       vi.useFakeTimers();
       runtime.hold(1000);

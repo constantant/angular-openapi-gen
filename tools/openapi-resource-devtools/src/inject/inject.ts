@@ -14,5 +14,7 @@ if (!globals.__oarmInjected__) {
   // Only a page that is still loading has requests worth parking; an app-bundled runtime of an
   // older version may not know `hold`.
   if (document.readyState === 'loading') runtime.hold?.(HOLD_MS);
+  // Lets the panel suggest a base URL for a spec from the requests the page really makes.
+  runtime.observeRequests?.();
   document.dispatchEvent(new CustomEvent('__oarm_runtime_ready__'));
 }

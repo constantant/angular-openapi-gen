@@ -60,6 +60,40 @@ export interface MockRuntimeConfig {
   catchModes?: Record<string, boolean>;
 }
 
+/** A request the page made, as kept by {@link MockRuntime.observeRequests}: no query, no body. */
+export interface ObservedRequest {
+  /** Upper-case HTTP method. */
+  method: string;
+  /** Absolute URL without query and fragment. */
+  url: string;
+}
+
+/** How many distinct requests {@link MockRuntime.observeRequests} keeps. */
+const MAX_OBSERVED = 300;
+
+/** A real response larger than this is not kept as an example. */
+const MAX_REAL_BODY = 512 * 1024;
+/** Total size of the real responses kept for requests no endpoint is registered for yet. */
+const MAX_UNCLAIMED_BODIES = 4 * 1024 * 1024;
+
+/** What a transport hands to {@link MockRuntime.realResponse} after a request reached the real API. */
+export interface RealResponse {
+  method: string;
+  url: string;
+  status: number;
+  contentType: string | null;
+  /** Reads the body as text; only called when the runtime wants it. */
+  text(): Promise<string> | string;
+}
+
+interface UnclaimedResponse {
+  method: string;
+  url: string;
+  status: number;
+  value: unknown;
+  size: number;
+}
+
 export interface MockRegistration {
   meta?: MockResourceMeta;
   /** A fixed behavior, or a function asked once per request (e.g. to step through a sequence). */
@@ -68,6 +102,8 @@ export interface MockRegistration {
 
 interface Pending {
   settle(result: MockResult): void;
+  /** Set while the request is held by catch mode. */
+  caught?: { requestId: string; args: unknown[]; ts: number };
   timer?: ReturnType<typeof setTimeout>;
   progress?: (progress: MockProgress) => void;
 }
@@ -122,6 +158,10 @@ interface ControlDetail {
 
 const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH']);
 
+function pageHref(): string {
+  return typeof location !== 'undefined' && location.href ? location.href : 'http://localhost/';
+}
+
 function isBinary(value: unknown): value is Blob | ArrayBuffer {
   return (
     (typeof Blob !== 'undefined' && value instanceof Blob) ||
@@ -170,6 +210,11 @@ export class MockRuntime {
   private readonly resources = new Map<string, Set<WeakHandle<Reloadable>>>();
   /** Requests made while the configuration is still on its way; see {@link hold}. */
   private held: Array<() => void> | undefined;
+  /** Distinct requests seen by the transports, keyed by method + URL; see {@link observeRequests}. */
+  private observed: Map<string, ObservedRequest> | undefined;
+  /** Real responses to requests that matched no endpoint, kept while observing; see {@link realResponse}. */
+  private readonly unclaimed = new Map<string, UnclaimedResponse>();
+  private unclaimedSize = 0;
   private order = 0;
   private reqCount = 0;
   private readonly onControl = (e: Event): void => this.control((e as CustomEvent<ControlDetail>).detail);
@@ -242,7 +287,10 @@ export class MockRuntime {
     if (registration.meta) entry.meta = registration.meta;
     if (registration.behavior) entry.initial = registration.behavior;
     this.entries.set(key, entry);
-    if (!existing) this.exposeToWindow(entry);
+    if (!existing) {
+      this.exposeToWindow(entry);
+      this.claimRealResponse(entry);
+    }
     return () => this.unregister(key);
   }
 
@@ -268,8 +316,20 @@ export class MockRuntime {
   }
 
   setCatchMode(key: string, enabled: boolean): void {
-    if (enabled) this.catchModeKeys.add(key);
-    else this.catchModeKeys.delete(key);
+    if (enabled) {
+      this.catchModeKeys.add(key);
+      return;
+    }
+    this.catchModeKeys.delete(key);
+    // Requests that catch mode is holding would otherwise hang: let them continue as if they had
+    // never been caught — the endpoint's behavior, or the real API when it has none.
+    const entry = this.entries.get(key);
+    if (!entry) return;
+    for (const pending of [...entry.pending]) {
+      if (!pending.caught) continue;
+      pending.caught = undefined;
+      this.apply(entry, pending, entry.override ?? this.initialOf(entry));
+    }
   }
 
   /**
@@ -303,8 +363,131 @@ export class MockRuntime {
     if (entry && behavior) entry.override = behavior;
   }
 
+  /**
+   * Starts remembering which requests the page makes — mocked or not — so a tool can work out
+   * where an API is served and which of its operations the page uses (the DevTools panel suggests
+   * base URLs and lists the endpoints from it). Each new one is also announced with an
+   * `openapi-mock-observed` DOM event. Only the method and
+   * the URL without its query are kept, once per distinct request, in memory.
+   */
+  observeRequests(): void {
+    this.observed ??= new Map();
+  }
+
+  /** The distinct requests seen since {@link observeRequests}; empty when it was never called. */
+  observedRequests(): ObservedRequest[] {
+    return [...(this.observed?.values() ?? [])];
+  }
+
+  private observe(request: InterceptedRequest): void {
+    if (!this.observed || this.observed.size >= MAX_OBSERVED) return;
+    try {
+      const target = new URL(request.url, pageHref());
+      if (target.protocol !== 'http:' && target.protocol !== 'https:') return;
+      const observed = { method: request.method.toUpperCase(), url: target.origin + target.pathname };
+      const id = `${observed.method} ${observed.url}`;
+      if (this.observed.has(id)) return;
+      this.observed.set(id, observed);
+      // Tools that are already listening learn about it right away; others read observedRequests().
+      if (typeof document !== 'undefined') {
+        document.dispatchEvent(new CustomEvent('openapi-mock-observed', { detail: observed }));
+      }
+    } catch {
+      // not a URL the page could have requested
+    }
+  }
+
+  /** Whether a transport should report the real response of this request to {@link realResponse}. */
+  wantsRealResponse(method: string, url: string): boolean {
+    return this.observed !== undefined || this.bestMatch(method.toUpperCase(), url) !== undefined;
+  }
+
+  /**
+   * Called by the patched transports when a request was answered by the real API. A JSON body is
+   * kept as the endpoint's last known real response — shown by the DevTools panel as the starting
+   * point for a mock — and reported with a `real` event. It does not change how requests are
+   * answered. While {@link observeRequests} is on, responses to requests no endpoint is registered
+   * for are kept too (bounded), so an endpoint registered afterwards starts with one.
+   */
+  async realResponse(response: RealResponse): Promise<void> {
+    if (!/[/+]json\b/i.test(response.contentType ?? '')) return;
+    const method = response.method.toUpperCase();
+    const entry = this.bestMatch(method, response.url)?.entry;
+    if (!entry && !this.observed) return;
+    let text: string;
+    let value: unknown;
+    try {
+      text = await response.text();
+      if (text.length > MAX_REAL_BODY) return;
+      value = JSON.parse(text);
+    } catch {
+      return;
+    }
+    if (entry) {
+      // The entry may have been unregistered while the body was read.
+      if (this.entries.get(entry.key) === entry) this.applyReal(entry, response.status, value);
+      return;
+    }
+    let id: string;
+    try {
+      const target = new URL(response.url, pageHref());
+      id = `${method} ${target.origin}${target.pathname}`;
+    } catch {
+      return;
+    }
+    this.unclaimedSize -= this.unclaimed.get(id)?.size ?? 0;
+    this.unclaimed.delete(id);
+    this.unclaimed.set(id, { method, url: response.url, status: response.status, value, size: text.length });
+    this.unclaimedSize += text.length;
+    for (const [oldest, kept] of this.unclaimed) {
+      if (this.unclaimedSize <= MAX_UNCLAIMED_BODIES) break;
+      this.unclaimed.delete(oldest);
+      this.unclaimedSize -= kept.size;
+    }
+  }
+
+  private applyReal(entry: Entry, status: number, value: unknown): void {
+    // Only an endpoint that is not answering by itself shows the real response as its state.
+    if (!entry.override && entry.pending.size === 0) {
+      entry.state.status = status >= 400 ? 'error' : 'resolved';
+      if (status >= 400) entry.state.error = value;
+      else {
+        entry.state.value = value;
+        entry.state.error = undefined;
+      }
+    }
+    this.emit(entry, { type: 'real', status, value, ts: Date.now() });
+  }
+
+  /** Gives a newly registered endpoint the latest real response already seen for it. */
+  private claimRealResponse(entry: Entry): void {
+    let latest: UnclaimedResponse | undefined;
+    for (const kept of this.unclaimed.values()) {
+      if (kept.status < 400 && entry.matcher.match(kept.method, kept.url)) latest = kept;
+    }
+    if (latest) this.applyReal(entry, latest.status, latest.value);
+  }
+
+  private bestMatch(
+    method: string,
+    url: string,
+  ): { entry: Entry; pathParams: string[]; query: Record<string, string | string[]> } | undefined {
+    let best: { entry: Entry; pathParams: string[]; query: Record<string, string | string[]> } | undefined;
+    for (const entry of this.entries.values()) {
+      const match = entry.matcher.match(method, url);
+      if (!match) continue;
+      const wins =
+        !best ||
+        entry.matcher.specificity > best.entry.matcher.specificity ||
+        (entry.matcher.specificity === best.entry.matcher.specificity && entry.order > best.entry.order);
+      if (wins) best = { entry, ...match };
+    }
+    return best;
+  }
+
   /** Called by the patched transports. `undefined` means: not mocked, perform the real request. */
   intercept(request: InterceptedRequest): Interception | undefined {
+    this.observe(request);
     if (this.held) return this.interceptLater(request, this.held);
     return this.interceptNow(request);
   }
@@ -337,16 +520,7 @@ export class MockRuntime {
 
   private interceptNow(request: InterceptedRequest): Interception | undefined {
     const method = request.method.toUpperCase();
-    let best: { entry: Entry; pathParams: string[]; query: Record<string, string | string[]> } | undefined;
-    for (const entry of this.entries.values()) {
-      const match = entry.matcher.match(method, request.url);
-      if (!match) continue;
-      const wins =
-        !best ||
-        entry.matcher.specificity > best.entry.matcher.specificity ||
-        (entry.matcher.specificity === best.entry.matcher.specificity && entry.order > best.entry.order);
-      if (wins) best = { entry, ...match };
-    }
+    const best = this.bestMatch(method, request.url);
     if (!best) return undefined;
 
     const { entry } = best;
@@ -361,16 +535,16 @@ export class MockRuntime {
     // leave the resource loading forever.
     const pushed = entry.pushed.count > 0 && Date.now() <= entry.pushed.until;
     if (pushed) entry.pushed.count--;
-    const caught = !pushed && this.catchModeKeys.has(entry.key);
-    if (caught) {
-      this.emit(entry, { type: 'caught', args, requestId: `req-${++this.reqCount}`, ts: Date.now() });
-    }
+    const caught = !pushed && this.catchModeKeys.has(entry.key)
+      ? { requestId: `req-${++this.reqCount}`, args, ts: Date.now() }
+      : undefined;
+    if (caught) this.emit(entry, { type: 'caught', ...caught });
     const behavior: MockBehavior | undefined = caught ? { loading: true } : (entry.override ?? this.initialOf(entry));
     if (!behavior) return undefined;
 
     let settle!: (result: MockResult) => void;
     const result = new Promise<MockResult>((resolve) => (settle = resolve));
-    const pending: Pending = { settle };
+    const pending: Pending = { settle, caught };
     entry.pending.add(pending);
     entry.state.status = 'loading';
     this.apply(entry, pending, behavior);
@@ -577,7 +751,14 @@ export class MockRuntime {
       },
       setCatchMode: (enabled) => this.setCatchMode(entry.key, enabled),
       getMeta: () => entry.meta,
-      getState: () => ({ ...entry.state }),
+      getState: () => {
+        // The request catch mode is holding right now, for a tool that was not listening when it
+        // was caught (the DevTools panel opened later).
+        const held = [...entry.pending].reverse().find((pending) => pending.caught)?.caught;
+        return held
+          ? { ...entry.state, caught: { ...held, args: held.args.map(sanitizeArg) } }
+          : { ...entry.state };
+      },
       getHistory: () => [...entry.history],
       clearHistory: () => {
         entry.history.length = 0;

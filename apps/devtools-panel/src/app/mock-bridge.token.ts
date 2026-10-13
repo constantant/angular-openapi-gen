@@ -1,5 +1,6 @@
 import { InjectionToken, Signal, WritableSignal, effect, inject, signal, untracked } from '@angular/core';
-import { MockEntry, MockResourceMeta, MockState, PanelMessage, applyEvent, blankEntry } from './mock-entry';
+import { MockEntry, MockResourceMeta, MockState, ObservedRequest, PanelMessage, applyEvent, blankEntry } from './mock-entry';
+import { findOperation } from './base-url-suggestions';
 import { SPEC_STORE } from './spec-store.token';
 
 export interface MockBridge {
@@ -9,6 +10,10 @@ export interface MockBridge {
   readonly intercepting: Signal<boolean>;
   /** Opt the inspected site in or out of interception (persists across reloads and sessions). */
   setIntercepting(enabled: boolean): void;
+  /** Distinct requests the page made since interception started; filled by {@link refreshObserved}. */
+  readonly observedRequests: Signal<readonly ObservedRequest[]>;
+  /** Ask the page for its observed requests (used to suggest a base URL for a spec). */
+  refreshObserved(): void;
   sendControl(key: string, action: string, extra?: Record<string, unknown>): void;
   setCatchMode(key: string, enabled: boolean): void;
   refresh(): void;
@@ -25,6 +30,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
     const mocks = signal<Map<string, MockEntry>>(new Map());
     const selectedKey = signal<string | null>(null);
     const intercepting = signal(false);
+    const observedRequests = signal<readonly ObservedRequest[]>([]);
 
     // Outside a Chrome DevTools panel (e.g. dev server, E2E) — return a passive stub.
     if (typeof chrome === 'undefined' || !chrome.devtools) {
@@ -32,6 +38,8 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         mocks: mocks.asReadonly(), selectedKey,
         intercepting: intercepting.asReadonly(),
         setIntercepting: () => { /* noop */ },
+        observedRequests: observedRequests.asReadonly(),
+        refreshObserved: () => { /* noop */ },
         sendControl: () => { /* noop */ },
         setCatchMode: () => { /* noop */ },
         refresh: () => { /* noop */ },
@@ -59,6 +67,8 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
     // entries because it is the *configuration* of the mock, not the state the page reports.
     const overrides = new Map<string, unknown>();
     let storageLoaded = false;
+    // Auto-listed endpoints the user removed: not listed again until the panel is reopened.
+    const dismissed = new Set<string>();
 
     // The spec's current base URL wins, so one set (or corrected) on the Specs tab after the mock
     // was created still applies; the stored copy covers a spec that was removed since.
@@ -112,6 +122,17 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
     function onMessage(msg: PanelMessage): void {
       if (msg.type === 'intercept-state') {
         intercepting.set(msg.enabled);
+        // What the page requested before the panel was listening.
+        if (msg.enabled) post({ type: 'get-observed' });
+        return;
+      }
+      if (msg.type === 'observed-requests' || msg.type === 'observed-request') {
+        const incoming = msg.type === 'observed-requests' ? msg.requests : [msg.request];
+        observedRequests.update((prev) => {
+          const known = new Set(prev.map((r) => `${r.method} ${r.url}`));
+          const added = incoming.filter((r) => !known.has(`${r.method} ${r.url}`));
+          return added.length > 0 ? [...prev, ...added] : prev;
+        });
         return;
       }
       mocks.update((prev) => {
@@ -137,11 +158,15 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
           const newState = msg.state as MockState;
           // When the mock is no longer loading the user has responded — clear the
           // pending-request indicator so the CAUGHT badge goes away.
+          // A request caught before the panel was listening (it was opened later, or the page
+          // was faster) arrives with the state instead of as a `caught` event.
           const pendingRequest =
             newState.status === 'loading' || newState.status === 'reloading'
-              ? existing.pendingRequest
+              ? (existing.pendingRequest ?? newState.caught ?? null)
               : null;
-          next.set(msg.key, { ...existing, state: newState, pendingRequest });
+          // A fresh page reports no value; what an earlier one answered stays as the example.
+          const example = newState.status === 'resolved' && newState.value !== undefined ? newState.value : existing.example;
+          next.set(msg.key, { ...existing, state: newState, pendingRequest, example });
         } else if (msg.type === 'mock-event') {
           const existing = next.get(msg.key);
           if (existing) next.set(msg.key, applyEvent(existing, msg.event));
@@ -212,6 +237,41 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
       }
     }
 
+    // On an intercepted site, every operation of an imported spec that the page is seen requesting
+    // is listed as a panel-managed mock, so nothing has to be created by hand. Such an endpoint has
+    // no response yet: its requests keep reaching the real API until one is set or it is caught.
+    effect(() => {
+      const observed = observedRequests();
+      const specs = specStore.specs();
+      if (!intercepting() || observed.length === 0) return;
+      untracked(() => {
+        if (!storageLoaded) return;
+        const known = mocks();
+        const found = new Map<string, MockEntry>();
+        for (const spec of specs.values()) {
+          if (spec.baseUrl === undefined) continue;
+          for (const request of observed) {
+            const operation = findOperation(spec.mocks, spec.baseUrl, request);
+            if (!operation) continue;
+            const key = operation.tokenName;
+            if (known.has(key) || found.has(key) || dismissed.has(key)) continue;
+            found.set(key, {
+              ...blankEntry(key),
+              state: { status: 'local', value: undefined, error: undefined, progress: undefined },
+              meta: { specId: spec.specId, operationId: operation.operationId, path: operation.path, method: operation.method, tag: operation.tag },
+              managed: true,
+              baseUrl: spec.baseUrl,
+            });
+          }
+        }
+        if (found.size === 0) return;
+        mocks.update((prev) => new Map([...prev, ...found]));
+        persistLocalMocks(mocks());
+        for (const entry of found.values()) registerInPage(entry);
+        setTimeout(() => post({ type: 'get-keys' }), 150);
+      });
+    });
+
     // A base URL edited on the Specs tab reaches the stored endpoints (read by the service worker at
     // the next page load) and the open page.
     effect(() => {
@@ -233,6 +293,8 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
       selectedKey,
       intercepting: intercepting.asReadonly(),
       setIntercepting: (enabled: boolean) => post({ type: 'set-intercept', enabled }),
+      observedRequests: observedRequests.asReadonly(),
+      refreshObserved: () => post({ type: 'get-observed' }),
       sendControl,
       setCatchMode: (key: string, enabled: boolean) => {
         mocks.update((prev) => {
@@ -246,7 +308,19 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         post({ type: 'control', detail: { key, action: enabled ? 'setCatchMode' : 'clearCatchMode' } });
       },
       refresh: () => post({ type: 'get-keys' }),
-      clearAll: () => { mocks.set(new Map()); selectedKey.set(null); },
+      clearAll: () => {
+        // Mocks the app registered are only forgotten by the panel (discovery lists them again).
+        // Mocks created in the panel are kept: the table is where they are stored from, so dropping
+        // them here would silently delete them for good.
+        mocks.update((prev) => {
+          const next = new Map<string, MockEntry>();
+          for (const [key, entry] of prev) {
+            if (entry.managed) next.set(key, { ...entry, history: [], lastEventType: null, lastEventTs: null });
+          }
+          return next;
+        });
+        if (!mocks().has(selectedKey() ?? '')) selectedKey.set(null);
+      },
       resetAll: () => { for (const k of mocks().keys()) sendControl(k, 'reset'); },
       clearHistory: (key: string) => {
         mocks.update((prev) => {
@@ -282,6 +356,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
           return next;
         });
         if (mocks().has(key)) return; // not a managed entry: the app owns it
+        dismissed.add(key);
         overrides.delete(key);
         if (selectedKey() === key) selectedKey.set(null);
         persistLocalMocks(mocks());

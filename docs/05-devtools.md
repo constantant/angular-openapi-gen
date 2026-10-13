@@ -55,13 +55,19 @@ The extension can install the mock runtime itself, so the app needs no mock code
 still answered inside the page — nothing goes through a proxy or a service worker.
 
 1. **Import the spec** in the **Specs** tab (the full OpenAPI file, so the panel knows the paths).
-2. **Check the base URL** shown next to the spec. It is taken from the spec's `servers[0].url`;
-   edit it to the URL your app actually calls (a relative one such as `/api` is fine). Requests are
-   matched as method + base URL + path.
-3. **Click `◉ Intercept`** in the toolbar. This switches interception on for the inspected site
+2. **Click `◉ Intercept`** in the toolbar. This switches interception on for the inspected site
    and patches the open page right away.
-4. **Click ＋ New mock**, pick the operation, **Create**. The endpoint appears in the table.
-5. Set a response in the **Respond** tab and click **Resolve**.
+3. **Check the base URL** shown next to the spec (expand it in the Specs tab). It is taken from
+   the spec's `servers[0].url`, which is often not what your app calls. Use the app for a moment:
+   the URLs it really requests are offered under the field as **Seen on this page** — click one
+   to use it. You can also type it (a relative one such as `/api` is fine). Requests are matched
+   as method + base URL + path.
+4. **Use the app.** Every operation of the spec that the page requests is listed in the mock
+   table by itself, the first time it is requested. A listed endpoint has no response yet, so its
+   requests still reach the real API. (**＋ New mock** adds one that has not been requested yet.)
+5. Select an endpoint. The **Respond** editor already holds what the real API last answered for
+   it, so you start from real data: edit it and click **Resolve** — or switch on catch mode
+   (**⏸**) to hold the next request and release it with the edited response.
 
 From then on:
 
@@ -78,7 +84,21 @@ Things to know:
   where you clicked `◉ Intercept`. Chrome match patterns have no port, so `localhost:4200` and
   `localhost:4201` count as one site.
 - **Switching it off** takes effect on the next page load; the open page keeps the patch until then.
+- **Base URL suggestions** come from the requests the page makes through `fetch` /
+  `XMLHttpRequest` while it is intercepted. A request whose path ends with one of the spec's paths
+  (same method) suggests whatever precedes it; the number on a suggestion is how many operations of
+  the spec were seen under it. Requests made before you clicked `◉ Intercept` are not known —
+  reload the page or trigger them again. Only the method and the URL without its query are read,
+  and nothing is stored.
 - **An endpoint without a base URL** stays `local` and answers nothing; the Create dialog warns you.
+- **Real responses as the starting point.** While an endpoint is not mocked, the JSON its real
+  API returns is kept as the endpoint's value (status `resolved`, a `real` entry in History) and
+  pre-fills the Respond editor. It never changes what the app receives. Bodies over 512 KB and
+  non-JSON responses are skipped. A caught request does not reach the real API, so what you see
+  then is the response to an earlier request; **Reset** releases a caught request to the real API.
+- **Automatic listing** needs the spec's base URL to be right: a request is matched as method +
+  base URL + path. Endpoints listed this way are panel-managed mocks like the ones you create.
+  Remove one with 🗑 and it is not listed again until you reopen DevTools.
 - **Live updates.** An edit answers requests that are being held. To also refresh data that is
   already on screen, the app's libs must be generated with `--mockHooks` (included in
   `--includeMocks`); otherwise, and for `HttpClient` endpoints, the edit applies to the next request.
@@ -189,6 +209,8 @@ schemas. Enables ⚡ Example and ✓ Validate in the Respond tab.
 
 Each spec has a **Base URL** field (pre-filled from `servers[0].url` of a full spec, empty for a
 manifest). Panel-managed mocks need it to match requests; mocks registered by the app do not.
+While the site is intercepted, the URLs under which the page requested this spec's operations are
+suggested below the field — this works for a manifest too.
 
 After import, the panel shows a confirmation form where you can verify the **specId** —
 it must match the `--specId` value used when generating the mock library (defaults to the
@@ -270,7 +292,7 @@ from the table; mocks the app registered cannot.
 | **↺ Refresh** | Re-queries all mock states from the page |
 | **◉ Intercept** | Switches request interception on or off for the inspected site |
 | **⏸ Catch All** | Toggles catch mode on every registered mock |
-| **Clear** | Removes all mocks from the panel (does not affect the page) |
+| **Clear** | Empties the table of mocks the app registered (does not affect the page; they are listed again on the next refresh). Mocks created in the panel are kept |
 | **Reset All** | Calls `reset()` on every mock |
 | **Scenarios** | Opens the Scenarios dialog |
 | **＋ New mock** | Opens the Create mock dialog |

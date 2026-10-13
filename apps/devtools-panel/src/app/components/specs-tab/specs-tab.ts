@@ -2,6 +2,7 @@ import { Component, WritableSignal, computed, inject, input, signal } from '@ang
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { load as yamlLoad } from 'js-yaml';
+import { BaseUrlSuggestion, suggestBaseUrls } from '../../base-url-suggestions';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
 import { SPEC_STORE, SpecEntry, extractFromOpenApiSpec, isOpenApiSpec } from '../../spec-store.token';
 
@@ -33,6 +34,23 @@ export class SpecsTab {
 
   protected readonly specList = computed<SpecEntry[]>(() => [...this.store.specs().values()]);
 
+  /**
+   * Per spec: base URLs under which the page was seen requesting the spec's operations, minus
+   * the one already set. Empty unless the site is intercepted.
+   */
+  protected readonly baseUrlSuggestions = computed<ReadonlyMap<string, BaseUrlSuggestion[]>>(() => {
+    const observed = this.bridge.observedRequests();
+    const bySpec = new Map<string, BaseUrlSuggestion[]>();
+    if (observed.length === 0) return bySpec;
+    for (const spec of this.specList()) {
+      bySpec.set(
+        spec.specId,
+        suggestBaseUrls(spec.mocks, observed).filter((s) => s.baseUrl !== spec.baseUrl),
+      );
+    }
+    return bySpec;
+  });
+
   protected isExpanded(specId: string): boolean {
     return this.expandedSpecs().has(specId);
   }
@@ -43,6 +61,8 @@ export class SpecsTab {
       if (next.has(specId)) next.delete(specId); else next.add(specId);
       return next;
     });
+    // The base URL field is now visible: fetch what the page has requested so far.
+    if (this.isExpanded(specId)) this.bridge.refreshObserved();
   }
 
   protected isRegistered(tokenName: string): boolean {

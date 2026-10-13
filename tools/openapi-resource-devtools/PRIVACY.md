@@ -22,6 +22,10 @@ No other data is collected or stored.
 
 To display mock state in the DevTools panel, the extension reads `window.__openApiMocks__` from the page you are inspecting, including the requests the page made to mocked endpoints. This data stays in memory for the duration of the DevTools session and is never written to disk or transmitted anywhere.
 
+On sites where interception is switched on, the panel also reads which URLs the page requested through `fetch` / `XMLHttpRequest` (the HTTP method and the URL without its query string — no headers, no bodies), in order to suggest the base URL of an imported spec. The list lives in the page's memory and is never written to disk or transmitted anywhere.
+
+On those sites the panel also receives the JSON response bodies of requests that belong to an operation of a spec you imported, so that it can offer the real response as the starting point for a mock. They are shown in the panel, kept in memory for the DevTools session, and never written to disk or transmitted anywhere. A response becomes part of stored data only if you yourself save it as a mock response or in a scenario.
+
 ## Request interception
 
 On sites where you click **Intercept** in the panel — and only there — the extension injects a script that patches `fetch` and `XMLHttpRequest` in the page. Requests to the endpoints you mocked are answered locally in the page; all other requests are passed to the network unchanged. The extension does not record, forward or modify them.

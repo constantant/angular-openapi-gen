@@ -137,6 +137,14 @@ screen:
 
 `reset()` on an endpoint without an initial behavior releases its held requests to the real API.
 
+### Real responses
+
+When a request of a registered endpoint reaches the real API (it has no behavior, or was released
+to it), a JSON response is kept as the endpoint's state — `getState().value`, status `resolved` —
+and reported as a `real` event. Tools use it as the starting point for a mock; it never changes
+what the app receives, and it does not replace a value you set with `resolve()`. Bodies over
+512 KB are skipped.
+
 ### Catch mode
 
 Catch mode holds every request of an endpoint until you decide its response — useful to inspect
@@ -431,6 +439,7 @@ teardown.
 | `setCatchMode(key, enabled)` / `isCatchMode(key)` | Catch mode, also for a key that is not registered yet |
 | `hold(timeoutMs)` | Park all requests until `configure()` is called or the timeout passes |
 | `configure(config)` | Deliver endpoints and catch modes from outside the app, and release held requests |
+| `observeRequests()` / `observedRequests()` | Start keeping, and read, the distinct requests the page makes (method + URL without query) — the DevTools panel suggests base URLs from them. Off unless called |
 
 ### `openApiMock(key)` / `window.__openApiMocks__[key]`
 
@@ -457,6 +466,7 @@ type MockEvent =
   | { type: 'request';   args: unknown[]; ts: number }
   | { type: 'caught';    args: unknown[]; requestId: string; ts: number }
   | { type: 'resolve';   value: unknown; ts: number }
+  | { type: 'real';      status: number; value: unknown; ts: number } // the real API answered an unmocked request
   | { type: 'loading';   ts: number }
   | { type: 'reloading'; ts: number }
   | { type: 'error';     error: unknown; ts: number }

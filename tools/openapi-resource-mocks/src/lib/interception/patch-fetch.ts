@@ -25,8 +25,26 @@ export function patchFetch(target: { fetch: typeof fetch }, runtime: MockRuntime
     const method = init?.method ?? (isRequest ? input.method : 'GET');
     const signal = init?.signal ?? (isRequest ? input.signal : undefined);
 
+    // The real request; its response is shown to the runtime (a clone — the caller's is untouched).
+    const real = (): Promise<Response> => {
+      const pending = native.call(target, input, init);
+      if (!runtime.wantsRealResponse(method, url)) return pending;
+      return pending.then((response) => {
+        try {
+          const contentType = response.headers.get('content-type');
+          if (/[/+]json\b/i.test(contentType ?? '')) {
+            const copy = response.clone();
+            void runtime.realResponse({ method, url, status: response.status, contentType, text: () => copy.text() });
+          }
+        } catch {
+          // never let bookkeeping break the app's request
+        }
+        return response;
+      });
+    };
+
     const interception = runtime.intercept({ method, url, body: readRequestBody(init?.body) });
-    if (!interception) return native.call(target, input, init);
+    if (!interception) return real();
 
     return new Promise<Response>((resolve, reject) => {
       const onAbort = (): void => {
@@ -38,7 +56,7 @@ export function patchFetch(target: { fetch: typeof fetch }, runtime: MockRuntime
 
       void interception.result.then((result) => {
         signal?.removeEventListener('abort', onAbort);
-        if (result === 'passthrough') native.call(target, input, init).then(resolve, reject);
+        if (result === 'passthrough') real().then(resolve, reject);
         else resolve(toFetchResponse(result, url));
       });
     });

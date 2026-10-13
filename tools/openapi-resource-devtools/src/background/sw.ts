@@ -180,6 +180,30 @@ function injectStateOnly(tabId: number, key: string, port: chrome.runtime.Port):
     .catch(() => { /* tab may have navigated */ });
 }
 
+/**
+ * Read the distinct requests the page made since interception started (method + URL without the
+ * query) and post them to the panel, which suggests base URLs for its specs from them. Read on
+ * demand; nothing is stored by the extension.
+ */
+function injectObserved(tabId: number, port: chrome.runtime.Port): void {
+  chrome.scripting
+    .executeScript({
+      target: { tabId },
+      world: 'MAIN',
+      func: () => {
+        const installed = (
+          window as unknown as { __oarmRuntime__?: { runtime?: { observedRequests?: () => unknown[] } } }
+        ).__oarmRuntime__;
+        return installed?.runtime?.observedRequests?.() ?? [];
+      },
+    })
+    .then((results) => {
+      const requests = results?.[0]?.result;
+      port.postMessage({ type: 'observed-requests', requests: Array.isArray(requests) ? requests : [] });
+    })
+    .catch(() => { /* chrome:// page, or the tab is gone */ });
+}
+
 chrome.runtime.onConnect.addListener((port) => {
   const m = port.name.match(/^devtools-(\d+)$/);
   if (!m) return;
@@ -196,6 +220,10 @@ chrome.runtime.onConnect.addListener((port) => {
       // Targeted single-key state read — avoids triggering mock-keys and the
       // watch-list re-enable logic in the panel for every sendControl call.
       injectStateOnly(tabId, msg.key, port);
+      return;
+    }
+    if (msg.type === 'get-observed') {
+      injectObserved(tabId, port);
       return;
     }
     if (msg.type === 'get-intercept') {
