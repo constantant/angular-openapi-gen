@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_VIDEOS_REPORT_ABUSE } from './youtube-videos-report-abuse.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeVideosReportAbuse } from './youtube-videos-report-abuse.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,15 @@ const _meta: MockResourceMeta = {
   tag: 'videos',
 };
 
+export const YOUTUBE_VIDEOS_REPORT_ABUSE_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_VIDEOS_REPORT_ABUSE',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeVideosReportAbuse,
+};
+
 export function provideYoutubeVideosReportAbuseMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_VIDEOS_REPORT_ABUSE,
-    'YOUTUBE_VIDEOS_REPORT_ABUSE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_VIDEOS_REPORT_ABUSE_MOCK, initialBehavior);
 }

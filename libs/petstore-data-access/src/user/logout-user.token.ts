@@ -7,6 +7,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type LogoutUserOptions = ResourceCallOptions<unknown>;
 
@@ -23,15 +24,18 @@ export function provideLogoutUser(): FactoryProvider {
       const base = inject(PETSTORE_BASE_URL);
       return ((options?: LogoutUserOptions) => {
         const _opts = splitCallOptions<unknown>(options);
-        return httpResource<unknown>(() => {
-          return {
-            ..._opts.request,
-            url: `${base}/user/logout`,
-            headers: {
-              ..._opts.headers,
-            },
-          };
-        }, _opts.resource);
+        return trackResource(
+          'LOGOUT_USER',
+          httpResource<unknown>(() => {
+            return {
+              ..._opts.request,
+              url: `${base}/user/logout`,
+              headers: {
+                ..._opts.headers,
+              },
+            };
+          }, _opts.resource),
+        );
       }) as LogoutUserFn;
     },
   };

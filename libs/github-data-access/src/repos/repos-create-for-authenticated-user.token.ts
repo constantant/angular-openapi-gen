@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateForAuthenticatedUserBody = NonNullable<
   paths['/user/repos']['post']['requestBody']
@@ -3593,19 +3594,22 @@ export function provideReposCreateForAuthenticatedUser(): FactoryProvider {
           | ReposCreateForAuthenticatedUserBody
           | Signal<ReposCreateForAuthenticatedUserBody>,
       ) =>
-        httpResource<ReposCreateForAuthenticatedUserResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateForAuthenticatedUserBody>)()
-                : body;
-            return {
-              url: `${base}/user/repos`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_FOR_AUTHENTICATED_USER',
+          httpResource<ReposCreateForAuthenticatedUserResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateForAuthenticatedUserBody>)()
+                  : body;
+              return {
+                url: `${base}/user/repos`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

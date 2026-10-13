@@ -2,6 +2,7 @@ import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody =
   NonNullable<
@@ -37,19 +38,22 @@ export function provideReposCustomPropertiesForReposCreateOrUpdateRepositoryValu
           | ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody
           | Signal<ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody>,
       ) =>
-        httpResource<unknown>(() => {
-          const _body =
-            typeof body === 'function'
-              ? (
-                  body as Signal<ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody>
-                )()
-              : body;
-          return {
-            url: `${base}/repos/${owner}/${repo}/properties/values`,
-            method: 'PATCH',
-            body: _body,
-          };
-        });
+        trackResource(
+          'REPOS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_REPOSITORY_VALUES',
+          httpResource<unknown>(() => {
+            const _body =
+              typeof body === 'function'
+                ? (
+                    body as Signal<ReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesBody>
+                  )()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/properties/values`,
+              method: 'PATCH',
+              body: _body,
+            };
+          }),
+        );
     },
   };
 }

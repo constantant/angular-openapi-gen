@@ -149,6 +149,10 @@ export class SpecsTab {
     }
   }
 
+  protected setBaseUrl(specId: string, baseUrl: string): void {
+    void this.store.setBaseUrl(specId, baseUrl);
+  }
+
   protected remove(specId: string): void {
     void this.store.remove(specId);
   }

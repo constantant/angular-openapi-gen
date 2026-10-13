@@ -7,10 +7,10 @@ test.describe('YouTube page (mock)', () => {
 
   test('YOUTUBE_SEARCH_LIST makes no request until a query is submitted', async ({ page }) => {
     // query() starts as '' — the rxResource's params return undefined, so it stays idle and
-    // the HttpClient token is never called (nothing is registered on the bus yet).
+    // nothing reaches the transport. (The endpoint itself is registered at bootstrap.)
     await expect(page.getByRole('button', { name: 'Search' })).toBeVisible();
-    const registered = await page.evaluate(() => 'YOUTUBE_SEARCH_LIST' in (window.__openApiMocks__ ?? {}));
-    expect(registered).toBe(false);
+    const before = await page.evaluate(() => openApiMock('YOUTUBE_SEARCH_LIST').getHistory());
+    expect(before).toHaveLength(0);
 
     await page.getByRole('button', { name: 'Search' }).click();
     await expect(page.getByText('Angular in 100 Seconds')).toBeVisible();
@@ -48,10 +48,10 @@ test.describe('YouTube page (mock)', () => {
     // HttpClient (Observable) token: fail it while the request is still in flight.
     await expect(page.locator('mat-progress-bar')).toBeVisible();
     await page.evaluate(() =>
-      openApiMock('YOUTUBE_SEARCH_LIST').fail(new Error('API quota exceeded')),
+      openApiMock('YOUTUBE_SEARCH_LIST').fail({ message: 'API quota exceeded' }, 403),
     );
     await expect(
-      page.getByText("Backend response doesn't match its own API spec — API quota exceeded"),
+      page.getByText('Request failed (HTTP 403).'),
     ).toBeVisible();
   });
 });

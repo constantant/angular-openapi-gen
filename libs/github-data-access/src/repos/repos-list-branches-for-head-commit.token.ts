@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposListBranchesForHeadCommitResponse =
   paths['/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head']['get']['responses']['200']['content']['application/json'];
@@ -67,11 +68,14 @@ export function provideReposListBranchesForHeadCommit(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, commitSha: string) =>
-        httpResource<ReposListBranchesForHeadCommitResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/branches-where-head`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT',
+          httpResource<ReposListBranchesForHeadCommitResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/branches-where-head`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

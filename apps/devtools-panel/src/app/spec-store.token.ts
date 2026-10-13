@@ -22,6 +22,12 @@ export interface SpecEntry {
   rawDefinitions?: Record<string, unknown>;
   /** Inline response examples keyed by operationId, extracted from the spec. */
   responseExamples?: Record<string, unknown>;
+  /**
+   * Where the API is served (`servers[0].url` of the spec, editable in the Specs tab). Requests are
+   * matched against it, so an endpoint created in the panel needs it; one the app registers itself
+   * brings its own.
+   */
+  baseUrl?: string;
 }
 
 export interface SpecStore {
@@ -34,6 +40,7 @@ export interface SpecStore {
   findExample(specId: string, operationId: string): unknown;
   addFromManifest(json: unknown): Promise<void>;
   addFromOpenApiSpec(json: unknown, specId: string): Promise<void>;
+  setBaseUrl(specId: string, baseUrl: string): Promise<void>;
   remove(specId: string): Promise<void>;
 }
 
@@ -156,6 +163,16 @@ export function extractFromOpenApiSpec(
   return { mocks, responseSchemas, responseExamples, rawDefinitions };
 }
 
+/** `servers[0].url` of an OpenAPI spec, with its `{variables}` replaced by their defaults. */
+export function extractBaseUrl(spec: Record<string, unknown>): string | undefined {
+  const server = (spec['servers'] as Array<Record<string, unknown>> | undefined)?.[0];
+  if (typeof server?.['url'] !== 'string') return undefined;
+  const variables = (server['variables'] ?? {}) as Record<string, { default?: unknown }>;
+  return server['url']
+    .replace(/\{([^}]+)\}/g, (whole, name: string) => String(variables[name]?.default ?? whole))
+    .replace(/\/+$/, '');
+}
+
 export function isOpenApiSpec(json: unknown): boolean {
   if (!json || typeof json !== 'object') return false;
   const obj = json as Record<string, unknown>;
@@ -215,6 +232,7 @@ function buildStore(
           specId, mocks,
           addedAt: Date.now(),
           responseSchemas: existing?.responseSchemas,
+          baseUrl: existing?.baseUrl,
         });
         return next;
       });
@@ -225,7 +243,20 @@ function buildStore(
       rewrittenDefsCache.delete(specId); // clear stale cache on re-import
       specsSignal.update((prev) => {
         const next = new Map(prev);
-        next.set(specId, { specId, mocks, responseSchemas, responseExamples, rawDefinitions, addedAt: Date.now() });
+        // A base URL the developer typed in survives a re-import of the spec.
+        const baseUrl = prev.get(specId)?.baseUrl ?? extractBaseUrl(json as Record<string, unknown>);
+        next.set(specId, { specId, mocks, responseSchemas, responseExamples, rawDefinitions, baseUrl, addedAt: Date.now() });
+        return next;
+      });
+      await persist(specsSignal());
+    },
+    async setBaseUrl(specId: string, baseUrl: string): Promise<void> {
+      const trimmed = baseUrl.trim().replace(/\/+$/, '');
+      specsSignal.update((prev) => {
+        const entry = prev.get(specId);
+        if (!entry) return prev;
+        const next = new Map(prev);
+        next.set(specId, { ...entry, baseUrl: trimmed || undefined });
         return next;
       });
       await persist(specsSignal());

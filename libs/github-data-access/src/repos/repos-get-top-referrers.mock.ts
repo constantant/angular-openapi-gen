@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_TOP_REFERRERS } from './repos-get-top-referrers.token';
-import type { ReposGetTopReferrersResponse } from './repos-get-top-referrers.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetTopReferrers,
+  type ReposGetTopReferrersResponse,
+} from './repos-get-top-referrers.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_TOP_REFERRERS_MOCK: MockEndpoint<ReposGetTopReferrersResponse> =
+  {
+    key: 'REPOS_GET_TOP_REFERRERS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetTopReferrers,
+  };
+
 export function provideReposGetTopReferrersMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetTopReferrersResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_TOP_REFERRERS,
-    'REPOS_GET_TOP_REFERRERS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetTopReferrersResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_TOP_REFERRERS_MOCK, initialBehavior);
 }

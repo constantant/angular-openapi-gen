@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetReleaseByTagResponse =
   paths['/repos/{owner}/{repo}/releases/tags/{tag}']['get']['responses']['200']['content']['application/json'];
@@ -519,11 +520,14 @@ export function provideReposGetReleaseByTag(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, tag: string) =>
-        httpResource<ReposGetReleaseByTagResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/releases/tags/${tag}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_RELEASE_BY_TAG',
+          httpResource<ReposGetReleaseByTagResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/releases/tags/${tag}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -22,12 +22,14 @@ for (const name of readdirSync(panelDist)) {
   cpSync(join(panelDist, name), join(out, name), { recursive: true });
 }
 
-// 3. Bundle the three extension scripts (content, SW, devtools page)
+// 3. Bundle the extension scripts (content scripts, page-injected runtime, SW, devtools page)
 await build({
   entryPoints: {
     devtools: join(src, 'devtools.ts'),
     sw:       join(src, 'background/sw.ts'),
     content:  join(src, 'content/content.ts'),
+    config:   join(src, 'content/config.ts'),
+    inject:   join(src, 'inject/inject.ts'),
   },
   bundle: true,
   outdir: out,

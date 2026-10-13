@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateOrUpdateFileContentsBody = NonNullable<
   paths['/repos/{owner}/{repo}/contents/{path}']['put']['requestBody']
@@ -204,19 +205,22 @@ export function provideReposCreateOrUpdateFileContents(): FactoryProvider {
           | ReposCreateOrUpdateFileContentsBody
           | Signal<ReposCreateOrUpdateFileContentsBody>,
       ) =>
-        httpResource<ReposCreateOrUpdateFileContentsResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateOrUpdateFileContentsBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/contents/${path}`,
-              method: 'PUT',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_OR_UPDATE_FILE_CONTENTS',
+          httpResource<ReposCreateOrUpdateFileContentsResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateOrUpdateFileContentsBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+                method: 'PUT',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

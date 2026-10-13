@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposMergeUpstreamBody = NonNullable<
   paths['/repos/{owner}/{repo}/merge-upstream']['post']['requestBody']
@@ -57,19 +58,22 @@ export function provideReposMergeUpstream(): FactoryProvider {
         repo: string,
         body: ReposMergeUpstreamBody | Signal<ReposMergeUpstreamBody>,
       ) =>
-        httpResource<ReposMergeUpstreamResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposMergeUpstreamBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/merge-upstream`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_MERGE_UPSTREAM',
+          httpResource<ReposMergeUpstreamResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposMergeUpstreamBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/merge-upstream`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

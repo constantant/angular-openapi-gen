@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export const REPOS_DOWNLOAD_ZIPBALL_ARCHIVE = new InjectionToken<
   (
@@ -17,9 +18,12 @@ export function provideReposDownloadZipballArchive(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, ref: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/repos/${owner}/${repo}/zipball/${ref}`,
-        }));
+        trackResource(
+          'REPOS_DOWNLOAD_ZIPBALL_ARCHIVE',
+          httpResource<unknown>(() => ({
+            url: `${base}/repos/${owner}/${repo}/zipball/${ref}`,
+          })),
+        );
     },
   };
 }

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { FIND_PETS_BY_TAGS } from './find-pets-by-tags.token';
-import type { FindPetsByTagsResponse } from './find-pets-by-tags.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  provideFindPetsByTags,
+  type FindPetsByTagsResponse,
+} from './find-pets-by-tags.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,17 @@ const _meta: MockResourceMeta = {
   path: '/pet/findByTags',
   method: 'get',
   tag: 'pet',
-  args: ['params', 'options'],
+};
+
+export const FIND_PETS_BY_TAGS_MOCK: MockEndpoint<FindPetsByTagsResponse> = {
+  key: 'FIND_PETS_BY_TAGS',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: provideFindPetsByTags,
 };
 
 export function provideFindPetsByTagsMock(
-  initialBehavior?: ProviderInitialBehavior<FindPetsByTagsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    FIND_PETS_BY_TAGS,
-    'FIND_PETS_BY_TAGS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<FindPetsByTagsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(FIND_PETS_BY_TAGS_MOCK, initialBehavior);
 }

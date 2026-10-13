@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_COMMIT_SIGNATURE_PROTECTION } from './repos-get-commit-signature-protection.token';
-import type { ReposGetCommitSignatureProtectionResponse } from './repos-get-commit-signature-protection.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetCommitSignatureProtection,
+  type ReposGetCommitSignatureProtectionResponse,
+} from './repos-get-commit-signature-protection.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_COMMIT_SIGNATURE_PROTECTION_MOCK: MockEndpoint<ReposGetCommitSignatureProtectionResponse> =
+  {
+    key: 'REPOS_GET_COMMIT_SIGNATURE_PROTECTION',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetCommitSignatureProtection,
+  };
+
 export function provideReposGetCommitSignatureProtectionMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetCommitSignatureProtectionResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_COMMIT_SIGNATURE_PROTECTION,
-    'REPOS_GET_COMMIT_SIGNATURE_PROTECTION',
+  initialBehavior?: MockEndpointBehavior<ReposGetCommitSignatureProtectionResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_COMMIT_SIGNATURE_PROTECTION_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

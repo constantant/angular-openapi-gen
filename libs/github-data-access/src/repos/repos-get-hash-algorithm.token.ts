@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetHashAlgorithmResponse =
   paths['/repos/{owner}/{repo}/hash-algorithm']['get']['responses']['200']['content']['application/json'];
@@ -49,11 +50,14 @@ export function provideReposGetHashAlgorithm(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<ReposGetHashAlgorithmResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/hash-algorithm`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_HASH_ALGORITHM',
+          httpResource<ReposGetHashAlgorithmResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/hash-algorithm`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

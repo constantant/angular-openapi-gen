@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_COMMENT_THREADS_LIST } from './youtube-comment-threads-list.token';
-import type { YoutubeCommentThreadsListResponse } from './youtube-comment-threads-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeCommentThreadsList,
+  type YoutubeCommentThreadsListResponse,
+} from './youtube-comment-threads-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'comment-threads',
 };
 
+export const YOUTUBE_COMMENT_THREADS_LIST_MOCK: MockEndpoint<YoutubeCommentThreadsListResponse> =
+  {
+    key: 'YOUTUBE_COMMENT_THREADS_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeCommentThreadsList,
+  };
+
 export function provideYoutubeCommentThreadsListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeCommentThreadsListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_COMMENT_THREADS_LIST,
-    'YOUTUBE_COMMENT_THREADS_LIST',
+  initialBehavior?: MockEndpointBehavior<YoutubeCommentThreadsListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_COMMENT_THREADS_LIST_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_DELETE_FILE } from './repos-delete-file.token';
-import type { ReposDeleteFileResponse } from './repos-delete-file.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposDeleteFile,
+  type ReposDeleteFileResponse,
+} from './repos-delete-file.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_DELETE_FILE_MOCK: MockEndpoint<ReposDeleteFileResponse> = {
+  key: 'REPOS_DELETE_FILE',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposDeleteFile,
+};
+
 export function provideReposDeleteFileMock(
-  initialBehavior?: ProviderInitialBehavior<ReposDeleteFileResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_DELETE_FILE,
-    'REPOS_DELETE_FILE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposDeleteFileResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_DELETE_FILE_MOCK, initialBehavior);
 }

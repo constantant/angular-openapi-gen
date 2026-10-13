@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { DELETE_PET } from './delete-pet.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { provideDeletePet } from './delete-pet.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -13,18 +14,17 @@ const _meta: MockResourceMeta = {
   path: '/pet/{petId}',
   method: 'delete',
   tag: 'pet',
-  args: ['petId', 'apiKey', 'options'],
+};
+
+export const DELETE_PET_MOCK: MockEndpoint<unknown> = {
+  key: 'DELETE_PET',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: provideDeletePet,
 };
 
 export function provideDeletePetMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    DELETE_PET,
-    'DELETE_PET',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(DELETE_PET_MOCK, initialBehavior);
 }

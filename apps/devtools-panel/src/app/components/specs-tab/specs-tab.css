@@ -296,3 +296,10 @@
     color: var(--app-color-catch) !important;
   }
 }
+
+.base-url-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 12px 8px 28px;
+}

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateCommitCommentBody = NonNullable<
   paths['/repos/{owner}/{repo}/commits/{commit_sha}/comments']['post']['requestBody']
@@ -294,19 +295,22 @@ export function provideReposCreateCommitComment(): FactoryProvider {
         body:
           ReposCreateCommitCommentBody | Signal<ReposCreateCommitCommentBody>,
       ) =>
-        httpResource<ReposCreateCommitCommentResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateCommitCommentBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/comments`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_COMMIT_COMMENT',
+          httpResource<ReposCreateCommitCommentResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateCommitCommentBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/comments`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

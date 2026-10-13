@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { GET_PET_BY_ID } from './get-pet-by-id.token';
-import type { GetPetByIdResponse } from './get-pet-by-id.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  provideGetPetById,
+  type GetPetByIdResponse,
+} from './get-pet-by-id.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,17 @@ const _meta: MockResourceMeta = {
   path: '/pet/{petId}',
   method: 'get',
   tag: 'pet',
-  args: ['petId', 'options'],
+};
+
+export const GET_PET_BY_ID_MOCK: MockEndpoint<GetPetByIdResponse> = {
+  key: 'GET_PET_BY_ID',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: provideGetPetById,
 };
 
 export function provideGetPetByIdMock(
-  initialBehavior?: ProviderInitialBehavior<GetPetByIdResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    GET_PET_BY_ID,
-    'GET_PET_BY_ID',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<GetPetByIdResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(GET_PET_BY_ID_MOCK, initialBehavior);
 }

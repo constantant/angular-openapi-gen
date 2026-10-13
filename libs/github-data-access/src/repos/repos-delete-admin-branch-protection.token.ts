@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposDeleteAdminBranchProtectionError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins']['delete']['responses']['404']['content']['application/json'];
@@ -20,10 +21,13 @@ export function provideReposDeleteAdminBranchProtection(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, branch: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/enforce_admins`,
-          method: 'DELETE',
-        }));
+        trackResource(
+          'REPOS_DELETE_ADMIN_BRANCH_PROTECTION',
+          httpResource<unknown>(() => ({
+            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/enforce_admins`,
+            method: 'DELETE',
+          })),
+        );
     },
   };
 }

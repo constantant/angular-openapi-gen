@@ -13,9 +13,9 @@ Each guide builds on the previous one; if you're starting fresh, read them in or
 |---|-------|-------------------|
 | 1 | [Setup — generate a data-access lib](./01-setup.md) | Install the generator, point it at a spec, understand what gets emitted |
 | 2 | [Consuming tokens in components](./02-consuming.md) | Inject generated tokens, conditional requests, mutations, auth |
-| 3 | [Unit tests with `/testing`](./03-unit-tests.md) | Drop-in Vitest/Jasmine mocks, `MockResourceHandle`, response sequences |
-| 4 | [E2E tests with Playwright](./04-e2e-tests.md) | Full mock bus, `page.evaluate()` control, history assertions |
-| 5 | [Chrome DevTools Extension](./05-devtools.md) | Catch mode, Respond tab, Scenarios, History inspector, local mocks |
+| 3 | [Unit tests with `/testing`](./03-unit-tests.md) | Drop-in Vitest/Jasmine mocks, `mockEndpoint`, response sequences |
+| 4 | [E2E tests with Playwright](./04-e2e-tests.md) | Mock app config, `page.evaluate()` control, history assertions |
+| 5 | [Chrome DevTools Extension](./05-devtools.md) | Catch mode, Respond tab, Scenarios, History inspector, mocking a production build |
 | 6 | [Migrating from ng-openapi-gen](./06-migrate-from-ng-openapi-gen.md) | Concept map, gradual replacement, what differs |
 | 7 | [Migrating from Orval](./07-migrate-from-orval.md) | Option mapping and what you give up |
 
@@ -36,12 +36,12 @@ npx nx g @constantant/openapi-resource-gen:api-resource \
   --specId=petstore
 
 # Unit test a component
-import { mockResource } from '@constantant/openapi-resource-mocks/testing';
-const petsMock = mockResource(FIND_PETS_BY_STATUS, { value: [] });
-TestBed.configureTestingModule({ providers: [petsMock] });
+import { mockEndpoint } from '@constantant/openapi-resource-mocks/testing';
+const petsMock = mockEndpoint(FIND_PETS_BY_STATUS_MOCK, { value: [] });
+TestBed.configureTestingModule({ providers: [provideHttpClient(), petsMock] });
 
 # Control a mock from Playwright
 await page.evaluate(() =>
-  openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 1, name: 'Rex', status: 'available' }])
+  openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }])
 );
 ```

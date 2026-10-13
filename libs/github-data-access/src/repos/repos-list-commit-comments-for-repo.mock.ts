@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_LIST_COMMIT_COMMENTS_FOR_REPO } from './repos-list-commit-comments-for-repo.token';
-import type { ReposListCommitCommentsForRepoResponse } from './repos-list-commit-comments-for-repo.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposListCommitCommentsForRepo,
+  type ReposListCommitCommentsForRepoResponse,
+} from './repos-list-commit-comments-for-repo.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_LIST_COMMIT_COMMENTS_FOR_REPO_MOCK: MockEndpoint<ReposListCommitCommentsForRepoResponse> =
+  {
+    key: 'REPOS_LIST_COMMIT_COMMENTS_FOR_REPO',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposListCommitCommentsForRepo,
+  };
+
 export function provideReposListCommitCommentsForRepoMock(
-  initialBehavior?: ProviderInitialBehavior<ReposListCommitCommentsForRepoResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_LIST_COMMIT_COMMENTS_FOR_REPO,
-    'REPOS_LIST_COMMIT_COMMENTS_FOR_REPO',
+  initialBehavior?: MockEndpointBehavior<ReposListCommitCommentsForRepoResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_LIST_COMMIT_COMMENTS_FOR_REPO_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

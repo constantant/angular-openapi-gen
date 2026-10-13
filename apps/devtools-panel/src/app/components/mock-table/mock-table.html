@@ -6,8 +6,9 @@
   <div class="empty-state">
     <p>No mocks registered yet.</p>
     <p>
-      Make sure your app calls <code>provideMockResourceBus()</code> and at least
-      one component with <code>provideMockResource()</code> has rendered.
+      Import an OpenAPI spec in <strong>Specs</strong>, switch on <strong>◉ Intercept</strong> for
+      this site and create a mock with <strong>＋ New mock</strong> — no changes to the app needed.
+      Endpoints the app registers itself with <code>provideXxxMock()</code> show up here too.
     </p>
   </div>
 } @else {
@@ -52,8 +53,8 @@
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let row" class="actions-cell"
             (click)="$event.stopPropagation()">
-          @if (row.state.status === 'local') {
-            <button mat-icon-button matTooltip="Remove local mock"
+          @if (row.managed) {
+            <button mat-icon-button matTooltip="Remove this panel-created mock"
                     (click)="bridge.deleteLocalMock(row.key)">🗑</button>
           }
           <button mat-icon-button

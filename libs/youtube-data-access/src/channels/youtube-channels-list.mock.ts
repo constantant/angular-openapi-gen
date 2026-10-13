@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_CHANNELS_LIST } from './youtube-channels-list.token';
-import type { YoutubeChannelsListResponse } from './youtube-channels-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeChannelsList,
+  type YoutubeChannelsListResponse,
+} from './youtube-channels-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'channels',
 };
 
+export const YOUTUBE_CHANNELS_LIST_MOCK: MockEndpoint<YoutubeChannelsListResponse> =
+  {
+    key: 'YOUTUBE_CHANNELS_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeChannelsList,
+  };
+
 export function provideYoutubeChannelsListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeChannelsListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_CHANNELS_LIST,
-    'YOUTUBE_CHANNELS_LIST',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<YoutubeChannelsListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_CHANNELS_LIST_MOCK, initialBehavior);
 }

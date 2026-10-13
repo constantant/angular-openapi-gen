@@ -76,6 +76,15 @@
         </div>
 
         @if (isExpanded(spec.specId)) {
+          <div class="base-url-row">
+            <span class="import-label">Base URL
+              <span class="import-hint">(requests are matched under it; needed for mocks created in the panel)</span>
+            </span>
+            <input class="url-input"
+                   placeholder="https://api.example.com/v1"
+                   [value]="spec.baseUrl ?? ''"
+                   (change)="setBaseUrl(spec.specId, $any($event.target).value)" />
+          </div>
           <ul class="endpoint-list">
             @for (mock of spec.mocks; track mock.tokenName) {
               <li class="endpoint-row" [class.unregistered]="!isRegistered(mock.tokenName)">
@@ -87,7 +96,7 @@
                         [class.catch-active]="isCatching(mock.tokenName)"
                         [disabled]="!isRegistered(mock.tokenName)"
                         [matTooltip]="!isRegistered(mock.tokenName)
-                          ? 'Not registered in app — add provideMockResource() to your config'
+                          ? 'Not registered — create it on the Mocks tab with ＋ New mock'
                           : isCatching(mock.tokenName)
                           ? 'Catch mode on — click to disable'
                           : 'Enable catch mode and go to Mocks tab'"

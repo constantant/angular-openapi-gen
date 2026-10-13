@@ -8,6 +8,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 import { API_KEY } from '../api-key.security-token';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
@@ -116,21 +117,24 @@ export function provideGetPetById(): FactoryProvider {
       const petstoreAuth = inject(PETSTORE_AUTH, { optional: true });
       return ((petId: string, options?: GetPetByIdOptions) => {
         const _opts = splitCallOptions<GetPetByIdResponse>(options);
-        return httpResource<GetPetByIdResponse>(
-          () => {
-            return {
-              ..._opts.request,
-              url: `${base}/pet/${petId}`,
-              headers: {
-                ...(apiKey?.() != null ? { api_key: `${apiKey()}` } : {}),
-                ...(petstoreAuth?.() != null
-                  ? { Authorization: `Bearer ${petstoreAuth()}` }
-                  : {}),
-                ..._opts.headers,
-              },
-            };
-          },
-          { ..._opts.resource, parse: _validateResponse },
+        return trackResource(
+          'GET_PET_BY_ID',
+          httpResource<GetPetByIdResponse>(
+            () => {
+              return {
+                ..._opts.request,
+                url: `${base}/pet/${petId}`,
+                headers: {
+                  ...(apiKey?.() != null ? { api_key: `${apiKey()}` } : {}),
+                  ...(petstoreAuth?.() != null
+                    ? { Authorization: `Bearer ${petstoreAuth()}` }
+                    : {}),
+                  ..._opts.headers,
+                },
+              };
+            },
+            { ..._opts.resource, parse: _validateResponse },
+          ),
         );
       }) as GetPetByIdFn;
     },

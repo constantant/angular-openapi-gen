@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_GET_BY_USERNAME } from './users-get-by-username.token';
-import type { UsersGetByUsernameResponse } from './users-get-by-username.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersGetByUsername,
+  type UsersGetByUsernameResponse,
+} from './users-get-by-username.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_GET_BY_USERNAME_MOCK: MockEndpoint<UsersGetByUsernameResponse> =
+  {
+    key: 'USERS_GET_BY_USERNAME',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersGetByUsername,
+  };
+
 export function provideUsersGetByUsernameMock(
-  initialBehavior?: ProviderInitialBehavior<UsersGetByUsernameResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_GET_BY_USERNAME,
-    'USERS_GET_BY_USERNAME',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<UsersGetByUsernameResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(USERS_GET_BY_USERNAME_MOCK, initialBehavior);
 }

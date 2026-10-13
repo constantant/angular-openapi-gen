@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateOrUpdateEnvironmentBody = NonNullable<
   paths['/repos/{owner}/{repo}/environments/{environment_name}']['put']['requestBody']
@@ -566,19 +567,22 @@ export function provideReposCreateOrUpdateEnvironment(): FactoryProvider {
           | ReposCreateOrUpdateEnvironmentBody
           | Signal<ReposCreateOrUpdateEnvironmentBody>,
       ) =>
-        httpResource<ReposCreateOrUpdateEnvironmentResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateOrUpdateEnvironmentBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
-              method: 'PUT',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_OR_UPDATE_ENVIRONMENT',
+          httpResource<ReposCreateOrUpdateEnvironmentResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateOrUpdateEnvironmentBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
+                method: 'PUT',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

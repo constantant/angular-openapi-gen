@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetCommitSignatureProtectionResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures']['get']['responses']['200']['content']['application/json'];
@@ -57,11 +58,14 @@ export function provideReposGetCommitSignatureProtection(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, branch: string) =>
-        httpResource<ReposGetCommitSignatureProtectionResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_signatures`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_COMMIT_SIGNATURE_PROTECTION',
+          httpResource<ReposGetCommitSignatureProtectionResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_signatures`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

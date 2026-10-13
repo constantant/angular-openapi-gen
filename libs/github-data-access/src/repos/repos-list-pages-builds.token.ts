@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposListPagesBuildsParams =
   paths['/repos/{owner}/{repo}/pages/builds']['get']['parameters']['query'];
@@ -216,23 +217,26 @@ export function provideReposListPagesBuilds(): FactoryProvider {
           | ReposListPagesBuildsParams
           | (() => ReposListPagesBuildsParams | undefined),
       ) =>
-        httpResource<ReposListPagesBuildsResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/repos/${owner}/${repo}/pages/builds`,
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_LIST_PAGES_BUILDS',
+          httpResource<ReposListPagesBuildsResponse>(
+            () => {
+              const _params = typeof params === 'function' ? params() : params;
+              if (typeof params === 'function' && _params === undefined)
+                return undefined;
+              return {
+                url: `${base}/repos/${owner}/${repo}/pages/builds`,
+                params: _params as unknown as Record<
+                  string,
+                  | string
+                  | number
+                  | boolean
+                  | readonly (string | number | boolean)[]
+                >,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

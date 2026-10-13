@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_LIVE_BROADCASTS_LIST } from './youtube-live-broadcasts-list.token';
-import type { YoutubeLiveBroadcastsListResponse } from './youtube-live-broadcasts-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeLiveBroadcastsList,
+  type YoutubeLiveBroadcastsListResponse,
+} from './youtube-live-broadcasts-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'live-broadcasts',
 };
 
+export const YOUTUBE_LIVE_BROADCASTS_LIST_MOCK: MockEndpoint<YoutubeLiveBroadcastsListResponse> =
+  {
+    key: 'YOUTUBE_LIVE_BROADCASTS_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeLiveBroadcastsList,
+  };
+
 export function provideYoutubeLiveBroadcastsListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeLiveBroadcastsListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_LIVE_BROADCASTS_LIST,
-    'YOUTUBE_LIVE_BROADCASTS_LIST',
+  initialBehavior?: MockEndpointBehavior<YoutubeLiveBroadcastsListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_LIVE_BROADCASTS_LIST_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

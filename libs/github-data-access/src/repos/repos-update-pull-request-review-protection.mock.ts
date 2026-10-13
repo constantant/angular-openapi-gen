@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION } from './repos-update-pull-request-review-protection.token';
-import type { ReposUpdatePullRequestReviewProtectionResponse } from './repos-update-pull-request-review-protection.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposUpdatePullRequestReviewProtection,
+  type ReposUpdatePullRequestReviewProtectionResponse,
+} from './repos-update-pull-request-review-protection.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION_MOCK: MockEndpoint<ReposUpdatePullRequestReviewProtectionResponse> =
+  {
+    key: 'REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposUpdatePullRequestReviewProtection,
+  };
+
 export function provideReposUpdatePullRequestReviewProtectionMock(
-  initialBehavior?: ProviderInitialBehavior<ReposUpdatePullRequestReviewProtectionResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION,
-    'REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION',
+  initialBehavior?: MockEndpointBehavior<ReposUpdatePullRequestReviewProtectionResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

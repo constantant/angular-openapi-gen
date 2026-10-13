@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_ABUSE_REPORTS_INSERT } from './youtube-abuse-reports-insert.token';
-import type { YoutubeAbuseReportsInsertResponse } from './youtube-abuse-reports-insert.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeAbuseReportsInsert,
+  type YoutubeAbuseReportsInsertResponse,
+} from './youtube-abuse-reports-insert.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'abuse-reports',
 };
 
+export const YOUTUBE_ABUSE_REPORTS_INSERT_MOCK: MockEndpoint<YoutubeAbuseReportsInsertResponse> =
+  {
+    key: 'YOUTUBE_ABUSE_REPORTS_INSERT',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeAbuseReportsInsert,
+  };
+
 export function provideYoutubeAbuseReportsInsertMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeAbuseReportsInsertResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_ABUSE_REPORTS_INSERT,
-    'YOUTUBE_ABUSE_REPORTS_INSERT',
+  initialBehavior?: MockEndpointBehavior<YoutubeAbuseReportsInsertResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_ABUSE_REPORTS_INSERT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

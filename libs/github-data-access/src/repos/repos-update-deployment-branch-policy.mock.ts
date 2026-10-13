@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_UPDATE_DEPLOYMENT_BRANCH_POLICY } from './repos-update-deployment-branch-policy.token';
-import type { ReposUpdateDeploymentBranchPolicyResponse } from './repos-update-deployment-branch-policy.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposUpdateDeploymentBranchPolicy,
+  type ReposUpdateDeploymentBranchPolicyResponse,
+} from './repos-update-deployment-branch-policy.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_UPDATE_DEPLOYMENT_BRANCH_POLICY_MOCK: MockEndpoint<ReposUpdateDeploymentBranchPolicyResponse> =
+  {
+    key: 'REPOS_UPDATE_DEPLOYMENT_BRANCH_POLICY',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposUpdateDeploymentBranchPolicy,
+  };
+
 export function provideReposUpdateDeploymentBranchPolicyMock(
-  initialBehavior?: ProviderInitialBehavior<ReposUpdateDeploymentBranchPolicyResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_UPDATE_DEPLOYMENT_BRANCH_POLICY,
-    'REPOS_UPDATE_DEPLOYMENT_BRANCH_POLICY',
+  initialBehavior?: MockEndpointBehavior<ReposUpdateDeploymentBranchPolicyResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_UPDATE_DEPLOYMENT_BRANCH_POLICY_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_DELETE_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER } from './users-delete-social-account-for-authenticated-user.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideUsersDeleteSocialAccountForAuthenticatedUser } from './users-delete-social-account-for-authenticated-user.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,19 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_DELETE_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER_MOCK: MockEndpoint<unknown> =
+  {
+    key: 'USERS_DELETE_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersDeleteSocialAccountForAuthenticatedUser,
+  };
+
 export function provideUsersDeleteSocialAccountForAuthenticatedUserMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_DELETE_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER,
-    'USERS_DELETE_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    USERS_DELETE_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

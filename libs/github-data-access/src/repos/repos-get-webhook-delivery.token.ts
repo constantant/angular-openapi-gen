@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetWebhookDeliveryResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['200']['content']['application/json'];
@@ -167,11 +168,14 @@ export function provideReposGetWebhookDelivery(): FactoryProvider {
         hookId: string,
         deliveryId: string,
       ) =>
-        httpResource<ReposGetWebhookDeliveryResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/deliveries/${deliveryId}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_WEBHOOK_DELIVERY',
+          httpResource<ReposGetWebhookDeliveryResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/deliveries/${deliveryId}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

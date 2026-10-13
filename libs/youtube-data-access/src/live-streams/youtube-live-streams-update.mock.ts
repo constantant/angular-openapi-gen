@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_LIVE_STREAMS_UPDATE } from './youtube-live-streams-update.token';
-import type { YoutubeLiveStreamsUpdateResponse } from './youtube-live-streams-update.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeLiveStreamsUpdate,
+  type YoutubeLiveStreamsUpdateResponse,
+} from './youtube-live-streams-update.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'live-streams',
 };
 
+export const YOUTUBE_LIVE_STREAMS_UPDATE_MOCK: MockEndpoint<YoutubeLiveStreamsUpdateResponse> =
+  {
+    key: 'YOUTUBE_LIVE_STREAMS_UPDATE',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeLiveStreamsUpdate,
+  };
+
 export function provideYoutubeLiveStreamsUpdateMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeLiveStreamsUpdateResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_LIVE_STREAMS_UPDATE,
-    'YOUTUBE_LIVE_STREAMS_UPDATE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<YoutubeLiveStreamsUpdateResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_LIVE_STREAMS_UPDATE_MOCK, initialBehavior);
 }

@@ -164,10 +164,9 @@ test.describe('DevTools Panel', () => {
     );
   });
 
-  test('Mocks tab empty state mentions provideMockResourceBus', async ({ page }) => {
-    await expect(page.locator('app-mock-table .empty-state')).toContainText(
-      'provideMockResourceBus',
-    );
+  test('Mocks tab empty state explains how to start mocking', async ({ page }) => {
+    await expect(page.locator('app-mock-table .empty-state')).toContainText('Intercept');
+    await expect(page.locator('app-mock-table .empty-state')).toContainText('provideXxxMock()');
   });
 
   test('filter input accepts text', async ({ page }) => {

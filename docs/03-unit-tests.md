@@ -1,9 +1,9 @@
 # 3 — Unit tests with `/testing`
 
-`@constantant/openapi-resource-mocks/testing` is a lightweight helper designed for
-Vitest and Jasmine component tests. It does not set up a mock bus, touch `window`, or
-emit DOM events — it simply replaces a token's factory with a signal-based mock and gives
-you assertion helpers on top.
+`@constantant/openapi-resource-mocks/testing` mocks an endpoint for Vitest and Jasmine component
+tests. The component under test keeps its real token and the real `HttpClient` / `httpResource`;
+only the transport (`fetch` / `XMLHttpRequest`) is replaced. The test therefore runs the same code
+as production, including interceptors and `--validateResponses`.
 
 ---
 
@@ -13,7 +13,8 @@ you assertion helpers on top.
 npm install -D @constantant/openapi-resource-mocks
 ```
 
-No extra providers or test setup required beyond `TestBed`.
+Generate the lib with `--includeMocks`: every endpoint gets a descriptor (`FIND_PETS_BY_STATUS_MOCK`)
+in the lib's `/mock` subpath, which is what `mockEndpoint()` takes.
 
 ---
 
@@ -21,30 +22,26 @@ No extra providers or test setup required beyond `TestBed`.
 
 ```typescript
 import { TestBed } from '@angular/core/testing';
-import { mockResource } from '@constantant/openapi-resource-mocks/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { mockEndpoint, uninstallMockInterception } from '@constantant/openapi-resource-mocks/testing';
+import { FIND_PETS_BY_STATUS_MOCK } from '@myapp/petstore-data-access/mock';
 import { PetsPageComponent } from './pets-page.component';
-import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
 
 describe('PetsPageComponent', () => {
-  let petsMock: ReturnType<typeof mockResource<FindPetsByStatusResponse>>;
+  afterAll(() => uninstallMockInterception()); // restore the native fetch / XMLHttpRequest
 
-  beforeEach(() => {
-    petsMock = mockResource(FIND_PETS_BY_STATUS);
+  it('renders pets when data arrives', async () => {
+    const petsMock = mockEndpoint(FIND_PETS_BY_STATUS_MOCK, {
+      value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
+    });
 
     TestBed.configureTestingModule({
       imports: [PetsPageComponent],
-      providers: [petsMock],  // MockResourceHandle extends FactoryProvider — drop it in directly
+      providers: [provideHttpClient(), petsMock],
     });
-  });
 
-  it('renders pets when data arrives', async () => {
     const fixture = TestBed.createComponent(PetsPageComponent);
-    fixture.detectChanges(); // component mounts; factory is called
-
-    // Resolve with data
-    petsMock.ref.resolve([
-      { id: 1, name: 'Rex', status: 'available', photoUrls: [] },
-    ]);
+    await fixture.whenStable(); // the response is asynchronous, as in production
     fixture.detectChanges();
 
     const rows = fixture.nativeElement.querySelectorAll('.pet-row');
@@ -54,193 +51,205 @@ describe('PetsPageComponent', () => {
 });
 ```
 
-`mockResource()` returns a **`MockResourceHandle<T>`** which is:
-- A `FactoryProvider` (place it directly in `providers`)
-- `.ref` — a `MockResourceRef<T>` to drive state changes mid-test
-- `.calls` — all args the factory was invoked with
-- `.expectCalled()` / `.expectCalledWith(...args)` — assertion helpers
+`mockEndpoint()` returns an `EnvironmentProviders` that is also a **`MockEndpointHandle<T>`**. Put it
+in `providers`; it brings:
+
+- the endpoint's real token (you don't add `provideFindPetsByStatus()` yourself),
+- a default base URL (`http://mock.test`),
+- the request filter.
+
+You add `provideHttpClient()`.
 
 ---
 
-## `mockResource` second argument
+## `mockEndpoint` second argument
 
-The second argument sets the **initial behavior** on every factory invocation (i.e. every
-time the component mounts or a reactive param change triggers a re-call):
+The second argument is how the endpoint answers:
 
 ```typescript
-// Resolve immediately with seed data
-mockResource(FIND_PETS_BY_STATUS, { value: [] })
+// Respond with data
+mockEndpoint(FIND_PETS_BY_STATUS_MOCK, { value: [] })
 
-// Stay loading indefinitely — test your loading skeleton
-mockResource(FIND_PETS_BY_STATUS, { loading: true })
+// Hold every request open — test your loading skeleton
+mockEndpoint(FIND_PETS_BY_STATUS_MOCK, { loading: true })
 
-// Fail immediately — test your error state
-mockResource(FIND_PETS_BY_STATUS, { error: new Error('network error') })
+// Fail — test your error state (an HttpErrorResponse, status 500 unless you set one)
+mockEndpoint(FIND_PETS_BY_STATUS_MOCK, { error: { message: 'unavailable' }, status: 503 })
 
-// Loading for 500 ms then resolve
-mockResource(FIND_PETS_BY_STATUS, { value: [], delay: 500 })
-
-// Fail after a delay — simulate slow network with timeout
-mockResource(FIND_PETS_BY_STATUS, { error: new Error('timeout'), delay: 2000 })
+// Respond after 500 ms
+mockEndpoint(FIND_PETS_BY_STATUS_MOCK, { value: [], delay: 500 })
 ```
 
+Without a second argument every request is **held**, so a test never reaches the network by
+accident.
+
+`value` is the full response type. With `--validateResponses` the mocked response is validated like
+a real one, so the fixture has to satisfy the schema.
+
 ---
 
-## Driving state mid-test with `.ref`
+## Driving state mid-test
 
-After the component renders, use `petsMock.ref` to simulate state transitions:
+The handle changes the answer after the component rendered. Held requests are answered; when
+nothing is held, the component's live `httpResource`s are reloaded so they show the new answer.
 
 ```typescript
-it('shows loading skeleton while request is in flight', async () => {
-  const fixture = TestBed.createComponent(PetsPageComponent);
-  petsMock.ref.setLoading();
-  fixture.detectChanges();
+it('shows the loading skeleton while the request is in flight', async () => {
+  const petsMock = mockEndpoint(FIND_PETS_BY_STATUS_MOCK); // held
+  TestBed.configureTestingModule({ imports: [PetsPageComponent], providers: [provideHttpClient(), petsMock] });
 
+  const fixture = TestBed.createComponent(PetsPageComponent);
+  fixture.detectChanges();
   expect(fixture.nativeElement.querySelector('mat-progress-bar')).toBeTruthy();
+
+  petsMock.resolve([{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }]);
+  await fixture.whenStable();
+  fixture.detectChanges();
+  expect(fixture.nativeElement.querySelectorAll('.pet-row').length).toBe(1);
 });
 
-it('shows error message on failure', async () => {
-  const fixture = TestBed.createComponent(PetsPageComponent);
+it('shows the error message on failure', async () => {
+  // ... same setup ...
+  petsMock.fail({ message: 'Service Unavailable' }, 503);
+  await fixture.whenStable();
   fixture.detectChanges();
-
-  petsMock.ref.fail(new Error('503 Service Unavailable'));
-  fixture.detectChanges();
-
   expect(fixture.nativeElement.querySelector('.error-message')).toBeTruthy();
 });
-
-it('resets to idle', async () => {
-  const fixture = TestBed.createComponent(PetsPageComponent);
-  fixture.detectChanges();
-
-  petsMock.ref.resolve([{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }]);
-  petsMock.ref.reset();
-  fixture.detectChanges();
-
-  expect(fixture.nativeElement.querySelector('.pet-row')).toBeNull();
-});
 ```
 
-### Full `MockResourceRef<T>` API
+### `MockEndpointHandle<T>`
 
-| Method | Effect |
+| Member | Effect |
 |--------|--------|
-| `resolve(value)` | Set value → `'resolved'` |
-| `resolveAfter(ms, value)` | Loading immediately, resolve after `ms` ms |
-| `setLoading()` | → `'loading'` |
-| `fail(error)` | Set error → `'error'` |
-| `reset()` | Clear all → `'idle'` |
-| `reload()` | Keep value → `'reloading'`, fires request event |
-| `setProgress(type, loaded, total?)` | Set transfer progress |
+| `resolve(value)` | Answer held requests and all later ones; live resources reload |
+| `fail(error, status?)` | The same with a failing response (default 500) |
+| `setLoading()` | Hold every request until `resolve` / `fail` |
+| `setProgress(type, loaded, total?)` | Report transfer progress to the held requests |
+| `reset()` | Back to the behavior given to `mockEndpoint()` |
+| `calls` | What each request carried |
+| `expectCalled()` / `expectCalledWith(...args)` | Assertion helpers |
+
+The controls work once the component (or anything else) has been created from the `TestBed`.
+
+### Which wait to use
+
+- `await fixture.whenStable()` — the request gets answered.
+- `await flushMocks()` (from `/testing`) — the request stays held and you only want progress
+  events to arrive.
+
+`HttpClient` (Observable) tokens are not re-run by `resolve()`: the new answer applies to their next
+request.
 
 ---
 
 ## Response sequences
 
-Pass `{ sequence: [...] }` to advance through multiple states across factory invocations.
-Each time the component calls the factory function (on mount or reactive param change),
-the next entry in the sequence is applied. When exhausted, the last entry repeats.
-
-This is perfect for testing pagination, retries, and multi-step flows:
+Pass `{ sequence: [...] }` to answer successive requests differently. Each request consumes the
+next entry; the last one repeats:
 
 ```typescript
 it('retries and eventually succeeds', async () => {
-  petsMock = mockResource(FIND_PETS_BY_STATUS, {
+  const petsMock = mockEndpoint(FIND_PETS_BY_STATUS_MOCK, {
     sequence: [
-      { error: new Error('timeout') },              // first call fails
-      { error: new Error('timeout') },              // second call also fails
-      { value: [{ id: 1, name: 'Rex', ... }] },    // third succeeds
+      { error: { message: 'timeout' }, status: 504 }, // first request fails
+      { error: { message: 'timeout' }, status: 504 }, // second one too
+      { value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }] },
     ],
   });
+  TestBed.configureTestingModule({ imports: [RetryComponent], providers: [provideHttpClient(), petsMock] });
 
-  TestBed.overrideProvider(FIND_PETS_BY_STATUS, petsMock);
   const fixture = TestBed.createComponent(RetryComponent);
-
-  // Mount — first call, fails
+  await fixture.whenStable();
   fixture.detectChanges();
   expect(fixture.nativeElement.querySelector('.error')).toBeTruthy();
 
-  // Simulate retry button click
   fixture.nativeElement.querySelector('.retry-btn').click();
-  fixture.detectChanges();
-  // Still failing (second entry)
+  await fixture.whenStable(); // still failing (second entry)
 
   fixture.nativeElement.querySelector('.retry-btn').click();
+  await fixture.whenStable();
   fixture.detectChanges();
-  // Third call — resolved
   expect(fixture.nativeElement.querySelectorAll('.pet-row').length).toBe(1);
 });
 ```
-
-`reload()` on the ref also advances the sequence — it fires the `onRequest` listener,
-which is how the sequence mechanism detects a new call.
 
 ---
 
 ## Asserting request params
 
-Use `.expectCalledWith()` to verify the params a component passed to the factory:
+`calls` holds what each request carried **on the wire**, in this order: path parameters (strings),
+then the body, then the query (an object of strings).
 
 ```typescript
 it('sends the selected status filter', async () => {
   const fixture = TestBed.createComponent(PetsPageComponent);
-  fixture.detectChanges();
+  await fixture.whenStable();
 
-  // Change the filter to 'sold'
   fixture.componentInstance.statusFilter.set('sold');
-  fixture.detectChanges(); // reactive re-call fires
+  await fixture.whenStable();
 
-  // The factory was invoked twice: initial 'available' + reactive 'sold'
   expect(petsMock.calls.length).toBe(2);
   petsMock.expectCalledWith({ status: 'sold' });
 });
+
+// GET /pet/{petId}            → expectCalledWith('7')
+// POST /pet/{petId}/uploadImage with a file → expectCalledWith('7', file)
 ```
 
-`.expectCalled()` throws if the factory was never invoked at all — useful when you're
-testing that a provider is wired up correctly:
+Numbers in the path or query arrive as strings (`'7'`, `{ limit: '20' }`) — that is what was sent.
+
+---
+
+## Testing multiple endpoints
 
 ```typescript
-it('calls the endpoint on mount', async () => {
-  const fixture = TestBed.createComponent(PetsPageComponent);
-  fixture.detectChanges();
-  petsMock.expectCalled();
+const petsMock = mockEndpoint(FIND_PETS_BY_STATUS_MOCK, { value: [] });
+const addPetMock = mockEndpoint(ADD_PET_MOCK); // held until the test answers it
+
+TestBed.configureTestingModule({
+  imports: [PetsPageComponent],
+  providers: [provideHttpClient(), petsMock, addPetMock],
 });
+```
+
+An endpoint the component calls but the test did not mock is a real request. Mock everything the
+component touches.
+
+---
+
+## Upload progress
+
+Upload progress exists on the XHR transport only (as in a browser), so use `withXhr()` on
+Angular 22+:
+
+```typescript
+const upload = mockEndpoint(UPLOAD_FILE_MOCK, {
+  loading: true,
+  progress: [{ type: 'upload', loaded: 1_000_000, total: 4_000_000 }],
+});
+TestBed.configureTestingModule({
+  imports: [PetsPageComponent],
+  providers: [provideHttpClient(withXhr()), upload],
+});
+// ... trigger the upload ...
+await flushMocks();
+fixture.detectChanges();
+expect(bar.getAttribute('aria-valuenow')).toBe('25');
 ```
 
 ---
 
-## Testing multiple tokens
+## Tip: your own base URL
 
-Mock each token independently:
-
-```typescript
-const petsMock = mockResource(FIND_PETS_BY_STATUS, { value: [] });
-const addPetMock = mockResource(ADD_PET, { loading: true });
-
-TestBed.configureTestingModule({
-  imports: [PetsPageComponent],
-  providers: [petsMock, addPetMock],
-});
-```
-
----
-
-## Tip: providing the mock PETSTORE_BASE_URL
-
-Tokens with `providedIn: 'none'` (the default) require `provideX()` helpers.
-You also need the base URL token to be provided — use any string:
+The handle provides `http://mock.test` as the base URL. To test with another one, list your
+provider **after** the handle:
 
 ```typescript
-import { PETSTORE_BASE_URL } from '@myapp/petstore-data-access';
-
-TestBed.configureTestingModule({
-  imports: [PetsPageComponent],
-  providers: [
-    { provide: PETSTORE_BASE_URL, useValue: 'http://localhost' },
-    petsMock,
-    // Note: you DON'T need provideFindPetsByStatus() — the mock replaces it
-  ],
-});
+providers: [
+  provideHttpClient(),
+  petsMock,
+  { provide: PETSTORE_BASE_URL, useValue: 'https://api.example.com' },
+],
 ```
 
 ---

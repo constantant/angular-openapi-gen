@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_CHANNEL_SECTIONS_DELETE } from './youtube-channel-sections-delete.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeChannelSectionsDelete } from './youtube-channel-sections-delete.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'channel-sections',
 };
 
+export const YOUTUBE_CHANNEL_SECTIONS_DELETE_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_CHANNEL_SECTIONS_DELETE',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeChannelSectionsDelete,
+};
+
 export function provideYoutubeChannelSectionsDeleteMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_CHANNEL_SECTIONS_DELETE,
-    'YOUTUBE_CHANNEL_SECTIONS_DELETE',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_CHANNEL_SECTIONS_DELETE_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

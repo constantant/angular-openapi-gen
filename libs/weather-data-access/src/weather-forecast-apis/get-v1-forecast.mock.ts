@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { GET_V1_FORECAST } from './get-v1-forecast.token';
-import type { GetV1ForecastResponse } from './get-v1-forecast.token';
+import { WEATHER_BASE_URL } from '../api-base-url.token';
+import {
+  provideGetV1Forecast,
+  type GetV1ForecastResponse,
+} from './get-v1-forecast.token';
 
 const _meta: MockResourceMeta = {
   specId: 'weather',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'weather-forecast-apis',
 };
 
+export const GET_V1_FORECAST_MOCK: MockEndpoint<GetV1ForecastResponse> = {
+  key: 'GET_V1_FORECAST',
+  baseUrl: WEATHER_BASE_URL,
+  meta: _meta,
+  provide: provideGetV1Forecast,
+};
+
 export function provideGetV1ForecastMock(
-  initialBehavior?: ProviderInitialBehavior<GetV1ForecastResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    GET_V1_FORECAST,
-    'GET_V1_FORECAST',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<GetV1ForecastResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(GET_V1_FORECAST_MOCK, initialBehavior);
 }

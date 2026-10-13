@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_LIST_ATTESTATIONS_BULK } from './users-list-attestations-bulk.token';
-import type { UsersListAttestationsBulkResponse } from './users-list-attestations-bulk.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersListAttestationsBulk,
+  type UsersListAttestationsBulkResponse,
+} from './users-list-attestations-bulk.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_LIST_ATTESTATIONS_BULK_MOCK: MockEndpoint<UsersListAttestationsBulkResponse> =
+  {
+    key: 'USERS_LIST_ATTESTATIONS_BULK',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersListAttestationsBulk,
+  };
+
 export function provideUsersListAttestationsBulkMock(
-  initialBehavior?: ProviderInitialBehavior<UsersListAttestationsBulkResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_LIST_ATTESTATIONS_BULK,
-    'USERS_LIST_ATTESTATIONS_BULK',
+  initialBehavior?: MockEndpointBehavior<UsersListAttestationsBulkResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    USERS_LIST_ATTESTATIONS_BULK_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

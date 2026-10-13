@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_README } from './repos-get-readme.token';
-import type { ReposGetReadmeResponse } from './repos-get-readme.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetReadme,
+  type ReposGetReadmeResponse,
+} from './repos-get-readme.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_README_MOCK: MockEndpoint<ReposGetReadmeResponse> = {
+  key: 'REPOS_GET_README',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposGetReadme,
+};
+
 export function provideReposGetReadmeMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetReadmeResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_README,
-    'REPOS_GET_README',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetReadmeResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_README_MOCK, initialBehavior);
 }

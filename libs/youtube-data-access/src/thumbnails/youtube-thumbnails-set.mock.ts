@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_THUMBNAILS_SET } from './youtube-thumbnails-set.token';
-import type { YoutubeThumbnailsSetResponse } from './youtube-thumbnails-set.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeThumbnailsSet,
+  type YoutubeThumbnailsSetResponse,
+} from './youtube-thumbnails-set.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'thumbnails',
 };
 
+export const YOUTUBE_THUMBNAILS_SET_MOCK: MockEndpoint<YoutubeThumbnailsSetResponse> =
+  {
+    key: 'YOUTUBE_THUMBNAILS_SET',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeThumbnailsSet,
+  };
+
 export function provideYoutubeThumbnailsSetMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeThumbnailsSetResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_THUMBNAILS_SET,
-    'YOUTUBE_THUMBNAILS_SET',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<YoutubeThumbnailsSetResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_THUMBNAILS_SET_MOCK, initialBehavior);
 }

@@ -36,11 +36,19 @@ export interface MockEntry {
   catchMode: boolean;
   pendingRequest: PendingRequest | null;
   meta: MockResourceMeta | null;
+  /**
+   * Created in the panel rather than by the app: the panel persists it and the extension registers
+   * it in the page on every load. Its status is `'local'` until the page reports it.
+   */
+  managed: boolean;
+  /** Base URL a managed endpoint is matched under; without one it cannot be registered. */
+  baseUrl?: string;
 }
 
 export type PanelMessage =
   | { type: 'mock-keys'; keys: string[]; metas?: Record<string, MockResourceMeta | null> }
   | { type: 'mock-state'; key: string; state: MockState }
+  | { type: 'intercept-state'; enabled: boolean }
   | { type: 'mock-event'; key: string; event: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; ts: number } };
 
 let _histId = 0;
@@ -56,6 +64,7 @@ export function blankEntry(key: string): MockEntry {
     catchMode: false,
     pendingRequest: null,
     meta: null,
+    managed: false,
   };
 }
 

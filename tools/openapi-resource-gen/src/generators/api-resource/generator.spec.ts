@@ -2041,13 +2041,27 @@ describe('api-resource generator', () => {
       expect(c).not.toContain('parse:');
     });
 
-    it('mock file uses provideMockObservable for httpClient, provideMockResource otherwise', () => {
+    it('mock file is a transport-level filter, independent of the client type', () => {
       const ep = { operationId: 'listPets', tokenName: 'LIST_PETS', fileName: 'list-pets', apiPath: '/pets', method: 'get', tag: 'pets', hasResponse: true } as never;
-      const obs = renderMockFile(ep, 'petstore', 'httpClient');
-      expect(obs).toContain("import { provideMockObservable } from '@constantant/openapi-resource-mocks'");
-      expect(obs).toContain("return provideMockObservable(LIST_PETS, 'LIST_PETS'");
-      expect(obs).not.toContain('provideMockResource');
-      expect(renderMockFile(ep, 'petstore')).toContain('provideMockResource(LIST_PETS');
+      const c = renderMockFile(ep, 'petstore', 'PETSTORE_BASE_URL');
+      expect(c).toContain("import { provideMockEndpoint } from '@constantant/openapi-resource-mocks'");
+      expect(c).toContain("import { PETSTORE_BASE_URL } from '../api-base-url.token'");
+      expect(c).toContain("import { provideListPets, type ListPetsResponse } from './list-pets.token'");
+      expect(c).toContain('export const LIST_PETS_MOCK: MockEndpoint<ListPetsResponse> = {');
+      expect(c).toContain("key: 'LIST_PETS',");
+      expect(c).toContain('baseUrl: PETSTORE_BASE_URL,');
+      expect(c).toContain('provide: provideListPets,');
+      expect(c).toContain('initialBehavior?: MockEndpointBehavior<ListPetsResponse>');
+      expect(c).toContain('): EnvironmentProviders {');
+      expect(c).toContain('return provideMockEndpoint(LIST_PETS_MOCK, initialBehavior);');
+      // A root-provided token has no provider function to hand to the testing helpers.
+      const root = renderMockFile(ep, 'petstore', 'PETSTORE_BASE_URL', 'root');
+      expect(root).toContain("import { type ListPetsResponse } from './list-pets.token'");
+      expect(root).not.toContain('provide: ');
+      expect(c).not.toContain('responseType');
+      expect(renderMockFile({ ...(ep as object), responseVariant: 'text' } as never, 'petstore')).toContain(
+        "responseType: 'text',",
+      );
     });
   });
   describe('request shapes (httpResource and httpClient)', () => {
@@ -2273,16 +2287,6 @@ describe('api-resource generator', () => {
         expect(read('files', 'download-file')).toMatch(/\n\s+reportProgress: true,/);
         expect(read('files', 'download-file')).not.toContain('HttpEvent');
       });
-
-      it('mock file uses provideMockHttpEvents exactly when the token yields events', () => {
-        const upload = { operationId: 'uploadFile', tokenName: 'UPLOAD_FILE', fileName: 'upload-file', apiPath: '/file', method: 'put', tag: 'files', hasResponse: true, hasBody: true, isBinaryBody: true, bodyContentType: 'application/octet-stream', responseVariant: 'json' } as never;
-        const json = { operationId: 'createItem', tokenName: 'CREATE_ITEM', fileName: 'create-item', apiPath: '/items', method: 'post', tag: 'items', hasResponse: true, hasBody: true, isBinaryBody: false, bodyContentType: 'application/json', responseVariant: 'json' } as never;
-        const flat = (c: string) => c.replace(/\s+/g, '');
-        expect(flat(renderMockFile(upload, 'x', 'httpClient', true))).toContain('provideMockHttpEvents(UPLOAD_FILE');
-        expect(flat(renderMockFile(upload, 'x', 'httpClient', false))).toContain('provideMockObservable(UPLOAD_FILE');
-        expect(flat(renderMockFile(upload, 'x', 'httpResource', true))).toContain('provideMockResource(UPLOAD_FILE');
-        expect(flat(renderMockFile(json, 'x', 'httpClient', true))).toContain('provideMockObservable(CREATE_ITEM');
-      });
     });
 
     describe('httpResource only', () => {
@@ -2380,13 +2384,28 @@ describe('api-resource generator', () => {
       });
     });
 
-    it('picks the provider per endpoint when clients are mixed', async () => {
+    it('emits the same provider for every endpoint when clients are mixed', async () => {
       await gen({ httpClientOperations: 'listPets,createPet' });
       const flat = (f: string) => mock(f).replace(/\s+/g, '');
-      expect(flat('list-pets')).toContain('provideMockObservable(LIST_PETS');
-      expect(flat('create-pet')).toContain('provideMockObservable(CREATE_PET');
-      expect(flat('get-pet-by-id')).toContain('provideMockResource(GET_PET_BY_ID');
-      expect(flat('delete-pet')).toContain('provideMockResource(DELETE_PET');
+      expect(flat('list-pets')).toContain('provideMockEndpoint(LIST_PETS_MOCK');
+      expect(flat('get-pet-by-id')).toContain('provideMockEndpoint(GET_PET_BY_ID_MOCK');
+    });
+
+    it('passes httpResource refs through the mock hook, and httpClient tokens not', async () => {
+      await gen({ httpClientOperations: 'listPets' });
+      const token = (f: string) => tree.read(`libs/petstore/src/pets/${f}.token.ts`, 'utf-8')!.replace(/\s+/g, '');
+      expect(tree.read('libs/petstore/src/mock-hook.ts', 'utf-8')).toContain('__oarmTrack__');
+      expect(token('get-pet-by-id')).toContain("import{trackResource}from'../mock-hook';");
+      expect(token('get-pet-by-id')).toContain("trackResource('GET_PET_BY_ID',httpResource<");
+      expect(token('list-pets')).not.toContain('trackResource');
+      expect(tree.read('libs/petstore/src/index.ts', 'utf-8')).not.toContain('mock-hook');
+    });
+
+    it('emits no mock hook with mockHooks off, and removes a stale one', async () => {
+      await gen();
+      await gen({ mockHooks: false });
+      expect(tree.exists('libs/petstore/src/mock-hook.ts')).toBe(false);
+      expect(tree.read('libs/petstore/src/pets/get-pet-by-id.token.ts', 'utf-8')).not.toContain('trackResource');
     });
 
     it('removes stale mock files when an endpoint disappears', async () => {
@@ -2941,16 +2960,6 @@ describe('api-resource generator', () => {
         expect(read('list-pets')).toContain('CallOptions');
         expect(read('list-pets')).not.toContain('ResourceRefFor');
         expect(read('create-pet')).toContain('ResourceRefFor');
-      });
-    });
-
-    describe('mock files', () => {
-      it('record the argument names in _meta.args, in the generated order', async () => {
-        await gen({ callOptions: true, includeMocks: true });
-        const mock = (f: string) => flat(tree.read(`libs/petstore/src/pets/${f}.mock.ts`, 'utf-8')!);
-        expect(mock('list-pets')).toContain("args:['params','options']");
-        expect(mock('create-pet')).toContain("args:['body','options']");
-        expect(mock('get-pet-by-id')).toContain("args:['id','options']");
       });
     });
   });

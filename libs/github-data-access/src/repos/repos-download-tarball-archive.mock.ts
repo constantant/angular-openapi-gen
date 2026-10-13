@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_DOWNLOAD_TARBALL_ARCHIVE } from './repos-download-tarball-archive.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposDownloadTarballArchive } from './repos-download-tarball-archive.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_DOWNLOAD_TARBALL_ARCHIVE_MOCK: MockEndpoint<unknown> = {
+  key: 'REPOS_DOWNLOAD_TARBALL_ARCHIVE',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposDownloadTarballArchive,
+};
+
 export function provideReposDownloadTarballArchiveMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_DOWNLOAD_TARBALL_ARCHIVE,
-    'REPOS_DOWNLOAD_TARBALL_ARCHIVE',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_DOWNLOAD_TARBALL_ARCHIVE_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

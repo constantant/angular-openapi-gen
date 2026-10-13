@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_GET_BY_ID } from './users-get-by-id.token';
-import type { UsersGetByIdResponse } from './users-get-by-id.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersGetById,
+  type UsersGetByIdResponse,
+} from './users-get-by-id.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_GET_BY_ID_MOCK: MockEndpoint<UsersGetByIdResponse> = {
+  key: 'USERS_GET_BY_ID',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideUsersGetById,
+};
+
 export function provideUsersGetByIdMock(
-  initialBehavior?: ProviderInitialBehavior<UsersGetByIdResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_GET_BY_ID,
-    'USERS_GET_BY_ID',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<UsersGetByIdResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(USERS_GET_BY_ID_MOCK, initialBehavior);
 }

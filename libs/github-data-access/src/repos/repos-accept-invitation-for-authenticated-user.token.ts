@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposAcceptInvitationForAuthenticatedUserError =
   | paths['/user/repository_invitations/{invitation_id}']['patch']['responses']['403']['content']['application/json']
@@ -19,10 +20,13 @@ export function provideReposAcceptInvitationForAuthenticatedUser(): FactoryProvi
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (invitationId: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/user/repository_invitations/${invitationId}`,
-          method: 'PATCH',
-        }));
+        trackResource(
+          'REPOS_ACCEPT_INVITATION_FOR_AUTHENTICATED_USER',
+          httpResource<unknown>(() => ({
+            url: `${base}/user/repository_invitations/${invitationId}`,
+            method: 'PATCH',
+          })),
+        );
     },
   };
 }

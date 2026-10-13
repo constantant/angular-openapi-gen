@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdatePullRequestReviewProtectionBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['patch']['requestBody']
@@ -1418,19 +1419,24 @@ export function provideReposUpdatePullRequestReviewProtection(): FactoryProvider
           | ReposUpdatePullRequestReviewProtectionBody
           | Signal<ReposUpdatePullRequestReviewProtectionBody>,
       ) =>
-        httpResource<ReposUpdatePullRequestReviewProtectionResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdatePullRequestReviewProtectionBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_pull_request_reviews`,
-              method: 'PATCH',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_PULL_REQUEST_REVIEW_PROTECTION',
+          httpResource<ReposUpdatePullRequestReviewProtectionResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (
+                      body as Signal<ReposUpdatePullRequestReviewProtectionBody>
+                    )()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_pull_request_reviews`,
+                method: 'PATCH',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

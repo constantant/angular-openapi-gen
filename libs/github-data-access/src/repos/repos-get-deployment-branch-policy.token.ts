@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetDeploymentBranchPolicyResponse =
   paths['/repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies/{branch_policy_id}']['get']['responses']['200']['content']['application/json'];
@@ -68,11 +69,14 @@ export function provideReposGetDeploymentBranchPolicy(): FactoryProvider {
         environmentName: string,
         branchPolicyId: string,
       ) =>
-        httpResource<ReposGetDeploymentBranchPolicyResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_DEPLOYMENT_BRANCH_POLICY',
+          httpResource<ReposGetDeploymentBranchPolicyResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

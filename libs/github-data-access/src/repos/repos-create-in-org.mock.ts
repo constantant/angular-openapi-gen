@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_CREATE_IN_ORG } from './repos-create-in-org.token';
-import type { ReposCreateInOrgResponse } from './repos-create-in-org.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposCreateInOrg,
+  type ReposCreateInOrgResponse,
+} from './repos-create-in-org.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_CREATE_IN_ORG_MOCK: MockEndpoint<ReposCreateInOrgResponse> =
+  {
+    key: 'REPOS_CREATE_IN_ORG',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposCreateInOrg,
+  };
+
 export function provideReposCreateInOrgMock(
-  initialBehavior?: ProviderInitialBehavior<ReposCreateInOrgResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_CREATE_IN_ORG,
-    'REPOS_CREATE_IN_ORG',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposCreateInOrgResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_CREATE_IN_ORG_MOCK, initialBehavior);
 }

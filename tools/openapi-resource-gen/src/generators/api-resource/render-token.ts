@@ -149,6 +149,11 @@ export interface RenderTokenOptions {
    * `request-options.ts` that the generator emits alongside.
    */
   callOptions?: boolean;
+  /**
+   * Hand every `httpResource` the token creates to the lib-level `mock-hook.ts`, so a mocking
+   * tool can re-run live resources when a mock is edited.
+   */
+  mockHooks?: boolean;
 }
 
 /** Endpoints where transfer progress is meaningful: binary/multipart uploads and blob downloads. */
@@ -176,6 +181,7 @@ export function renderTokenFile(
     client = 'httpResource',
     reportProgress = false,
     callOptions = false,
+    mockHooks = false,
   }: RenderTokenOptions = {}
 ): string {
   const useHttpClient = client === 'httpClient';
@@ -241,6 +247,7 @@ export function renderTokenFile(
     );
   }
   lines.push(`import { ${baseUrlToken} } from '../api-base-url.token';`);
+  if (mockHooks && !useHttpClient) lines.push(`import { trackResource } from '../mock-hook';`);
   for (const scheme of applicableSchemes) {
     lines.push(`import { ${scheme.tokenName} } from '../${scheme.fileName}';`);
   }
@@ -446,6 +453,9 @@ export function renderTokenFile(
     responseVariant === 'text' ? 'httpResource.text' :
     responseVariant === 'blob' ? 'httpResource.blob' :
     `httpResource<${responseT}>`;
+  // With mock hooks the created resource is passed through `trackResource('KEY', …)`.
+  const resourceOpen = mockHooks ? `trackResource('${ep.tokenName}', ${resourceCall}` : resourceCall;
+  const resourceClose = mockHooks ? ')' : '';
   const fnArgs = buildFnArgs(ep, pascal, isGet);
 
   // Emit a params serializer when the spec uses non-default query param styles.
@@ -488,7 +498,7 @@ export function renderTokenFile(
   if (callOptions) {
     emitResourceTokenWithCallOptions(lines, ep, {
       pascal, urlTemplate, baseUrlToken, providedIn, applicableSchemes, headerSchemes, querySchemes,
-      canValidate, resourceCall, isGet, withProgress,
+      canValidate, resourceCall: resourceOpen, resourceClose, isGet, withProgress,
       valueT: responseVariant === 'text' ? 'string' : responseVariant === 'blob' ? 'Blob' : responseT,
     });
     return lines.join('\n');
@@ -539,21 +549,21 @@ export function renderTokenFile(
     if (needsBlockBody) {
       lines.push(
         `    return (${fnArgs}) =>`,
-        `      ${resourceCall}(() => {`,
+        `      ${resourceOpen}(() => {`,
         ...blockPrelude('        '),
         `        return {`,
         `          url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, true, false, withProgress);
-      lines.push(`        };`, `      }${parseOption});`, `  },`, `});`, '');
+      lines.push(`        };`, `      }${parseOption})${resourceClose};`, `  },`, `});`, '');
     } else {
       lines.push(
         `    return (${fnArgs}) =>`,
-        `      ${resourceCall}(() => ({`,
+        `      ${resourceOpen}(() => ({`,
         `        url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '        ', headerSchemes, querySchemes, false, false, withProgress);
-      lines.push(`      })${parseOption});`, `  },`, `});`, '');
+      lines.push(`      })${parseOption})${resourceClose};`, `  },`, `});`, '');
     }
   } else {
     lines.push('');
@@ -568,21 +578,21 @@ export function renderTokenFile(
     if (needsBlockBody) {
       lines.push(
         `      return (${fnArgs}) =>`,
-        `        ${resourceCall}(() => {`,
+        `        ${resourceOpen}(() => {`,
         ...blockPrelude('          '),
         `          return {`,
         `            url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '            ', headerSchemes, querySchemes, true, false, withProgress);
-      lines.push(`          };`, `        }${parseOption});`, `    },`, `  };`, `}`, '');
+      lines.push(`          };`, `        }${parseOption})${resourceClose};`, `    },`, `  };`, `}`, '');
     } else {
       lines.push(
         `      return (${fnArgs}) =>`,
-        `        ${resourceCall}(() => ({`,
+        `        ${resourceOpen}(() => ({`,
         `          url: \`\${base}${urlTemplate}\`,`,
       );
       appendResourceOptions(lines, ep, isGet, '          ', headerSchemes, querySchemes, false, false, withProgress);
-      lines.push(`        })${parseOption});`, `    },`, `  };`, `}`, '');
+      lines.push(`        })${parseOption})${resourceClose};`, `    },`, `  };`, `}`, '');
     }
   }
 
@@ -707,7 +717,10 @@ interface ResourceCallOptionsCtx {
   canValidate: boolean;
   /** The resource's value type: the response alias, `string`, `Blob` or `unknown`. */
   valueT: string;
+  /** The call expression up to its argument list; may open a `trackResource(` wrapper… */
   resourceCall: string;
+  /** …which this closes (empty without mock hooks). */
+  resourceClose: string;
   isGet: boolean;
   withProgress: boolean;
 }
@@ -754,7 +767,7 @@ function emitResourceTokenWithCallOptions(lines: string[], ep: EndpointModel, ct
     `${b}      url: \`\${base}${urlTemplate}\`,`,
   );
   appendResourceOptions(body, ep, isGet, `${b}      `, ctx.headerSchemes, ctx.querySchemes, true, false, ctx.withProgress, true);
-  body.push(`${b}    };`, `${b}  }${secondArg});`, `${b}}) as ${pascal}Fn;`);
+  body.push(`${b}    };`, `${b}  }${secondArg})${ctx.resourceClose};`, `${b}}) as ${pascal}Fn;`);
 
   if (providedIn === 'root') {
     lines.push(`  providedIn: 'root',`, `  factory: () => {`, ...body, `  },`, `});`, '');

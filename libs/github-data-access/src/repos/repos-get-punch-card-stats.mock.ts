@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_PUNCH_CARD_STATS } from './repos-get-punch-card-stats.token';
-import type { ReposGetPunchCardStatsResponse } from './repos-get-punch-card-stats.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetPunchCardStats,
+  type ReposGetPunchCardStatsResponse,
+} from './repos-get-punch-card-stats.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_PUNCH_CARD_STATS_MOCK: MockEndpoint<ReposGetPunchCardStatsResponse> =
+  {
+    key: 'REPOS_GET_PUNCH_CARD_STATS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetPunchCardStats,
+  };
+
 export function provideReposGetPunchCardStatsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetPunchCardStatsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_PUNCH_CARD_STATS,
-    'REPOS_GET_PUNCH_CARD_STATS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetPunchCardStatsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_PUNCH_CARD_STATS_MOCK, initialBehavior);
 }

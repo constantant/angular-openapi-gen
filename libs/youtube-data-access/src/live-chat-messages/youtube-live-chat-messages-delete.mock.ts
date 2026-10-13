@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_LIVE_CHAT_MESSAGES_DELETE } from './youtube-live-chat-messages-delete.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeLiveChatMessagesDelete } from './youtube-live-chat-messages-delete.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'live-chat-messages',
 };
 
+export const YOUTUBE_LIVE_CHAT_MESSAGES_DELETE_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_LIVE_CHAT_MESSAGES_DELETE',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeLiveChatMessagesDelete,
+};
+
 export function provideYoutubeLiveChatMessagesDeleteMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_LIVE_CHAT_MESSAGES_DELETE,
-    'YOUTUBE_LIVE_CHAT_MESSAGES_DELETE',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_LIVE_CHAT_MESSAGES_DELETE_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

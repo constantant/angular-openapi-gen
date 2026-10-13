@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateReleaseBody = NonNullable<
   paths['/repos/{owner}/{repo}/releases']['post']['requestBody']
@@ -528,19 +529,22 @@ export function provideReposCreateRelease(): FactoryProvider {
         repo: string,
         body: ReposCreateReleaseBody | Signal<ReposCreateReleaseBody>,
       ) =>
-        httpResource<ReposCreateReleaseResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateReleaseBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/releases`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_RELEASE',
+          httpResource<ReposCreateReleaseResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateReleaseBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/releases`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

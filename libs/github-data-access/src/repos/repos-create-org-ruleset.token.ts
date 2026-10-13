@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateOrgRulesetBody = NonNullable<
   paths['/orgs/{org}/rulesets']['post']['requestBody']
@@ -1245,19 +1246,22 @@ export function provideReposCreateOrgRuleset(): FactoryProvider {
         org: string,
         body: ReposCreateOrgRulesetBody | Signal<ReposCreateOrgRulesetBody>,
       ) =>
-        httpResource<ReposCreateOrgRulesetResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateOrgRulesetBody>)()
-                : body;
-            return {
-              url: `${base}/orgs/${org}/rulesets`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_ORG_RULESET',
+          httpResource<ReposCreateOrgRulesetResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateOrgRulesetBody>)()
+                  : body;
+              return {
+                url: `${base}/orgs/${org}/rulesets`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

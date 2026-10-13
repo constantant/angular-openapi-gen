@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { PLACE_ORDER } from './place-order.token';
-import type { PlaceOrderResponse } from './place-order.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  providePlaceOrder,
+  type PlaceOrderResponse,
+} from './place-order.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,17 @@ const _meta: MockResourceMeta = {
   path: '/store/order',
   method: 'post',
   tag: 'store',
-  args: ['body', 'options'],
+};
+
+export const PLACE_ORDER_MOCK: MockEndpoint<PlaceOrderResponse> = {
+  key: 'PLACE_ORDER',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: providePlaceOrder,
 };
 
 export function providePlaceOrderMock(
-  initialBehavior?: ProviderInitialBehavior<PlaceOrderResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    PLACE_ORDER,
-    'PLACE_ORDER',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<PlaceOrderResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(PLACE_ORDER_MOCK, initialBehavior);
 }

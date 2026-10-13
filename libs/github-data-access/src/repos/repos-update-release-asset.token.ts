@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateReleaseAssetBody = NonNullable<
   paths['/repos/{owner}/{repo}/releases/assets/{asset_id}']['patch']['requestBody']
@@ -235,19 +236,22 @@ export function provideReposUpdateReleaseAsset(): FactoryProvider {
         assetId: string,
         body: ReposUpdateReleaseAssetBody | Signal<ReposUpdateReleaseAssetBody>,
       ) =>
-        httpResource<ReposUpdateReleaseAssetResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateReleaseAssetBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/releases/assets/${assetId}`,
-              method: 'PATCH',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_RELEASE_ASSET',
+          httpResource<ReposUpdateReleaseAssetResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateReleaseAssetBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/releases/assets/${assetId}`,
+                method: 'PATCH',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetPagesHealthCheckResponse =
   | paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['200']['content']['application/json']
@@ -220,11 +221,14 @@ export function provideReposGetPagesHealthCheck(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<ReposGetPagesHealthCheckResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/pages/health`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_PAGES_HEALTH_CHECK',
+          httpResource<ReposGetPagesHealthCheckResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/pages/health`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

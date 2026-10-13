@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER } from './users-get-gpg-key-for-authenticated-user.token';
-import type { UsersGetGpgKeyForAuthenticatedUserResponse } from './users-get-gpg-key-for-authenticated-user.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersGetGpgKeyForAuthenticatedUser,
+  type UsersGetGpgKeyForAuthenticatedUserResponse,
+} from './users-get-gpg-key-for-authenticated-user.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER_MOCK: MockEndpoint<UsersGetGpgKeyForAuthenticatedUserResponse> =
+  {
+    key: 'USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersGetGpgKeyForAuthenticatedUser,
+  };
+
 export function provideUsersGetGpgKeyForAuthenticatedUserMock(
-  initialBehavior?: ProviderInitialBehavior<UsersGetGpgKeyForAuthenticatedUserResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER,
-    'USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER',
+  initialBehavior?: MockEndpointBehavior<UsersGetGpgKeyForAuthenticatedUserResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    USERS_GET_GPG_KEY_FOR_AUTHENTICATED_USER_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

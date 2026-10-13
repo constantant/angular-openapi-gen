@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_MERGE } from './repos-merge.token';
-import type { ReposMergeResponse } from './repos-merge.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposMerge,
+  type ReposMergeResponse,
+} from './repos-merge.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_MERGE_MOCK: MockEndpoint<ReposMergeResponse> = {
+  key: 'REPOS_MERGE',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposMerge,
+};
+
 export function provideReposMergeMock(
-  initialBehavior?: ProviderInitialBehavior<ReposMergeResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_MERGE,
-    'REPOS_MERGE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposMergeResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_MERGE_MOCK, initialBehavior);
 }

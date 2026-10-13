@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_COMMENTS_DELETE } from './youtube-comments-delete.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeCommentsDelete } from './youtube-comments-delete.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,15 @@ const _meta: MockResourceMeta = {
   tag: 'comments',
 };
 
+export const YOUTUBE_COMMENTS_DELETE_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_COMMENTS_DELETE',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeCommentsDelete,
+};
+
 export function provideYoutubeCommentsDeleteMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_COMMENTS_DELETE,
-    'YOUTUBE_COMMENTS_DELETE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_COMMENTS_DELETE_MOCK, initialBehavior);
 }

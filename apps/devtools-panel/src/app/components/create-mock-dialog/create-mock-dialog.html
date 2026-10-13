@@ -24,6 +24,13 @@
       </mat-form-field>
     </div>
 
+    @if (!hasBaseUrl()) {
+      <div class="ops-empty">
+        This spec has no base URL, so the mock cannot answer requests until you set one on the
+        <strong>Specs</strong> tab (or the app registers this key itself).
+      </div>
+    }
+
     <div class="filter-row">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filter-field">
         <mat-label>Filter operations</mat-label>

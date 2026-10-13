@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_LIST_INVITATIONS } from './repos-list-invitations.token';
-import type { ReposListInvitationsResponse } from './repos-list-invitations.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposListInvitations,
+  type ReposListInvitationsResponse,
+} from './repos-list-invitations.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_LIST_INVITATIONS_MOCK: MockEndpoint<ReposListInvitationsResponse> =
+  {
+    key: 'REPOS_LIST_INVITATIONS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposListInvitations,
+  };
+
 export function provideReposListInvitationsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposListInvitationsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_LIST_INVITATIONS,
-    'REPOS_LIST_INVITATIONS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposListInvitationsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_LIST_INVITATIONS_MOCK, initialBehavior);
 }

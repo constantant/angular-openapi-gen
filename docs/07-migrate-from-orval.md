@@ -20,7 +20,7 @@ than Orval's broader feature set (see [how they compare](../README.md#how-it-com
 | `output.mode: 'tags-split'` | Always: one folder per tag, one file per endpoint |
 | MSW handlers (`mock: true`) | `--includeMswHandlers` |
 | Zod schemas | Not generated. Use `--validateResponses` for runtime checking of responses against the spec |
-| Faker mock data | Not generated. Use the mock bus and `/testing` helpers with your own values, or the DevTools "Generate" button |
+| Faker mock data | Not generated. Use the in-browser mocks and `/testing` helpers with your own values, or the DevTools "Generate" button |
 
 ## Step by step
 
@@ -50,8 +50,8 @@ than Orval's broader feature set (see [how they compare](../README.md#how-it-com
 4. Move custom-mutator logic: base URL and global headers to DI and interceptors; per-call needs to
    `--callOptions`.
 
-5. Replace test doubles. Component tests use `mockResource(TOKEN, ...)` from
-   `@constantant/openapi-resource-mocks/testing`; end-to-end tests use the mock bus
+5. Replace test doubles. Component tests use `mockEndpoint(TOKEN_MOCK, ...)` from
+   `@constantant/openapi-resource-mocks/testing`; end-to-end tests use the in-browser mocks
    ([guide](./04-e2e-tests.md)) or generated MSW handlers.
 
 6. Remove `orval.config.ts`, its npm script and the generated output once nothing imports it.

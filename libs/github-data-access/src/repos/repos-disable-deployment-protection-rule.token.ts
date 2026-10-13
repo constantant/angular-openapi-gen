@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export const REPOS_DISABLE_DEPLOYMENT_PROTECTION_RULE = new InjectionToken<
   (
@@ -23,10 +24,13 @@ export function provideReposDisableDeploymentProtectionRule(): FactoryProvider {
         owner: string,
         protectionRuleId: string,
       ) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/${protectionRuleId}`,
-          method: 'DELETE',
-        }));
+        trackResource(
+          'REPOS_DISABLE_DEPLOYMENT_PROTECTION_RULE',
+          httpResource<unknown>(() => ({
+            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/${protectionRuleId}`,
+            method: 'DELETE',
+          })),
+        );
     },
   };
 }

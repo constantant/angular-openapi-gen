@@ -8,6 +8,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type CreateUsersWithListInputBody = NonNullable<
   paths['/user/createWithList']['post']['requestBody']
@@ -97,23 +98,26 @@ export function provideCreateUsersWithListInput(): FactoryProvider {
       ) => {
         const _opts =
           splitCallOptions<CreateUsersWithListInputResponse>(options);
-        return httpResource<CreateUsersWithListInputResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<CreateUsersWithListInputBody>)()
-                : body;
-            return {
-              ..._opts.request,
-              url: `${base}/user/createWithList`,
-              method: 'POST',
-              body: _body,
-              headers: {
-                ..._opts.headers,
-              },
-            };
-          },
-          { ..._opts.resource, parse: _validateResponse },
+        return trackResource(
+          'CREATE_USERS_WITH_LIST_INPUT',
+          httpResource<CreateUsersWithListInputResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<CreateUsersWithListInputBody>)()
+                  : body;
+              return {
+                ..._opts.request,
+                url: `${base}/user/createWithList`,
+                method: 'POST',
+                body: _body,
+                headers: {
+                  ..._opts.headers,
+                },
+              };
+            },
+            { ..._opts.resource, parse: _validateResponse },
+          ),
         );
       }) as CreateUsersWithListInputFn;
     },

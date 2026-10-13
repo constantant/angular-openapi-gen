@@ -8,6 +8,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type UpdatePetBody = NonNullable<
@@ -121,26 +122,29 @@ export function provideUpdatePet(): FactoryProvider {
         options?: UpdatePetOptions,
       ) => {
         const _opts = splitCallOptions<UpdatePetResponse>(options);
-        return httpResource<UpdatePetResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<UpdatePetBody>)()
-                : body;
-            return {
-              ..._opts.request,
-              url: `${base}/pet`,
-              method: 'PUT',
-              body: _body,
-              headers: {
-                ...(petstoreAuth?.() != null
-                  ? { Authorization: `Bearer ${petstoreAuth()}` }
-                  : {}),
-                ..._opts.headers,
-              },
-            };
-          },
-          { ..._opts.resource, parse: _validateResponse },
+        return trackResource(
+          'UPDATE_PET',
+          httpResource<UpdatePetResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<UpdatePetBody>)()
+                  : body;
+              return {
+                ..._opts.request,
+                url: `${base}/pet`,
+                method: 'PUT',
+                body: _body,
+                headers: {
+                  ...(petstoreAuth?.() != null
+                    ? { Authorization: `Bearer ${petstoreAuth()}` }
+                    : {}),
+                  ..._opts.headers,
+                },
+              };
+            },
+            { ..._opts.resource, parse: _validateResponse },
+          ),
         );
       }) as UpdatePetFn;
     },

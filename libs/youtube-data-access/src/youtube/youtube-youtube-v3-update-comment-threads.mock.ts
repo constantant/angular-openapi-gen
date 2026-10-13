@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS } from './youtube-youtube-v3-update-comment-threads.token';
-import type { YoutubeYoutubeV3UpdateCommentThreadsResponse } from './youtube-youtube-v3-update-comment-threads.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeYoutubeV3UpdateCommentThreads,
+  type YoutubeYoutubeV3UpdateCommentThreadsResponse,
+} from './youtube-youtube-v3-update-comment-threads.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'youtube',
 };
 
+export const YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS_MOCK: MockEndpoint<YoutubeYoutubeV3UpdateCommentThreadsResponse> =
+  {
+    key: 'YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeYoutubeV3UpdateCommentThreads,
+  };
+
 export function provideYoutubeYoutubeV3UpdateCommentThreadsMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeYoutubeV3UpdateCommentThreadsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS,
-    'YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS',
+  initialBehavior?: MockEndpointBehavior<YoutubeYoutubeV3UpdateCommentThreadsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_I18N_LANGUAGES_LIST } from './youtube-i18n-languages-list.token';
-import type { YoutubeI18nLanguagesListResponse } from './youtube-i18n-languages-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeI18nLanguagesList,
+  type YoutubeI18nLanguagesListResponse,
+} from './youtube-i18n-languages-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'i18n-languages',
 };
 
+export const YOUTUBE_I18N_LANGUAGES_LIST_MOCK: MockEndpoint<YoutubeI18nLanguagesListResponse> =
+  {
+    key: 'YOUTUBE_I18N_LANGUAGES_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeI18nLanguagesList,
+  };
+
 export function provideYoutubeI18nLanguagesListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeI18nLanguagesListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_I18N_LANGUAGES_LIST,
-    'YOUTUBE_I18N_LANGUAGES_LIST',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<YoutubeI18nLanguagesListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_I18N_LANGUAGES_LIST_MOCK, initialBehavior);
 }

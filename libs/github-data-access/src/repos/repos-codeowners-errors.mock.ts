@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_CODEOWNERS_ERRORS } from './repos-codeowners-errors.token';
-import type { ReposCodeownersErrorsResponse } from './repos-codeowners-errors.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposCodeownersErrors,
+  type ReposCodeownersErrorsResponse,
+} from './repos-codeowners-errors.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_CODEOWNERS_ERRORS_MOCK: MockEndpoint<ReposCodeownersErrorsResponse> =
+  {
+    key: 'REPOS_CODEOWNERS_ERRORS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposCodeownersErrors,
+  };
+
 export function provideReposCodeownersErrorsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposCodeownersErrorsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_CODEOWNERS_ERRORS,
-    'REPOS_CODEOWNERS_ERRORS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposCodeownersErrorsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_CODEOWNERS_ERRORS_MOCK, initialBehavior);
 }

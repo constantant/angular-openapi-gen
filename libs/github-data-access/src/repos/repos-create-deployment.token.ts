@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateDeploymentBody = NonNullable<
   paths['/repos/{owner}/{repo}/deployments']['post']['requestBody']
@@ -581,19 +582,22 @@ export function provideReposCreateDeployment(): FactoryProvider {
         repo: string,
         body: ReposCreateDeploymentBody | Signal<ReposCreateDeploymentBody>,
       ) =>
-        httpResource<ReposCreateDeploymentResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateDeploymentBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/deployments`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_DEPLOYMENT',
+          httpResource<ReposCreateDeploymentResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateDeploymentBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/deployments`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

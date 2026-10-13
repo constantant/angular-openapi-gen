@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_REMOVE_APP_ACCESS_RESTRICTIONS } from './repos-remove-app-access-restrictions.token';
-import type { ReposRemoveAppAccessRestrictionsResponse } from './repos-remove-app-access-restrictions.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposRemoveAppAccessRestrictions,
+  type ReposRemoveAppAccessRestrictionsResponse,
+} from './repos-remove-app-access-restrictions.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_REMOVE_APP_ACCESS_RESTRICTIONS_MOCK: MockEndpoint<ReposRemoveAppAccessRestrictionsResponse> =
+  {
+    key: 'REPOS_REMOVE_APP_ACCESS_RESTRICTIONS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposRemoveAppAccessRestrictions,
+  };
+
 export function provideReposRemoveAppAccessRestrictionsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposRemoveAppAccessRestrictionsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_REMOVE_APP_ACCESS_RESTRICTIONS,
-    'REPOS_REMOVE_APP_ACCESS_RESTRICTIONS',
+  initialBehavior?: MockEndpointBehavior<ReposRemoveAppAccessRestrictionsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_REMOVE_APP_ACCESS_RESTRICTIONS_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

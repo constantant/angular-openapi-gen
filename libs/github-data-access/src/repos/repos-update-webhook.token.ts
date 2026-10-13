@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateWebhookBody = NonNullable<
   paths['/repos/{owner}/{repo}/hooks/{hook_id}']['patch']['requestBody']
@@ -180,19 +181,22 @@ export function provideReposUpdateWebhook(): FactoryProvider {
         hookId: string,
         body: ReposUpdateWebhookBody | Signal<ReposUpdateWebhookBody>,
       ) =>
-        httpResource<ReposUpdateWebhookResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateWebhookBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/hooks/${hookId}`,
-              method: 'PATCH',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_WEBHOOK',
+          httpResource<ReposUpdateWebhookResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateWebhookBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/hooks/${hookId}`,
+                method: 'PATCH',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

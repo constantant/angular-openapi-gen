@@ -87,6 +87,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `namingConvention` | no | `kebab` | `kebab` → `find-pets-by-status.token.ts`; `camel` → `findPetsByStatus.token.ts` |
 | `providedIn` | no | `none` | `none` or `root` — see table above |
 | `includeMocks` | no | `false` | Emit a `.mock.ts` per endpoint plus `index.mock.ts` barrels and a `mocks.manifest.json` — requires [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) |
+| `mockHooks` | no | = `includeMocks` | Emit `mock-hook.ts` and pass every `httpResource` a token creates to it, so a mocking tool can re-run live resources when a mock is edited — see [Mock providers](#mock-providers---includemocks) |
 | `includeMswHandlers` | no | `false` | Emit a `.msw.ts` per endpoint plus `index.msw.ts` barrels — requires [`msw`](https://mswjs.io) >= 2.0.0 |
 | `specId` | no | derived from `baseUrlToken` | Identifier embedded in every generated `MockResourceMeta` and in `mocks.manifest.json`. Defaults to `baseUrlToken` with `_BASE_URL` stripped and lowercased (e.g. `PETSTORE_BASE_URL` → `petstore`). Must match the value used when importing the spec into the DevTools panel. |
 | `dateType` | no | `string` | `string` (default — no change), `Date`, or `Temporal`. When set to `Date` or `Temporal`, emits a typed `XxxRevived` alias and a `reviveXxxDates()` helper per endpoint whose response contains `format: date-time` or `format: date` fields. |
@@ -113,6 +114,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
   index.ts                          # re-exports all tag barrels + base-url + security tokens
   index.mock.ts                     # (--includeMocks) re-exports all tag mock barrels
   index.msw.ts                      # (--includeMswHandlers) re-exports all tag MSW handler arrays
+  mock-hook.ts                      # (--includeMocks / --mockHooks) lets a mocking tool re-run live httpResources
   mocks.manifest.json               # (--includeMocks) machine-readable endpoint list + specId for the DevTools panel
   webhooks/
     {webhook-name}.webhook.ts       # (OAS 3.1 webhooks) InjectionToken<HttpInterceptorFn> per webhook
@@ -148,16 +150,16 @@ npx nx g @constantant/openapi-resource-gen:api-resource \
 
 ### Generated mock file
 
-Each `.mock.ts` file exports a single `provide{Operation}Mock(initialBehavior?)` function.
-`initialBehavior` is fully typed against the operation's response type — no hand-written interfaces:
+Each `.mock.ts` file exports a descriptor of the endpoint and a `provide{Operation}Mock(initialBehavior?)`
+function. `initialBehavior` is typed against the operation's response type — no hand-written interfaces:
 
 ```typescript
 // pet/find-pets-by-status.mock.ts  (generated)
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior, MockProviderOptions, MockResourceMeta } from '@constantant/openapi-resource-mocks';
-import { FIND_PETS_BY_STATUS } from './find-pets-by-status.token';
-import type { FindPetsByStatusResponse } from './find-pets-by-status.token';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
+import type { MockEndpoint, MockEndpointBehavior, MockResourceMeta } from '@constantant/openapi-resource-mocks';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { provideFindPetsByStatus, type FindPetsByStatusResponse } from './find-pets-by-status.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -167,54 +169,86 @@ const _meta: MockResourceMeta = {
   tag: 'pet',
 };
 
+export const FIND_PETS_BY_STATUS_MOCK: MockEndpoint<FindPetsByStatusResponse> = {
+  key: 'FIND_PETS_BY_STATUS',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: provideFindPetsByStatus,
+};
+
 export function provideFindPetsByStatusMock(
-  initialBehavior?: ProviderInitialBehavior<FindPetsByStatusResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', initialBehavior, _meta, options);
+  initialBehavior?: MockEndpointBehavior<FindPetsByStatusResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(FIND_PETS_BY_STATUS_MOCK, initialBehavior);
 }
 ```
 
-Each mock file also embeds a `MockResourceMeta` const with `specId`, `operationId`, `path`, `method`, and `tag`. The DevTools panel reads this metadata to pre-populate the Respond tab's schema display — no manual configuration needed.
+The mock does **not** replace the token. It registers a filter on the patched `fetch` /
+`XMLHttpRequest`: requests for this method and path under the lib's base URL are answered in the
+page, and the app keeps running the real token. The file is the same for `httpResource` and
+`HttpClient` endpoints.
 
-The optional `options` argument (second param on the wrapper) is passed through to `provideMockResource`. The main use is `keyDiscriminator` — see [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) for details.
+- `provide{Operation}Mock()` goes into your app (or route) providers, **next to** the real ones.
+- `{OPERATION}_MOCK` is what `mockEndpoint()` from
+  `@constantant/openapi-resource-mocks/testing` takes in unit tests.
+- `_meta` also tells the DevTools panel which operation this is, so it can show the response schema.
 
-The token name string key is always in sync — renaming an operation in the spec and
-regenerating updates both the token constant and its key automatically.
+### The mock hook (`--mockHooks`)
+
+With `--includeMocks` the lib also gets a `mock-hook.ts`, and every `httpResource` token passes the
+resources it creates through it:
+
+```typescript
+// mock-hook.ts  (generated)
+export function trackResource<T extends { reload(): boolean }>(key: string, ref: T): T {
+  (globalThis as { __oarmTrack__?: (key: string, ref: { reload(): boolean }) => void }).__oarmTrack__?.(key, ref);
+  return ref;
+}
+```
+
+This is what lets an edited mock refresh data that is already on screen: the mock runtime reloads
+the resources of that endpoint. When no mocking tool is installed the hook is one global lookup per
+created resource and nothing else — it imports nothing, so it is safe in a production bundle, where
+it lets the DevTools extension do the same.
+
+`--mockHooks` defaults to the value of `--includeMocks`. Pass `--mockHooks=false` to leave the
+tokens untouched (an edit then applies to the next request), or `--mockHooks=true` without
+`--includeMocks` to get only the hook. `HttpClient` tokens are never hooked: an Observable cannot be
+re-run from outside.
 
 ### Usage in app.config.mock.ts
 
 ```typescript
-// Before — hand-written key strings, no type safety on seed data
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
-import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
+import { ApplicationConfig, mergeApplicationConfig } from '@angular/core';
+import { appConfig as baseConfig } from './app.config';
+import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access/mock';
 
-provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', {
-  value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
-  delay: 500,
-})
+const mockConfig: ApplicationConfig = {
+  providers: [
+    provideFindPetsByStatusMock({
+      value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
+      delay: 500,
+    }),
+  ],
+};
 
-// After — generated wrapper, fully typed initialBehavior
-import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access';
-
-provideFindPetsByStatusMock({
-  value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
-  delay: 500,
-})
-
-// With keyDiscriminator for list-row components (second argument)
-provideFindPetsByStatusMock(undefined, { keyDiscriminator: () => inject(PET_ID).toString() })
+export const mockAppConfig = mergeApplicationConfig(baseConfig, mockConfig);
 ```
 
 `initialBehavior` supports:
 
 | Shape | Effect |
 |-------|--------|
-| `{ value: T }` | Resolves immediately |
-| `{ value: T, delay: ms }` | Loading for `ms` ms, then resolves |
-| `{ loading: true }` | Stays loading indefinitely |
-| `{ error: unknown }` | Fails immediately |
-| `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
+| `{ value: T }` | Responds with `value` |
+| `{ value: T, delay: ms }` | Responds after `ms` ms |
+| `{ loading: true }` | Holds every request open |
+| `{ error: unknown }` | Responds with a failing status (500 unless `status` is set) |
+| `{ error: unknown, delay: ms }` | Fails after `ms` ms |
+| _(omitted)_ | The request goes to the real API until a behavior is set at runtime |
+
+`value` is the complete response type; with `--validateResponses` a mocked response is validated
+like a real one. See [`@constantant/openapi-resource-mocks`](../openapi-resource-mocks/README.md)
+for `status`, `headers`, progress and the runtime controls.
 
 ### Barrel imports
 
@@ -483,9 +517,9 @@ Files and types it adds:
   `ResourceCallOptions<T>`, `ResourceRefFor<T, O>` and the small `splitCallOptions` helper.
 - Per token: `XxxOptions` and `XxxFn` (the function type), exported from the token file.
 
-With `--includeMocks`, the generated mock's `_meta` records the argument names (`args`), so the mock
-honours `defaultValue` like the real resource, and DevTools labels each argument of a recorded request
-(`Body`, `Query`, `Options`) — see the [mocks README](../openapi-resource-mocks/README.md#mockresourcemeta).
+With `--includeMocks`, the generated mock's `_meta` records the argument names (`args`) — see the
+[mocks README](../openapi-resource-mocks/README.md#mockresourcemeta). A mocked endpoint runs the real
+token, so `defaultValue` and the other options behave exactly as they do against the real API.
 
 ---
 
@@ -1374,8 +1408,9 @@ readonly pets = rxResource({ stream: () => this.findPets({ status: 'available' }
 > detection and leave the template half-rendered.
 
 Mix clients in one lib with `--httpClientTags=pet,store` or `--httpClientOperations=getPetById`.
-With `--includeMocks`, HttpClient endpoints get `provideMockObservable()` mock providers
-(the same DevTools controls work); the rest keep `provideMockResource()`.
+With `--includeMocks`, HttpClient endpoints get the same mock file as the rest (the same DevTools
+controls work). One difference at runtime: an edited mock reloads live `httpResource`s, but applies
+to an HttpClient endpoint's next request.
 
 ## Upload / download progress (`--reportProgress`)
 
@@ -1421,4 +1456,5 @@ this.uploadFile('7', file).subscribe({           // a File is a Blob
 > the server.
 
 With `--validateResponses`, only the final `Response` event's body is validated. With
-`--includeMocks`, events-yielding endpoints get `provideMockHttpEvents()`.
+`--includeMocks`, a mocked upload reports the progress you give it (`progress`, `setProgress()`)
+through the same `HttpEvent` stream — on the XHR backend only, like a real upload.

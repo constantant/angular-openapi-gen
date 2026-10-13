@@ -18,6 +18,10 @@
     "./testing": {
       "types": "./src/testing.d.ts",
       "default": "./src/testing.js"
+    },
+    "./runtime": {
+      "types": "./src/runtime.d.ts",
+      "default": "./src/runtime.js"
     }
   },
   "publishConfig": {

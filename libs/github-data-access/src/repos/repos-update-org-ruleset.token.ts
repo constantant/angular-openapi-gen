@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateOrgRulesetBody = NonNullable<
   paths['/orgs/{org}/rulesets/{ruleset_id}']['put']['requestBody']
@@ -1247,19 +1248,22 @@ export function provideReposUpdateOrgRuleset(): FactoryProvider {
         rulesetId: string,
         body: ReposUpdateOrgRulesetBody | Signal<ReposUpdateOrgRulesetBody>,
       ) =>
-        httpResource<ReposUpdateOrgRulesetResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateOrgRulesetBody>)()
-                : body;
-            return {
-              url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
-              method: 'PUT',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_ORG_RULESET',
+          httpResource<ReposUpdateOrgRulesetResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateOrgRulesetBody>)()
+                  : body;
+              return {
+                url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
+                method: 'PUT',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

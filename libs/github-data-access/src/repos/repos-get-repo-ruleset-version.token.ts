@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetRepoRulesetVersionResponse =
   paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}']['get']['responses']['200']['content']['application/json'];
@@ -84,11 +85,14 @@ export function provideReposGetRepoRulesetVersion(): FactoryProvider {
         rulesetId: string,
         versionId: string,
       ) =>
-        httpResource<ReposGetRepoRulesetVersionResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}/history/${versionId}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_REPO_RULESET_VERSION',
+          httpResource<ReposGetRepoRulesetVersionResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}/history/${versionId}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

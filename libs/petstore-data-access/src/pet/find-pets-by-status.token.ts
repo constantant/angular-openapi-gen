@@ -8,6 +8,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type FindPetsByStatusParams =
@@ -129,30 +130,33 @@ export function provideFindPetsByStatus(): FactoryProvider {
         options?: FindPetsByStatusOptions,
       ) => {
         const _opts = splitCallOptions<FindPetsByStatusResponse>(options);
-        return httpResource<FindPetsByStatusResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              ..._opts.request,
-              url: `${base}/pet/findByStatus`,
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-              headers: {
-                ...(petstoreAuth?.() != null
-                  ? { Authorization: `Bearer ${petstoreAuth()}` }
-                  : {}),
-                ..._opts.headers,
-              },
-            };
-          },
-          { ..._opts.resource, parse: _validateResponse },
+        return trackResource(
+          'FIND_PETS_BY_STATUS',
+          httpResource<FindPetsByStatusResponse>(
+            () => {
+              const _params = typeof params === 'function' ? params() : params;
+              if (typeof params === 'function' && _params === undefined)
+                return undefined;
+              return {
+                ..._opts.request,
+                url: `${base}/pet/findByStatus`,
+                params: _params as unknown as Record<
+                  string,
+                  | string
+                  | number
+                  | boolean
+                  | readonly (string | number | boolean)[]
+                >,
+                headers: {
+                  ...(petstoreAuth?.() != null
+                    ? { Authorization: `Bearer ${petstoreAuth()}` }
+                    : {}),
+                  ..._opts.headers,
+                },
+              };
+            },
+            { ..._opts.resource, parse: _validateResponse },
+          ),
         );
       }) as FindPetsByStatusFn;
     },

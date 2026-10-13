@@ -20,7 +20,8 @@ Because esbuild tree-shakes at file boundaries, any token you never `inject()` c
   `httpResource` (or, per endpoint, an `Observable` via `HttpClient`). There is no service class to
   inject whole, so unused endpoints tree-shake away.
 - **Types come from [`openapi-typescript`](https://openapi-ts.dev)**, not from generated model classes.
-- **Testing is part of the package:** a mock bus, a `/testing` entry point, optional MSW handlers and a
+- **Testing is part of the package:** in-browser mocks that patch `fetch` / `XMLHttpRequest` (no
+  service worker, works on a production build), a `/testing` entry point, optional MSW handlers and a
   Chrome DevTools panel to catch, answer and replay requests.
 
 ### How it compares
@@ -33,7 +34,7 @@ An honest summary. All of these are good tools; pick by what you need.
 | `httpResource` | Yes (default) | Declined upstream | Yes (`httpClient`, `httpResource` or both) | Yes |
 | `HttpClient` / `Observable` | Yes, per endpoint | Yes | Yes | Yes |
 | Runs as | Nx generator | Standalone CLI | Standalone CLI | Standalone CLI |
-| Mock data / Zod / validators | Mock bus, MSW handlers, response validation (opt-in) | No | MSW + Faker, Zod (including request bodies) | Faker, MSW, validator plugins |
+| Mock data / Zod / validators | In-browser mocks, MSW handlers, response validation (opt-in) | No | MSW + Faker, Zod (including request bodies) | Faker, MSW, validator plugins |
 | Debug UI | Chrome DevTools panel | No | No | No |
 
 Where the others are the better fit: if you are **not on Nx**, use a standalone CLI (Orval or Hey API)
@@ -53,7 +54,7 @@ Coming from another tool? See the migration guides:
 | Path | Type | Description |
 |------|------|-------------|
 | `tools/openapi-resource-gen/` | Nx generator · npm package | Reads an OpenAPI spec, emits one token file per endpoint |
-| `tools/openapi-resource-mocks/` | npm package | Zero-HTTP mock bus for generated tokens — Playwright E2E + Chrome Extension integration |
+| `tools/openapi-resource-mocks/` | npm package | In-browser mocks for generated endpoints (patched `fetch` / `XMLHttpRequest`) — unit tests, Playwright E2E, Chrome Extension |
 | `tools/openapi-resource-devtools/` | Chrome Extension shell | Manifest, content script, service worker, devtools page |
 | `apps/devtools-panel/` | Angular 22 app | Panel UI bundled inside the Chrome Extension |
 | `libs/github-data-access/` | Generated data-access lib | GitHub REST API (~38 endpoints used) |
@@ -124,6 +125,7 @@ Re-run the generator command whenever your spec changes — it overwrites genera
 | `namingConvention` | no | `kebab` | File naming convention: kebab-case filenames with SCREAMING_SNAKE token names |
 | `providedIn` | no | `none` | none: token has no factory; a provide{Name}() helper is exported for explicit scoped provision. root: token self-registers at root (tree-shakeable singleton, no multi-context support) |
 | `includeMocks` | no | `false` | Generate a .mock.ts file per endpoint (and index.mock.ts barrels) using @constantant/openapi-resource-mocks. Requires the package to be installed. |
+| `mockHooks` | no | = `includeMocks` | Pass every httpResource a token creates to a shared mock-hook.ts, so a mocking tool (also on a production build) can re-run live resources when a mock is edited. |
 | `specId` | no | — | Identifier for this API spec, embedded in MockResourceMeta and mocks.manifest.json. Defaults to baseUrlToken lowercased with _BASE_URL stripped (e.g. PETSTORE_BASE_URL → petstore). |
 | `verbose` | no | `false` | Print a summary of created, updated, and deleted files after generation. |
 | `dateType` | no | `string` | Convert format:date-time / format:date response fields to Date or Temporal objects. Emits a typed XxxRevived alias and reviveXxxDates() helper per affected endpoint. |
@@ -290,18 +292,18 @@ npx nx run petstore-data-access:generate
 
 ---
 
-## Mock bus — `@constantant/openapi-resource-mocks`
+## Mocks — `@constantant/openapi-resource-mocks`
 
 Published on npm: **[`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)**
 
-A companion package that provides zero-HTTP, pure-DI mocks for generated tokens. Key features:
+A companion package that mocks endpoints at the transport layer: it patches `fetch` and `XMLHttpRequest` in the page and answers the requests of the endpoints you mock. The app keeps its real tokens, `HttpClient`, interceptors and response validation, and every other request still reaches the real API. Key features:
 
-- `provideMockResourceBus()` — registers the bus; exposes `window.__openApiMocks__` and `openApiMock(key)` for Playwright
-- `provideMockResource(token, key, initialBehavior?, meta?)` — replaces a token's factory with a mock; the optional `meta` (`MockResourceMeta`) is embedded automatically in generated `.mock.ts` files and used by the DevTools panel to resolve response schemas
+- `provide{Operation}Mock(behavior?)` (generated with `--includeMocks`) / `provideMockEndpoint(descriptor, behavior?)` — registers a filter for one endpoint; add it on top of your real app config
+- Behaviors: `{ value }`, `{ error, status }`, `{ loading: true }`, with `delay`, `headers` and simulated upload / download `progress`
+- `window.__openApiMocks__` / `openApiMock(key)` — `resolve()`, `fail()`, `setLoading()`, `reset()`, `getHistory()` … for Playwright; an edit also refreshes data already on screen
 - DOM event bridge (`openapi-mock-event` / `openapi-mock-control`) — lets the Chrome Extension DevTools panel observe and control mocks in real time
-- `injectMockResource<T>(key)` — retrieves the `MockResourceRef<T>` for a registered key inside an injection context (e.g. `TestBed.runInInjectionContext`)
-- `MockResourceRef<T>` — `resolve()`, `setLoading()`, `fail()`, `reset()`, `simulateProgress()`, `getHistory()`
-- **`/testing` sub-entry** — `mockResource(token, behavior?)` returns a `MockResourceHandle<T>` extending `FactoryProvider`; drop directly into `TestBed` providers without a full bus setup; supports `{ sequence: [...] }` for multi-step per-call responses
+- **`/testing` sub-entry** — `mockEndpoint(descriptor, behavior?)` returns providers that are also a handle (`.calls`, `.expectCalledWith()`, `.resolve()`, `.fail()`); supports `{ sequence: [...] }` for multi-step responses
+- **`/runtime` sub-entry** — the same runtime without Angular, for tools that install it from outside the app; this is how the DevTools extension mocks a production build
 
 See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/README.md) for full documentation.
 
@@ -311,7 +313,7 @@ See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/READ
 
 Current version: **0.7.0** | Status: pending Chrome Web Store review
 
-A Chrome DevTools panel that connects to any Angular app running `@constantant/openapi-resource-mocks`. It lists every registered mock token, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code.
+A Chrome DevTools panel for the mocks above. It lists every mocked endpoint, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code — on a mock build that registers its own endpoints, or on an unmodified **production build**, where the extension installs the mock runtime itself.
 
 Key panel features:
 - **Mock table** — live status, catch mode toggle, resolve/fail/reset actions per token
@@ -319,7 +321,7 @@ Key panel features:
 - **History tab** — reverse-chronological event log; for `request`/`caught` events shows the filled URL (`GET /pet/42`), path-param rows labeled by name, and Query / Body sections for remaining args; binary payloads (`[FormData]`, `[Blob]`, etc.) shown as inline badges
 - **Specs tab** — import `mocks.manifest.json` or a full OpenAPI spec (JSON or YAML, file or URL) to enable schema-aware features
 - **Scenarios** toolbar button — save named snapshots of the full mock table state, load / delete them, or export / import as JSON for cross-machine sharing
-- **＋ New mock** button — create a panel-managed (local) mock before `provideMockResource()` exists in the app, pre-configure catch mode and a response value, and have it promoted in-place when the key is registered
+- **＋ New mock** button — create a panel-managed mock for any operation of an imported spec; with **◉ Intercept** switched on for the site it answers the app's requests, also after a reload and with DevTools closed
 
 ### Install
 

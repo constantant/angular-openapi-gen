@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_LIVE_CHAT_BANS_INSERT } from './youtube-live-chat-bans-insert.token';
-import type { YoutubeLiveChatBansInsertResponse } from './youtube-live-chat-bans-insert.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeLiveChatBansInsert,
+  type YoutubeLiveChatBansInsertResponse,
+} from './youtube-live-chat-bans-insert.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'live-chat-bans',
 };
 
+export const YOUTUBE_LIVE_CHAT_BANS_INSERT_MOCK: MockEndpoint<YoutubeLiveChatBansInsertResponse> =
+  {
+    key: 'YOUTUBE_LIVE_CHAT_BANS_INSERT',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeLiveChatBansInsert,
+  };
+
 export function provideYoutubeLiveChatBansInsertMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeLiveChatBansInsertResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_LIVE_CHAT_BANS_INSERT,
-    'YOUTUBE_LIVE_CHAT_BANS_INSERT',
+  initialBehavior?: MockEndpointBehavior<YoutubeLiveChatBansInsertResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_LIVE_CHAT_BANS_INSERT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

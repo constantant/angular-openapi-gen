@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposRemoveUserAccessRestrictionsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['delete']['requestBody']
@@ -177,19 +178,22 @@ export function provideReposRemoveUserAccessRestrictions(): FactoryProvider {
           | ReposRemoveUserAccessRestrictionsBody
           | Signal<ReposRemoveUserAccessRestrictionsBody>,
       ) =>
-        httpResource<ReposRemoveUserAccessRestrictionsResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposRemoveUserAccessRestrictionsBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
-              method: 'DELETE',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_REMOVE_USER_ACCESS_RESTRICTIONS',
+          httpResource<ReposRemoveUserAccessRestrictionsResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposRemoveUserAccessRestrictionsBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
+                method: 'DELETE',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

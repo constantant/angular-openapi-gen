@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetAllEnvironmentsParams =
   paths['/repos/{owner}/{repo}/environments']['get']['parameters']['query'];
@@ -576,23 +577,26 @@ export function provideReposGetAllEnvironments(): FactoryProvider {
           | ReposGetAllEnvironmentsParams
           | (() => ReposGetAllEnvironmentsParams | undefined),
       ) =>
-        httpResource<ReposGetAllEnvironmentsResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/repos/${owner}/${repo}/environments`,
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_ALL_ENVIRONMENTS',
+          httpResource<ReposGetAllEnvironmentsResponse>(
+            () => {
+              const _params = typeof params === 'function' ? params() : params;
+              if (typeof params === 'function' && _params === undefined)
+                return undefined;
+              return {
+                url: `${base}/repos/${owner}/${repo}/environments`,
+                params: _params as unknown as Record<
+                  string,
+                  | string
+                  | number
+                  | boolean
+                  | readonly (string | number | boolean)[]
+                >,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

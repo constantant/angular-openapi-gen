@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposRenameBranchBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['requestBody']
@@ -2678,19 +2679,22 @@ export function provideReposRenameBranch(): FactoryProvider {
         branch: string,
         body: ReposRenameBranchBody | Signal<ReposRenameBranchBody>,
       ) =>
-        httpResource<ReposRenameBranchResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposRenameBranchBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/rename`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_RENAME_BRANCH',
+          httpResource<ReposRenameBranchResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposRenameBranchBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/rename`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

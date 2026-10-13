@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateBranchProtectionBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['requestBody']
@@ -2042,19 +2043,22 @@ export function provideReposUpdateBranchProtection(): FactoryProvider {
           | ReposUpdateBranchProtectionBody
           | Signal<ReposUpdateBranchProtectionBody>,
       ) =>
-        httpResource<ReposUpdateBranchProtectionResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateBranchProtectionBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection`,
-              method: 'PUT',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_BRANCH_PROTECTION',
+          httpResource<ReposUpdateBranchProtectionResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateBranchProtectionBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection`,
+                method: 'PUT',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

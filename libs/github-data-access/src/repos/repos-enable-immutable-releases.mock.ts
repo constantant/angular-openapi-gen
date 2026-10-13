@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_ENABLE_IMMUTABLE_RELEASES } from './repos-enable-immutable-releases.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposEnableImmutableReleases } from './repos-enable-immutable-releases.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_ENABLE_IMMUTABLE_RELEASES_MOCK: MockEndpoint<unknown> = {
+  key: 'REPOS_ENABLE_IMMUTABLE_RELEASES',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposEnableImmutableReleases,
+};
+
 export function provideReposEnableImmutableReleasesMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_ENABLE_IMMUTABLE_RELEASES,
-    'REPOS_ENABLE_IMMUTABLE_RELEASES',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_ENABLE_IMMUTABLE_RELEASES_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

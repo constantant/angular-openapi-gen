@@ -92,14 +92,15 @@ export class HistoryTab {
         if (rest.length) {
           const isBody = ['post', 'put', 'patch'].includes(meta.method);
           const baseLabel = isBody ? 'Body' : 'Query';
-          // With the argument names (from `--callOptions`) each argument gets its real label; without
-          // them every extra argument of a body method is guessed to be a body, and of the rest a query.
+          // Requests are recorded from the wire as path params, then the body, then the query. So a
+          // body method with two extra arguments carries both; a single one is taken for the body.
           const names = meta.args?.slice(paramNames.length);
           rest.forEach((arg, idx) => {
             const { text, type } = formatArgValue(arg);
             const name = names?.[idx];
             const label = name
               ? (ARG_LABELS[name] ?? name)
+              : isBody && rest.length === 2 ? (idx === 0 ? 'Body' : 'Query')
               : rest.length > 1 ? `${baseLabel} [${idx}]` : baseLabel;
             sections.push({ label, json: text, type });
           });

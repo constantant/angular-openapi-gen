@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_COMMIT_COMMENT } from './repos-get-commit-comment.token';
-import type { ReposGetCommitCommentResponse } from './repos-get-commit-comment.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetCommitComment,
+  type ReposGetCommitCommentResponse,
+} from './repos-get-commit-comment.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_COMMIT_COMMENT_MOCK: MockEndpoint<ReposGetCommitCommentResponse> =
+  {
+    key: 'REPOS_GET_COMMIT_COMMENT',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetCommitComment,
+  };
+
 export function provideReposGetCommitCommentMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetCommitCommentResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_COMMIT_COMMENT,
-    'REPOS_GET_COMMIT_COMMENT',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetCommitCommentResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_COMMIT_COMMENT_MOCK, initialBehavior);
 }

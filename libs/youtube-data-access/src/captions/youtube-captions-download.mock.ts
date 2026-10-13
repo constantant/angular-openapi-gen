@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_CAPTIONS_DOWNLOAD } from './youtube-captions-download.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeCaptionsDownload } from './youtube-captions-download.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,15 @@ const _meta: MockResourceMeta = {
   tag: 'captions',
 };
 
+export const YOUTUBE_CAPTIONS_DOWNLOAD_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_CAPTIONS_DOWNLOAD',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeCaptionsDownload,
+};
+
 export function provideYoutubeCaptionsDownloadMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_CAPTIONS_DOWNLOAD,
-    'YOUTUBE_CAPTIONS_DOWNLOAD',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_CAPTIONS_DOWNLOAD_MOCK, initialBehavior);
 }

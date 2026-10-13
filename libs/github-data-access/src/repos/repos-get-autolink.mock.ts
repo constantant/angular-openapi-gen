@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_AUTOLINK } from './repos-get-autolink.token';
-import type { ReposGetAutolinkResponse } from './repos-get-autolink.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetAutolink,
+  type ReposGetAutolinkResponse,
+} from './repos-get-autolink.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_AUTOLINK_MOCK: MockEndpoint<ReposGetAutolinkResponse> = {
+  key: 'REPOS_GET_AUTOLINK',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposGetAutolink,
+};
+
 export function provideReposGetAutolinkMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetAutolinkResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_AUTOLINK,
-    'REPOS_GET_AUTOLINK',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetAutolinkResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_AUTOLINK_MOCK, initialBehavior);
 }

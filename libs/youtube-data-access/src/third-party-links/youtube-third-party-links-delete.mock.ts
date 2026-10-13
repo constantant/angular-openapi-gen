@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_THIRD_PARTY_LINKS_DELETE } from './youtube-third-party-links-delete.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeThirdPartyLinksDelete } from './youtube-third-party-links-delete.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'third-party-links',
 };
 
+export const YOUTUBE_THIRD_PARTY_LINKS_DELETE_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_THIRD_PARTY_LINKS_DELETE',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeThirdPartyLinksDelete,
+};
+
 export function provideYoutubeThirdPartyLinksDeleteMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_THIRD_PARTY_LINKS_DELETE,
-    'YOUTUBE_THIRD_PARTY_LINKS_DELETE',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_THIRD_PARTY_LINKS_DELETE_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

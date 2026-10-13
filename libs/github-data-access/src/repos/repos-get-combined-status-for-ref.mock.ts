@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_COMBINED_STATUS_FOR_REF } from './repos-get-combined-status-for-ref.token';
-import type { ReposGetCombinedStatusForRefResponse } from './repos-get-combined-status-for-ref.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetCombinedStatusForRef,
+  type ReposGetCombinedStatusForRefResponse,
+} from './repos-get-combined-status-for-ref.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_COMBINED_STATUS_FOR_REF_MOCK: MockEndpoint<ReposGetCombinedStatusForRefResponse> =
+  {
+    key: 'REPOS_GET_COMBINED_STATUS_FOR_REF',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetCombinedStatusForRef,
+  };
+
 export function provideReposGetCombinedStatusForRefMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetCombinedStatusForRefResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_COMBINED_STATUS_FOR_REF,
-    'REPOS_GET_COMBINED_STATUS_FOR_REF',
+  initialBehavior?: MockEndpointBehavior<ReposGetCombinedStatusForRefResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_COMBINED_STATUS_FOR_REF_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT } from './repos-list-branches-for-head-commit.token';
-import type { ReposListBranchesForHeadCommitResponse } from './repos-list-branches-for-head-commit.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposListBranchesForHeadCommit,
+  type ReposListBranchesForHeadCommitResponse,
+} from './repos-list-branches-for-head-commit.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT_MOCK: MockEndpoint<ReposListBranchesForHeadCommitResponse> =
+  {
+    key: 'REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposListBranchesForHeadCommit,
+  };
+
 export function provideReposListBranchesForHeadCommitMock(
-  initialBehavior?: ProviderInitialBehavior<ReposListBranchesForHeadCommitResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT,
-    'REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT',
+  initialBehavior?: MockEndpointBehavior<ReposListBranchesForHeadCommitResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

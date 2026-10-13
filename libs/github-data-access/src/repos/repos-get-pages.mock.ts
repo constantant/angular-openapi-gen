@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_PAGES } from './repos-get-pages.token';
-import type { ReposGetPagesResponse } from './repos-get-pages.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetPages,
+  type ReposGetPagesResponse,
+} from './repos-get-pages.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_PAGES_MOCK: MockEndpoint<ReposGetPagesResponse> = {
+  key: 'REPOS_GET_PAGES',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposGetPages,
+};
+
 export function provideReposGetPagesMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetPagesResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_PAGES,
-    'REPOS_GET_PAGES',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetPagesResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_PAGES_MOCK, initialBehavior);
 }

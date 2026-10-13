@@ -2,6 +2,7 @@ import { InjectionToken, inject, Signal, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateDispatchEventBody = NonNullable<
   paths['/repos/{owner}/{repo}/dispatches']['post']['requestBody']
@@ -30,17 +31,20 @@ export function provideReposCreateDispatchEvent(): FactoryProvider {
         body:
           ReposCreateDispatchEventBody | Signal<ReposCreateDispatchEventBody>,
       ) =>
-        httpResource<unknown>(() => {
-          const _body =
-            typeof body === 'function'
-              ? (body as Signal<ReposCreateDispatchEventBody>)()
-              : body;
-          return {
-            url: `${base}/repos/${owner}/${repo}/dispatches`,
-            method: 'POST',
-            body: _body,
-          };
-        });
+        trackResource(
+          'REPOS_CREATE_DISPATCH_EVENT',
+          httpResource<unknown>(() => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<ReposCreateDispatchEventBody>)()
+                : body;
+            return {
+              url: `${base}/repos/${owner}/${repo}/dispatches`,
+              method: 'POST',
+              body: _body,
+            };
+          }),
+        );
     },
   };
 }

@@ -56,8 +56,8 @@ test.describe('Pets page (mock)', () => {
 
   test('shows error message when mock fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).toBeHidden();
-    await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').fail(new Error('500')));
-    await expect(page.getByText("Backend response doesn't match its own API spec — 500")).toBeVisible();
+    await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').fail({ message: 'unavailable' }, 500));
+    await expect(page.getByText('Request failed (HTTP 500).')).toBeVisible();
   });
 
   test('upload section is visible when a pet is selected', async ({ page }) => {

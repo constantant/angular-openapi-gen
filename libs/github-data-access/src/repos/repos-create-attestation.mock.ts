@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_CREATE_ATTESTATION } from './repos-create-attestation.token';
-import type { ReposCreateAttestationResponse } from './repos-create-attestation.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposCreateAttestation,
+  type ReposCreateAttestationResponse,
+} from './repos-create-attestation.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_CREATE_ATTESTATION_MOCK: MockEndpoint<ReposCreateAttestationResponse> =
+  {
+    key: 'REPOS_CREATE_ATTESTATION',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposCreateAttestation,
+  };
+
 export function provideReposCreateAttestationMock(
-  initialBehavior?: ProviderInitialBehavior<ReposCreateAttestationResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_CREATE_ATTESTATION,
-    'REPOS_CREATE_ATTESTATION',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposCreateAttestationResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_CREATE_ATTESTATION_MOCK, initialBehavior);
 }

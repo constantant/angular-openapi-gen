@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_PAGES_HEALTH_CHECK } from './repos-get-pages-health-check.token';
-import type { ReposGetPagesHealthCheckResponse } from './repos-get-pages-health-check.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetPagesHealthCheck,
+  type ReposGetPagesHealthCheckResponse,
+} from './repos-get-pages-health-check.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_PAGES_HEALTH_CHECK_MOCK: MockEndpoint<ReposGetPagesHealthCheckResponse> =
+  {
+    key: 'REPOS_GET_PAGES_HEALTH_CHECK',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetPagesHealthCheck,
+  };
+
 export function provideReposGetPagesHealthCheckMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetPagesHealthCheckResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_PAGES_HEALTH_CHECK,
-    'REPOS_GET_PAGES_HEALTH_CHECK',
+  initialBehavior?: MockEndpointBehavior<ReposGetPagesHealthCheckResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_PAGES_HEALTH_CHECK_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGenerateReleaseNotesBody = NonNullable<
   paths['/repos/{owner}/{repo}/releases/generate-notes']['post']['requestBody']
@@ -62,19 +63,22 @@ export function provideReposGenerateReleaseNotes(): FactoryProvider {
         body:
           ReposGenerateReleaseNotesBody | Signal<ReposGenerateReleaseNotesBody>,
       ) =>
-        httpResource<ReposGenerateReleaseNotesResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposGenerateReleaseNotesBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/releases/generate-notes`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GENERATE_RELEASE_NOTES',
+          httpResource<ReposGenerateReleaseNotesResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposGenerateReleaseNotesBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/releases/generate-notes`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

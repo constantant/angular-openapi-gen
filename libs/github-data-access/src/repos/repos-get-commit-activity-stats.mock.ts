@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_COMMIT_ACTIVITY_STATS } from './repos-get-commit-activity-stats.token';
-import type { ReposGetCommitActivityStatsResponse } from './repos-get-commit-activity-stats.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetCommitActivityStats,
+  type ReposGetCommitActivityStatsResponse,
+} from './repos-get-commit-activity-stats.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_COMMIT_ACTIVITY_STATS_MOCK: MockEndpoint<ReposGetCommitActivityStatsResponse> =
+  {
+    key: 'REPOS_GET_COMMIT_ACTIVITY_STATS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetCommitActivityStats,
+  };
+
 export function provideReposGetCommitActivityStatsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetCommitActivityStatsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_COMMIT_ACTIVITY_STATS,
-    'REPOS_GET_COMMIT_ACTIVITY_STATS',
+  initialBehavior?: MockEndpointBehavior<ReposGetCommitActivityStatsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_COMMIT_ACTIVITY_STATS_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

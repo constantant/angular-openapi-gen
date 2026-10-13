@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposDeletePagesSiteError =
   | paths['/repos/{owner}/{repo}/pages']['delete']['responses']['404']['content']['application/json']
@@ -18,10 +19,13 @@ export function provideReposDeletePagesSite(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/repos/${owner}/${repo}/pages`,
-          method: 'DELETE',
-        }));
+        trackResource(
+          'REPOS_DELETE_PAGES_SITE',
+          httpResource<unknown>(() => ({
+            url: `${base}/repos/${owner}/${repo}/pages`,
+            method: 'DELETE',
+          })),
+        );
     },
   };
 }
