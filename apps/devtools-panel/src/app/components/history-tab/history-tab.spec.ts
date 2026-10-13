@@ -8,6 +8,7 @@ import type { MockResourceMeta } from '../../mock-entry';
 const mockBridge = {
   mocks: signal(new Map()),
   selectedKey: signal(null),
+  selectedEntry: signal(null),
   sendControl: vi.fn(),
   setCatchMode: vi.fn(),
   refresh: vi.fn(),
@@ -57,33 +58,12 @@ describe('HistoryTab', () => {
       expect(JSON.parse(sections[1].json)).toEqual({ status: 'available' });
     });
 
-    describe('with argument names (MockResourceMeta.args)', () => {
-      const NAMED: MockResourceMeta = {
-        specId: 'pets', operationId: 'uploadFile', path: '/pet/{petId}/uploadImage', method: 'post',
-        args: ['petId', 'body', 'params', 'options'],
-      };
-      const labels = (args: unknown[], meta: MockResourceMeta = NAMED) =>
-        comp().payloadSections({ type: 'caught', id: 1, ts: 0, args }, meta).slice(2).map((s) => s.label);
-
-      it('labels each argument by name instead of guessing "Body [0]", "Body [1]"', () => {
-        expect(labels(['7', '[Blob]', { additionalMetadata: 'x' }, { withCredentials: true }])).toEqual(['Body', 'Query', 'Options']);
-      });
-
-      it('labels a lone trailing options argument as Options, not Body', () => {
-        const meta: MockResourceMeta = { ...NAMED, args: ['petId', 'body', 'params', 'options'] };
-        expect(labels(['7', '[Blob]', undefined, { context: '[HttpContext]' }], meta)).toEqual(['Body', 'Query', 'Options']);
-      });
-
-      it('shows an unknown argument name as is (e.g. a header parameter)', () => {
-        const meta: MockResourceMeta = { ...NAMED, args: ['petId', 'xApiVersion', 'body'] };
-        expect(labels(['7', 'v2', { name: 'x' }], meta)).toEqual(['xApiVersion', 'Body']);
-      });
-
-      it('still labels path parameters from the path template', () => {
-        const sections = comp().payloadSections({ type: 'caught', id: 1, ts: 0, args: ['7', '[Blob]'] }, NAMED);
-        expect(sections[0]).toMatchObject({ type: 'header', label: 'POST /pet/7/uploadImage' });
-        expect(sections[1]).toMatchObject({ label: 'petId', json: '"7"' }); // a string renders as JSON
-      });
+    it('labels the two trailing args of a body method as Body and Query', () => {
+      const sections = comp().payloadSections(
+        { type: 'caught', id: 1, ts: 0, args: [{ name: 'Fido' }, { dryRun: 'true' }] },
+        POST_META,
+      );
+      expect(sections.slice(1).map((s) => s.label)).toEqual(['Body', 'Query']);
     });
 
     it('emits Body label for POST', () => {

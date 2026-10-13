@@ -58,13 +58,24 @@ export interface MockEntry {
   example?: unknown;
 }
 
+/** A `MockEvent` of the runtime as it arrives in the panel. */
+export interface PanelMockEvent {
+  type: string;
+  value?: unknown;
+  error?: unknown;
+  args?: unknown[];
+  requestId?: string;
+  status?: number;
+  ts: number;
+}
+
 export type PanelMessage =
   | { type: 'mock-keys'; keys: string[]; metas?: Record<string, MockResourceMeta | null> }
   | { type: 'mock-state'; key: string; state: MockState }
   | { type: 'intercept-state'; enabled: boolean }
   | { type: 'observed-requests'; requests: ObservedRequest[] }
   | { type: 'observed-request'; request: ObservedRequest }
-  | { type: 'mock-event'; key: string; event: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; status?: number; ts: number } };
+  | { type: 'mock-event'; key: string; event: PanelMockEvent };
 
 let _histId = 0;
 const MAX_HISTORY = 200;
@@ -83,10 +94,12 @@ export function blankEntry(key: string): MockEntry {
   };
 }
 
-export function applyEvent(
-  entry: MockEntry,
-  ev: { type: string; value?: unknown; error?: unknown; args?: unknown[]; requestId?: string; status?: number; ts: number },
-): MockEntry {
+/** A managed endpoint the page has not reported (yet). */
+export function localEntry(key: string, meta: MockResourceMeta, baseUrl: string | undefined): MockEntry {
+  return { ...blankEntry(key), state: { ...blankEntry(key).state, status: 'local' }, meta, managed: true, baseUrl };
+}
+
+export function applyEvent(entry: MockEntry, ev: PanelMockEvent): MockEntry {
   const histEvent: HistoryEvent = { id: ++_histId, ts: ev.ts, type: ev.type };
   if (ev.value !== undefined) histEvent.value = ev.value;
   if (ev.error !== undefined) histEvent.error = ev.error;
@@ -126,7 +139,7 @@ export function applyEvent(
       break;
     case 'reset':
       next.pendingRequest = null;
-      next.state = { status: 'idle', value: undefined, error: undefined, progress: undefined };
+      next.state = blankEntry(entry.key).state;
       break;
   }
   return next;

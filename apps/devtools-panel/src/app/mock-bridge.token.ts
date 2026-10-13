@@ -1,11 +1,13 @@
-import { InjectionToken, Signal, WritableSignal, effect, inject, signal, untracked } from '@angular/core';
-import { MockEntry, MockResourceMeta, MockState, ObservedRequest, PanelMessage, applyEvent, blankEntry } from './mock-entry';
+import { InjectionToken, Signal, WritableSignal, computed, effect, inject, signal, untracked } from '@angular/core';
+import { MockEntry, MockResourceMeta, MockState, ObservedRequest, PanelMessage, applyEvent, blankEntry, localEntry } from './mock-entry';
 import { findOperation } from './base-url-suggestions';
 import { SPEC_STORE } from './spec-store.token';
 
 export interface MockBridge {
   readonly mocks: Signal<ReadonlyMap<string, MockEntry>>;
   readonly selectedKey: WritableSignal<string | null>;
+  /** The entry of {@link selectedKey}, or `null`. */
+  readonly selectedEntry: Signal<MockEntry | null>;
   /** Whether fetch / XMLHttpRequest are patched by the extension on the inspected site. */
   readonly intercepting: Signal<boolean>;
   /** Opt the inspected site in or out of interception (persists across reloads and sessions). */
@@ -29,13 +31,14 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
   factory: () => {
     const mocks = signal<Map<string, MockEntry>>(new Map());
     const selectedKey = signal<string | null>(null);
+    const selectedEntry = computed(() => mocks().get(selectedKey() ?? '') ?? null);
     const intercepting = signal(false);
     const observedRequests = signal<readonly ObservedRequest[]>([]);
 
     // Outside a Chrome DevTools panel (e.g. dev server, E2E) — return a passive stub.
     if (typeof chrome === 'undefined' || !chrome.devtools) {
       return {
-        mocks: mocks.asReadonly(), selectedKey,
+        mocks: mocks.asReadonly(), selectedKey, selectedEntry,
         intercepting: intercepting.asReadonly(),
         setIntercepting: () => { /* noop */ },
         observedRequests: observedRequests.asReadonly(),
@@ -139,7 +142,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         const next = new Map(prev);
         if (msg.type === 'mock-keys') {
           for (const key of msg.keys) {
-            // Runtime meta (Phase 1) takes priority; fall back to SPEC_STORE (Phase 3).
+            // What the page reports wins; an imported spec fills in for a runtime without meta.
             const runtimeMeta = msg.metas?.[key] ?? null;
             const meta = runtimeMeta ?? specStore.findMock(key) ?? null;
             const existing = next.get(key);
@@ -147,7 +150,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
               next.set(key, { ...blankEntry(key), meta });
             } else if (existing.state.status === 'local') {
               // Entry was panel-created; the app has now registered the key — promote it.
-              next.set(key, { ...existing, state: { status: 'idle', value: undefined, error: undefined, progress: undefined }, meta: meta ?? existing.meta });
+              next.set(key, { ...existing, state: blankEntry(key).state, meta: meta ?? existing.meta });
             } else if (meta) {
               next.set(key, { ...existing, meta });
             }
@@ -184,7 +187,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         const missing = [...mocks().values()].filter((e) => e.managed && baseUrlOf(e) && !msg.keys.includes(e.key));
         if (missing.length > 0) {
           missing.forEach(registerInPage);
-          setTimeout(() => post({ type: 'get-keys' }), 150);
+          rediscoverSoon();
         }
         for (const key of msg.keys) {
           if (mocks().get(key)?.catchMode) {
@@ -219,13 +222,18 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
               // The page reported the key before storage answered.
               next.set(key, { ...existing, managed: true, baseUrl: v.baseUrl, catchMode: existing.catchMode || (v.catchMode ?? false) });
             } else {
-              next.set(key, { ...blankEntry(key), state: { status: 'local', value: undefined, error: undefined, progress: undefined }, meta: v.meta, catchMode: v.catchMode ?? false, managed: true, baseUrl: v.baseUrl });
+              next.set(key, { ...localEntry(key, v.meta, v.baseUrl), catchMode: v.catchMode ?? false });
             }
           }
           return next;
         });
       }
     });
+
+    /** Discovery after the page had a moment to register what was just sent to it. */
+    function rediscoverSoon(): void {
+      setTimeout(() => post({ type: 'get-keys' }), 150);
+    }
 
     function post(msg: unknown): void {
       try {
@@ -255,20 +263,15 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
             if (!operation) continue;
             const key = operation.tokenName;
             if (known.has(key) || found.has(key) || dismissed.has(key)) continue;
-            found.set(key, {
-              ...blankEntry(key),
-              state: { status: 'local', value: undefined, error: undefined, progress: undefined },
-              meta: { specId: spec.specId, operationId: operation.operationId, path: operation.path, method: operation.method, tag: operation.tag },
-              managed: true,
-              baseUrl: spec.baseUrl,
-            });
+            const meta = { specId: spec.specId, operationId: operation.operationId, path: operation.path, method: operation.method, tag: operation.tag };
+            found.set(key, localEntry(key, meta, spec.baseUrl));
           }
         }
         if (found.size === 0) return;
         mocks.update((prev) => new Map([...prev, ...found]));
         persistLocalMocks(mocks());
         for (const entry of found.values()) registerInPage(entry);
-        setTimeout(() => post({ type: 'get-keys' }), 150);
+        rediscoverSoon();
       });
     });
 
@@ -291,6 +294,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
     return {
       mocks: mocks.asReadonly(),
       selectedKey,
+      selectedEntry,
       intercepting: intercepting.asReadonly(),
       setIntercepting: (enabled: boolean) => post({ type: 'set-intercept', enabled }),
       observedRequests: observedRequests.asReadonly(),
@@ -334,7 +338,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
       },
       createLocalMock: (key: string, meta: MockResourceMeta) => {
         const baseUrl = specStore.specs().get(meta.specId)?.baseUrl;
-        const entry: MockEntry = { ...blankEntry(key), state: { status: 'local', value: undefined, error: undefined, progress: undefined }, meta, managed: true, baseUrl };
+        const entry = localEntry(key, meta, baseUrl);
         mocks.update((prev) => {
           const next = new Map(prev);
           next.set(key, entry);
@@ -345,7 +349,7 @@ export const MOCK_BRIDGE = new InjectionToken<MockBridge>('MOCK_BRIDGE', {
         // With a runtime in the page (interception on, or an app that bundles the mocks) the
         // endpoint goes live right away; discovery then promotes the entry.
         registerInPage(entry);
-        setTimeout(() => post({ type: 'get-keys' }), 150);
+        rediscoverSoon();
       },
       deleteLocalMock: (key: string) => {
         mocks.update((prev) => {

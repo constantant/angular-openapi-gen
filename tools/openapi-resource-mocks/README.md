@@ -418,7 +418,6 @@ interface MockResourceMeta {
   method: string;       // lowercase HTTP method
   tag?: string;
   responseType?: 'json' | 'text' | 'blob'; // how the response body is read; absent means JSON
-  args?: readonly string[]; // names of the token function's arguments (emitted by --callOptions)
 }
 ```
 

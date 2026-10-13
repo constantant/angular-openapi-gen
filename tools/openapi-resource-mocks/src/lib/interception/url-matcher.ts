@@ -1,3 +1,5 @@
+import { pageHref } from './transport-utils';
+
 export interface EndpointRule {
   /** Any casing; compared case-insensitively. */
   method: string;
@@ -17,10 +19,6 @@ export interface EndpointMatcher {
   /** Number of literal path segments: `/pet/findByStatus` (2) outranks `/pet/{petId}` (1). */
   readonly specificity: number;
   match(method: string, url: string): EndpointMatch | null;
-}
-
-function pageHref(): string {
-  return typeof location !== 'undefined' && location.href ? location.href : 'http://localhost/';
 }
 
 function escapeRegExp(text: string): string {

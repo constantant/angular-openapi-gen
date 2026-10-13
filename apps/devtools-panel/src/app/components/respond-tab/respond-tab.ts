@@ -23,10 +23,7 @@ export class RespondTab {
   protected readonly generateLoading = signal(false);
   protected readonly validateLoading = signal(false);
 
-  protected readonly selectedEntry = computed(() => {
-    const key = this.bridge.selectedKey();
-    return key ? (this.bridge.mocks().get(key) ?? null) : null;
-  });
+  protected readonly selectedEntry = this.bridge.selectedEntry;
 
   protected readonly pendingArgsJson = computed(() => {
     const entry = this.selectedEntry();

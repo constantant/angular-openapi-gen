@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { installMockInterception } from './interception/install';
 import type { MockBehavior, MockRuntime } from './interception/mock-runtime';
-import type { MockProgress } from './mock-events';
 import type { MockResourceMeta } from './mock-resource-meta';
 
 /**
@@ -18,14 +17,7 @@ import type { MockResourceMeta } from './mock-resource-meta';
  * `HttpErrorResponse` (`status` defaults to 500), and a `value` is validated like a real response
  * when the lib was generated with `--validateResponses` — so it has to be complete.
  */
-export type MockEndpointBehavior<T> = (
-  | { value: T; delay?: number; status?: number; headers?: Record<string, string> }
-  | { loading: true }
-  | { error: unknown; delay?: number; status?: number; headers?: Record<string, string> }
-) & {
-  /** Transfer progress reported to the request before it is answered (or while it is held). */
-  progress?: MockProgress[];
-};
+export type MockEndpointBehavior<T> = MockBehavior<T>;
 
 /**
  * Describes one endpoint to the mocking layer. Generated `*.mock.ts` files export one per endpoint

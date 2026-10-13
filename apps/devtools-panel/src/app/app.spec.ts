@@ -7,6 +7,7 @@ import { MOCK_BRIDGE } from './mock-bridge.token';
 const mockBridge = {
   mocks: signal(new Map()),
   selectedKey: signal(null),
+  selectedEntry: signal(null),
   sendControl: vi.fn(),
   setCatchMode: vi.fn(),
   refresh: vi.fn(),

@@ -164,7 +164,7 @@ export function extractFromOpenApiSpec(
 }
 
 /** `servers[0].url` of an OpenAPI spec, with its `{variables}` replaced by their defaults. */
-export function extractBaseUrl(spec: Record<string, unknown>): string | undefined {
+function extractBaseUrl(spec: Record<string, unknown>): string | undefined {
   const server = (spec['servers'] as Array<Record<string, unknown>> | undefined)?.[0];
   if (typeof server?.['url'] !== 'string') return undefined;
   const variables = (server['variables'] ?? {}) as Record<string, { default?: unknown }>;

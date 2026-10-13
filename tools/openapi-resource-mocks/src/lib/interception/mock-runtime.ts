@@ -1,16 +1,18 @@
 import type { MockEvent, MockProgress } from '../mock-events';
 import type { MockResourceMeta } from '../mock-resource-meta';
 import type { WindowMockEntry } from '../window-mock-entry';
+import { isJsonContentType, pageHref } from './transport-utils';
 import { compileEndpointRule, type EndpointMatcher, type EndpointRule } from './url-matcher';
 
 /**
  * How a mocked endpoint answers. `value` is sent as the response body (JSON unless it is a string,
  * `Blob` or `ArrayBuffer`); `error` is sent as the body of a failing response (`status` defaults to
  * 500), so the app sees a real `HttpErrorResponse`. `loading` holds every request open until the
- * endpoint is resolved or failed.
+ * endpoint is resolved or failed. `T` is the type of `value`: generated mock files pass the
+ * endpoint's response type, the runtime itself works with `unknown`.
  */
-export type MockBehavior = (
-  | { value: unknown; delay?: number; status?: number; headers?: Record<string, string> }
+export type MockBehavior<T = unknown> = (
+  | { value: T; delay?: number; status?: number; headers?: Record<string, string> }
   | { loading: true }
   | { error: unknown; delay?: number; status?: number; headers?: Record<string, string> }
 ) & {
@@ -158,10 +160,6 @@ interface ControlDetail {
 
 const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH']);
 
-function pageHref(): string {
-  return typeof location !== 'undefined' && location.href ? location.href : 'http://localhost/';
-}
-
 function isBinary(value: unknown): value is Blob | ArrayBuffer {
   return (
     (typeof Blob !== 'undefined' && value instanceof Blob) ||
@@ -302,10 +300,6 @@ export class MockRuntime {
     if (typeof window !== 'undefined') delete window.__openApiMocks__?.[key];
   }
 
-  has(key: string): boolean {
-    return this.entries.has(key);
-  }
-
   /** The controls of a registered endpoint — the same object as `window.__openApiMocks__[key]`. */
   controls(key: string): WindowMockEntry | undefined {
     return this.entries.get(key)?.api;
@@ -410,7 +404,7 @@ export class MockRuntime {
    * for are kept too (bounded), so an endpoint registered afterwards starts with one.
    */
   async realResponse(response: RealResponse): Promise<void> {
-    if (!/[/+]json\b/i.test(response.contentType ?? '')) return;
+    if (!isJsonContentType(response.contentType)) return;
     const method = response.method.toUpperCase();
     const entry = this.bestMatch(method, response.url)?.entry;
     if (!entry && !this.observed) return;

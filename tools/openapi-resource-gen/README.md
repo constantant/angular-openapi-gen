@@ -517,8 +517,7 @@ Files and types it adds:
   `ResourceCallOptions<T>`, `ResourceRefFor<T, O>` and the small `splitCallOptions` helper.
 - Per token: `XxxOptions` and `XxxFn` (the function type), exported from the token file.
 
-With `--includeMocks`, the generated mock's `_meta` records the argument names (`args`) — see the
-[mocks README](../openapi-resource-mocks/README.md#mockresourcemeta). A mocked endpoint runs the real
+With `--includeMocks`, a mocked endpoint runs the real
 token, so `defaultValue` and the other options behave exactly as they do against the real API.
 
 ---

@@ -1,5 +1,5 @@
 import type { MockResponse, MockRuntime } from './mock-runtime';
-import { readRequestBody } from './transport-utils';
+import { isJsonContentType, readRequestBody } from './transport-utils';
 
 const NULL_BODY_STATUS = new Set([101, 204, 205, 304]);
 
@@ -32,7 +32,7 @@ export function patchFetch(target: { fetch: typeof fetch }, runtime: MockRuntime
       return pending.then((response) => {
         try {
           const contentType = response.headers.get('content-type');
-          if (/[/+]json\b/i.test(contentType ?? '')) {
+          if (isJsonContentType(contentType)) {
             const copy = response.clone();
             void runtime.realResponse({ method, url, status: response.status, contentType, text: () => copy.text() });
           }
