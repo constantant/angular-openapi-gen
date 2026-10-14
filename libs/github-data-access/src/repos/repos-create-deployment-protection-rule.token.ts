@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateDeploymentProtectionRuleBody = NonNullable<
   paths['/repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules']['post']['requestBody']
@@ -106,19 +107,22 @@ export function provideReposCreateDeploymentProtectionRule(): FactoryProvider {
           | ReposCreateDeploymentProtectionRuleBody
           | Signal<ReposCreateDeploymentProtectionRuleBody>,
       ) =>
-        httpResource<ReposCreateDeploymentProtectionRuleResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateDeploymentProtectionRuleBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_DEPLOYMENT_PROTECTION_RULE',
+          httpResource<ReposCreateDeploymentProtectionRuleResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateDeploymentProtectionRuleBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

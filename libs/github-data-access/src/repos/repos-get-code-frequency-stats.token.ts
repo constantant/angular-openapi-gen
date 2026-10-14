@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetCodeFrequencyStatsResponse =
   | paths['/repos/{owner}/{repo}/stats/code_frequency']['get']['responses']['200']['content']['application/json']
@@ -43,11 +44,14 @@ export function provideReposGetCodeFrequencyStats(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<ReposGetCodeFrequencyStatsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/stats/code_frequency`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_CODE_FREQUENCY_STATS',
+          httpResource<ReposGetCodeFrequencyStatsResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/stats/code_frequency`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

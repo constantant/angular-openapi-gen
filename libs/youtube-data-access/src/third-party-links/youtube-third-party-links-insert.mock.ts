@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_THIRD_PARTY_LINKS_INSERT } from './youtube-third-party-links-insert.token';
-import type { YoutubeThirdPartyLinksInsertResponse } from './youtube-third-party-links-insert.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeThirdPartyLinksInsert,
+  type YoutubeThirdPartyLinksInsertResponse,
+} from './youtube-third-party-links-insert.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'third-party-links',
 };
 
+export const YOUTUBE_THIRD_PARTY_LINKS_INSERT_MOCK: MockEndpoint<YoutubeThirdPartyLinksInsertResponse> =
+  {
+    key: 'YOUTUBE_THIRD_PARTY_LINKS_INSERT',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeThirdPartyLinksInsert,
+  };
+
 export function provideYoutubeThirdPartyLinksInsertMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeThirdPartyLinksInsertResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_THIRD_PARTY_LINKS_INSERT,
-    'YOUTUBE_THIRD_PARTY_LINKS_INSERT',
+  initialBehavior?: MockEndpointBehavior<YoutubeThirdPartyLinksInsertResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_THIRD_PARTY_LINKS_INSERT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

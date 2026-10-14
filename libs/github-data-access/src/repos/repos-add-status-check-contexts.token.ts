@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposAddStatusCheckContextsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['post']['requestBody']
@@ -58,19 +59,22 @@ export function provideReposAddStatusCheckContexts(): FactoryProvider {
           | ReposAddStatusCheckContextsBody
           | Signal<ReposAddStatusCheckContextsBody>,
       ) =>
-        httpResource<ReposAddStatusCheckContextsResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposAddStatusCheckContextsBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_ADD_STATUS_CHECK_CONTEXTS',
+          httpResource<ReposAddStatusCheckContextsResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposAddStatusCheckContextsBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_REMOVE_STATUS_CHECK_CONTEXTS } from './repos-remove-status-check-contexts.token';
-import type { ReposRemoveStatusCheckContextsResponse } from './repos-remove-status-check-contexts.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposRemoveStatusCheckContexts,
+  type ReposRemoveStatusCheckContextsResponse,
+} from './repos-remove-status-check-contexts.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_REMOVE_STATUS_CHECK_CONTEXTS_MOCK: MockEndpoint<ReposRemoveStatusCheckContextsResponse> =
+  {
+    key: 'REPOS_REMOVE_STATUS_CHECK_CONTEXTS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposRemoveStatusCheckContexts,
+  };
+
 export function provideReposRemoveStatusCheckContextsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposRemoveStatusCheckContextsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_REMOVE_STATUS_CHECK_CONTEXTS,
-    'REPOS_REMOVE_STATUS_CHECK_CONTEXTS',
+  initialBehavior?: MockEndpointBehavior<ReposRemoveStatusCheckContextsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_REMOVE_STATUS_CHECK_CONTEXTS_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

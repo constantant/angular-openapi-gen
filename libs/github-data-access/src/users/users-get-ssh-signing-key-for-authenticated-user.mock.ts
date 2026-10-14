@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER } from './users-get-ssh-signing-key-for-authenticated-user.token';
-import type { UsersGetSshSigningKeyForAuthenticatedUserResponse } from './users-get-ssh-signing-key-for-authenticated-user.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersGetSshSigningKeyForAuthenticatedUser,
+  type UsersGetSshSigningKeyForAuthenticatedUserResponse,
+} from './users-get-ssh-signing-key-for-authenticated-user.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER_MOCK: MockEndpoint<UsersGetSshSigningKeyForAuthenticatedUserResponse> =
+  {
+    key: 'USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersGetSshSigningKeyForAuthenticatedUser,
+  };
+
 export function provideUsersGetSshSigningKeyForAuthenticatedUserMock(
-  initialBehavior?: ProviderInitialBehavior<UsersGetSshSigningKeyForAuthenticatedUserResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER,
-    'USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER',
+  initialBehavior?: MockEndpointBehavior<UsersGetSshSigningKeyForAuthenticatedUserResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    USERS_GET_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

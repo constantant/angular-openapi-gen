@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetCommitActivityStatsResponse =
   | paths['/repos/{owner}/{repo}/stats/commit_activity']['get']['responses']['200']['content']['application/json']
@@ -60,11 +61,14 @@ export function provideReposGetCommitActivityStats(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<ReposGetCommitActivityStatsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/stats/commit_activity`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_COMMIT_ACTIVITY_STATS',
+          httpResource<ReposGetCommitActivityStatsResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/stats/commit_activity`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposTransferBody = NonNullable<
   paths['/repos/{owner}/{repo}/transfer']['post']['requestBody']
@@ -775,19 +776,22 @@ export function provideReposTransfer(): FactoryProvider {
         repo: string,
         body: ReposTransferBody | Signal<ReposTransferBody>,
       ) =>
-        httpResource<ReposTransferResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposTransferBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/transfer`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_TRANSFER',
+          httpResource<ReposTransferResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposTransferBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/transfer`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

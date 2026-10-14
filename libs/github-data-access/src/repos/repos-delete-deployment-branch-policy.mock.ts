@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_DELETE_DEPLOYMENT_BRANCH_POLICY } from './repos-delete-deployment-branch-policy.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposDeleteDeploymentBranchPolicy } from './repos-delete-deployment-branch-policy.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_DELETE_DEPLOYMENT_BRANCH_POLICY_MOCK: MockEndpoint<unknown> =
+  {
+    key: 'REPOS_DELETE_DEPLOYMENT_BRANCH_POLICY',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposDeleteDeploymentBranchPolicy,
+  };
+
 export function provideReposDeleteDeploymentBranchPolicyMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_DELETE_DEPLOYMENT_BRANCH_POLICY,
-    'REPOS_DELETE_DEPLOYMENT_BRANCH_POLICY',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_DELETE_DEPLOYMENT_BRANCH_POLICY_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockHttpEvents } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { UPLOAD_FILE } from './upload-file.token';
-import type { UploadFileResponse } from './upload-file.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  provideUploadFile,
+  type UploadFileResponse,
+} from './upload-file.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,17 @@ const _meta: MockResourceMeta = {
   path: '/pet/{petId}/uploadImage',
   method: 'post',
   tag: 'pet',
-  args: ['petId', 'body', 'params', 'options'],
+};
+
+export const UPLOAD_FILE_MOCK: MockEndpoint<UploadFileResponse> = {
+  key: 'UPLOAD_FILE',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: provideUploadFile,
 };
 
 export function provideUploadFileMock(
-  initialBehavior?: ProviderInitialBehavior<UploadFileResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockHttpEvents(
-    UPLOAD_FILE,
-    'UPLOAD_FILE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<UploadFileResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(UPLOAD_FILE_MOCK, initialBehavior);
 }

@@ -8,6 +8,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type GetUserByNameResponse =
   paths['/user/{username}']['get']['responses']['200']['content']['application/json'];
@@ -86,17 +87,20 @@ export function provideGetUserByName(): FactoryProvider {
       const base = inject(PETSTORE_BASE_URL);
       return ((username: string, options?: GetUserByNameOptions) => {
         const _opts = splitCallOptions<GetUserByNameResponse>(options);
-        return httpResource<GetUserByNameResponse>(
-          () => {
-            return {
-              ..._opts.request,
-              url: `${base}/user/${username}`,
-              headers: {
-                ..._opts.headers,
-              },
-            };
-          },
-          { ..._opts.resource, parse: _validateResponse },
+        return trackResource(
+          'GET_USER_BY_NAME',
+          httpResource<GetUserByNameResponse>(
+            () => {
+              return {
+                ..._opts.request,
+                url: `${base}/user/${username}`,
+                headers: {
+                  ..._opts.headers,
+                },
+              };
+            },
+            { ..._opts.resource, parse: _validateResponse },
+          ),
         );
       }) as GetUserByNameFn;
     },

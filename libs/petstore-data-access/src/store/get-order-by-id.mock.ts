@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { GET_ORDER_BY_ID } from './get-order-by-id.token';
-import type { GetOrderByIdResponse } from './get-order-by-id.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  provideGetOrderById,
+  type GetOrderByIdResponse,
+} from './get-order-by-id.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,17 @@ const _meta: MockResourceMeta = {
   path: '/store/order/{orderId}',
   method: 'get',
   tag: 'store',
-  args: ['orderId', 'options'],
+};
+
+export const GET_ORDER_BY_ID_MOCK: MockEndpoint<GetOrderByIdResponse> = {
+  key: 'GET_ORDER_BY_ID',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: provideGetOrderById,
 };
 
 export function provideGetOrderByIdMock(
-  initialBehavior?: ProviderInitialBehavior<GetOrderByIdResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    GET_ORDER_BY_ID,
-    'GET_ORDER_BY_ID',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<GetOrderByIdResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(GET_ORDER_BY_ID_MOCK, initialBehavior);
 }

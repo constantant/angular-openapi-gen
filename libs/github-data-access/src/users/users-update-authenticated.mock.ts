@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_UPDATE_AUTHENTICATED } from './users-update-authenticated.token';
-import type { UsersUpdateAuthenticatedResponse } from './users-update-authenticated.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersUpdateAuthenticated,
+  type UsersUpdateAuthenticatedResponse,
+} from './users-update-authenticated.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_UPDATE_AUTHENTICATED_MOCK: MockEndpoint<UsersUpdateAuthenticatedResponse> =
+  {
+    key: 'USERS_UPDATE_AUTHENTICATED',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersUpdateAuthenticated,
+  };
+
 export function provideUsersUpdateAuthenticatedMock(
-  initialBehavior?: ProviderInitialBehavior<UsersUpdateAuthenticatedResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_UPDATE_AUTHENTICATED,
-    'USERS_UPDATE_AUTHENTICATED',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<UsersUpdateAuthenticatedResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(USERS_UPDATE_AUTHENTICATED_MOCK, initialBehavior);
 }

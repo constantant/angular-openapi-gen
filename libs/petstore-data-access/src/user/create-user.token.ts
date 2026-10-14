@@ -8,6 +8,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type CreateUserBody = NonNullable<
   paths['/user']['post']['requestBody']
@@ -89,23 +90,26 @@ export function provideCreateUser(): FactoryProvider {
         options?: CreateUserOptions,
       ) => {
         const _opts = splitCallOptions<CreateUserResponse>(options);
-        return httpResource<CreateUserResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<CreateUserBody>)()
-                : body;
-            return {
-              ..._opts.request,
-              url: `${base}/user`,
-              method: 'POST',
-              body: _body,
-              headers: {
-                ..._opts.headers,
-              },
-            };
-          },
-          { ..._opts.resource, parse: _validateResponse },
+        return trackResource(
+          'CREATE_USER',
+          httpResource<CreateUserResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<CreateUserBody>)()
+                  : body;
+              return {
+                ..._opts.request,
+                url: `${base}/user`,
+                method: 'POST',
+                body: _body,
+                headers: {
+                  ..._opts.headers,
+                },
+              };
+            },
+            { ..._opts.resource, parse: _validateResponse },
+          ),
         );
       }) as CreateUserFn;
     },

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_COMMUNITY_PROFILE_METRICS } from './repos-get-community-profile-metrics.token';
-import type { ReposGetCommunityProfileMetricsResponse } from './repos-get-community-profile-metrics.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetCommunityProfileMetrics,
+  type ReposGetCommunityProfileMetricsResponse,
+} from './repos-get-community-profile-metrics.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_COMMUNITY_PROFILE_METRICS_MOCK: MockEndpoint<ReposGetCommunityProfileMetricsResponse> =
+  {
+    key: 'REPOS_GET_COMMUNITY_PROFILE_METRICS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetCommunityProfileMetrics,
+  };
+
 export function provideReposGetCommunityProfileMetricsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetCommunityProfileMetricsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_COMMUNITY_PROFILE_METRICS,
-    'REPOS_GET_COMMUNITY_PROFILE_METRICS',
+  initialBehavior?: MockEndpointBehavior<ReposGetCommunityProfileMetricsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_COMMUNITY_PROFILE_METRICS_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

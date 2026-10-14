@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_LIST_LANGUAGES } from './repos-list-languages.token';
-import type { ReposListLanguagesResponse } from './repos-list-languages.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposListLanguages,
+  type ReposListLanguagesResponse,
+} from './repos-list-languages.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_LIST_LANGUAGES_MOCK: MockEndpoint<ReposListLanguagesResponse> =
+  {
+    key: 'REPOS_LIST_LANGUAGES',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposListLanguages,
+  };
+
 export function provideReposListLanguagesMock(
-  initialBehavior?: ProviderInitialBehavior<ReposListLanguagesResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_LIST_LANGUAGES,
-    'REPOS_LIST_LANGUAGES',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposListLanguagesResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_LIST_LANGUAGES_MOCK, initialBehavior);
 }

@@ -8,9 +8,13 @@ function send(msg: unknown): void {
     // Context invalidated — remove all listeners and stop discovery.
     document.removeEventListener('openapi-mock-event', onMockEvent);
     document.removeEventListener('__oarm_discovery__', onDiscovery);
-    attempts = 20; // stop tryDiscover loop
+    document.removeEventListener('openapi-mock-observed', onObserved);
+    attempts = MAX_ATTEMPTS; // stop tryDiscover loop
   }
 }
+
+// This script runs at document start, so the listeners below are in place before the app makes
+// its first request: a request caught during bootstrap reaches the panel like any later one.
 
 // ── Page → panel: relay live state-change events ─────────────────────────────
 function onMockEvent(e: Event): void {
@@ -22,6 +26,13 @@ function onMockEvent(e: Event): void {
   send({ type: 'mock-event', key, event });
 }
 document.addEventListener('openapi-mock-event', onMockEvent);
+
+// ── Page → panel: a request the page made for the first time (intercepted sites only) ────────
+function onObserved(e: Event): void {
+  const request = (e as CustomEvent<{ method: string; url: string } | null>).detail;
+  if (request) send({ type: 'observed-request', request });
+}
+document.addEventListener('openapi-mock-observed', onObserved);
 
 // ── MAIN-world injection results → panel ─────────────────────────────────────
 function onDiscovery(e: Event): void {
@@ -45,9 +56,11 @@ chrome.runtime.onMessage.addListener((msg) => {
 });
 
 // ── Initial discovery ─────────────────────────────────────────────────────────
+// Polled for a while because the app registers its endpoints whenever it bootstraps.
+const MAX_ATTEMPTS = 30;
 let attempts = 0;
 function tryDiscover(): void {
   send({ type: 'request-discovery' });
-  if (++attempts < 20) setTimeout(tryDiscover, 300);
+  if (++attempts < MAX_ATTEMPTS) setTimeout(tryDiscover, 300);
 }
 tryDiscover();

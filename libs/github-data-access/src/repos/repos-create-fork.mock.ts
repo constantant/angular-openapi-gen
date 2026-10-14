@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_CREATE_FORK } from './repos-create-fork.token';
-import type { ReposCreateForkResponse } from './repos-create-fork.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposCreateFork,
+  type ReposCreateForkResponse,
+} from './repos-create-fork.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_CREATE_FORK_MOCK: MockEndpoint<ReposCreateForkResponse> = {
+  key: 'REPOS_CREATE_FORK',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposCreateFork,
+};
+
 export function provideReposCreateForkMock(
-  initialBehavior?: ProviderInitialBehavior<ReposCreateForkResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_CREATE_FORK,
-    'REPOS_CREATE_FORK',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposCreateForkResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_CREATE_FORK_MOCK, initialBehavior);
 }

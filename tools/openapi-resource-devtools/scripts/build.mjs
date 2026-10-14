@@ -22,12 +22,14 @@ for (const name of readdirSync(panelDist)) {
   cpSync(join(panelDist, name), join(out, name), { recursive: true });
 }
 
-// 3. Bundle the three extension scripts (content, SW, devtools page)
+// 2. Bundle the extension scripts (content scripts, page-injected runtime, SW, devtools page)
 await build({
   entryPoints: {
     devtools: join(src, 'devtools.ts'),
     sw:       join(src, 'background/sw.ts'),
     content:  join(src, 'content/content.ts'),
+    config:   join(src, 'content/config.ts'),
+    inject:   join(src, 'inject/inject.ts'),
   },
   bundle: true,
   outdir: out,
@@ -40,7 +42,7 @@ await build({
   logLevel: 'info',
 });
 
-// 4. Copy manifest, devtools.html, and icons
+// 3. Copy manifest, devtools.html, and icons
 cpSync(join(__dirname, '../manifest.json'),  join(out, 'manifest.json'));
 cpSync(join(src, 'devtools.html'),           join(out, 'devtools.html'));
 cpSync(join(__dirname, '../icons'),          join(out, 'icons'), { recursive: true });

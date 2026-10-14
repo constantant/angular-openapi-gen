@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_PLAYLIST_ITEMS_UPDATE } from './youtube-playlist-items-update.token';
-import type { YoutubePlaylistItemsUpdateResponse } from './youtube-playlist-items-update.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubePlaylistItemsUpdate,
+  type YoutubePlaylistItemsUpdateResponse,
+} from './youtube-playlist-items-update.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'playlist-items',
 };
 
+export const YOUTUBE_PLAYLIST_ITEMS_UPDATE_MOCK: MockEndpoint<YoutubePlaylistItemsUpdateResponse> =
+  {
+    key: 'YOUTUBE_PLAYLIST_ITEMS_UPDATE',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubePlaylistItemsUpdate,
+  };
+
 export function provideYoutubePlaylistItemsUpdateMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubePlaylistItemsUpdateResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_PLAYLIST_ITEMS_UPDATE,
-    'YOUTUBE_PLAYLIST_ITEMS_UPDATE',
+  initialBehavior?: MockEndpointBehavior<YoutubePlaylistItemsUpdateResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_PLAYLIST_ITEMS_UPDATE_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

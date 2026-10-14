@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH } from './repos-get-users-with-access-to-protected-branch.token';
-import type { ReposGetUsersWithAccessToProtectedBranchResponse } from './repos-get-users-with-access-to-protected-branch.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetUsersWithAccessToProtectedBranch,
+  type ReposGetUsersWithAccessToProtectedBranchResponse,
+} from './repos-get-users-with-access-to-protected-branch.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH_MOCK: MockEndpoint<ReposGetUsersWithAccessToProtectedBranchResponse> =
+  {
+    key: 'REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetUsersWithAccessToProtectedBranch,
+  };
+
 export function provideReposGetUsersWithAccessToProtectedBranchMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetUsersWithAccessToProtectedBranchResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH,
-    'REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH',
+  initialBehavior?: MockEndpointBehavior<ReposGetUsersWithAccessToProtectedBranchResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

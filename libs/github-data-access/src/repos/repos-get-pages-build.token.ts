@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetPagesBuildResponse =
   paths['/repos/{owner}/{repo}/pages/builds/{build_id}']['get']['responses']['200']['content']['application/json'];
@@ -202,11 +203,14 @@ export function provideReposGetPagesBuild(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, buildId: string) =>
-        httpResource<ReposGetPagesBuildResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/pages/builds/${buildId}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_PAGES_BUILD',
+          httpResource<ReposGetPagesBuildResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/pages/builds/${buildId}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

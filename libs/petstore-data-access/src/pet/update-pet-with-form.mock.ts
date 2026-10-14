@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { UPDATE_PET_WITH_FORM } from './update-pet-with-form.token';
-import type { UpdatePetWithFormResponse } from './update-pet-with-form.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  provideUpdatePetWithForm,
+  type UpdatePetWithFormResponse,
+} from './update-pet-with-form.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,18 @@ const _meta: MockResourceMeta = {
   path: '/pet/{petId}',
   method: 'post',
   tag: 'pet',
-  args: ['petId', 'params', 'options'],
 };
 
+export const UPDATE_PET_WITH_FORM_MOCK: MockEndpoint<UpdatePetWithFormResponse> =
+  {
+    key: 'UPDATE_PET_WITH_FORM',
+    baseUrl: PETSTORE_BASE_URL,
+    meta: _meta,
+    provide: provideUpdatePetWithForm,
+  };
+
 export function provideUpdatePetWithFormMock(
-  initialBehavior?: ProviderInitialBehavior<UpdatePetWithFormResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    UPDATE_PET_WITH_FORM,
-    'UPDATE_PET_WITH_FORM',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<UpdatePetWithFormResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(UPDATE_PET_WITH_FORM_MOCK, initialBehavior);
 }

@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_CANCEL_PAGES_DEPLOYMENT } from './repos-cancel-pages-deployment.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposCancelPagesDeployment } from './repos-cancel-pages-deployment.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_CANCEL_PAGES_DEPLOYMENT_MOCK: MockEndpoint<unknown> = {
+  key: 'REPOS_CANCEL_PAGES_DEPLOYMENT',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposCancelPagesDeployment,
+};
+
 export function provideReposCancelPagesDeploymentMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_CANCEL_PAGES_DEPLOYMENT,
-    'REPOS_CANCEL_PAGES_DEPLOYMENT',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_CANCEL_PAGES_DEPLOYMENT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

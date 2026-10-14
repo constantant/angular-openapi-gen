@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetDeploymentStatusResponse =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses/{status_id}']['get']['responses']['200']['content']['application/json'];
@@ -573,11 +574,14 @@ export function provideReposGetDeploymentStatus(): FactoryProvider {
         deploymentId: string,
         statusId: string,
       ) =>
-        httpResource<ReposGetDeploymentStatusResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}/statuses/${statusId}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_DEPLOYMENT_STATUS',
+          httpResource<ReposGetDeploymentStatusResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}/statuses/${statusId}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

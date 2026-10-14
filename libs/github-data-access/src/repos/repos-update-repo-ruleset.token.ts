@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateRepoRulesetBody = NonNullable<
   paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}']['put']['requestBody']
@@ -1249,19 +1250,22 @@ export function provideReposUpdateRepoRuleset(): FactoryProvider {
         rulesetId: string,
         body: ReposUpdateRepoRulesetBody | Signal<ReposUpdateRepoRulesetBody>,
       ) =>
-        httpResource<ReposUpdateRepoRulesetResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateRepoRulesetBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}`,
-              method: 'PUT',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_REPO_RULESET',
+          httpResource<ReposUpdateRepoRulesetResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateRepoRulesetBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}`,
+                method: 'PUT',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -24,12 +24,6 @@
           "input": "apps/devtools-panel/src/index.html",
           "output": "panel.html"
         },
-        "allowedCommonJsDependencies": [
-          "ajv",
-          "fast-deep-equal",
-          "json-schema-traverse",
-          "fast-uri"
-        ],
         "styles": [
           "apps/devtools-panel/src/theme.scss",
           "apps/devtools-panel/src/styles.less"
@@ -38,6 +32,14 @@
       "configurations": {
         "production": {
           "outputHashing": "all",
+          "optimization": {
+            "scripts": true,
+            "styles": {
+              "minify": true,
+              "inlineCritical": false
+            },
+            "fonts": true
+          },
           "budgets": [
             {
               "type": "initial",

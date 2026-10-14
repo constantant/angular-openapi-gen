@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_MERGE_UPSTREAM } from './repos-merge-upstream.token';
-import type { ReposMergeUpstreamResponse } from './repos-merge-upstream.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposMergeUpstream,
+  type ReposMergeUpstreamResponse,
+} from './repos-merge-upstream.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_MERGE_UPSTREAM_MOCK: MockEndpoint<ReposMergeUpstreamResponse> =
+  {
+    key: 'REPOS_MERGE_UPSTREAM',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposMergeUpstream,
+  };
+
 export function provideReposMergeUpstreamMock(
-  initialBehavior?: ProviderInitialBehavior<ReposMergeUpstreamResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_MERGE_UPSTREAM,
-    'REPOS_MERGE_UPSTREAM',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposMergeUpstreamResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_MERGE_UPSTREAM_MOCK, initialBehavior);
 }

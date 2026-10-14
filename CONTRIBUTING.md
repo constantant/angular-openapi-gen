@@ -18,7 +18,7 @@ By participating you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md)
 | Path | What it is | Edit by hand? |
 |------|-----------|---------------|
 | `tools/openapi-resource-gen/` | The Nx generator — the published npm package. **This is where fixes go.** | ✅ Yes |
-| `tools/openapi-resource-mocks/` | Mock bus package — `@constantant/openapi-resource-mocks` | ✅ Yes |
+| `tools/openapi-resource-mocks/` | Mocks package (patched `fetch` / `XMLHttpRequest`) — `@constantant/openapi-resource-mocks` | ✅ Yes |
 | `tools/openapi-resource-devtools/` | Chrome Extension shell (manifest, content script, SW, devtools page) | ✅ Yes |
 | `apps/api-explorer/` | Angular 22 demo app that consumes the generated libs | ✅ Yes |
 | `apps/devtools-panel/` | Angular 22 panel app bundled inside the Chrome Extension | ✅ Yes |

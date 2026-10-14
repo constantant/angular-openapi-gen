@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_REPOSITORY_VALUES } from './repos-custom-properties-for-repos-create-or-update-repository-values.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposCustomPropertiesForReposCreateOrUpdateRepositoryValues } from './repos-custom-properties-for-repos-create-or-update-repository-values.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +17,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_REPOSITORY_VALUES_MOCK: MockEndpoint<unknown> =
+  {
+    key: 'REPOS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_REPOSITORY_VALUES',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposCustomPropertiesForReposCreateOrUpdateRepositoryValues,
+  };
+
 export function provideReposCustomPropertiesForReposCreateOrUpdateRepositoryValuesMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_REPOSITORY_VALUES,
-    'REPOS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_REPOSITORY_VALUES',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_CUSTOM_PROPERTIES_FOR_REPOS_CREATE_OR_UPDATE_REPOSITORY_VALUES_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

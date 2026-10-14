@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreatePagesSiteBody = NonNullable<
   paths['/repos/{owner}/{repo}/pages']['post']['requestBody']
@@ -164,19 +165,22 @@ export function provideReposCreatePagesSite(): FactoryProvider {
         repo: string,
         body: ReposCreatePagesSiteBody | Signal<ReposCreatePagesSiteBody>,
       ) =>
-        httpResource<ReposCreatePagesSiteResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreatePagesSiteBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/pages`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_PAGES_SITE',
+          httpResource<ReposCreatePagesSiteResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreatePagesSiteBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/pages`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

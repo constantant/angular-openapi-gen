@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_LIST_FOLLOWERS_FOR_USER } from './users-list-followers-for-user.token';
-import type { UsersListFollowersForUserResponse } from './users-list-followers-for-user.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersListFollowersForUser,
+  type UsersListFollowersForUserResponse,
+} from './users-list-followers-for-user.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_LIST_FOLLOWERS_FOR_USER_MOCK: MockEndpoint<UsersListFollowersForUserResponse> =
+  {
+    key: 'USERS_LIST_FOLLOWERS_FOR_USER',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersListFollowersForUser,
+  };
+
 export function provideUsersListFollowersForUserMock(
-  initialBehavior?: ProviderInitialBehavior<UsersListFollowersForUserResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_LIST_FOLLOWERS_FOR_USER,
-    'USERS_LIST_FOLLOWERS_FOR_USER',
+  initialBehavior?: MockEndpointBehavior<UsersListFollowersForUserResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    USERS_LIST_FOLLOWERS_FOR_USER_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

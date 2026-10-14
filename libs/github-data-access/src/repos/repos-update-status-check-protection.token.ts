@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateStatusCheckProtectionBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['patch']['requestBody']
@@ -99,19 +100,22 @@ export function provideReposUpdateStatusCheckProtection(): FactoryProvider {
           | ReposUpdateStatusCheckProtectionBody
           | Signal<ReposUpdateStatusCheckProtectionBody>,
       ) =>
-        httpResource<ReposUpdateStatusCheckProtectionResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateStatusCheckProtectionBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks`,
-              method: 'PATCH',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_STATUS_CHECK_PROTECTION',
+          httpResource<ReposUpdateStatusCheckProtectionResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateStatusCheckProtectionBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks`,
+                method: 'PATCH',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

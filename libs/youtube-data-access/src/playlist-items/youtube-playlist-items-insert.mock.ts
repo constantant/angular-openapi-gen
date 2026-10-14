@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_PLAYLIST_ITEMS_INSERT } from './youtube-playlist-items-insert.token';
-import type { YoutubePlaylistItemsInsertResponse } from './youtube-playlist-items-insert.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubePlaylistItemsInsert,
+  type YoutubePlaylistItemsInsertResponse,
+} from './youtube-playlist-items-insert.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'playlist-items',
 };
 
+export const YOUTUBE_PLAYLIST_ITEMS_INSERT_MOCK: MockEndpoint<YoutubePlaylistItemsInsertResponse> =
+  {
+    key: 'YOUTUBE_PLAYLIST_ITEMS_INSERT',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubePlaylistItemsInsert,
+  };
+
 export function provideYoutubePlaylistItemsInsertMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubePlaylistItemsInsertResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_PLAYLIST_ITEMS_INSERT,
-    'YOUTUBE_PLAYLIST_ITEMS_INSERT',
+  initialBehavior?: MockEndpointBehavior<YoutubePlaylistItemsInsertResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_PLAYLIST_ITEMS_INSERT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

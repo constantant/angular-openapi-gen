@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { GET_INVENTORY } from './get-inventory.token';
-import type { GetInventoryResponse } from './get-inventory.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  provideGetInventory,
+  type GetInventoryResponse,
+} from './get-inventory.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,17 @@ const _meta: MockResourceMeta = {
   path: '/store/inventory',
   method: 'get',
   tag: 'store',
-  args: ['options'],
+};
+
+export const GET_INVENTORY_MOCK: MockEndpoint<GetInventoryResponse> = {
+  key: 'GET_INVENTORY',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: provideGetInventory,
 };
 
 export function provideGetInventoryMock(
-  initialBehavior?: ProviderInitialBehavior<GetInventoryResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    GET_INVENTORY,
-    'GET_INVENTORY',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<GetInventoryResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(GET_INVENTORY_MOCK, initialBehavior);
 }

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetCustomDeploymentProtectionRuleResponse =
   paths['/repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules/{protection_rule_id}']['get']['responses']['200']['content']['application/json'];
@@ -98,11 +99,14 @@ export function provideReposGetCustomDeploymentProtectionRule(): FactoryProvider
         environmentName: string,
         protectionRuleId: string,
       ) =>
-        httpResource<ReposGetCustomDeploymentProtectionRuleResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/${protectionRuleId}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_CUSTOM_DEPLOYMENT_PROTECTION_RULE',
+          httpResource<ReposGetCustomDeploymentProtectionRuleResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/${protectionRuleId}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

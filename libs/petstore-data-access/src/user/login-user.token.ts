@@ -8,6 +8,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type LoginUserParams =
   paths['/user/login']['get']['parameters']['query'];
@@ -48,27 +49,30 @@ export function provideLoginUser(): FactoryProvider {
         options?: LoginUserOptions,
       ) => {
         const _opts = splitCallOptions<LoginUserResponse>(options);
-        return httpResource<LoginUserResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              ..._opts.request,
-              url: `${base}/user/login`,
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-              headers: {
-                ..._opts.headers,
-              },
-            };
-          },
-          { ..._opts.resource, parse: _validateResponse },
+        return trackResource(
+          'LOGIN_USER',
+          httpResource<LoginUserResponse>(
+            () => {
+              const _params = typeof params === 'function' ? params() : params;
+              if (typeof params === 'function' && _params === undefined)
+                return undefined;
+              return {
+                ..._opts.request,
+                url: `${base}/user/login`,
+                params: _params as unknown as Record<
+                  string,
+                  | string
+                  | number
+                  | boolean
+                  | readonly (string | number | boolean)[]
+                >,
+                headers: {
+                  ..._opts.headers,
+                },
+              };
+            },
+            { ..._opts.resource, parse: _validateResponse },
+          ),
         );
       }) as LoginUserFn;
     },

@@ -1,0 +1,15 @@
+/**
+ * Hands a live `httpResource` to the mocking tool, if one is installed in the page, so that editing
+ * the mock of `key` can re-run the resource. Does nothing otherwise.
+ */
+export function trackResource<T extends { reload(): boolean }>(
+  key: string,
+  ref: T,
+): T {
+  (
+    globalThis as {
+      __oarmTrack__?: (key: string, ref: { reload(): boolean }) => void;
+    }
+  ).__oarmTrack__?.(key, ref);
+  return ref;
+}

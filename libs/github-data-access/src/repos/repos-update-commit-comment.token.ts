@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateCommitCommentBody = NonNullable<
   paths['/repos/{owner}/{repo}/comments/{comment_id}']['patch']['requestBody']
@@ -293,19 +294,22 @@ export function provideReposUpdateCommitComment(): FactoryProvider {
         body:
           ReposUpdateCommitCommentBody | Signal<ReposUpdateCommitCommentBody>,
       ) =>
-        httpResource<ReposUpdateCommitCommentResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateCommitCommentBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/comments/${commentId}`,
-              method: 'PATCH',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_COMMIT_COMMENT',
+          httpResource<ReposUpdateCommitCommentResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateCommitCommentBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/comments/${commentId}`,
+                method: 'PATCH',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_LIVE_BROADCASTS_BIND } from './youtube-live-broadcasts-bind.token';
-import type { YoutubeLiveBroadcastsBindResponse } from './youtube-live-broadcasts-bind.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeLiveBroadcastsBind,
+  type YoutubeLiveBroadcastsBindResponse,
+} from './youtube-live-broadcasts-bind.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'live-broadcasts',
 };
 
+export const YOUTUBE_LIVE_BROADCASTS_BIND_MOCK: MockEndpoint<YoutubeLiveBroadcastsBindResponse> =
+  {
+    key: 'YOUTUBE_LIVE_BROADCASTS_BIND',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeLiveBroadcastsBind,
+  };
+
 export function provideYoutubeLiveBroadcastsBindMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeLiveBroadcastsBindResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_LIVE_BROADCASTS_BIND,
-    'YOUTUBE_LIVE_BROADCASTS_BIND',
+  initialBehavior?: MockEndpointBehavior<YoutubeLiveBroadcastsBindResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_LIVE_BROADCASTS_BIND_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

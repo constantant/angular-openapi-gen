@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_SET_ADMIN_BRANCH_PROTECTION } from './repos-set-admin-branch-protection.token';
-import type { ReposSetAdminBranchProtectionResponse } from './repos-set-admin-branch-protection.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposSetAdminBranchProtection,
+  type ReposSetAdminBranchProtectionResponse,
+} from './repos-set-admin-branch-protection.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_SET_ADMIN_BRANCH_PROTECTION_MOCK: MockEndpoint<ReposSetAdminBranchProtectionResponse> =
+  {
+    key: 'REPOS_SET_ADMIN_BRANCH_PROTECTION',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposSetAdminBranchProtection,
+  };
+
 export function provideReposSetAdminBranchProtectionMock(
-  initialBehavior?: ProviderInitialBehavior<ReposSetAdminBranchProtectionResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_SET_ADMIN_BRANCH_PROTECTION,
-    'REPOS_SET_ADMIN_BRANCH_PROTECTION',
+  initialBehavior?: MockEndpointBehavior<ReposSetAdminBranchProtectionResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_SET_ADMIN_BRANCH_PROTECTION_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS } from './repos-list-custom-deployment-rule-integrations.token';
-import type { ReposListCustomDeploymentRuleIntegrationsResponse } from './repos-list-custom-deployment-rule-integrations.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposListCustomDeploymentRuleIntegrations,
+  type ReposListCustomDeploymentRuleIntegrationsResponse,
+} from './repos-list-custom-deployment-rule-integrations.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS_MOCK: MockEndpoint<ReposListCustomDeploymentRuleIntegrationsResponse> =
+  {
+    key: 'REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposListCustomDeploymentRuleIntegrations,
+  };
+
 export function provideReposListCustomDeploymentRuleIntegrationsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposListCustomDeploymentRuleIntegrationsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS,
-    'REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS',
+  initialBehavior?: MockEndpointBehavior<ReposListCustomDeploymentRuleIntegrationsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_LIST_CUSTOM_DEPLOYMENT_RULE_INTEGRATIONS_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

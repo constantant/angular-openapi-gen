@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_GET_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER } from './users-get-public-ssh-key-for-authenticated-user.token';
-import type { UsersGetPublicSshKeyForAuthenticatedUserResponse } from './users-get-public-ssh-key-for-authenticated-user.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersGetPublicSshKeyForAuthenticatedUser,
+  type UsersGetPublicSshKeyForAuthenticatedUserResponse,
+} from './users-get-public-ssh-key-for-authenticated-user.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_GET_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER_MOCK: MockEndpoint<UsersGetPublicSshKeyForAuthenticatedUserResponse> =
+  {
+    key: 'USERS_GET_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersGetPublicSshKeyForAuthenticatedUser,
+  };
+
 export function provideUsersGetPublicSshKeyForAuthenticatedUserMock(
-  initialBehavior?: ProviderInitialBehavior<UsersGetPublicSshKeyForAuthenticatedUserResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_GET_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER,
-    'USERS_GET_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER',
+  initialBehavior?: MockEndpointBehavior<UsersGetPublicSshKeyForAuthenticatedUserResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    USERS_GET_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

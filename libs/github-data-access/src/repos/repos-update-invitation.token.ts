@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateInvitationBody = NonNullable<
   paths['/repos/{owner}/{repo}/invitations/{invitation_id}']['patch']['requestBody']
@@ -1087,19 +1088,22 @@ export function provideReposUpdateInvitation(): FactoryProvider {
         invitationId: string,
         body: ReposUpdateInvitationBody | Signal<ReposUpdateInvitationBody>,
       ) =>
-        httpResource<ReposUpdateInvitationResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateInvitationBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
-              method: 'PATCH',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_INVITATION',
+          httpResource<ReposUpdateInvitationResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateInvitationBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
+                method: 'PATCH',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

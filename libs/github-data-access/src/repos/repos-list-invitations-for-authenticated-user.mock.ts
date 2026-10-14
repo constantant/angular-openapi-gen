@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_LIST_INVITATIONS_FOR_AUTHENTICATED_USER } from './repos-list-invitations-for-authenticated-user.token';
-import type { ReposListInvitationsForAuthenticatedUserResponse } from './repos-list-invitations-for-authenticated-user.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposListInvitationsForAuthenticatedUser,
+  type ReposListInvitationsForAuthenticatedUserResponse,
+} from './repos-list-invitations-for-authenticated-user.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_LIST_INVITATIONS_FOR_AUTHENTICATED_USER_MOCK: MockEndpoint<ReposListInvitationsForAuthenticatedUserResponse> =
+  {
+    key: 'REPOS_LIST_INVITATIONS_FOR_AUTHENTICATED_USER',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposListInvitationsForAuthenticatedUser,
+  };
+
 export function provideReposListInvitationsForAuthenticatedUserMock(
-  initialBehavior?: ProviderInitialBehavior<ReposListInvitationsForAuthenticatedUserResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_LIST_INVITATIONS_FOR_AUTHENTICATED_USER,
-    'REPOS_LIST_INVITATIONS_FOR_AUTHENTICATED_USER',
+  initialBehavior?: MockEndpointBehavior<ReposListInvitationsForAuthenticatedUserResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_LIST_INVITATIONS_FOR_AUTHENTICATED_USER_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

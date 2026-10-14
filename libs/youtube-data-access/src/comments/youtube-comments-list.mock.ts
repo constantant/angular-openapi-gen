@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_COMMENTS_LIST } from './youtube-comments-list.token';
-import type { YoutubeCommentsListResponse } from './youtube-comments-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeCommentsList,
+  type YoutubeCommentsListResponse,
+} from './youtube-comments-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'comments',
 };
 
+export const YOUTUBE_COMMENTS_LIST_MOCK: MockEndpoint<YoutubeCommentsListResponse> =
+  {
+    key: 'YOUTUBE_COMMENTS_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeCommentsList,
+  };
+
 export function provideYoutubeCommentsListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeCommentsListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_COMMENTS_LIST,
-    'YOUTUBE_COMMENTS_LIST',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<YoutubeCommentsListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_COMMENTS_LIST_MOCK, initialBehavior);
 }

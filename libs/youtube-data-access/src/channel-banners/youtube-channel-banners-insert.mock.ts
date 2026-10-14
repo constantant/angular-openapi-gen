@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_CHANNEL_BANNERS_INSERT } from './youtube-channel-banners-insert.token';
-import type { YoutubeChannelBannersInsertResponse } from './youtube-channel-banners-insert.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeChannelBannersInsert,
+  type YoutubeChannelBannersInsertResponse,
+} from './youtube-channel-banners-insert.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'channel-banners',
 };
 
+export const YOUTUBE_CHANNEL_BANNERS_INSERT_MOCK: MockEndpoint<YoutubeChannelBannersInsertResponse> =
+  {
+    key: 'YOUTUBE_CHANNEL_BANNERS_INSERT',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeChannelBannersInsert,
+  };
+
 export function provideYoutubeChannelBannersInsertMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeChannelBannersInsertResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_CHANNEL_BANNERS_INSERT,
-    'YOUTUBE_CHANNEL_BANNERS_INSERT',
+  initialBehavior?: MockEndpointBehavior<YoutubeChannelBannersInsertResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_CHANNEL_BANNERS_INSERT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

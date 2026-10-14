@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_VIDEOS_INSERT } from './youtube-videos-insert.token';
-import type { YoutubeVideosInsertResponse } from './youtube-videos-insert.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeVideosInsert,
+  type YoutubeVideosInsertResponse,
+} from './youtube-videos-insert.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'videos',
 };
 
+export const YOUTUBE_VIDEOS_INSERT_MOCK: MockEndpoint<YoutubeVideosInsertResponse> =
+  {
+    key: 'YOUTUBE_VIDEOS_INSERT',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeVideosInsert,
+  };
+
 export function provideYoutubeVideosInsertMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeVideosInsertResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_VIDEOS_INSERT,
-    'YOUTUBE_VIDEOS_INSERT',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<YoutubeVideosInsertResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_VIDEOS_INSERT_MOCK, initialBehavior);
 }

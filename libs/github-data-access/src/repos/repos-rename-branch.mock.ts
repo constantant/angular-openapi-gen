@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_RENAME_BRANCH } from './repos-rename-branch.token';
-import type { ReposRenameBranchResponse } from './repos-rename-branch.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposRenameBranch,
+  type ReposRenameBranchResponse,
+} from './repos-rename-branch.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_RENAME_BRANCH_MOCK: MockEndpoint<ReposRenameBranchResponse> =
+  {
+    key: 'REPOS_RENAME_BRANCH',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposRenameBranch,
+  };
+
 export function provideReposRenameBranchMock(
-  initialBehavior?: ProviderInitialBehavior<ReposRenameBranchResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_RENAME_BRANCH,
-    'REPOS_RENAME_BRANCH',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposRenameBranchResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_RENAME_BRANCH_MOCK, initialBehavior);
 }

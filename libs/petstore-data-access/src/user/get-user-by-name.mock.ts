@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { GET_USER_BY_NAME } from './get-user-by-name.token';
-import type { GetUserByNameResponse } from './get-user-by-name.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  provideGetUserByName,
+  type GetUserByNameResponse,
+} from './get-user-by-name.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,17 @@ const _meta: MockResourceMeta = {
   path: '/user/{username}',
   method: 'get',
   tag: 'user',
-  args: ['username', 'options'],
+};
+
+export const GET_USER_BY_NAME_MOCK: MockEndpoint<GetUserByNameResponse> = {
+  key: 'GET_USER_BY_NAME',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: _meta,
+  provide: provideGetUserByName,
 };
 
 export function provideGetUserByNameMock(
-  initialBehavior?: ProviderInitialBehavior<GetUserByNameResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    GET_USER_BY_NAME,
-    'GET_USER_BY_NAME',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<GetUserByNameResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(GET_USER_BY_NAME_MOCK, initialBehavior);
 }

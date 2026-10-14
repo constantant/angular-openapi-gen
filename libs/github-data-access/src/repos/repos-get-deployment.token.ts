@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetDeploymentResponse =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['get']['responses']['200']['content']['application/json'];
@@ -572,11 +573,14 @@ export function provideReposGetDeployment(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, deploymentId: string) =>
-        httpResource<ReposGetDeploymentResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_DEPLOYMENT',
+          httpResource<ReposGetDeploymentResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -1,51 +1,56 @@
 import type { EndpointModel } from './endpoint-model';
-import { fnArgNames, toPascalCase, yieldsHttpEvents, type ClientType } from './render-token';
+import { toPascalCase } from './render-token';
 
+/**
+ * A mock file does not replace the endpoint's token: it describes the endpoint (method + path under
+ * the API's base URL) to the transport-level mocking layer, so it is the same for every client type.
+ * It exports the descriptor (`LIST_PETS_MOCK`, used by the testing helpers) and `provideListPetsMock()`.
+ */
 export function renderMockFile(
   ep: EndpointModel,
   specId: string,
-  client: ClientType = 'httpResource',
-  reportProgress = false,
-  callOptions = false,
+  baseUrlToken = 'API_BASE_URL',
+  providedIn: 'root' | 'none' = 'none',
 ): string {
-  // Tokens that yield Observable<HttpEvent<T>> need a mock that emits events, not bare values.
-  const provideFn = yieldsHttpEvents(ep, client, reportProgress)
-    ? 'provideMockHttpEvents'
-    : client === 'httpClient'
-      ? 'provideMockObservable'
-      : 'provideMockResource';
   const pascal = toPascalCase(ep.operationId);
   const responseType = ep.hasResponse ? `${pascal}Response` : null;
-  const responseImport = responseType
-    ? `\nimport type { ${responseType} } from './${ep.fileName}.token';`
+  const responseT = responseType ?? 'unknown';
+  // A `providedIn: 'root'` token needs no provider; otherwise tests get the real one via the descriptor.
+  const tokenImports = [
+    ...(providedIn === 'none' ? [`provide${pascal}`] : []),
+    ...(responseType ? [`type ${responseType}`] : []),
+  ];
+  const tokenImport = tokenImports.length
+    ? `\nimport { ${tokenImports.join(', ')} } from './${ep.fileName}.token';`
     : '';
-  const behaviorType = responseType
-    ? `ProviderInitialBehavior<${responseType}>`
-    : `ProviderInitialBehavior<unknown>`;
+  const provideLine = providedIn === 'none' ? `\n  provide: provide${pascal},` : '';
   const tagLine = ep.tag !== 'default' ? `\n  tag: '${ep.tag}',` : '';
-  // With call options the token takes a trailing `options` argument, which DevTools can't tell apart
-  // from a body or query argument without the names.
-  const argsLine = callOptions
-    ? `\n  args: [${fnArgNames(ep, client, callOptions).map((n) => `'${n}'`).join(', ')}],`
-    : '';
+  // JSON is the default; only a text or blob response has to be declared so the mock sends it raw.
+  const responseTypeLine =
+    ep.responseVariant && ep.responseVariant !== 'json' ? `\n  responseType: '${ep.responseVariant}',` : '';
 
-  return `import { FactoryProvider } from '@angular/core';
-import { ${provideFn} } from '@constantant/openapi-resource-mocks';
-import type { ProviderInitialBehavior, MockProviderOptions, MockResourceMeta } from '@constantant/openapi-resource-mocks';
-import { ${ep.tokenName} } from './${ep.fileName}.token';${responseImport}
+  return `import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
+import type { MockEndpoint, MockEndpointBehavior, MockResourceMeta } from '@constantant/openapi-resource-mocks';
+import { ${baseUrlToken} } from '../api-base-url.token';${tokenImport}
 
 const _meta: MockResourceMeta = {
   specId: '${specId}',
   operationId: '${ep.operationId}',
   path: '${ep.apiPath}',
-  method: '${ep.method}',${tagLine}${argsLine}
+  method: '${ep.method}',${tagLine}${responseTypeLine}
+};
+
+export const ${ep.tokenName}_MOCK: MockEndpoint<${responseT}> = {
+  key: '${ep.tokenName}',
+  baseUrl: ${baseUrlToken},
+  meta: _meta,${provideLine}
 };
 
 export function provide${pascal}Mock(
-  initialBehavior?: ${behaviorType},
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return ${provideFn}(${ep.tokenName}, '${ep.tokenName}', initialBehavior, _meta, options);
+  initialBehavior?: MockEndpointBehavior<${responseT}>,
+): EnvironmentProviders {
+  return provideMockEndpoint(${ep.tokenName}_MOCK, initialBehavior);
 }
 `;
 }

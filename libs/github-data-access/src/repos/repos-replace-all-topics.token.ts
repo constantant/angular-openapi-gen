@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposReplaceAllTopicsBody = NonNullable<
   paths['/repos/{owner}/{repo}/topics']['put']['requestBody']
@@ -58,19 +59,22 @@ export function provideReposReplaceAllTopics(): FactoryProvider {
         repo: string,
         body: ReposReplaceAllTopicsBody | Signal<ReposReplaceAllTopicsBody>,
       ) =>
-        httpResource<ReposReplaceAllTopicsResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposReplaceAllTopicsBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/topics`,
-              method: 'PUT',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_REPLACE_ALL_TOPICS',
+          httpResource<ReposReplaceAllTopicsResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposReplaceAllTopicsBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/topics`,
+                method: 'PUT',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

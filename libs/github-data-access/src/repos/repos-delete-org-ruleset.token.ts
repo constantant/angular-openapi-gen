@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposDeleteOrgRulesetError =
   | paths['/orgs/{org}/rulesets/{ruleset_id}']['delete']['responses']['404']['content']['application/json']
@@ -17,10 +18,13 @@ export function provideReposDeleteOrgRuleset(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string, rulesetId: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
-          method: 'DELETE',
-        }));
+        trackResource(
+          'REPOS_DELETE_ORG_RULESET',
+          httpResource<unknown>(() => ({
+            url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
+            method: 'DELETE',
+          })),
+        );
     },
   };
 }

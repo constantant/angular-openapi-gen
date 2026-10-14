@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateInOrgBody = NonNullable<
   paths['/orgs/{org}/repos']['post']['requestBody']
@@ -3586,19 +3587,22 @@ export function provideReposCreateInOrg(): FactoryProvider {
         org: string,
         body: ReposCreateInOrgBody | Signal<ReposCreateInOrgBody>,
       ) =>
-        httpResource<ReposCreateInOrgResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateInOrgBody>)()
-                : body;
-            return {
-              url: `${base}/orgs/${org}/repos`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_IN_ORG',
+          httpResource<ReposCreateInOrgResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateInOrgBody>)()
+                  : body;
+              return {
+                url: `${base}/orgs/${org}/repos`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

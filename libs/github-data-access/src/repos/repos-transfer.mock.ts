@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_TRANSFER } from './repos-transfer.token';
-import type { ReposTransferResponse } from './repos-transfer.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposTransfer,
+  type ReposTransferResponse,
+} from './repos-transfer.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_TRANSFER_MOCK: MockEndpoint<ReposTransferResponse> = {
+  key: 'REPOS_TRANSFER',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposTransfer,
+};
+
 export function provideReposTransferMock(
-  initialBehavior?: ProviderInitialBehavior<ReposTransferResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_TRANSFER,
-    'REPOS_TRANSFER',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposTransferResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_TRANSFER_MOCK, initialBehavior);
 }

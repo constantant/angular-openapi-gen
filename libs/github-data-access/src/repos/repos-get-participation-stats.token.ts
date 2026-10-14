@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetParticipationStatsResponse =
   paths['/repos/{owner}/{repo}/stats/participation']['get']['responses']['200']['content']['application/json'];
@@ -53,11 +54,14 @@ export function provideReposGetParticipationStats(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<ReposGetParticipationStatsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/stats/participation`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_PARTICIPATION_STATS',
+          httpResource<ReposGetParticipationStatsResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/stats/participation`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

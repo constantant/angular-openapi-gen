@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateForkBody = NonNullable<
   paths['/repos/{owner}/{repo}/forks']['post']['requestBody']
@@ -3590,19 +3591,22 @@ export function provideReposCreateFork(): FactoryProvider {
         repo: string,
         body: ReposCreateForkBody | Signal<ReposCreateForkBody>,
       ) =>
-        httpResource<ReposCreateForkResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateForkBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/forks`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_FORK',
+          httpResource<ReposCreateForkResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateForkBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/forks`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

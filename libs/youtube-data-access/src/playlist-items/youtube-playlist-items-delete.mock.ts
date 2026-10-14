@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_PLAYLIST_ITEMS_DELETE } from './youtube-playlist-items-delete.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubePlaylistItemsDelete } from './youtube-playlist-items-delete.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'playlist-items',
 };
 
+export const YOUTUBE_PLAYLIST_ITEMS_DELETE_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_PLAYLIST_ITEMS_DELETE',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubePlaylistItemsDelete,
+};
+
 export function provideYoutubePlaylistItemsDeleteMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_PLAYLIST_ITEMS_DELETE,
-    'YOUTUBE_PLAYLIST_ITEMS_DELETE',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_PLAYLIST_ITEMS_DELETE_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

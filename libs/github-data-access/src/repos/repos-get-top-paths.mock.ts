@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_TOP_PATHS } from './repos-get-top-paths.token';
-import type { ReposGetTopPathsResponse } from './repos-get-top-paths.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetTopPaths,
+  type ReposGetTopPathsResponse,
+} from './repos-get-top-paths.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_TOP_PATHS_MOCK: MockEndpoint<ReposGetTopPathsResponse> =
+  {
+    key: 'REPOS_GET_TOP_PATHS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetTopPaths,
+  };
+
 export function provideReposGetTopPathsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetTopPathsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_TOP_PATHS,
-    'REPOS_GET_TOP_PATHS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetTopPathsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_TOP_PATHS_MOCK, initialBehavior);
 }

@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_CAPTIONS_DELETE } from './youtube-captions-delete.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeCaptionsDelete } from './youtube-captions-delete.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,15 @@ const _meta: MockResourceMeta = {
   tag: 'captions',
 };
 
+export const YOUTUBE_CAPTIONS_DELETE_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_CAPTIONS_DELETE',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeCaptionsDelete,
+};
+
 export function provideYoutubeCaptionsDeleteMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_CAPTIONS_DELETE,
-    'YOUTUBE_CAPTIONS_DELETE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_CAPTIONS_DELETE_MOCK, initialBehavior);
 }

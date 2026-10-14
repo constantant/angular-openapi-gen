@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_LIST_ATTESTATIONS } from './users-list-attestations.token';
-import type { UsersListAttestationsResponse } from './users-list-attestations.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersListAttestations,
+  type UsersListAttestationsResponse,
+} from './users-list-attestations.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_LIST_ATTESTATIONS_MOCK: MockEndpoint<UsersListAttestationsResponse> =
+  {
+    key: 'USERS_LIST_ATTESTATIONS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersListAttestations,
+  };
+
 export function provideUsersListAttestationsMock(
-  initialBehavior?: ProviderInitialBehavior<UsersListAttestationsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_LIST_ATTESTATIONS,
-    'USERS_LIST_ATTESTATIONS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<UsersListAttestationsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(USERS_LIST_ATTESTATIONS_MOCK, initialBehavior);
 }

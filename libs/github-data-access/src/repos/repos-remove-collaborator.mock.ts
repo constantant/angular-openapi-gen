@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_REMOVE_COLLABORATOR } from './repos-remove-collaborator.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposRemoveCollaborator } from './repos-remove-collaborator.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_REMOVE_COLLABORATOR_MOCK: MockEndpoint<unknown> = {
+  key: 'REPOS_REMOVE_COLLABORATOR',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposRemoveCollaborator,
+};
+
 export function provideReposRemoveCollaboratorMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_REMOVE_COLLABORATOR,
-    'REPOS_REMOVE_COLLABORATOR',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_REMOVE_COLLABORATOR_MOCK, initialBehavior);
 }

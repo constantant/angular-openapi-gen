@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_LIST_ACTIVITIES } from './repos-list-activities.token';
-import type { ReposListActivitiesResponse } from './repos-list-activities.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposListActivities,
+  type ReposListActivitiesResponse,
+} from './repos-list-activities.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_LIST_ACTIVITIES_MOCK: MockEndpoint<ReposListActivitiesResponse> =
+  {
+    key: 'REPOS_LIST_ACTIVITIES',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposListActivities,
+  };
+
 export function provideReposListActivitiesMock(
-  initialBehavior?: ProviderInitialBehavior<ReposListActivitiesResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_LIST_ACTIVITIES,
-    'REPOS_LIST_ACTIVITIES',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposListActivitiesResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_LIST_ACTIVITIES_MOCK, initialBehavior);
 }

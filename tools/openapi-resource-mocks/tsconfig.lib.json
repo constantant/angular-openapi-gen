@@ -3,5 +3,5 @@
   "compilerOptions": {
     "outDir": "../../dist/tools/openapi-resource-mocks"
   },
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "**/*.testing.ts"]
 }

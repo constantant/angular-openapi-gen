@@ -1,33 +1,29 @@
 # OpenAPI Resource Mocks — DevTools Extension
 
-A Chrome DevTools panel for inspecting and controlling Angular mock tokens registered via [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks).
+A Chrome DevTools panel for mocking the HTTP endpoints of an Angular app built with
+[`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen).
+Requests are answered inside the page by [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) —
+no proxy, no service worker in front of your app.
 
 ---
 
-## Prerequisites
+## Two ways to use it
 
-Your Angular app must use `@constantant/openapi-resource-mocks`:
-
-```typescript
-// app.config.ts
-import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
-
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideHttpClient(),
-    provideMockResourceBus(),   // ← registers the mock bus
-  ],
-};
-```
+**1. The app registers its mocks.** A mock build of your app calls the generated
+`provideXxxMock()` functions; the panel lists those endpoints and controls them.
 
 ```typescript
-// in a component's providers array
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+// app.config.mock.ts
+import { mergeApplicationConfig } from '@angular/core';
+import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access/mock';
 
-providers: [
-  provideMockResource(FIND_PETS_BY_STATUS, 'findPetsByStatus', { loading: true }),
-]
+export const mockAppConfig = mergeApplicationConfig(baseConfig, {
+  providers: [provideFindPetsByStatusMock({ value: [] })],
+});
 ```
+
+**2. The panel registers the mocks — on any build, including production.** The app needs no mock
+code. See [Mocking a production build](#mocking-a-production-build).
 
 ---
 
@@ -56,15 +52,15 @@ Search for **"OpenAPI Resource Mocks DevTools"** in the [Chrome Web Store](https
 
 ## Panel overview
 
-Open Chrome DevTools (`F12`) on any page running `provideMockResourceBus()`. The **API Mocks** tab appears in the DevTools tab bar.
+Open Chrome DevTools (`F12`). The **API Mocks** tab appears in the DevTools tab bar.
 
 ### Mock table
 
-The left pane lists every registered mock with its current status:
+The left pane lists every mocked endpoint with its current status:
 
 | Column | Description |
 |--------|-------------|
-| Key | The token key passed to `provideMockResource()` |
+| Key | The endpoint key, e.g. `FIND_PETS_BY_STATUS` |
 | Status | `idle` / `loading` / `resolved` / `error` / `local` / **CAUGHT** |
 | Last event | Type and age of the most recent state change |
 | Actions | ⏸ Catch · ⏳ Loading · ✗ Fail · ↺ Reset |
@@ -75,27 +71,27 @@ Click any row to open the **Respond** and **History** tabs on the right.
 
 Manually resolve, fail, or control the selected mock:
 
-- **Response (JSON)** — the value to resolve with; leave empty for `undefined`
+- **Response (JSON)** — the response body; leave empty for an empty `204` response
 - **Response schema** — shown when the spec has been imported (see [Specs tab](#specs-tab)); provides:
   - **⚡ Example** — generates a valid random payload from the schema via `json-schema-faker` and fills the JSON field
   - **✓ Validate** — validates the current JSON field contents against the schema via `ajv`
 - **Delay (ms)** — adds a simulated latency before resolving
-- **Resolve** — transitions the resource to `resolved` with the given value
-- **Loading** — forces the resource back to `loading`
-- **Fail** — transitions to `error` with the given value as the error object
-- **Reset** — returns the resource to `idle`
+- **Resolve** — responds with the given value from now on: held requests are answered, live `httpResource`s reload
+- **Loading** — holds requests open
+- **Fail** — responds with HTTP 500 and the given value as the body
+- **Reset** — drops the edit: back to the app's own behavior, or to the real API when there is none
 
 ### History tab
 
 Reverse-chronological event log for the selected mock (up to 200 entries). A **Clear** button wipes the log.
 
-Each row shows the timestamp, event type badge, and a one-line preview. For `request` and `caught` events the preview shows the **filled URL** — e.g. `GET /pet/42` — derived from the operation's path template and the actual args the component passed.
+Each row shows the timestamp, event type badge, and a one-line preview. For `request` and `caught` events the preview shows the **filled URL** — e.g. `GET /pet/42` — derived from the operation's path template and the request the app sent.
 
 Clicking a row expands a structured detail view:
 
 - **Filled URL** — the path with `{param}` placeholders substituted by positional args (e.g. `GET /pet/{petId}` → `GET /pet/42`)
 - **Path param rows** — one row per `{param}`, labeled by name from the spec, showing the actual value passed
-- **Query / Body section** — remaining args after path params are labeled **Query** (GET/HEAD/DELETE) or **Body** (POST/PUT/PATCH)
+- **Query / Body section** — the remaining args (the request body, then the query) are labeled **Body** and **Query**
 - **Binary badges** — `[FormData]`, `[Blob]`, `[ArrayBuffer]`, and `[File: name]` are displayed as inline badges instead of quoted strings
 - **Response / Error sections** — shown for `resolve` and `error` events
 
@@ -113,6 +109,8 @@ Two file formats are accepted:
 
 **Full OpenAPI spec** (`.json` or `.yaml`) — includes response schemas. Enables the ⚡ Example and ✓ Validate buttons in the Respond tab.
 
+Each spec has an editable **Base URL** (pre-filled from `servers[0].url` of a full spec). Mocks created in the panel use it to match requests.
+
 Import via **+ File** (local file picker) or **+ URL** (fetch by HTTPS URL). When a full spec is detected, the panel shows a confirmation form where you can verify or edit the `specId` — it must match the `--specId` value used when generating the mock library (defaults to the base URL token name with `_BASE_URL` stripped and lowercased, e.g. `PETSTORE_BASE_URL` → `petstore`).
 
 ### How schemas are resolved
@@ -125,7 +123,7 @@ Specs are stored in `chrome.storage.local` and persist across DevTools sessions.
 
 ## Catch mode
 
-Catch mode intercepts requests before they resolve, holding the resource in `loading` until you explicitly release it. This is useful for:
+Catch mode holds the requests of an endpoint open until you explicitly release them. This is useful for:
 
 - Testing loading states without hardcoding delays
 - Inspecting what params/args the component sent
@@ -141,9 +139,9 @@ Click **⏸ Catch All** in the toolbar. All currently registered mocks are inter
 
 ### Responding to a caught request
 
-When a mock is caught, the Respond tab shows a **Caught request args** section with the params the component passed to the token factory. Fill in a response JSON and click **Release → Resolve** or **Release → Fail**.
+When a mock is caught, the Respond tab shows a **Caught request args** section with the path params, body and query the app sent. Fill in a response JSON and click **Release → Resolve** or **Release → Fail**.
 
-After each release, if catch mode is still on, the resource is immediately re-intercepted when the next request fires or when Reset is called.
+After each release, if catch mode is still on, the next request is caught again.
 
 ---
 
@@ -152,28 +150,71 @@ After each release, if catch mode is still on, the resource is immediately re-in
 | Button | Action |
 |--------|--------|
 | ↺ Refresh | Re-queries all mock states from the page |
+| ◉ Intercept | Switches request interception on or off for the inspected site — see [Mocking a production build](#mocking-a-production-build) |
 | ⏸ Catch All | Toggles catch mode on every registered mock |
-| Clear | Removes all mocks from the panel (does not affect the page) |
-| Reset All | Calls `reset()` on every mock, returning them to `idle` |
+| Clear | Empties the table of mocks the app registered (does not affect the page; they are listed again on the next refresh). Mocks created in the panel are kept |
+| Reset All | Calls `reset()` on every mock |
 | Scenarios | Opens the Scenarios dialog — save named snapshots of the full mock table state, load / delete them, or export / import as JSON for cross-machine sharing |
 | Filter… | Filters the mock table by key name |
 
 ---
 
-## Local (unregistered) mocks
+## Mocking a production build
 
-The **＋ New mock** button in the mock table toolbar lets you create a panel-managed mock before `provideMockResource()` exists in the Angular app. Use this to pre-configure a mock response while you're still writing the component code:
+The extension can install the mock runtime in the page itself, so the app does not have to bundle
+any mock code.
+
+1. Import the full OpenAPI spec in the **Specs** tab.
+2. Click **◉ Intercept** in the toolbar. Interception is switched on for the inspected site and
+   the open page is patched in place.
+3. Expand the spec and check its **Base URL** — it must be the URL your app calls (a relative one
+   such as `/api` works). Use the app for a moment: the URLs it really requests are listed under
+   the field as **Seen on this page**, with the number of spec operations seen under each. Click
+   one to use it.
+4. Use the app. Every operation of the spec that the page requests appears in the mock table by
+   itself the first time it is requested; until you give it a response its requests still reach
+   the real API. **＋ New mock** adds an operation that has not been requested yet.
+5. Select an endpoint. The **Respond** editor is pre-filled with what the real API last answered
+   for it; edit it and click **Resolve**, or switch on catch mode to hold the next request and
+   release it with the edited response.
+
+What to expect:
+
+- Only endpoints you gave a response (or catch mode) are answered; every other request goes to
+  the real API.
+- An automatically listed endpoint you remove with 🗑 stays away until DevTools is reopened.
+- After a reload the first request is already mocked. The runtime is injected at document start
+  and holds requests for up to 1.5 s while the endpoints are delivered.
+- Endpoints, their catch mode and the response you last set are stored in `chrome.storage.local`.
+  They keep working across reloads and browser sessions, and with DevTools closed.
+- Interception is **opt-in per site**: `fetch` / `XMLHttpRequest` are patched only where you
+  switched it on. Chrome match patterns carry no port, so all ports of a host count as one site.
+- Switching interception off applies from the next page load.
+- Base URL suggestions only know requests made after interception started; reload the page or
+  repeat the action if none appear.
+- A response you edit while the page is open answers held requests. Refreshing data that is
+  already on screen requires libs generated with `--mockHooks` (part of `--includeMocks`);
+  otherwise, and for `HttpClient` endpoints, the edit applies to the next request.
+
+---
+
+## Panel-managed mocks
+
+**＋ New mock** creates a mock that the panel owns:
 
 1. Click **＋ New mock** — the **Create mock** dialog opens.
-2. Pick a spec from the **Specs** tab (the spec must already be imported), then select an operation.
+2. Pick a spec (it must already be imported in the **Specs** tab), then select an operation.
 3. The key is auto-generated from the operationId (e.g. `findPetsByStatus` → `FIND_PETS_BY_STATUS`). Edit it if needed.
-4. Click **Create** — the new entry appears in the mock table with status `local`.
+4. Click **Create**.
 
-Local mock entries support all panel controls: catch mode, the Respond tab (including ⚡ Example and ✓ Validate when a spec is imported), and the History tab. Control messages to the page are silently ignored until the matching key is registered by the app.
+With interception on and a base URL on the spec, the endpoint is registered in the page and answers
+requests. Otherwise the entry has status `local`: catch mode and the response can already be set,
+and they apply once the endpoint becomes active.
 
-When the app registers `provideMockResource(..., 'FIND_PETS_BY_STATUS', ...)`, the local entry is **promoted in-place** — its status transitions to `idle`, catch mode is preserved, and any pending catch-mode control is re-sent to the now-live bus.
+When the app registers the same key itself (`provideFindPetsByStatusMock()`), the entry is
+**promoted in-place** — catch mode is preserved and the app's own rule is used.
 
-Local mock entries are persisted across DevTools sessions in `chrome.storage.local`.
+Panel-managed mocks can be removed with the 🗑 button; mocks registered by the app cannot.
 
 ---
 

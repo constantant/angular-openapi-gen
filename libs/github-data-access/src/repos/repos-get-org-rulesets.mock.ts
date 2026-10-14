@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_ORG_RULESETS } from './repos-get-org-rulesets.token';
-import type { ReposGetOrgRulesetsResponse } from './repos-get-org-rulesets.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetOrgRulesets,
+  type ReposGetOrgRulesetsResponse,
+} from './repos-get-org-rulesets.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_ORG_RULESETS_MOCK: MockEndpoint<ReposGetOrgRulesetsResponse> =
+  {
+    key: 'REPOS_GET_ORG_RULESETS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetOrgRulesets,
+  };
+
 export function provideReposGetOrgRulesetsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetOrgRulesetsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_ORG_RULESETS,
-    'REPOS_GET_ORG_RULESETS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetOrgRulesetsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_ORG_RULESETS_MOCK, initialBehavior);
 }

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_ADD_COLLABORATOR } from './repos-add-collaborator.token';
-import type { ReposAddCollaboratorResponse } from './repos-add-collaborator.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposAddCollaborator,
+  type ReposAddCollaboratorResponse,
+} from './repos-add-collaborator.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_ADD_COLLABORATOR_MOCK: MockEndpoint<ReposAddCollaboratorResponse> =
+  {
+    key: 'REPOS_ADD_COLLABORATOR',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposAddCollaborator,
+  };
+
 export function provideReposAddCollaboratorMock(
-  initialBehavior?: ProviderInitialBehavior<ReposAddCollaboratorResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_ADD_COLLABORATOR,
-    'REPOS_ADD_COLLABORATOR',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposAddCollaboratorResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_ADD_COLLABORATOR_MOCK, initialBehavior);
 }

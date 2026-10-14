@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_VIDEO_CATEGORIES_LIST } from './youtube-video-categories-list.token';
-import type { YoutubeVideoCategoriesListResponse } from './youtube-video-categories-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeVideoCategoriesList,
+  type YoutubeVideoCategoriesListResponse,
+} from './youtube-video-categories-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'video-categories',
 };
 
+export const YOUTUBE_VIDEO_CATEGORIES_LIST_MOCK: MockEndpoint<YoutubeVideoCategoriesListResponse> =
+  {
+    key: 'YOUTUBE_VIDEO_CATEGORIES_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeVideoCategoriesList,
+  };
+
 export function provideYoutubeVideoCategoriesListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeVideoCategoriesListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_VIDEO_CATEGORIES_LIST,
-    'YOUTUBE_VIDEO_CATEGORIES_LIST',
+  initialBehavior?: MockEndpointBehavior<YoutubeVideoCategoriesListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_VIDEO_CATEGORIES_LIST_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

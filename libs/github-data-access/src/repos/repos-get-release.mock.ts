@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_RELEASE } from './repos-get-release.token';
-import type { ReposGetReleaseResponse } from './repos-get-release.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetRelease,
+  type ReposGetReleaseResponse,
+} from './repos-get-release.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_RELEASE_MOCK: MockEndpoint<ReposGetReleaseResponse> = {
+  key: 'REPOS_GET_RELEASE',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposGetRelease,
+};
+
 export function provideReposGetReleaseMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetReleaseResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_RELEASE,
-    'REPOS_GET_RELEASE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetReleaseResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_RELEASE_MOCK, initialBehavior);
 }

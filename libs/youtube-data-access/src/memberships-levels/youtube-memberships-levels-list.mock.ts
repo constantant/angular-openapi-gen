@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_MEMBERSHIPS_LEVELS_LIST } from './youtube-memberships-levels-list.token';
-import type { YoutubeMembershipsLevelsListResponse } from './youtube-memberships-levels-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeMembershipsLevelsList,
+  type YoutubeMembershipsLevelsListResponse,
+} from './youtube-memberships-levels-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'memberships-levels',
 };
 
+export const YOUTUBE_MEMBERSHIPS_LEVELS_LIST_MOCK: MockEndpoint<YoutubeMembershipsLevelsListResponse> =
+  {
+    key: 'YOUTUBE_MEMBERSHIPS_LEVELS_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeMembershipsLevelsList,
+  };
+
 export function provideYoutubeMembershipsLevelsListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeMembershipsLevelsListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_MEMBERSHIPS_LEVELS_LIST,
-    'YOUTUBE_MEMBERSHIPS_LEVELS_LIST',
+  initialBehavior?: MockEndpointBehavior<YoutubeMembershipsLevelsListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_MEMBERSHIPS_LEVELS_LIST_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

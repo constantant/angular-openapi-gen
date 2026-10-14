@@ -10,6 +10,12 @@
           [class.catch-all-active]="catchAllActive()"
           [matTooltip]="catchAllActive() ? 'Disable catch mode on all mocks' : 'Enable catch mode on all mocks'"
           (click)="toggleCatchAll()">⏸ Catch All</button>
+  <button mat-button
+          [class.catch-all-active]="bridge.intercepting()"
+          [matTooltip]="bridge.intercepting()
+            ? 'This site is intercepted: mocks you create here answer its requests, also after a reload. Click to stop (takes effect on the next page load).'
+            : 'Patch fetch / XMLHttpRequest on this site so mocks created here answer its requests — works on a production build.'"
+          (click)="bridge.setIntercepting(!bridge.intercepting())">◉ Intercept</button>
   <button mat-button (click)="bridge.clearAll()">Clear</button>
   <button mat-button (click)="bridge.resetAll()">Reset All</button>
 </mat-toolbar>

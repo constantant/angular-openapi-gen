@@ -31,6 +31,7 @@ import { renderMswFile } from './render-msw-file';
 import { ensurePackageInstalled } from './ensure-package';
 import { isSwagger2, upgradeSwagger2 } from './swagger2';
 import { renderRequestOptionsFile } from './render-request-options';
+import { renderMockHookFile } from './render-mock-hook';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
@@ -68,6 +69,11 @@ export interface ApiResourceGeneratorSchema {
    * `defaultValue`, `equal`, `injector` and `debugName`. Emits a shared `request-options.ts`.
    */
   callOptions?: boolean;
+  /**
+   * Let a mocking tool re-run live `httpResource`s when a mock is edited: tokens pass each resource
+   * to a shared `mock-hook.ts`. Default: the value of `includeMocks`.
+   */
+  mockHooks?: boolean;
   /**
    * Convert Swagger 2.0 specs to OpenAPI 3.0 in memory before generating. Default: true. Set to false
    * to reject Swagger 2.0 specs instead.
@@ -234,6 +240,7 @@ async function generateApiResources(
   } = options;
 
   const specId = options.specId ?? deriveSpecId(baseUrlToken);
+  const mockHooks = options.mockHooks ?? includeMocks;
 
   if (includeMocks) {
     ensurePackageInstalled('@constantant/openapi-resource-mocks', 'includeMocks', { dev: true });
@@ -263,6 +270,7 @@ async function generateApiResources(
         f.endsWith('.security-token.ts') ||
         f.endsWith('.webhook.ts') ||
         f.endsWith('/request-options.ts') ||
+        f.endsWith('/mock-hook.ts') ||
         f.endsWith('.mock.ts') ||
         f.endsWith('.msw.ts') ||
         f.endsWith('mocks.manifest.json') ||
@@ -442,12 +450,13 @@ async function generateApiResources(
           client,
           reportProgress: options.reportProgress ?? false,
           callOptions: options.callOptions ?? false,
+          mockHooks,
         }));
         writtenFiles.add(filePath);
 
         if (includeMocks) {
           const mockPath = joinPathFragments(tagDir, `${ep.fileName}.mock.ts`);
-          tree.write(mockPath, renderMockFile(ep, specId, clientFor(ep), options.reportProgress ?? false, options.callOptions ?? false));
+          tree.write(mockPath, renderMockFile(ep, specId, baseUrlToken, providedIn));
           writtenFiles.add(mockPath);
         }
 
@@ -497,6 +506,12 @@ async function generateApiResources(
     const rootBarrelPath = joinPathFragments(outputDir, 'index.ts');
     tree.write(rootBarrelPath, rootBarrel);
     writtenFiles.add(rootBarrelPath);
+
+    if (mockHooks) {
+      const mockHookPath = joinPathFragments(outputDir, 'mock-hook.ts');
+      tree.write(mockHookPath, renderMockHookFile());
+      writtenFiles.add(mockHookPath);
+    }
 
     if (options.callOptions) {
       const requestOptionsPath = joinPathFragments(outputDir, 'request-options.ts');

@@ -2,7 +2,7 @@ interface MockEntry {
   resolve(value: unknown): void;
   resolveAfter(ms: number, value: unknown): void;
   setLoading(): void;
-  fail(error: unknown): void;
+  fail(error: unknown, status?: number): void;
   reset(): void;
   getState(): { status: string; value: unknown; error: unknown; progress: unknown };
   getHistory(): Array<{ type: string; args: unknown[]; ts: number }>;

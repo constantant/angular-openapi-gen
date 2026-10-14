@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_CREATE_PAGES_DEPLOYMENT } from './repos-create-pages-deployment.token';
-import type { ReposCreatePagesDeploymentResponse } from './repos-create-pages-deployment.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposCreatePagesDeployment,
+  type ReposCreatePagesDeploymentResponse,
+} from './repos-create-pages-deployment.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_CREATE_PAGES_DEPLOYMENT_MOCK: MockEndpoint<ReposCreatePagesDeploymentResponse> =
+  {
+    key: 'REPOS_CREATE_PAGES_DEPLOYMENT',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposCreatePagesDeployment,
+  };
+
 export function provideReposCreatePagesDeploymentMock(
-  initialBehavior?: ProviderInitialBehavior<ReposCreatePagesDeploymentResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_CREATE_PAGES_DEPLOYMENT,
-    'REPOS_CREATE_PAGES_DEPLOYMENT',
+  initialBehavior?: MockEndpointBehavior<ReposCreatePagesDeploymentResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_CREATE_PAGES_DEPLOYMENT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

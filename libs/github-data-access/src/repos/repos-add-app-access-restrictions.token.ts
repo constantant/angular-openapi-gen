@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposAddAppAccessRestrictionsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['post']['requestBody']
@@ -357,19 +358,22 @@ export function provideReposAddAppAccessRestrictions(): FactoryProvider {
           | ReposAddAppAccessRestrictionsBody
           | Signal<ReposAddAppAccessRestrictionsBody>,
       ) =>
-        httpResource<ReposAddAppAccessRestrictionsResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposAddAppAccessRestrictionsBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/apps`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_ADD_APP_ACCESS_RESTRICTIONS',
+          httpResource<ReposAddAppAccessRestrictionsResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposAddAppAccessRestrictionsBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/apps`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

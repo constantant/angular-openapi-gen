@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetPunchCardStatsResponse =
   paths['/repos/{owner}/{repo}/stats/punch_card']['get']['responses']['200']['content']['application/json'];
@@ -42,11 +43,14 @@ export function provideReposGetPunchCardStats(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<ReposGetPunchCardStatsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/stats/punch_card`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_PUNCH_CARD_STATS',
+          httpResource<ReposGetPunchCardStatsResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/stats/punch_card`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

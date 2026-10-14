@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { CREATE_USERS_WITH_LIST_INPUT } from './create-users-with-list-input.token';
-import type { CreateUsersWithListInputResponse } from './create-users-with-list-input.token';
+import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import {
+  provideCreateUsersWithListInput,
+  type CreateUsersWithListInputResponse,
+} from './create-users-with-list-input.token';
 
 const _meta: MockResourceMeta = {
   specId: 'petstore',
@@ -14,18 +17,21 @@ const _meta: MockResourceMeta = {
   path: '/user/createWithList',
   method: 'post',
   tag: 'user',
-  args: ['body', 'options'],
 };
 
+export const CREATE_USERS_WITH_LIST_INPUT_MOCK: MockEndpoint<CreateUsersWithListInputResponse> =
+  {
+    key: 'CREATE_USERS_WITH_LIST_INPUT',
+    baseUrl: PETSTORE_BASE_URL,
+    meta: _meta,
+    provide: provideCreateUsersWithListInput,
+  };
+
 export function provideCreateUsersWithListInputMock(
-  initialBehavior?: ProviderInitialBehavior<CreateUsersWithListInputResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    CREATE_USERS_WITH_LIST_INPUT,
-    'CREATE_USERS_WITH_LIST_INPUT',
+  initialBehavior?: MockEndpointBehavior<CreateUsersWithListInputResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    CREATE_USERS_WITH_LIST_INPUT_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

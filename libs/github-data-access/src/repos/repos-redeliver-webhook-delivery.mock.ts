@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_REDELIVER_WEBHOOK_DELIVERY } from './repos-redeliver-webhook-delivery.token';
-import type { ReposRedeliverWebhookDeliveryResponse } from './repos-redeliver-webhook-delivery.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposRedeliverWebhookDelivery,
+  type ReposRedeliverWebhookDeliveryResponse,
+} from './repos-redeliver-webhook-delivery.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_REDELIVER_WEBHOOK_DELIVERY_MOCK: MockEndpoint<ReposRedeliverWebhookDeliveryResponse> =
+  {
+    key: 'REPOS_REDELIVER_WEBHOOK_DELIVERY',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposRedeliverWebhookDelivery,
+  };
+
 export function provideReposRedeliverWebhookDeliveryMock(
-  initialBehavior?: ProviderInitialBehavior<ReposRedeliverWebhookDeliveryResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_REDELIVER_WEBHOOK_DELIVERY,
-    'REPOS_REDELIVER_WEBHOOK_DELIVERY',
+  initialBehavior?: MockEndpointBehavior<ReposRedeliverWebhookDeliveryResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_REDELIVER_WEBHOOK_DELIVERY_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

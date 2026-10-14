@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCreateWebhookBody = NonNullable<
   paths['/repos/{owner}/{repo}/hooks']['post']['requestBody']
@@ -179,19 +180,22 @@ export function provideReposCreateWebhook(): FactoryProvider {
         repo: string,
         body: ReposCreateWebhookBody | Signal<ReposCreateWebhookBody>,
       ) =>
-        httpResource<ReposCreateWebhookResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposCreateWebhookBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/hooks`,
-              method: 'POST',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CREATE_WEBHOOK',
+          httpResource<ReposCreateWebhookResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposCreateWebhookBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/hooks`,
+                method: 'POST',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

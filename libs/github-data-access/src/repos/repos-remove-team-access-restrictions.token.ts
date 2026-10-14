@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposRemoveTeamAccessRestrictionsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['delete']['requestBody']
@@ -260,19 +261,22 @@ export function provideReposRemoveTeamAccessRestrictions(): FactoryProvider {
           | ReposRemoveTeamAccessRestrictionsBody
           | Signal<ReposRemoveTeamAccessRestrictionsBody>,
       ) =>
-        httpResource<ReposRemoveTeamAccessRestrictionsResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposRemoveTeamAccessRestrictionsBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/teams`,
-              method: 'DELETE',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_REMOVE_TEAM_ACCESS_RESTRICTIONS',
+          httpResource<ReposRemoveTeamAccessRestrictionsResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposRemoveTeamAccessRestrictionsBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/teams`,
+                method: 'DELETE',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

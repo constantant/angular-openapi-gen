@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_DELETE_WEBHOOK } from './repos-delete-webhook.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposDeleteWebhook } from './repos-delete-webhook.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,15 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_DELETE_WEBHOOK_MOCK: MockEndpoint<unknown> = {
+  key: 'REPOS_DELETE_WEBHOOK',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposDeleteWebhook,
+};
+
 export function provideReposDeleteWebhookMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_DELETE_WEBHOOK,
-    'REPOS_DELETE_WEBHOOK',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_DELETE_WEBHOOK_MOCK, initialBehavior);
 }

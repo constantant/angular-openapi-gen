@@ -46,7 +46,7 @@ test.describe('Repos page (mock)', () => {
 
   test('shows error message when mock fails', async ({ page }) => {
     await expect(page.locator('mat-progress-bar')).toHaveCount(0);
-    await page.evaluate(() => openApiMock('REPOS_LIST_FOR_USER').fail(new Error('500')));
-    await expect(page.getByText("Backend response doesn't match its own API spec — 500")).toBeVisible();
+    await page.evaluate(() => openApiMock('REPOS_LIST_FOR_USER').fail({ message: 'unavailable' }, 500));
+    await expect(page.getByText('Request failed (HTTP 500).')).toBeVisible();
   });
 });

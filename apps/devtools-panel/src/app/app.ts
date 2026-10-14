@@ -50,10 +50,7 @@ export class App {
   );
 
   protected readonly mockCount = computed(() => this.bridge.mocks().size);
-  protected readonly selectedEntry = computed(() => {
-    const key = this.bridge.selectedKey();
-    return key ? (this.bridge.mocks().get(key) ?? null) : null;
-  });
+  protected readonly selectedEntry = this.bridge.selectedEntry;
 
   protected readonly catchAllActive = computed(() => {
     const m = this.bridge.mocks();

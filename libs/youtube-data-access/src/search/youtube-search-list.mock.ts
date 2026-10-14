@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_SEARCH_LIST } from './youtube-search-list.token';
-import type { YoutubeSearchListResponse } from './youtube-search-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeSearchList,
+  type YoutubeSearchListResponse,
+} from './youtube-search-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'search',
 };
 
+export const YOUTUBE_SEARCH_LIST_MOCK: MockEndpoint<YoutubeSearchListResponse> =
+  {
+    key: 'YOUTUBE_SEARCH_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeSearchList,
+  };
+
 export function provideYoutubeSearchListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeSearchListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_SEARCH_LIST,
-    'YOUTUBE_SEARCH_LIST',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<YoutubeSearchListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_SEARCH_LIST_MOCK, initialBehavior);
 }

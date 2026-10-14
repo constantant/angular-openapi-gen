@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateBody = NonNullable<
   paths['/repos/{owner}/{repo}']['patch']['requestBody']
@@ -3589,19 +3590,22 @@ export function provideReposUpdate(): FactoryProvider {
         repo: string,
         body: ReposUpdateBody | Signal<ReposUpdateBody>,
       ) =>
-        httpResource<ReposUpdateResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}`,
-              method: 'PATCH',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE',
+          httpResource<ReposUpdateResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}`,
+                method: 'PATCH',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

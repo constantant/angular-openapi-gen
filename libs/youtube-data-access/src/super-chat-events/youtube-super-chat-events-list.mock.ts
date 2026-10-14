@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_SUPER_CHAT_EVENTS_LIST } from './youtube-super-chat-events-list.token';
-import type { YoutubeSuperChatEventsListResponse } from './youtube-super-chat-events-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeSuperChatEventsList,
+  type YoutubeSuperChatEventsListResponse,
+} from './youtube-super-chat-events-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'super-chat-events',
 };
 
+export const YOUTUBE_SUPER_CHAT_EVENTS_LIST_MOCK: MockEndpoint<YoutubeSuperChatEventsListResponse> =
+  {
+    key: 'YOUTUBE_SUPER_CHAT_EVENTS_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeSuperChatEventsList,
+  };
+
 export function provideYoutubeSuperChatEventsListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeSuperChatEventsListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_SUPER_CHAT_EVENTS_LIST,
-    'YOUTUBE_SUPER_CHAT_EVENTS_LIST',
+  initialBehavior?: MockEndpointBehavior<YoutubeSuperChatEventsListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_SUPER_CHAT_EVENTS_LIST_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

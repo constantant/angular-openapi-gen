@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_BLOCK } from './users-block.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideUsersBlock } from './users-block.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,15 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_BLOCK_MOCK: MockEndpoint<unknown> = {
+  key: 'USERS_BLOCK',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideUsersBlock,
+};
+
 export function provideUsersBlockMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_BLOCK,
-    'USERS_BLOCK',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(USERS_BLOCK_MOCK, initialBehavior);
 }

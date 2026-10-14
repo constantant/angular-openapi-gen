@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateDeploymentBranchPolicyBody = NonNullable<
   paths['/repos/{owner}/{repo}/environments/{environment_name}/deployment-branch-policies/{branch_policy_id}']['put']['requestBody']
@@ -80,19 +81,22 @@ export function provideReposUpdateDeploymentBranchPolicy(): FactoryProvider {
           | ReposUpdateDeploymentBranchPolicyBody
           | Signal<ReposUpdateDeploymentBranchPolicyBody>,
       ) =>
-        httpResource<ReposUpdateDeploymentBranchPolicyResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateDeploymentBranchPolicyBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
-              method: 'PUT',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_DEPLOYMENT_BRANCH_POLICY',
+          httpResource<ReposUpdateDeploymentBranchPolicyResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateDeploymentBranchPolicyBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
+                method: 'PUT',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

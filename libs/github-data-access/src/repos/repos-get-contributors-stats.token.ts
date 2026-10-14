@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetContributorsStatsResponse =
   | paths['/repos/{owner}/{repo}/stats/contributors']['get']['responses']['200']['content']['application/json']
@@ -198,11 +199,14 @@ export function provideReposGetContributorsStats(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<ReposGetContributorsStatsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/stats/contributors`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_CONTRIBUTORS_STATS',
+          httpResource<ReposGetContributorsStatsResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/stats/contributors`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_COMMENTS_MARK_AS_SPAM } from './youtube-comments-mark-as-spam.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeCommentsMarkAsSpam } from './youtube-comments-mark-as-spam.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'comments',
 };
 
+export const YOUTUBE_COMMENTS_MARK_AS_SPAM_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_COMMENTS_MARK_AS_SPAM',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeCommentsMarkAsSpam,
+};
+
 export function provideYoutubeCommentsMarkAsSpamMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_COMMENTS_MARK_AS_SPAM,
-    'YOUTUBE_COMMENTS_MARK_AS_SPAM',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_COMMENTS_MARK_AS_SPAM_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

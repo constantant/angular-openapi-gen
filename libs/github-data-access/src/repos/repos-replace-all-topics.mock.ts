@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_REPLACE_ALL_TOPICS } from './repos-replace-all-topics.token';
-import type { ReposReplaceAllTopicsResponse } from './repos-replace-all-topics.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposReplaceAllTopics,
+  type ReposReplaceAllTopicsResponse,
+} from './repos-replace-all-topics.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_REPLACE_ALL_TOPICS_MOCK: MockEndpoint<ReposReplaceAllTopicsResponse> =
+  {
+    key: 'REPOS_REPLACE_ALL_TOPICS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposReplaceAllTopics,
+  };
+
 export function provideReposReplaceAllTopicsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposReplaceAllTopicsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_REPLACE_ALL_TOPICS,
-    'REPOS_REPLACE_ALL_TOPICS',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposReplaceAllTopicsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_REPLACE_ALL_TOPICS_MOCK, initialBehavior);
 }

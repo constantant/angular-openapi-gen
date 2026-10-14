@@ -50,6 +50,12 @@ export class CreateMockDialog {
     return k !== '' && this.bridge.mocks().has(k);
   });
 
+  /** A panel-created mock is matched against requests under its spec's base URL. */
+  protected readonly hasBaseUrl = computed(() => {
+    const specId = this.effectiveSpecId();
+    return !!specId && !!this.specStore.specs().get(specId)?.baseUrl;
+  });
+
   protected readonly canCreate = computed(() => {
     const mock = this.selectedMock();
     const key = this.keyInput().trim();

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUpdateWebhookConfigForRepoBody = NonNullable<
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/config']['patch']['requestBody']
@@ -86,19 +87,22 @@ export function provideReposUpdateWebhookConfigForRepo(): FactoryProvider {
           | ReposUpdateWebhookConfigForRepoBody
           | Signal<ReposUpdateWebhookConfigForRepoBody>,
       ) =>
-        httpResource<ReposUpdateWebhookConfigForRepoResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUpdateWebhookConfigForRepoBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/config`,
-              method: 'PATCH',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPDATE_WEBHOOK_CONFIG_FOR_REPO',
+          httpResource<ReposUpdateWebhookConfigForRepoResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUpdateWebhookConfigForRepoBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/config`,
+                method: 'PATCH',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

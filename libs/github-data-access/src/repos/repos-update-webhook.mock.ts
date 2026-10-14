@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_UPDATE_WEBHOOK } from './repos-update-webhook.token';
-import type { ReposUpdateWebhookResponse } from './repos-update-webhook.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposUpdateWebhook,
+  type ReposUpdateWebhookResponse,
+} from './repos-update-webhook.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_UPDATE_WEBHOOK_MOCK: MockEndpoint<ReposUpdateWebhookResponse> =
+  {
+    key: 'REPOS_UPDATE_WEBHOOK',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposUpdateWebhook,
+  };
+
 export function provideReposUpdateWebhookMock(
-  initialBehavior?: ProviderInitialBehavior<ReposUpdateWebhookResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_UPDATE_WEBHOOK,
-    'REPOS_UPDATE_WEBHOOK',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposUpdateWebhookResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_UPDATE_WEBHOOK_MOCK, initialBehavior);
 }

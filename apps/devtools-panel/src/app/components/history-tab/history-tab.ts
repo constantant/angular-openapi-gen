@@ -1,9 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
-import type { HistoryEvent } from '../../mock-entry';
-import type { MockResourceMeta } from '../../mock-entry';
+import type { HistoryEvent, MockResourceMeta } from '../../mock-entry';
 
 type SectionType = 'json' | 'string' | 'header';
 
@@ -14,9 +13,6 @@ interface DetailSection {
 }
 
 const BINARY_RE = /^\[(FormData|Blob|ArrayBuffer|File:)/;
-
-/** Display labels for the argument names a generated mock records in `MockResourceMeta.args`. */
-const ARG_LABELS: Record<string, string> = { body: 'Body', params: 'Query', options: 'Options' };
 
 function extractPathParamNames(path: string): string[] {
   return [...path.matchAll(/\{([^}]+)\}/g)].map((m) => m[1]);
@@ -42,10 +38,7 @@ export class HistoryTab {
   protected readonly bridge = inject(MOCK_BRIDGE);
   protected readonly expandedId = signal<number | null>(null);
 
-  protected readonly selectedEntry = computed(() => {
-    const key = this.bridge.selectedKey();
-    return key ? (this.bridge.mocks().get(key) ?? null) : null;
-  });
+  protected readonly selectedEntry = this.bridge.selectedEntry;
 
   protected timestamp(ts: number): string {
     const d = new Date(ts);
@@ -92,14 +85,12 @@ export class HistoryTab {
         if (rest.length) {
           const isBody = ['post', 'put', 'patch'].includes(meta.method);
           const baseLabel = isBody ? 'Body' : 'Query';
-          // With the argument names (from `--callOptions`) each argument gets its real label; without
-          // them every extra argument of a body method is guessed to be a body, and of the rest a query.
-          const names = meta.args?.slice(paramNames.length);
+          // Requests are recorded from the wire as path params, then the body, then the query. So a
+          // body method with two extra arguments carries both; a single one is taken for the body.
           rest.forEach((arg, idx) => {
             const { text, type } = formatArgValue(arg);
-            const name = names?.[idx];
-            const label = name
-              ? (ARG_LABELS[name] ?? name)
+            const label =
+              isBody && rest.length === 2 ? (idx === 0 ? 'Body' : 'Query')
               : rest.length > 1 ? `${baseLabel} [${idx}]` : baseLabel;
             sections.push({ label, json: text, type });
           });

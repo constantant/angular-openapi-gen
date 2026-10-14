@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposDeleteFileBody = NonNullable<
   paths['/repos/{owner}/{repo}/contents/{path}']['delete']['requestBody']
@@ -198,19 +199,22 @@ export function provideReposDeleteFile(): FactoryProvider {
         path: string,
         body: ReposDeleteFileBody | Signal<ReposDeleteFileBody>,
       ) =>
-        httpResource<ReposDeleteFileResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposDeleteFileBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/contents/${path}`,
-              method: 'DELETE',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_DELETE_FILE',
+          httpResource<ReposDeleteFileResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposDeleteFileBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+                method: 'DELETE',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

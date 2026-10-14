@@ -1,43 +1,38 @@
-import { InjectionToken, FactoryProvider } from '@angular/core';
-import { HttpEventType, HttpResponse, httpResource, type HttpEvent } from '@angular/common/http';
-import { Observable, type Subscriber, type TeardownLogic } from 'rxjs';
-import { createMockResourceRef } from './lib/mock-resource-ref';
-import type { MockResourceRef, MockResourceRefInternal } from './lib/mock-resource-ref';
-import type { ProviderInitialBehavior } from './lib/provide-mock-resource';
-import type { MockProgress } from './lib/mock-events';
+import { EnvironmentProviders, makeEnvironmentProviders, type Provider } from '@angular/core';
+import type { MockBehavior, MockRuntime } from './lib/interception/mock-runtime';
+import type { WindowMockEntry } from './lib/window-mock-entry';
+import { registerMockEndpoint, type MockEndpoint, type MockEndpointBehavior } from './lib/provide-mock-endpoint';
 
-/** One step in a response sequence — same shape as the single initialBehavior. */
-export type MockSequenceEntry<T> = ProviderInitialBehavior<T>;
+export { uninstallMockInterception } from './lib/interception/install';
+export type { MockEndpoint, MockEndpointBehavior } from './lib/provide-mock-endpoint';
 
-/** A FactoryProvider that also exposes the underlying ref and call history for assertions. */
-export interface MockResourceHandle<T> extends FactoryProvider {
-  /** The underlying MockResourceRef — use to change state mid-test. */
-  readonly ref: MockResourceRef<T>;
-  /** Every set of args the injected factory function was called with. */
+/** One step in a response sequence — same shape as a single behavior. */
+export type MockSequenceEntry<T> = MockEndpointBehavior<T>;
+
+/** Base URL the endpoint is mocked under when the test provides none of its own. */
+export const MOCK_BASE_URL = 'http://mock.test';
+
+/** Controls and assertions for an endpoint mocked with {@link mockEndpoint}. */
+export interface MockEndpointHandle<T> {
+  /**
+   * What each request carried, as seen on the wire: the path parameters (strings, in template
+   * order), then the body (parsed when it was JSON), then the query (an object of strings).
+   */
   readonly calls: readonly unknown[][];
-  /** Throws if the token factory was never called. */
+  /** Throws if the endpoint was never requested. */
   expectCalled(): void;
-  /** Throws if no call matches all provided args (deep equality). */
+  /** Throws if no request matches all provided args (deep equality). */
   expectCalledWith(...args: unknown[]): void;
-}
-
-function applyBehavior<T>(ref: MockResourceRef<T>, behavior: ProviderInitialBehavior<T>): void {
-  if ('value' in behavior) {
-    if (behavior.delay) {
-      ref.resolveAfter(behavior.delay, behavior.value as T);
-    } else {
-      ref.resolve(behavior.value as T);
-    }
-  } else if ('error' in behavior) {
-    if (behavior.delay) {
-      ref.setLoading();
-      setTimeout(() => ref.fail(behavior.error), behavior.delay);
-    } else {
-      ref.fail(behavior.error);
-    }
-  } else {
-    ref.setLoading();
-  }
+  /** Answer held requests and all later ones; re-runs live `httpResource`s so they show it. */
+  resolve(value: T): void;
+  /** Like `resolve`, with a failing response (`status` defaults to 500). */
+  fail(error: unknown, status?: number): void;
+  /** Hold every request open until `resolve` / `fail`. */
+  setLoading(): void;
+  /** Report transfer progress to the requests currently held open. */
+  setProgress(type: 'upload' | 'download', loaded: number, total?: number): void;
+  /** Drop what `resolve` / `fail` / `setLoading` set and go back to the configured behavior. */
+  reset(): void;
 }
 
 function deepEqual(a: unknown, b: unknown): boolean {
@@ -56,257 +51,106 @@ function deepEqual(a: unknown, b: unknown): boolean {
   );
 }
 
-function assertCalled(calls: readonly unknown[][]): void {
-  if (calls.length === 0) {
-    throw new Error(
-      `Expected mock token to have been called at least once, but it was never called.`,
-    );
-  }
-}
-
-function assertCalledWith(calls: readonly unknown[][], expected: unknown[]): void {
-  const found = calls.some(
-    (call) =>
-      call.length === expected.length && expected.every((arg, i) => deepEqual(arg, call[i])),
-  );
-  if (!found) {
-    throw new Error(
-      `Expected mock to have been called with ${JSON.stringify(expected)}, ` +
-        `but actual calls were: ${JSON.stringify(calls)}`,
-    );
-  }
-}
-
 /**
- * Creates a lightweight mock provider for an httpResource token — no MockResourceBus,
- * no DOM events. Drop the handle directly into TestBed `providers: []`.
+ * Mocks one endpoint for a unit test. The component under test uses the endpoint's real token and
+ * the real `HttpClient` / `httpResource`; only the transport is replaced, so the test exercises
+ * the same code as production. Drop the handle into `providers` next to `provideHttpClient()`:
  *
- * **Single behavior:**
  * ```ts
- * const petsMock = mockResource(FIND_PETS_BY_STATUS, { value: [] });
- * TestBed.configureTestingModule({ providers: [petsMock] });
- * petsMock.expectCalled();
- * petsMock.expectCalledWith({ status: 'active' });
- * petsMock.ref.resolve(newPets); // change mid-test
+ * const pets = mockEndpoint(FIND_PETS_BY_STATUS_MOCK, { value: [rex] });
+ * TestBed.configureTestingModule({ providers: [provideHttpClient(), pets] });
+ * const fixture = TestBed.createComponent(PetsPage);
+ * await fixture.whenStable();
+ * pets.expectCalledWith({ status: 'available' });
+ * pets.resolve([luna]);                 // change mid-test: live resources reload and show it
  * ```
  *
- * **Response sequence** (each call / reload consumes the next entry; last repeats):
+ * The handle also provides the endpoint's real token (unless it is `providedIn: 'root'`) and a
+ * default base URL ({@link MOCK_BASE_URL}); list your own base-URL provider after it to override.
+ *
+ * Responses are asynchronous, as in production: `await fixture.whenStable()` for an answered
+ * request, or {@link flushMocks} to let a held one (`{ loading: true }`) reach the component.
+ * Without a behavior every request is held, so nothing escapes to the network.
+ *
+ * **Response sequence** (each request consumes the next entry; the last repeats):
  * ```ts
- * const petsMock = mockResource(FIND_PETS_BY_STATUS, {
- *   sequence: [{ loading: true }, { error: new Error('timeout') }, { value: pets }],
+ * mockEndpoint(FIND_PETS_BY_STATUS_MOCK, {
+ *   sequence: [{ error: { message: 'timeout' }, status: 504 }, { value: pets }],
  * });
  * ```
  */
-export function mockResource<T>(
-  token: InjectionToken<(...args: unknown[]) => ReturnType<typeof httpResource<T>>>,
-  behaviorOrOptions?: ProviderInitialBehavior<T> | { sequence: MockSequenceEntry<T>[] },
-): MockResourceHandle<T> {
-  const ref = createMockResourceRef<T>();
-  const internal = ref as MockResourceRefInternal<T>;
+export function mockEndpoint<T>(
+  endpoint: MockEndpoint<T>,
+  behaviorOrOptions: MockEndpointBehavior<T> | { sequence: MockSequenceEntry<T>[] } = { loading: true },
+): EnvironmentProviders & MockEndpointHandle<T> {
   const calls: unknown[][] = [];
+  let controls: WindowMockEntry | undefined;
 
-  let notifyOnCall = false;
+  let step = 0;
+  const behavior =
+    'sequence' in behaviorOrOptions
+      ? (): MockBehavior => {
+          const { sequence } = behaviorOrOptions;
+          return sequence[Math.min(step++, sequence.length - 1)] as MockBehavior;
+        }
+      : (behaviorOrOptions as MockBehavior);
 
-  if (!behaviorOrOptions) {
-    // no-op: ref stays idle
-  } else if ('sequence' in behaviorOrOptions) {
-    const sequence = behaviorOrOptions.sequence;
-    let idx = 0;
-    ref.onRequest(() => {
-      const entry = idx < sequence.length ? sequence[idx++] : sequence[sequence.length - 1];
-      applyBehavior(ref, entry);
+  const onRegistered = (runtime: MockRuntime): void => {
+    controls = runtime.controls(endpoint.key);
+    controls?.onEvent((event) => {
+      if (event.type === 'request') calls.push(event.args);
     });
-    notifyOnCall = true;
-  } else {
-    applyBehavior(ref, behaviorOrOptions);
-  }
-
-  const handle: MockResourceHandle<T> = {
-    provide: token,
-    useFactory: () =>
-      (...args: unknown[]) => {
-        calls.push(args);
-        if (notifyOnCall) internal._notifyRequest(args);
-        return ref as unknown as ReturnType<typeof httpResource<T>>;
-      },
-    get ref() {
-      return ref;
-    },
-    get calls() {
-      return calls as readonly unknown[][];
-    },
-    expectCalled() {
-      assertCalled(calls);
-    },
-    expectCalledWith(...expected: unknown[]) {
-      assertCalledWith(calls, expected);
-    },
   };
 
-  return handle;
-}
-
-/** A FactoryProvider for an Observable (HttpClient) token, with call history for assertions. */
-export interface MockObservableHandle extends FactoryProvider {
-  /** Every set of args the injected function was called with. */
-  readonly calls: readonly unknown[][];
-  /** Number of subscriptions made to observables returned by the function. */
-  readonly subscriptions: number;
-  /** Throws if the token function was never called. */
-  expectCalled(): void;
-  /** Throws if no call matches all provided args (deep equality). */
-  expectCalledWith(...args: unknown[]): void;
-}
-
-/**
- * Shared core of the Observable mocks: records calls, counts subscriptions, and picks the
- * behavior for each subscription (a single behavior, or the next entry of a sequence — the last
- * one repeats). `run` turns a behavior into emissions.
- */
-function createObservableMock<B>(
-  token: InjectionToken<unknown>,
-  behaviorOrOptions: B | { sequence: B[] } | undefined,
-  run: (behavior: B | undefined, subscriber: Subscriber<unknown>) => TeardownLogic,
-): MockObservableHandle {
-  const calls: unknown[][] = [];
-  let subscriptions = 0;
-
-  const nextBehavior = (): B | undefined => {
-    if (!behaviorOrOptions) return undefined;
-    if (typeof behaviorOrOptions === 'object' && 'sequence' in behaviorOrOptions) {
-      const { sequence } = behaviorOrOptions as { sequence: B[] };
-      return sequence[Math.min(subscriptions - 1, sequence.length - 1)];
+  const use = (): WindowMockEntry => {
+    if (!controls) {
+      throw new Error(
+        `[openapi-resource-mocks] "${endpoint.key}" is not registered yet. Add the handle to the ` +
+          `TestBed providers and create the component (or inject something) first.`,
+      );
     }
-    return behaviorOrOptions as B;
+    return controls;
   };
 
-  return {
-    provide: token,
-    useFactory: () =>
-      (...args: unknown[]): Observable<unknown> => {
-        calls.push(args);
-        return new Observable<unknown>((subscriber) => {
-          subscriptions++;
-          return run(nextBehavior(), subscriber);
-        });
-      },
-    get calls() {
-      return calls as readonly unknown[][];
-    },
-    get subscriptions() {
-      return subscriptions;
-    },
+  const providers: Array<Provider | EnvironmentProviders> = [
+    ...(endpoint.provide ? [endpoint.provide()] : []),
+    { provide: endpoint.baseUrl, useValue: MOCK_BASE_URL },
+    registerMockEndpoint(endpoint as MockEndpoint<unknown>, behavior, onRegistered),
+  ];
+
+  const handle: MockEndpointHandle<T> = {
+    calls,
     expectCalled() {
-      assertCalled(calls);
+      if (calls.length === 0) {
+        throw new Error(`Expected "${endpoint.key}" to have been requested at least once, but it never was.`);
+      }
     },
-    expectCalledWith(...expected: unknown[]) {
-      assertCalledWith(calls, expected);
+    expectCalledWith(...expected) {
+      const found = calls.some(
+        (call) => call.length === expected.length && expected.every((arg, i) => deepEqual(arg, call[i])),
+      );
+      if (!found) {
+        throw new Error(
+          `Expected "${endpoint.key}" to have been requested with ${JSON.stringify(expected)}, ` +
+            `but actual requests were: ${JSON.stringify(calls)}`,
+        );
+      }
     },
+    resolve: (value) => use().resolve(value),
+    fail: (error, status) => use().fail(error, status),
+    setLoading: () => use().setLoading(),
+    setProgress: (type, loaded, total) => use().setProgress(type, loaded, total),
+    reset: () => use().reset(),
   };
-}
 
-/** Runs `settle` now, or after `delay` ms (cancelled on unsubscribe). */
-function settleAfter(delay: number | undefined, settle: () => void): TeardownLogic {
-  if (!delay) {
-    settle();
-    return undefined;
-  }
-  const timer = setTimeout(settle, delay);
-  return () => clearTimeout(timer);
+  return Object.assign(makeEnvironmentProviders(providers), handle);
 }
 
 /**
- * Creates a lightweight mock provider for a token generated with `clientType: 'httpClient'`
- * (a function returning `Observable<T>`). No MockResourceBus, no DOM events.
- *
- * The observable is cold, like `HttpClient`: each **subscription** consumes the next
- * behavior. `{ value }` emits once and completes, `{ error }` errors, `{ loading: true }`
- * never emits; `delay` defers the emission by that many ms.
- *
- * ```ts
- * const petsMock = mockObservable(FIND_PETS_BY_STATUS, { value: [] });
- * TestBed.configureTestingModule({ providers: [petsMock] });
- * petsMock.expectCalledWith({ status: 'available' });
- *
- * // retry scenario: fail once, then succeed
- * const retry = mockObservable(FIND_PETS_BY_STATUS, {
- *   sequence: [{ error: new Error('timeout') }, { value: pets }],
- * });
- * ```
+ * Lets pending mock work reach the component: a held request delivering its progress events, or a
+ * `resolve()` / `fail()` travelling back through `HttpClient`. Use `fixture.whenStable()` instead
+ * when the request is answered — it also waits for the response.
  */
-export function mockObservable<T>(
-  token: InjectionToken<(...args: unknown[]) => Observable<T>>,
-  behaviorOrOptions?: ProviderInitialBehavior<T> | { sequence: MockSequenceEntry<T>[] },
-): MockObservableHandle {
-  return createObservableMock<ProviderInitialBehavior<T>>(token, behaviorOrOptions, (behavior, subscriber) => {
-    if (!behavior || 'loading' in behavior) return undefined; // never settles
-    return settleAfter(behavior.delay, () => {
-      if ('error' in behavior) {
-        subscriber.error(behavior.error);
-      } else {
-        subscriber.next(behavior.value as T);
-        subscriber.complete();
-      }
-    });
-  });
-}
-
-/**
- * A behavior for {@link mockHttpEvents}: the same shapes as `mockObservable`, plus an optional
- * list of progress events to emit before the response settles.
- */
-export type MockHttpEventsBehavior<T> = ProviderInitialBehavior<T> & {
-  /** `UploadProgress` / `DownloadProgress` events emitted, in order, right after `Sent`. */
-  progress?: MockProgress[];
-};
-
-/**
- * Like {@link mockObservable}, for tokens generated with `--reportProgress` whose function
- * returns `Observable<HttpEvent<T>>` (file uploads / blob downloads over `httpClient`).
- *
- * Each subscription emits what a real `HttpClient` call with `reportProgress: true` emits: a
- * `Sent` event, then the behavior's `progress` events, then — unless it is `{ loading: true }` —
- * a `Response` event (status 200) carrying `value`, then completion; `{ error }` errors instead.
- * `delay` defers the final response / error.
- *
- * ```ts
- * // a component test that asserts the progress bar, holding the upload open at 25 %
- * const upload = mockHttpEvents(UPLOAD_FILE, {
- *   loading: true,
- *   progress: [{ type: 'upload', loaded: 1_000_000, total: 4_000_000 }],
- * });
- *
- * // a complete upload: 50 %, 100 %, then the response
- * const done = mockHttpEvents(UPLOAD_FILE, {
- *   progress: [
- *     { type: 'upload', loaded: 2_000_000, total: 4_000_000 },
- *     { type: 'upload', loaded: 4_000_000, total: 4_000_000 },
- *   ],
- *   value: { code: 200, message: 'stored' },
- * });
- * ```
- */
-export function mockHttpEvents<T>(
-  token: InjectionToken<(...args: unknown[]) => Observable<HttpEvent<T>>>,
-  behaviorOrOptions?: MockHttpEventsBehavior<T> | { sequence: MockHttpEventsBehavior<T>[] },
-): MockObservableHandle {
-  return createObservableMock<MockHttpEventsBehavior<T>>(token, behaviorOrOptions, (behavior, subscriber) => {
-    subscriber.next({ type: HttpEventType.Sent });
-    for (const p of behavior?.progress ?? []) {
-      subscriber.next({
-        type: p.type === 'upload' ? HttpEventType.UploadProgress : HttpEventType.DownloadProgress,
-        loaded: p.loaded,
-        total: p.total,
-      });
-    }
-    if (!behavior || 'loading' in behavior) return undefined; // stays open after Sent / progress
-    return settleAfter(behavior.delay, () => {
-      if ('error' in behavior) {
-        subscriber.error(behavior.error);
-      } else {
-        subscriber.next(new HttpResponse<T>({ body: behavior.value as T, status: 200 }));
-        subscriber.complete();
-      }
-    });
-  });
+export async function flushMocks(): Promise<void> {
+  for (let i = 0; i < 3; i++) await new Promise<void>((resolve) => setTimeout(resolve, 0));
 }

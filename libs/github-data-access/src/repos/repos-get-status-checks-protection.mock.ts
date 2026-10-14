@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_STATUS_CHECKS_PROTECTION } from './repos-get-status-checks-protection.token';
-import type { ReposGetStatusChecksProtectionResponse } from './repos-get-status-checks-protection.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetStatusChecksProtection,
+  type ReposGetStatusChecksProtectionResponse,
+} from './repos-get-status-checks-protection.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_STATUS_CHECKS_PROTECTION_MOCK: MockEndpoint<ReposGetStatusChecksProtectionResponse> =
+  {
+    key: 'REPOS_GET_STATUS_CHECKS_PROTECTION',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetStatusChecksProtection,
+  };
+
 export function provideReposGetStatusChecksProtectionMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetStatusChecksProtectionResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_STATUS_CHECKS_PROTECTION,
-    'REPOS_GET_STATUS_CHECKS_PROTECTION',
+  initialBehavior?: MockEndpointBehavior<ReposGetStatusChecksProtectionResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_STATUS_CHECKS_PROTECTION_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

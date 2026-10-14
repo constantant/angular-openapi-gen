@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetAccessRestrictionsResponse =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions']['get']['responses']['200']['content']['application/json'];
@@ -497,11 +498,14 @@ export function provideReposGetAccessRestrictions(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, branch: string) =>
-        httpResource<ReposGetAccessRestrictionsResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_ACCESS_RESTRICTIONS',
+          httpResource<ReposGetAccessRestrictionsResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_UPLOAD_RELEASE_ASSET } from './repos-upload-release-asset.token';
-import type { ReposUploadReleaseAssetResponse } from './repos-upload-release-asset.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposUploadReleaseAsset,
+  type ReposUploadReleaseAssetResponse,
+} from './repos-upload-release-asset.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_UPLOAD_RELEASE_ASSET_MOCK: MockEndpoint<ReposUploadReleaseAssetResponse> =
+  {
+    key: 'REPOS_UPLOAD_RELEASE_ASSET',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposUploadReleaseAsset,
+  };
+
 export function provideReposUploadReleaseAssetMock(
-  initialBehavior?: ProviderInitialBehavior<ReposUploadReleaseAssetResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_UPLOAD_RELEASE_ASSET,
-    'REPOS_UPLOAD_RELEASE_ASSET',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposUploadReleaseAssetResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_UPLOAD_RELEASE_ASSET_MOCK, initialBehavior);
 }

@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetOrgRuleSuitesParams =
   paths['/orgs/{org}/rulesets/rule-suites']['get']['parameters']['query'];
@@ -105,23 +106,26 @@ export function provideReposGetOrgRuleSuites(): FactoryProvider {
           | ReposGetOrgRuleSuitesParams
           | (() => ReposGetOrgRuleSuitesParams | undefined),
       ) =>
-        httpResource<ReposGetOrgRuleSuitesResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/orgs/${org}/rulesets/rule-suites`,
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_ORG_RULE_SUITES',
+          httpResource<ReposGetOrgRuleSuitesResponse>(
+            () => {
+              const _params = typeof params === 'function' ? params() : params;
+              if (typeof params === 'function' && _params === undefined)
+                return undefined;
+              return {
+                url: `${base}/orgs/${org}/rulesets/rule-suites`,
+                params: _params as unknown as Record<
+                  string,
+                  | string
+                  | number
+                  | boolean
+                  | readonly (string | number | boolean)[]
+                >,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

@@ -1,10 +1,20 @@
-export { createMockResourceRef } from './lib/mock-resource-ref';
-export type { MockResourceRef, MockResourceRefInternal, MockResourceState } from './lib/mock-resource-ref';
-export { MockResourceBus, provideMockResourceBus } from './lib/mock-resource-bus';
-export type { WindowMockEntry } from './lib/mock-resource-bus';
-export { provideMockResource, provideMockObservable, provideMockHttpEvents } from './lib/provide-mock-resource';
-export type { ProviderInitialBehavior, DeepPartial, MockProviderOptions } from './lib/provide-mock-resource';
+export { provideMockEndpoint } from './lib/provide-mock-endpoint';
+export type { MockEndpoint, MockEndpointBehavior } from './lib/provide-mock-endpoint';
+export { installMockInterception, uninstallMockInterception } from './lib/interception/install';
+export { MockRuntime } from './lib/interception/mock-runtime';
+export type {
+  MockBehavior,
+  MockResponse,
+  MockResult,
+  MockRegistration,
+  MockRuntimeConfig,
+  ConfiguredEndpoint,
+  InterceptedRequest,
+  ObservedRequest,
+  RealResponse,
+  Interception,
+} from './lib/interception/mock-runtime';
+export type { EndpointRule } from './lib/interception/url-matcher';
+export type { WindowMockEntry } from './lib/window-mock-entry';
 export type { MockResourceMeta } from './lib/mock-resource-meta';
-export { injectMockResource } from './lib/inject-mock-resource';
 export type { MockEvent, MockProgress } from './lib/mock-events';
-export type { TokenValue } from './lib/token-value';

@@ -8,6 +8,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type AddPetBody = NonNullable<
@@ -121,26 +122,29 @@ export function provideAddPet(): FactoryProvider {
         options?: AddPetOptions,
       ) => {
         const _opts = splitCallOptions<AddPetResponse>(options);
-        return httpResource<AddPetResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<AddPetBody>)()
-                : body;
-            return {
-              ..._opts.request,
-              url: `${base}/pet`,
-              method: 'POST',
-              body: _body,
-              headers: {
-                ...(petstoreAuth?.() != null
-                  ? { Authorization: `Bearer ${petstoreAuth()}` }
-                  : {}),
-                ..._opts.headers,
-              },
-            };
-          },
-          { ..._opts.resource, parse: _validateResponse },
+        return trackResource(
+          'ADD_PET',
+          httpResource<AddPetResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<AddPetBody>)()
+                  : body;
+              return {
+                ..._opts.request,
+                url: `${base}/pet`,
+                method: 'POST',
+                body: _body,
+                headers: {
+                  ...(petstoreAuth?.() != null
+                    ? { Authorization: `Bearer ${petstoreAuth()}` }
+                    : {}),
+                  ..._opts.headers,
+                },
+              };
+            },
+            { ..._opts.resource, parse: _validateResponse },
+          ),
         );
       }) as AddPetFn;
     },

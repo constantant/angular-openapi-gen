@@ -37,7 +37,8 @@ npx nx g @constantant/openapi-resource-gen:api-resource \
   --specId=petstore
 ```
 
-> `--includeMocks` emits a typed `provide{Operation}Mock()` wrapper alongside every token.
+> `--includeMocks` emits a typed `provide{Operation}Mock()` wrapper alongside every token, plus a
+> small `mock-hook.ts` the tokens call so mock tools can refresh live resources.
 > `--specId` is the identifier the Chrome DevTools panel uses to match mocks to spec entries.
 > Both are optional but recommended if you plan to use the mock tools.
 
@@ -51,6 +52,7 @@ libs/petstore-data-access/src/
   api-base-url.token.ts                ← InjectionToken<string> for the base URL
   index.ts                             ← barrel: re-exports everything below
   index.mock.ts                        ← barrel: re-exports all mock providers
+  mock-hook.ts                         ← lets mock tools refresh live resources
   mocks.manifest.json                  ← lightweight metadata for the DevTools panel
 
   pet/

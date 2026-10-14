@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_REPO_RULESET_HISTORY } from './repos-get-repo-ruleset-history.token';
-import type { ReposGetRepoRulesetHistoryResponse } from './repos-get-repo-ruleset-history.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetRepoRulesetHistory,
+  type ReposGetRepoRulesetHistoryResponse,
+} from './repos-get-repo-ruleset-history.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_REPO_RULESET_HISTORY_MOCK: MockEndpoint<ReposGetRepoRulesetHistoryResponse> =
+  {
+    key: 'REPOS_GET_REPO_RULESET_HISTORY',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetRepoRulesetHistory,
+  };
+
 export function provideReposGetRepoRulesetHistoryMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetRepoRulesetHistoryResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_REPO_RULESET_HISTORY,
-    'REPOS_GET_REPO_RULESET_HISTORY',
+  initialBehavior?: MockEndpointBehavior<ReposGetRepoRulesetHistoryResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_REPO_RULESET_HISTORY_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

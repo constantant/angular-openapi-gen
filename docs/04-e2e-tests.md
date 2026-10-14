@@ -1,9 +1,8 @@
 # 4 — E2E tests with Playwright
 
-For end-to-end tests you swap the real HTTP providers for `provideMockResourceBus()` and
-run the app on a separate port. Playwright's `page.evaluate()` can then call
-`openApiMock(key)` to control every mock from the test process — no Angular internals
-exposed, no test IDs to keep in sync.
+For end-to-end tests you add mock providers on top of your real app config and run the app on a
+separate port. Playwright's `page.evaluate()` then calls `openApiMock(key)` to control every mocked
+endpoint from the test process — no Angular internals exposed, no test IDs to keep in sync.
 
 ---
 
@@ -15,16 +14,17 @@ Playwright test process
         │
         │  window.openApiMock / window.__openApiMocks__
         ▼
-Angular app (port 4201)
-  MockResourceBus ← registered by provideMockResourceBus()
+Angular app (port 4201) — real tokens, real HttpClient
         │
-        │  sets signal state on the matching MockResourceRef
+        │  fetch / XMLHttpRequest, patched by the mock runtime
         ▼
-  Component re-renders with new value
+  request of a mocked endpoint → answered in the page
+  any other request            → the real API
 ```
 
-The bus exposes every registered mock on `window.__openApiMocks__` as a plain object.
-`openApiMock('KEY')` is a shorthand added by the bus — equivalent to `window.__openApiMocks__['KEY']`.
+The app is not rewired: each `provideXxxMock()` only registers a filter for that endpoint's
+requests. Editing a mock answers the requests it is holding, or reloads the live `httpResource`s of
+that endpoint so the page shows the new answer.
 
 ---
 
@@ -38,35 +38,38 @@ npm install -D @constantant/openapi-resource-mocks
 
 ## Step 2 — mock app config
 
-Create a separate app config that replaces the real HTTP providers with mocks.
-Place this next to your real `app.config.ts`:
+Keep `app.config.ts` as it is and merge the mocks into it:
 
 ```typescript
 // app.config.mock.ts
-import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
+import { ApplicationConfig, mergeApplicationConfig } from '@angular/core';
+import { appConfig as baseConfig } from './app.config';
 import {
-  PETSTORE_BASE_URL,
   provideFindPetsByStatusMock,
   provideAddPetMock,
 } from '@myapp/petstore-data-access/mock';
-import { appRoutes } from './app.routes';
 
-export const mockAppConfig: ApplicationConfig = {
+const mockConfig: ApplicationConfig = {
   providers: [
-    provideRouter(appRoutes),
-    { provide: PETSTORE_BASE_URL, useValue: 'http://localhost:4201' },
-    provideMockResourceBus(),
-    provideFindPetsByStatusMock({ value: [], delay: 100 }), // start resolved
-    provideAddPetMock({ loading: true }),                   // start loading
+    provideFindPetsByStatusMock({ value: [], delay: 100 }), // answered after 100 ms
+    provideAddPetMock({ loading: true }),                   // held until the test answers it
   ],
 };
+
+export const mockAppConfig = mergeApplicationConfig(baseConfig, mockConfig);
 ```
 
-> `provideFindPetsByStatusMock()` is the generated mock wrapper from `--includeMocks`.
-> Without `--includeMocks`, use `provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', ...)`
-> imported from `@constantant/openapi-resource-mocks`.
+> `provideFindPetsByStatusMock()` is the generated wrapper from `--includeMocks`. Without it, write
+> a `MockEndpoint` descriptor and use `provideMockEndpoint()` — see the
+> [mocks README](../tools/openapi-resource-mocks/README.md#setup).
+
+Rules of thumb:
+
+- An endpoint with **no behavior** (`provideAddPetMock()`) passes through to the real API until the
+  test sets one. Give every endpoint the tests rely on a behavior, so nothing depends on the network.
+- `value` is the full response type. With `--validateResponses` it is validated like a real
+  response.
+- The base URL stays whatever your real config provides; the filter matches requests under it.
 
 Create a mock entry point that uses the mock config:
 
@@ -108,6 +111,10 @@ and serves on a different port (e.g. 4201):
 }
 ```
 
+A `fileReplacements` entry that swaps `app.config.ts` for `app.config.mock.ts` works just as well;
+in that case put the real config in a third file both of them import, so the replacement does not
+import itself.
+
 ---
 
 ## Step 4 — TypeScript declarations for `page.evaluate()`
@@ -120,12 +127,13 @@ interface MockEntry {
   resolve(value: unknown): void;
   resolveAfter(ms: number, value: unknown): void;
   setLoading(): void;
-  fail(error: unknown): void;
+  fail(error: unknown, status?: number): void;
   reset(): void;
   reload(): boolean;
+  setCatchMode(enabled: boolean): void;
   setProgress(type: 'upload' | 'download', loaded: number, total?: number): void;
   simulateProgress(type: 'upload' | 'download', total: number, ms: number, value: unknown): void;
-  getState(): { status: string; value: unknown; error: unknown; requestCount: number };
+  getState(): { status: string; value: unknown; error: unknown; progress: unknown; requestCount: number };
   getHistory(): Array<{ type: string; ts: number; args?: unknown[]; value?: unknown }>;
   clearHistory(): void;
 }
@@ -183,7 +191,7 @@ export default defineConfig({
 ### Guard: wait for the page to be ready
 
 Always wait for a page landmark before running assertions — this guarantees Angular has
-bootstrapped and the mock factories have been called:
+bootstrapped and the endpoints are registered:
 
 ```typescript
 test.beforeEach(async ({ page }) => {
@@ -193,8 +201,7 @@ test.beforeEach(async ({ page }) => {
 });
 ```
 
-Without this guard, `page.evaluate()` calls throw `openApiMock is not defined` because
-the mock bus hasn't bootstrapped yet.
+Without this guard, `page.evaluate()` calls throw `openApiMock is not defined`.
 
 ### Resolve with data
 
@@ -212,6 +219,8 @@ test('renders pet list', async ({ page }) => {
 });
 ```
 
+The page already loaded its data; `resolve()` reloads the resource and it renders the new list.
+
 ### Test loading state
 
 ```typescript
@@ -223,91 +232,92 @@ test('shows progress bar while loading', async ({ page }) => {
 
 ### Test error state
 
+A mock failure is a real failing HTTP response. The second argument is its status (default 500),
+the first its body:
+
 ```typescript
 test('shows error message on failure', async ({ page }) => {
   await page.evaluate(() =>
-    openApiMock('FIND_PETS_BY_STATUS').fail({ message: 'Service unavailable' })
+    openApiMock('FIND_PETS_BY_STATUS').fail({ message: 'Service unavailable' }, 503)
   );
 
   await expect(page.getByText('Failed to load pets')).toBeVisible();
 });
 ```
 
-### Test reload
-
-`reload()` keeps the current value visible while the resource transitions to `'reloading'`.
-Use it to test pull-to-refresh or "Load more" flows:
+### Back to the configured behavior
 
 ```typescript
-test('refresh button shows reloading state', async ({ page }) => {
-  await page.evaluate(() =>
-    openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 1, name: 'Rex', ... }])
-  );
-  await expect(page.locator('.pet-row')).toHaveCount(1);
-
-  // Trigger reload — value stays visible, spinner appears
-  await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').reload());
-  await expect(page.locator('.pet-row')).toHaveCount(1); // still visible
-  await expect(page.locator('mat-progress-bar')).toBeVisible(); // loading indicator
-
-  // Resolve with new data
-  await page.evaluate(() =>
-    openApiMock('FIND_PETS_BY_STATUS').resolve([
-      { id: 1, name: 'Rex', ... },
-      { id: 2, name: 'Luna', ... },
-    ])
-  );
-  await expect(page.locator('.pet-row')).toHaveCount(2);
-});
+await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').reset());
 ```
+
+### HttpClient (Observable) endpoints
+
+An `httpResource` can be reloaded from outside, an Observable cannot. For endpoints generated with
+`--clientType=httpClient`, an edit applies to the **next** request: set the mock first, then trigger
+the request in the page (click the button, change the filter).
 
 ---
 
 ## Asserting request params
 
-`getHistory()` records every factory call as a `request` entry. The args are the resolved
-values at call time — never raw functions:
+`getHistory()` records every request as a `request` entry. `args` is read from the wire: path
+parameters (strings), then the body, then the query (an object of strings).
 
 ```typescript
 test('sends the selected status filter', async ({ page }) => {
-  // Wait for the initial request
-  await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolve([]));
-
-  // Click the "Sold" filter chip
   await page.getByLabel('Sold').click();
-  await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolve([]));
 
   const history = await page.evaluate(() =>
     openApiMock('FIND_PETS_BY_STATUS').getHistory()
   );
 
   const requests = history.filter((e) => e.type === 'request');
-  expect(requests).toHaveLength(2);
-  expect(requests[1].args[0]).toEqual({ status: 'sold' });
+  expect(requests.at(-1)?.args?.[0]).toEqual({ status: 'sold' });
 });
 ```
+
+A resource whose request is suppressed (its params thunk returned `undefined`) sends nothing, so
+it leaves no `request` entry.
 
 ### Reset history between scenarios
 
 ```typescript
-afterEach(async ({ page }) => {
-  await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').clearHistory());
-});
+await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').clearHistory());
 ```
 
 ---
 
 ## File upload progress
 
+Progress needs the XHR transport (`provideHttpClient(withXhr())` on Angular 22+) and a request that
+is being held:
+
 ```typescript
 test('shows upload progress bar', async ({ page }) => {
-  // Animate 4 MB upload over 2 s in 10 steps, then resolve
-  await page.evaluate(() =>
-    openApiMock('UPLOAD_FILE').simulateProgress('upload', 4_000_000, 2000, { id: 'abc' })
-  );
-  await expect(page.locator('[data-testid="progress-bar"]')).toBeVisible();
+  await page.evaluate(() => openApiMock('UPLOAD_FILE').setLoading());
+  await page.getByRole('button', { name: 'Upload' }).click();
+
+  await page.evaluate(() => openApiMock('UPLOAD_FILE').setProgress('upload', 1_000_000, 4_000_000));
+  await expect(page.locator('[data-testid="progress-bar"]')).toHaveAttribute('aria-valuenow', '25');
+
+  await page.evaluate(() => openApiMock('UPLOAD_FILE').resolve({ code: 200, message: 'stored' }));
 });
 ```
+
+`simulateProgress('upload', totalBytes, durationMs, finalValue)` animates the same thing in 10
+steps and then responds.
+
+---
+
+## Mocking the production build instead
+
+A mock build is the simplest setup for CI. The runtime itself does not need one:
+`@constantant/openapi-resource-mocks/runtime` is a framework-free entry (`installMockInterception()`
+and `MockRuntime.register()`), which a tool can load into a page that bundles no mock code. The
+[DevTools extension](./05-devtools.md#mocking-a-production-build) does exactly that, interactively.
+There is no ready-made Playwright helper for it yet; you would bundle that entry yourself and load
+it with `page.addInitScript()`.
 
 ---
 

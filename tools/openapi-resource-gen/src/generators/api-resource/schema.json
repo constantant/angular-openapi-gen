@@ -81,6 +81,10 @@
       "default": false,
       "description": "Emit reportProgress: true on httpResource tokens that upload a binary/multipart body or download a blob, so httpResource().progress() reports transfer progress. Has no effect on httpClient endpoints."
     },
+    "mockHooks": {
+      "type": "boolean",
+      "description": "Pass every httpResource a token creates to a shared mock-hook.ts, so a mocking tool (@constantant/openapi-resource-mocks or the DevTools extension, also on a production build) can re-run live resources when a mock is edited. Costs one global lookup per created resource when no tool is installed. Defaults to the value of includeMocks."
+    },
     "callOptions": {
       "type": "boolean",
       "default": false,

@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_DOWNLOAD_ZIPBALL_ARCHIVE } from './repos-download-zipball-archive.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposDownloadZipballArchive } from './repos-download-zipball-archive.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_DOWNLOAD_ZIPBALL_ARCHIVE_MOCK: MockEndpoint<unknown> = {
+  key: 'REPOS_DOWNLOAD_ZIPBALL_ARCHIVE',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideReposDownloadZipballArchive,
+};
+
 export function provideReposDownloadZipballArchiveMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_DOWNLOAD_ZIPBALL_ARCHIVE,
-    'REPOS_DOWNLOAD_ZIPBALL_ARCHIVE',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_DOWNLOAD_ZIPBALL_ARCHIVE_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

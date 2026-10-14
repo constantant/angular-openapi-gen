@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_LIST_DEPLOYMENT_STATUSES } from './repos-list-deployment-statuses.token';
-import type { ReposListDeploymentStatusesResponse } from './repos-list-deployment-statuses.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposListDeploymentStatuses,
+  type ReposListDeploymentStatusesResponse,
+} from './repos-list-deployment-statuses.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_LIST_DEPLOYMENT_STATUSES_MOCK: MockEndpoint<ReposListDeploymentStatusesResponse> =
+  {
+    key: 'REPOS_LIST_DEPLOYMENT_STATUSES',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposListDeploymentStatuses,
+  };
+
 export function provideReposListDeploymentStatusesMock(
-  initialBehavior?: ProviderInitialBehavior<ReposListDeploymentStatusesResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_LIST_DEPLOYMENT_STATUSES,
-    'REPOS_LIST_DEPLOYMENT_STATUSES',
+  initialBehavior?: MockEndpointBehavior<ReposListDeploymentStatusesResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_LIST_DEPLOYMENT_STATUSES_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

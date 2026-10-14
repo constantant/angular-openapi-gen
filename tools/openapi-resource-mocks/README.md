@@ -2,9 +2,20 @@
 
 [![npm](https://img.shields.io/npm/v/@constantant/openapi-resource-mocks)](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)
 
-Mock bus for [`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen) tokens.
+In-browser mocks for [`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen) endpoints.
 
-Provides zero-HTTP, pure-DI mocks for Angular `InjectionToken`-based data-access libs — with a cross-boundary API so **Playwright E2E tests** and a future **Chrome Extension devtools panel** can observe and control every token's state from outside the Angular context.
+The package patches `fetch` and `XMLHttpRequest` in the page and answers the requests of the
+endpoints you mock. Nothing is replaced in your app: it runs its real tokens, the real
+`HttpClient` / `httpResource`, its interceptors and its response validation. There is no service
+worker and no network layer, and every endpoint you did not mock still reaches the real API.
+
+Because the app itself is untouched, the same mechanism can mock a **production build**: the
+[DevTools extension](../openapi-resource-devtools/README.md) injects this runtime into a page that
+bundles no mock code at all.
+
+> **Upgrading from 1.x?** The token-replacement API (`provideMockResourceBus`,
+> `provideMockResource`, `provideMockObservable`, `provideMockHttpEvents`, `injectMockResource`,
+> `mockResource`, …) is gone. See [Migrating from 1.x](#migrating-from-1x).
 
 ---
 
@@ -18,475 +29,347 @@ Peer dependencies: `@angular/core >=20`, `@angular/common >=20`, `rxjs ^7.8` —
 
 ---
 
-## Core concept
+## How it works
 
-Each mock token is registered in a `MockResourceBus`. The bus:
-
-- Exposes `window.__openApiMocks__` — a plain object keyed by token name, accessible from Playwright's `page.evaluate()` or a Chrome Extension content script.
-- Emits DOM events (`openapi-mock-event`) on every state change so the Chrome Extension DevTools panel can observe in real time.
-- Listens for DOM events (`openapi-mock-control`) so the DevTools panel can push data into the app.
+- `provideXxxMock(behavior?)` registers a **filter** for one endpoint: HTTP method + the API's base
+  URL + the OpenAPI path template (`/pet/{petId}`).
+- A request that matches is answered in the page and never reaches the network. When several
+  templates match, the more specific one wins (`/pet/findByStatus` beats `/pet/{petId}`).
+- Everything else **passes through** to the real API — including a registered endpoint that has
+  neither a behavior nor [catch mode](#catch-mode).
+- The answer is a real HTTP response. Interceptors see its status and headers, an `error` arrives
+  as an `HttpErrorResponse`, and a `value` goes through `--validateResponses` like a server
+  response would.
+- Each mocked endpoint is published as `window.__openApiMocks__[key]` (shorthand:
+  `openApiMock(key)`) for Playwright, and mirrored over DOM events for the DevTools extension.
 
 ---
 
 ## Setup
 
-Add `provideMockResourceBus()` once, then one mock provider per token.
+Generate the lib with `--includeMocks`. Each endpoint gets a typed `provide{Operation}Mock()` and
+a descriptor `{OPERATION}_MOCK`, exported from the lib's `/mock` subpath so they stay out of the
+production bundle.
 
-**With `--includeMocks` (recommended)** — the generator emits a typed `provide{Operation}Mock()` wrapper per endpoint. Import from the `/mock` subpath so mock utilities stay out of your production bundle:
-
-```typescript
-// app.config.mock.ts (used in tests / E2E variant)
-import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
-import { provideFindPetsByStatusMock, provideUploadFileMock } from '@myapp/petstore-data-access/mock';
-
-export const mockProviders = [
-  provideMockResourceBus(),
-  provideFindPetsByStatusMock(),
-  provideUploadFileMock(),
-];
-```
-
-**Without `--includeMocks`** — use `provideMockResource()` directly with the raw token:
+Keep your real config as it is and add the mocks on top of it:
 
 ```typescript
 // app.config.mock.ts
-import { provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
-import { FIND_PETS_BY_STATUS, UPLOAD_FILE } from '@myapp/petstore-data-access';
+import { ApplicationConfig, mergeApplicationConfig } from '@angular/core';
+import { appConfig as baseConfig } from './app.config';
+import { provideFindPetsByStatusMock, provideAddPetMock } from '@myapp/petstore-data-access/mock';
 
-export const mockProviders = [
-  provideMockResourceBus(),
-  provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS'),
-  provideMockResource(UPLOAD_FILE, 'UPLOAD_FILE'),
-];
-```
-
----
-
-## Unit tests / Storybook (in-process control)
-
-```typescript
-import { TestBed } from '@angular/core/testing';
-import { injectMockResource, provideMockResourceBus, provideMockResource } from '@constantant/openapi-resource-mocks';
-
-TestBed.configureTestingModule({
-  imports: [PetsComponent],
+const mockConfig: ApplicationConfig = {
   providers: [
-    provideMockResourceBus(),
-    provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS'),
+    provideFindPetsByStatusMock({
+      value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
+      delay: 500,
+    }),
+    provideAddPetMock(), // registered, no behavior: real API until you set one or enable catch mode
   ],
-});
+};
 
-// Render the component first — this calls the token factory and registers the ref
-const fixture = TestBed.createComponent(PetsComponent);
-fixture.detectChanges();
-
-// Now the ref is in the bus
-const mock = TestBed.runInInjectionContext(() =>
-  injectMockResource('FIND_PETS_BY_STATUS'),
-);
-
-mock.resolve([{ id: 1, name: 'Rex', status: 'available' }]);
-fixture.detectChanges();
-
-mock.setLoading();
-mock.fail(new Error('network'));
-mock.reset();
-
-// Delayed response (loading → data after 500 ms)
-mock.resolveAfter(500, []);
-
-// Reload — keeps previous value visible while re-fetching (status → 'reloading')
-mock.resolve([{ id: 1, name: 'Rex', status: 'available' }]);
-mock.reload(); // status: 'reloading', value still [Rex], isLoading() → true
-mock.resolve([{ id: 1, name: 'Rex', status: 'sold' }]); // complete the reload
-
-// Request count — total factory invocations including reactive param changes and reload()
-expect(mock.requestCount()).toBe(1); // checked after fixture.detectChanges()
-
-// Reset history between scenarios without remounting the component
-mock.clearHistory(); // via bus.get(key)
+export const mockAppConfig = mergeApplicationConfig(baseConfig, mockConfig);
 ```
 
-Types come from the generated lib — no hand-written interfaces needed.
+`provideXxxMock()` returns `EnvironmentProviders`: use it in `ApplicationConfig.providers` or in a
+route's `providers`, not in a component's `providers`. The endpoint's real token must still be
+provided as usual (`provideFindPetsByStatus()`, or `providedIn: 'root'`), and so must
+`provideHttpClient()` and the base URL token.
 
----
-
-## Unit test helpers (`/testing`)
-
-`@constantant/openapi-resource-mocks/testing` is a lightweight sub-entry for unit tests and
-Storybook. It does not import `MockResourceBus`, register DOM events, or touch `window` —
-it simply wraps a token with a `MockResourceRef` and drops it into `TestBed` as a
-`FactoryProvider`.
+**Without `--includeMocks`**, write the descriptor yourself:
 
 ```typescript
-import { mockResource } from '@constantant/openapi-resource-mocks/testing';
-import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
+import { provideMockEndpoint, type MockEndpoint } from '@constantant/openapi-resource-mocks';
+import { PETSTORE_BASE_URL, type FindPetsByStatusResponse } from '@myapp/petstore-data-access';
 
-const petsMock = mockResource(FIND_PETS_BY_STATUS, { value: [] });
+const FIND_PETS_BY_STATUS_MOCK: MockEndpoint<FindPetsByStatusResponse> = {
+  key: 'FIND_PETS_BY_STATUS',
+  baseUrl: PETSTORE_BASE_URL,
+  meta: { specId: 'petstore', operationId: 'findPetsByStatus', path: '/pet/findByStatus', method: 'get' },
+};
 
-TestBed.configureTestingModule({
-  imports: [PetsComponent],
-  providers: [petsMock],   // MockResourceHandle extends FactoryProvider — drop it in directly
-});
-
-fixture.detectChanges();
-
-petsMock.ref.resolve([{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }]);
-fixture.detectChanges();
-
-petsMock.expectCalled();
-petsMock.expectCalledWith({ status: 'available' });
-console.log(petsMock.calls); // readonly unknown[][]  — all factory invocations and their args
+provideMockEndpoint(FIND_PETS_BY_STATUS_MOCK, { value: [] });
 ```
 
-### `mockResource<T>(token, behaviorOrOptions?)`
-
-Returns `MockResourceHandle<T>`, which extends `FactoryProvider`.
-
-The second argument sets the initial mock state (same shapes as `provideMockResource`):
+### Behaviors
 
 | Shape | Effect |
 |-------|--------|
-| `{ value: T }` | Resolves immediately |
-| `{ value: T, delay: ms }` | Loading for `ms` ms, then resolves |
-| `{ loading: true }` | Stays loading indefinitely |
-| `{ error: unknown }` | Fails immediately |
-| `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
+| `{ value }` | Responds with `value` (status 200, or 204 when `value` is `undefined`) |
+| `{ value, delay: ms }` | Responds after `ms` ms |
+| `{ loading: true }` | Holds every request open until you `resolve` / `fail` it |
+| `{ error }` | Responds with a failing status (500) and `error` as the body |
+| `{ error, delay: ms }` | Fails after `ms` ms |
+| _(no behavior)_ | Passes through to the real API |
+
+`value` and `error` behaviors also take `status` and `headers`; every behavior takes
+`progress: MockProgress[]` (see [progress](#upload--download-progress)).
+
+- **`value` is the full response type.** There is no `DeepPartial`: with `--validateResponses` a
+  mocked response is validated like a real one, so a fixture has to satisfy the schema.
+- A `value` is sent as JSON. A string is JSON-encoded too, unless the endpoint's
+  `meta.responseType` is `'text'`. `Blob` and `ArrayBuffer` values are sent as they are.
+
+---
+
+## Changing a mock at runtime
+
+Every mocked endpoint has the same controls, whether you reach them through
+`openApiMock(key)` in the page, a `/testing` handle, or the DevTools panel:
+
+```typescript
+openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 2, name: 'Luna', status: 'available', photoUrls: [] }]);
+openApiMock('FIND_PETS_BY_STATUS').fail({ message: 'unavailable' }, 503);
+openApiMock('FIND_PETS_BY_STATUS').setLoading();
+openApiMock('FIND_PETS_BY_STATUS').reset(); // back to the behavior given to provideXxxMock()
+```
+
+An edit replaces the endpoint's behavior for all later requests, and it reaches what is already on
+screen:
+
+- Requests that are **held open** (`{ loading: true }`, a delay, catch mode) are answered.
+- When nothing is held, the live `httpResource`s of that endpoint are **reloaded**, so they fetch
+  the new answer. Generated tokens hand their resources to the runtime through a small
+  `mock-hook.ts` (emitted with `--includeMocks`, or on its own with `--mockHooks`).
+- `HttpClient` (Observable) tokens cannot be re-run from outside: an edit applies to their **next**
+  request.
+
+`reset()` on an endpoint without an initial behavior releases its held requests to the real API.
+
+### Real responses
+
+When a request of a registered endpoint reaches the real API (it has no behavior, or was released
+to it), a JSON response is kept as the endpoint's state — `getState().value`, status `resolved` —
+and reported as a `real` event. Tools use it as the starting point for a mock; it never changes
+what the app receives, and it does not replace a value you set with `resolve()`. Bodies over
+512 KB are skipped.
+
+### Catch mode
+
+Catch mode holds every request of an endpoint until you decide its response — useful to inspect
+what the app sent first:
+
+```typescript
+openApiMock('ADD_PET').setCatchMode(true);
+// ... the app sends the request; it is recorded as a `caught` event and stays pending ...
+openApiMock('ADD_PET').resolve({ id: 99, name: 'New Pet', status: 'available', photoUrls: [] });
+```
+
+---
+
+## Unit tests (`/testing`)
+
+`@constantant/openapi-resource-mocks/testing` mocks an endpoint for a component test. The component
+uses the real token and the real `HttpClient`; only the transport is replaced.
+
+```typescript
+import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { mockEndpoint, uninstallMockInterception } from '@constantant/openapi-resource-mocks/testing';
+import { FIND_PETS_BY_STATUS_MOCK } from '@myapp/petstore-data-access/mock';
+
+afterAll(() => uninstallMockInterception());
+
+it('renders the pets', async () => {
+  const pets = mockEndpoint(FIND_PETS_BY_STATUS_MOCK, {
+    value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
+  });
+  TestBed.configureTestingModule({
+    imports: [PetsComponent],
+    providers: [provideHttpClient(), pets],
+  });
+
+  const fixture = TestBed.createComponent(PetsComponent);
+  await fixture.whenStable(); // responses are asynchronous, as in production
+  fixture.detectChanges();
+
+  pets.expectCalledWith({ status: 'available' });
+
+  pets.resolve([{ id: 2, name: 'Luna', status: 'available', photoUrls: [] }]); // live resources reload
+  await fixture.whenStable();
+});
+```
+
+### `mockEndpoint<T>(endpoint, behaviorOrOptions?)`
+
+Returns an `EnvironmentProviders` that is also a `MockEndpointHandle<T>`. It works for every client
+type (`httpResource`, `HttpClient`, `HttpEvent` streams). It provides:
+
+- the endpoint's real token (unless the lib is `providedIn: 'root'`),
+- a default base URL, `MOCK_BASE_URL` (`http://mock.test`) — list your own base URL provider after
+  the handle to override it,
+- the filter itself.
+
+You add `provideHttpClient()`. The second argument is a [behavior](#behaviors) or
+`{ sequence: [...] }`. **Without one, every request is held**, so nothing escapes to the network.
+
+| Member | Description |
+|--------|-------------|
+| `.calls` | `readonly unknown[][]` — what each request carried (see [request args](#request-args)) |
+| `.expectCalled()` | Throws if the endpoint was never requested |
+| `.expectCalledWith(...args)` | Throws if no request matches (deep equality) |
+| `.resolve(value)` | Answer held requests and all later ones; live `httpResource`s reload |
+| `.fail(error, status?)` | The same with a failing response (default 500) |
+| `.setLoading()` | Hold every request until `resolve` / `fail` |
+| `.setProgress(type, loaded, total?)` | Report transfer progress to the held requests |
+| `.reset()` | Back to the configured behavior |
+
+The controls work once the endpoint is registered, i.e. after the component was created.
+
+### Waiting for a response
+
+- `await fixture.whenStable()` — for a request that gets answered.
+- `await flushMocks()` — for a request that stays held (`{ loading: true }`): it lets progress
+  events, or a `resolve()` / `fail()` you just called, reach the component.
 
 ### Response sequences
 
-Pass `{ sequence: [...] }` to advance through multiple states — each factory call (and
-each `reload()` in resolved state) consumes the next entry; the last entry repeats when exhausted:
+Each request consumes the next entry; the last one repeats:
 
 ```typescript
-const mock = mockResource(FIND_PETS_BY_STATUS, {
+const pets = mockEndpoint(FIND_PETS_BY_STATUS_MOCK, {
   sequence: [
-    { loading: true },
-    { error: new Error('timeout') },
+    { error: { message: 'timeout' }, status: 504 },
     { value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }] },
   ],
 });
 ```
 
-### `mockObservable<T>(token, behaviorOrOptions?)`
+### Request args
 
-The same idea for tokens generated with `clientType: 'httpClient'` (functions returning
-`Observable<T>`). Returns a `MockObservableHandle` (a `FactoryProvider` with `.calls`,
-`.subscriptions`, `.expectCalled()` and `.expectCalledWith()` — there is no `.ref`, since the
-result isn't a resource).
+`.calls` and the `request` events in the history are read from the wire, in this order:
 
-The observable is cold, like `HttpClient`: each **subscription** consumes the next behavior.
+1. path parameters, as strings, in template order (`/pet/{petId}` → `'7'`),
+2. the body, when the request has one (parsed when it was JSON; a `File` / `FormData` as it is),
+3. the query, when the URL has one, as an object of strings (`{ status: 'available' }`).
 
-| Shape | Effect |
-|-------|--------|
-| `{ value: T }` | Emits once, then completes |
-| `{ value: T, delay: ms }` | Emits after `ms` ms (unsubscribing cancels it) |
-| `{ error: unknown }` | Errors |
-| `{ loading: true }` (or no behavior) | Never emits |
-| `{ sequence: [...] }` | One entry per subscription; the last repeats — e.g. fail once, then succeed on retry |
+---
+
+## Upload / download progress
+
+Progress is simulated on the **XHR** transport only — as in a real browser, `fetch` cannot report
+upload progress. On Angular 22+ that means `provideHttpClient(withXhr())`.
 
 ```typescript
-const petsMock = mockObservable(FIND_PETS_BY_STATUS, {
-  sequence: [{ error: new Error('timeout') }, { value: pets }],
-});
-```
-
-### `mockHttpEvents<T>(token, behaviorOrOptions?)`
-
-`mockObservable` for tokens generated with `--reportProgress` that return
-`Observable<HttpEvent<T>>` (file uploads and blob downloads over `httpClient`). Each subscription
-emits what a real `HttpClient` call with `reportProgress: true` emits: a `Sent` event, the
-behavior's `progress` events, then a `Response` event (status 200) carrying `value`, then
-completion. It returns the same handle as `mockObservable` (`.calls`, `.subscriptions`,
-`.expectCalled()`, `.expectCalledWith()`).
-
-| Shape | Effect |
-|-------|--------|
-| `{ value, progress? }` | `Sent`, the progress events, then the `Response`, then completes |
-| `{ error, progress? }` | `Sent`, the progress events, then errors |
-| `{ loading: true, progress? }` | `Sent` and the progress events, then stays open — hold a progress bar at a given percentage |
-| `delay: ms` | defers the final response / error; `Sent` and progress are immediate |
-| `{ sequence: [...] }` | one entry per subscription; the last repeats — e.g. fail at 50 %, then succeed on retry |
-
-`progress` entries are `{ type: 'upload' | 'download', loaded, total? }`.
-
-```typescript
-// Component test: assert the progress bar while the upload is held at 25 %
-const upload = mockHttpEvents(UPLOAD_FILE, {
+// Unit test: assert the progress bar while the upload is held at 25 %
+const upload = mockEndpoint(UPLOAD_FILE_MOCK, {
   loading: true,
   progress: [{ type: 'upload', loaded: 1_000_000, total: 4_000_000 }],
 });
-TestBed.configureTestingModule({ imports: [PetsPage], providers: [upload] });
+TestBed.configureTestingModule({
+  imports: [PetsPage],
+  providers: [provideHttpClient(withXhr()), upload],
+});
 // ... trigger the upload ...
+await flushMocks();
 upload.expectCalledWith('7', file);
 expect(bar.getAttribute('aria-valuenow')).toBe('25');
 ```
 
-### `MockResourceHandle<T>`
-
-| Member | Description |
-|--------|-------------|
-| `.ref` | `MockResourceRef<T>` — the underlying ref; call `.resolve()`, `.fail()`, etc. to change state mid-test |
-| `.calls` | `readonly unknown[][]` — all args the factory was invoked with |
-| `.expectCalled()` | Throws if the factory was never called |
-| `.expectCalledWith(...args)` | Throws if no call matches (deep equality via recursive comparison) |
-
----
-
-## File upload / download progress
-
-### In-process (unit tests / Storybook)
-
 ```typescript
-const mock = TestBed.runInInjectionContext(() =>
-  injectMockResource<UploadResponse>('UPLOAD_FILE'),
-);
+// Playwright: drive a held upload step by step
+await page.evaluate(() => openApiMock('UPLOAD_FILE').setProgress('upload', 1_000_000, 4_000_000));
+await expect(bar).toHaveAttribute('aria-valuenow', '25');
+await page.evaluate(() => openApiMock('UPLOAD_FILE').resolve({ code: 200, message: 'stored' }));
 
-// Animate through 10 steps over 2 s, then resolve
-mock.simulateProgress('upload', 4_000_000, 2000, { id: 'abc123' });
-
-// Or drive progress manually for precise test control
-mock.setProgress('upload', 1_000_000, 4_000_000); // 25 %
-mock.setProgress('upload', 4_000_000, 4_000_000); // 100 %
-mock.resolve({ id: 'abc123' });
-
-// Download progress (total unknown — streaming)
-mock.setProgress('download', 16_384);
-
-// Simulate failure mid-upload — progress is preserved so the UI can show "failed at 25%"
-mock.setProgress('upload', 1_000_000, 4_000_000);
-mock.fail(new Error('connection reset'));
-console.log(mock.progress()); // { type: 'upload', loaded: 1_000_000, total: 4_000_000 }
-```
-
-### E2E (Playwright)
-
-```typescript
-// Animate upload progress then resolve
+// Or animate it: 10 steps over 2 s, then respond
 await page.evaluate(() =>
-  openApiMock('UPLOAD_FILE').simulateProgress('upload', 4_000_000, 2000, { id: 'abc123' }),
+  openApiMock('UPLOAD_FILE').simulateProgress('upload', 4_000_000, 2000, { code: 200, message: 'stored' }),
 );
-await expect(page.locator('[data-testid="progress-bar"]')).toBeVisible();
-
-// Manual steps
-await page.evaluate(() =>
-  openApiMock('UPLOAD_FILE').setProgress('upload', 1_000_000, 4_000_000),
-);
-await expect(page.locator('[data-testid="progress-bar"]')).toHaveAttribute('aria-valuenow', '25');
-
-// Fail mid-upload
-await page.evaluate(() => openApiMock('UPLOAD_FILE').fail(new Error('timeout')));
-const state = await page.evaluate(() => openApiMock('UPLOAD_FILE').getState());
-console.log(state.progress); // { type: 'upload', loaded: 1_000_000, total: 4_000_000 }
 ```
 
-### Chrome Extension → app
-
-```javascript
-// Animate upload
-document.dispatchEvent(new CustomEvent('openapi-mock-control', {
-  detail: {
-    key: 'UPLOAD_FILE',
-    action: 'simulateProgress',
-    progressType: 'upload',
-    total: 4_000_000,
-    delayMs: 2000,
-    value: { id: 'abc123' },
-    steps: 20,        // optional, default 10
-  },
-}));
-
-// Single progress step
-document.dispatchEvent(new CustomEvent('openapi-mock-control', {
-  detail: { key: 'UPLOAD_FILE', action: 'setProgress', progressType: 'download', loaded: 512, total: 1024 },
-}));
-```
+`setProgress` reports to requests that are currently held, so give the endpoint
+`{ loading: true }` (or catch mode) first.
 
 ---
 
 ## E2E tests (Playwright)
 
-### Setup
-
-Serve the app with mock providers on a separate port so real and mock E2E suites never collide.
-
-**1. Mock app configuration** — swap the real providers for mock ones:
-
-```typescript
-// app.config.mock.ts
-import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
-import { provideFindPetsByStatusMock } from '@myapp/petstore-data-access/mock';
-import { appRoutes } from './app.routes';
-
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideRouter(appRoutes),
-    provideMockResourceBus(),
-    provideFindPetsByStatusMock({
-      value: [{ id: 1, name: 'Rex', status: 'available', photoUrls: [] }],
-      delay: 500,
-    }),
-  ],
-};
-```
-
-If you didn't use `--includeMocks`, replace the wrapper with `provideMockResource(FIND_PETS_BY_STATUS, 'FIND_PETS_BY_STATUS', { ... })` imported from `@constantant/openapi-resource-mocks`.
-
-**2. Separate Playwright config** — points to port 4201 and scopes `testDir` to the mock specs folder:
-
-```typescript
-// playwright.mock.config.ts
-import { defineConfig, devices } from '@playwright/test';
-import { nxE2EPreset } from '@nx/playwright/preset';
-import { workspaceRoot } from '@nx/devkit';
-
-export default defineConfig({
-  ...nxE2EPreset(__filename, { testDir: './src/mock' }),
-  use: {
-    baseURL: 'http://localhost:4201',
-    trace: 'on-first-retry',
-  },
-  webServer: {
-    command: 'npx nx run myapp:serve --configuration=mock-e2e',
-    url: 'http://localhost:4201',
-    reuseExistingServer: true,
-    cwd: workspaceRoot,
-  },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-});
-```
-
-**3. Exclude mock specs from the main config** — prevents mock specs from running against the real app:
-
-```typescript
-// playwright.config.ts  (existing main config)
-export default defineConfig({
-  ...nxE2EPreset(__filename, { testDir: './src' }),
-  testIgnore: ['**/mock/**'],
-  // ...
-});
-```
-
-**4. TypeScript ambient declarations** — required for `openApiMock(key)` to typecheck inside `page.evaluate()` function bodies:
-
-```typescript
-// src/global.d.ts
-interface MockEntry {
-  resolve(value: unknown): void;
-  resolveAfter(ms: number, value: unknown): void;
-  setLoading(): void;
-  fail(error: unknown): void;
-  reset(): void;
-  reload(): boolean;
-  setProgress(type: 'upload' | 'download', loaded: number, total?: number): void;
-  simulateProgress(type: 'upload' | 'download', totalBytes: number, durationMs: number, finalValue: unknown, steps?: number): void;
-  getState(): { status: string; value: unknown; error: unknown; progress: unknown; requestCount: number };
-  getHistory(): Array<{ type: string; ts: number; [key: string]: unknown }>;
-  clearHistory(): void;
-  onEvent(cb: (event: { type: string; [key: string]: unknown }) => void): () => void;
-}
-
-interface Window {
-  __openApiMocks__: Record<string, MockEntry>;
-  openApiMock: (key: string) => MockEntry;
-}
-
-// Needed for unqualified openApiMock('KEY') calls inside page.evaluate(() => ...)
-declare function openApiMock(key: string): MockEntry;
-```
-
-Also add `"types": ["node"]` to `tsconfig.json` if you use `__filename` in the Playwright config.
-
-### Writing specs
-
-Always wait for a page landmark in `beforeEach` before running assertions — this guarantees Angular has bootstrapped and the mock factories have been called:
+Build the app with the mock config (a `fileReplacements` entry swapping `app.config.ts` for
+`app.config.mock.ts` is enough) and control the endpoints from the test:
 
 ```typescript
 test.beforeEach(async ({ page }) => {
   await page.goto('/pets');
   await expect(page.getByRole('heading', { name: 'Pets' })).toBeVisible();
 });
+
+test('shows new data', async ({ page }) => {
+  await page.evaluate(() =>
+    openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 10, name: 'Shadow', status: 'pending', photoUrls: [] }]),
+  );
+  await expect(page.getByText('Shadow')).toBeVisible();
+});
+
+test('shows the error', async ({ page }) => {
+  await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').fail({ message: 'unavailable' }, 503));
+  await expect(page.getByText('Request failed (HTTP 503).')).toBeVisible();
+});
+
+test('sends the default filter', async ({ page }) => {
+  const history = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getHistory());
+  const request = history.find((e) => e.type === 'request');
+  expect(request?.args[0]).toEqual({ status: 'available' });
+});
 ```
 
-Without this guard, assertions like `toBeHidden()` and `toHaveCount(0)` can pass immediately (before any elements render), and subsequent `page.evaluate()` calls will throw `openApiMock is not defined`.
-
-### Controlling state
+Ambient declarations for `page.evaluate()` bodies:
 
 ```typescript
-// Resolve with data
-await page.evaluate(() =>
-  openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 1, name: 'Rex', status: 'available' }]),
+// src/global.d.ts
+import type { WindowMockEntry } from '@constantant/openapi-resource-mocks';
+
+declare global {
+  function openApiMock(key: string): WindowMockEntry;
+}
+```
+
+The full walk-through (serve target, separate Playwright config) is in
+[guide 4](../../docs/04-e2e-tests.md).
+
+### Mocking without a mock build
+
+`@constantant/openapi-resource-mocks/runtime` is the same runtime without the Angular providers. It
+has no framework dependency, so a tool can install it from outside the app — this is what the
+DevTools extension injects into production builds:
+
+```typescript
+import { installMockInterception } from '@constantant/openapi-resource-mocks/runtime';
+
+const runtime = installMockInterception(); // one shared runtime per page, safe to call repeatedly
+runtime.register(
+  'FIND_PETS_BY_STATUS',
+  { method: 'get', baseUrl: 'https://petstore3.swagger.io/api/v3', path: '/pet/findByStatus' },
+  { behavior: { value: [] } },
 );
-await expect(page.locator('mat-row')).toHaveCount(1);
-
-// Test loading skeleton
-await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').setLoading());
-await expect(page.locator('mat-progress-bar')).toBeVisible();
-
-// Simulate slow network
-await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolveAfter(1000, []));
-
-// Reload — keeps previous value visible while re-fetching
-await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').reload());
-// status → 'reloading', pets still shown, spinner visible
-await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolve([{ id: 2, name: 'Luna', status: 'available' }]));
-
-// Inspect current state (includes progress and requestCount)
-const state = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getState());
-// { status, value, error, progress, requestCount }
-
-// Full event history (requests + responses + progress ticks)
-// resolveAfter and simulateProgress now emit loading/progress/resolve entries here
-const history = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getHistory());
-
-// Reset history between test scenarios without remounting components
-await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').clearHistory());
-```
-
-### Asserting request params
-
-`getHistory()` records every factory invocation as a `request` entry. Function args (reactive lambdas) are resolved at call time, so `args` contains plain JSON values:
-
-```typescript
-const history = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getHistory());
-const req = history.find((e) => e.type === 'request');
-expect(req?.args[0]).toEqual({ status: 'available' });
-```
-
-For tokens whose factory receives a reactive lambda (e.g. `() => query() ? { q: query() } : undefined`), `args[0]` will be the resolved value at mount time — `undefined` when suppressed, or the plain params object when active:
-
-```typescript
-// Confirms the resource was suppressed on init (query was empty)
-expect(req?.args[0]).toBeUndefined();
 ```
 
 ---
 
-## Chrome Extension integration
+## DOM event bridge
 
-**Extension content script → app (control):**
+Used by the DevTools extension; available to any tool running next to the page.
+
+**Control (tool → page):**
 
 ```javascript
 document.dispatchEvent(new CustomEvent('openapi-mock-control', {
-  detail: { key: 'FIND_PETS_BY_STATUS', action: 'resolve', value: [...] },
+  detail: { key: 'FIND_PETS_BY_STATUS', action: 'resolve', value: [] },
 }));
-// actions: resolve | resolveAfter | setLoading | fail | reset | reload
-//          setProgress | simulateProgress | clearHistory
-// resolveAfter:     delayMs: number
-// setProgress:      progressType: 'upload'|'download', loaded: number, total?: number
-// simulateProgress: progressType, total: number, delayMs: number, value, steps?: number
-// reload / clearHistory: no additional fields required
+// actions on a registered endpoint:
+//   resolve | resolveAfter (delayMs) | setLoading | fail (status?) | reset | reload
+//   setProgress (progressType, loaded, total?) | simulateProgress (progressType, total, delayMs, value, steps?)
+//   setCatchMode | clearCatchMode | clearHistory
+// actions that manage endpoints from outside the app:
+//   register (rule, meta?, behavior?) | unregister | configure (config: MockRuntimeConfig)
 ```
 
-**App → extension (observe):**
+**Observe (page → tool):**
 
 ```javascript
 document.addEventListener('openapi-mock-event', (e) => {
-  const { key, event } = e.detail;
-  // event.type: 'request' | 'resolve' | 'loading' | 'error' | 'reset' | 'progress'
-  devtoolsPanel.update(key, event);
+  const { key, event } = e.detail; // event: MockEvent
 });
 ```
 
@@ -494,185 +377,101 @@ document.addEventListener('openapi-mock-event', (e) => {
 
 ## API reference
 
-### `provideMockResourceBus()`
+### `provideMockEndpoint<T>(endpoint, initialBehavior?)`
 
-Returns `EnvironmentProviders`. Call once in your root providers or TestBed setup.
+Returns `EnvironmentProviders`. Registers the endpoint's filter on the shared runtime for the
+lifetime of the injector (installing the `fetch` / `XMLHttpRequest` patch on first use) and
+unregisters it when the injector is destroyed. Generated `provide{Operation}Mock()` functions call
+it with their descriptor.
 
-### `provideMockResource(token, key, initialBehavior?, meta?, options?)`
-
-Returns `FactoryProvider`. Each time a component invokes the factory function, a fresh ref is created, registered in the bus under `key`, and `initialBehavior` is applied — simulating the full request lifecycle on every mount.
-
-The optional `meta` argument is a `MockResourceMeta` object. When provided, the DevTools panel uses it to look up response schemas and pre-populate the Respond tab's schema display. Generated `.mock.ts` files embed this automatically — you only need to pass it manually when using `provideMockResource()` directly.
-
-The optional `options` argument is a `MockProviderOptions` object — see below.
-
-`initialBehavior` controls how the mock behaves on each invocation:
-
-| Shape | Effect |
-|-------|--------|
-| `{ value: T }` | Resolves immediately with value |
-| `{ value: T, delay: ms }` | Loading for `ms` ms, then resolves |
-| `{ loading: true }` | Stays loading indefinitely |
-| `{ error: unknown }` | Fails immediately |
-| `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
-
-### `provideMockObservable(token, key, initialBehavior?, meta?, options?)`
-
-Same as `provideMockResource`, for tokens generated with `clientType: 'httpClient'` (functions
-returning `Observable<T>`). The key is registered when the function is called; every
-**subscription** counts as a request. The observable emits once and completes on `resolve`, or
-errors on `fail`; catch mode, delays and the DevTools controls behave as for resources, with one
-difference: like a real `HttpClient` call, an observable is finished once it has emitted. So:
-
-- a `resolve` / `fail` that arrives while a request is **pending** (loading, delayed or caught)
-  answers that request;
-- one that arrives when **nothing is pending** (e.g. from the DevTools Respond tab after the page
-  loaded) is remembered per key and replayed by the **next** request, ahead of `initialBehavior`.
-  Trigger that request with the app's own reload / refetch. The latest panel edit wins and it
-  sticks until the page reloads.
-
-Use catch mode to hold a request open while you choose its response. Requires `rxjs` ^7.8.
-
-### `provideMockHttpEvents(token, key, initialBehavior?, meta?, options?)`
-
-For tokens generated with `--reportProgress` whose function returns
-`Observable<HttpEvent<T>>` (file uploads / blob downloads over `httpClient`). It behaves like
-`provideMockObservable` but emits what a real `HttpClient` call with `reportProgress: true` emits:
-
-1. a `Sent` event on subscribe,
-2. `UploadProgress` / `DownloadProgress` events for every `setProgress()` /
-   `simulateProgress()` step — from DevTools, e2e, or `injectMockResource` in unit tests,
-3. a `Response` event (status 200) carrying the resolved value, then completion.
-
-`fail()` errors the observable (the progress events seen so far are kept), unsubscribing stops
-delivery (a cancelled upload), and catch mode, delays, `initialBehavior` and the replay of panel
-edits work as for `provideMockObservable`. The generator picks this provider automatically.
+### `MockEndpoint<T>`
 
 ```typescript
-// e2e: hold the request, then drive the progress bar deterministically
-await page.evaluate(() => openApiMock('UPLOAD_FILE').setProgress('upload', 1_000_000, 4_000_000));
-await expect(bar).toHaveAttribute('aria-valuenow', '25');
-await page.evaluate(() => openApiMock('UPLOAD_FILE').resolve({ code: 200, message: 'stored' }));
-```
-
-### `MockProviderOptions`
-
-Passed as the fifth argument to `provideMockResource()` and as the second argument to generated `provide{Operation}Mock()` wrappers.
-
-```typescript
-interface MockProviderOptions {
-  keyDiscriminator?: () => string;
+interface MockEndpoint<T = unknown> {
+  key: string;                       // listed under this key in window.__openApiMocks__ and DevTools
+  baseUrl: InjectionToken<string>;   // the lib's base URL token
+  meta: MockResourceMeta;
+  provide?: () => Provider;          // the real token's provider; absent for providedIn: 'root'
 }
 ```
 
-**`keyDiscriminator`** — called inside the factory injection context to produce a suffix appended to the bus key as `key:suffix`. Use this when the same token appears in multiple component instances simultaneously (e.g. list rows) so each instance is independently addressable:
+### `MockEndpointBehavior<T>`
 
 ```typescript
-// List row component — each instance registers under a unique key
-providers: [
-  providePetItemMock(undefined, { keyDiscriminator: () => inject(PET_ID).toString() }),
-]
-// Registers as 'GET_PET_BY_ID:42', 'GET_PET_BY_ID:43', etc.
-
-// Control a specific instance from a Playwright test
-await page.evaluate(() => openApiMock('GET_PET_BY_ID:42').resolve({ id: 42, name: 'Rex' }));
+type MockEndpointBehavior<T> = (
+  | { value: T; delay?: number; status?: number; headers?: Record<string, string> }
+  | { loading: true }
+  | { error: unknown; delay?: number; status?: number; headers?: Record<string, string> }
+) & { progress?: MockProgress[] };
 ```
-
-Without `keyDiscriminator`, the last-mounted instance overwrites earlier registrations under the same key.
-
----
-
-### `injectMockResource<T>(key)`
-
-Must be called inside an injection context (e.g. `TestBed.runInInjectionContext`) and after the component has rendered — the ref is registered when the component first invokes the factory function, not at DI setup time. Returns `MockResourceRef<T>`.
-
-### `ProviderInitialBehavior<T>`
-
-Union type accepted by `provideMockResource()` and generated `provide{Operation}Mock()` wrappers. Describes the mock's state immediately after each factory invocation:
-
-| Shape | Effect |
-|-------|--------|
-| `{ value: DeepPartial<T> }` | Resolves immediately with value |
-| `{ value: DeepPartial<T>, delay: ms }` | Loading for `ms` ms, then resolves |
-| `{ loading: true }` | Stays loading indefinitely |
-| `{ error: unknown }` | Fails immediately |
-| `{ error: unknown, delay: ms }` | Loading for `ms` ms, then fails |
 
 ### `MockResourceMeta`
 
-Metadata embedded in generated `.mock.ts` files and read by the DevTools panel to show response schemas, generate example payloads, and validate responses:
+Embedded in generated `.mock.ts` files. The runtime matches requests with `method` and `path`; the
+DevTools panel uses `specId` and `operationId` to find the response schema.
 
 ```typescript
 interface MockResourceMeta {
-  specId: string;       // matches the --specId generator option (default: derived from baseUrlToken)
-  operationId: string;  // OpenAPI operationId
-  path: string;         // API path, e.g. '/pet/findByStatus'
-  method: string;       // HTTP method, lowercase
-  tag?: string;         // OpenAPI tag (omitted for untagged operations)
-  args?: readonly string[]; // names of the token function's arguments, in order (emitted by --callOptions)
+  specId: string;       // matches the --specId generator option
+  operationId: string;
+  path: string;         // path template, e.g. '/pet/{petId}'
+  method: string;       // lowercase HTTP method
+  tag?: string;
+  responseType?: 'json' | 'text' | 'blob'; // how the response body is read; absent means JSON
 }
 ```
 
-`args` (for example `['petId', 'body', 'params', 'options']`) does two things:
+### `installMockInterception()` / `uninstallMockInterception()`
 
-- **DevTools** labels each argument of a recorded request by name (`Body`, `Query`, `Options`, or the
-  argument's own name) instead of guessing "Body [0]", "Body [1]".
-- **`provideMockResource`** uses it to find the per-call `options` argument and honour its
-  `defaultValue` exactly like the real resource: `value()` returns it until something resolves, and
-  again after `reset()`. Only the argument named `options` counts, so a body that merely has a
-  `defaultValue` field is never mistaken for it.
+`installMockInterception()` patches `fetch` and `XMLHttpRequest` once per global and returns the
+shared `MockRuntime`; you rarely call it yourself, `provideMockEndpoint` does.
+`uninstallMockInterception()` restores the native functions and drops the runtime — call it in test
+teardown.
 
-Per-call options can hold values that cannot be sent to the extension (an `HttpContext`, an
-`Injector`, an equality function). The bus keeps the parts that can cross and replaces the rest with a
-placeholder such as `[HttpContext]` or `[Function]`, so such a request still shows up in DevTools.
-`window.__openApiMocks__[key].getHistory()` keeps the raw arguments.
-
-The DevTools panel resolves the response schema by looking up `specId` in its Specs store and then matching `operationId`. Import the spec (or its `mocks.manifest.json`) in the panel's **Specs** tab to enable schema-aware features.
-
-### `DeepPartial<T>`
-
-Recursively marks all properties of `T` as optional. Used as the value type in `ProviderInitialBehavior<T>` so you can provide partial seed data without satisfying every nested field.
-
-### `TokenValue<Token>`
-
-Utility type that extracts the response type `T` from a generated `InjectionToken<(...args) => ResourceRef<T>>`. Use it to type seed data without importing the response type by name:
-
-```typescript
-import type { TokenValue } from '@constantant/openapi-resource-mocks';
-import { FIND_PETS_BY_STATUS } from '@myapp/petstore-data-access';
-
-// type is FindPetsByStatusResponse — inferred from the token
-const mockPets: TokenValue<typeof FIND_PETS_BY_STATUS> = [
-  { id: 1, name: 'Rex', status: 'available', photoUrls: [] },
-];
-```
-
-### `createMockResourceRef<T>(initialState?)`
-
-Creates a standalone ref without the bus — useful for Storybook decorators, custom test harnesses, or any scenario where you need a `MockResourceRef` outside of Angular DI.
-
-### `MockResourceRef<T>`
+### `MockRuntime`
 
 | Member | Description |
 |--------|-------------|
-| `value: Signal<T \| undefined>` | Current response data |
-| `status: Signal<ResourceStatus>` | `'idle' \| 'loading' \| 'reloading' \| 'resolved' \| 'error' \| 'local'` |
-| `error: Signal<unknown>` | Current error, if any |
-| `isLoading: Signal<boolean>` | `true` while status is `'loading'` or `'reloading'` |
-| `progress: Signal<MockProgress \| undefined>` | Current transfer progress, if active |
-| `requestCount: Signal<number>` | Total factory invocations (increments on mount, reactive param change, and `reload()`) |
-| `hasValue(): boolean` | `true` when value is set |
-| `resolve(value: T)` | Set value, clear error and progress → `'resolved'` |
-| `resolveAfter(ms, value)` | Set loading immediately, resolve after delay |
-| `setLoading()` | Clear error → `'loading'` |
-| `fail(error)` | Set error → `'error'` (progress preserved) |
-| `reset()` | Clear all including progress → `'idle'` |
-| `reload()` | Keep value, clear error → `'reloading'`; fires request event; returns `true`. Returns `false` if status is not `'resolved'` or `'local'` |
-| `setProgress(type, loaded, total?)` | Set progress and status → `'loading'` |
-| `simulateProgress(type, totalBytes, durationMs, finalValue, steps?)` | Animate incremental progress over `durationMs` ms then resolve |
-| `set(value)` | Local mutation → `'local'` (ResourceRef interface) |
-| `update(fn)` | Local update → `'local'` (ResourceRef interface) |
-| `onRequest(cb)` | Subscribe to factory invocations; returns unsubscribe fn |
+| `register(key, rule, registration?)` | Add an endpoint; returns an unregister function. `rule` is `{ method, baseUrl, path }` |
+| `unregister(key)` / `has(key)` | Remove / look up an endpoint |
+| `controls(key)` | The endpoint's `WindowMockEntry` |
+| `setCatchMode(key, enabled)` / `isCatchMode(key)` | Catch mode, also for a key that is not registered yet |
+| `hold(timeoutMs)` | Park all requests until `configure()` is called or the timeout passes |
+| `configure(config)` | Deliver endpoints and catch modes from outside the app, and release held requests |
+| `observeRequests()` / `observedRequests()` | Start keeping, and read, the distinct requests the page makes (method + URL without query) — the DevTools panel suggests base URLs from them. Off unless called |
+
+### `openApiMock(key)` / `window.__openApiMocks__[key]`
+
+| Member | Description |
+|--------|-------------|
+| `resolve(value)` | Respond with `value` from now on |
+| `resolveAfter(ms, value)` | The same, after a delay |
+| `setLoading()` | Hold requests open |
+| `fail(error, status?)` | Respond with a failing status (default 500) |
+| `reset()` | Drop the edit; back to the initial behavior |
+| `reload()` | Reload the live `httpResource`s of the endpoint; `false` when there are none |
+| `setProgress(type, loaded, total?)` | Report transfer progress to held requests |
+| `simulateProgress(type, totalBytes, durationMs, finalValue, steps?)` | Animate progress, then respond |
+| `setCatchMode(enabled)` | Toggle catch mode |
+| `getState()` | `{ status, value, error, progress, requestCount }` — `status` is `idle`, `loading`, `resolved` or `error` |
+| `getMeta()` | The endpoint's `MockResourceMeta` |
+| `getHistory()` / `clearHistory()` | The endpoint's `MockEvent` log |
+| `onEvent(cb)` | Subscribe to events; returns an unsubscribe function |
+
+### `MockEvent`
+
+```typescript
+type MockEvent =
+  | { type: 'request';   args: unknown[]; ts: number }
+  | { type: 'caught';    args: unknown[]; requestId: string; ts: number }
+  | { type: 'resolve';   value: unknown; ts: number }
+  | { type: 'real';      status: number; value: unknown; ts: number } // the real API answered an unmocked request
+  | { type: 'loading';   ts: number }
+  | { type: 'reloading'; ts: number }
+  | { type: 'error';     error: unknown; ts: number }
+  | { type: 'reset';     ts: number }
+  | { type: 'progress';  progressType: 'upload' | 'download'; loaded: number; total?: number; ts: number };
+```
 
 ### `MockProgress`
 
@@ -680,48 +479,30 @@ Creates a standalone ref without the bus — useful for Storybook decorators, cu
 interface MockProgress {
   type: 'upload' | 'download';
   loaded: number;   // bytes transferred
-  total?: number;   // total bytes (undefined for streaming / unknown-length responses)
+  total?: number;   // undefined for responses of unknown length
 }
 ```
 
-### `openApiMock(key)` / `window.__openApiMocks__[key]`
+---
 
-`openApiMock` is a shorthand exposed on `window` by `MockResourceBus` — equivalent to `window.__openApiMocks__[key]` but terser in `page.evaluate()` calls:
+## Migrating from 1.x
 
-```typescript
-// Playwright
-const history = await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').getHistory());
-await page.evaluate(() => openApiMock('FIND_PETS_BY_STATUS').resolve([...]));
-```
+| 1.x | 2.x |
+|-----|-----|
+| `provideMockResourceBus()` | Remove it; the runtime installs itself |
+| `provideMockResource(TOKEN, 'KEY', behavior)`, `provideMockObservable`, `provideMockHttpEvents` | `provideMockEndpoint(KEY_MOCK, behavior)` for every client type |
+| Mock config **replaces** the real providers | Mock config is **added** to the real one; keep `provideHttpClient()`, the tokens and the base URL |
+| Mock providers in a component's `providers` | App or route `providers` (`EnvironmentProviders`) |
+| `{ value: DeepPartial<T> }` | `{ value: T }` — complete fixtures |
+| `mockResource(TOKEN, …)`, `mockObservable`, `mockHttpEvents` | `mockEndpoint(KEY_MOCK, …)` plus `provideHttpClient()` |
+| `handle.ref.resolve(…)` | `handle.resolve(…)`, then `await fixture.whenStable()` |
+| `injectMockResource(key)` | The `mockEndpoint` handle, or `openApiMock(key)` |
+| `keyDiscriminator` | Removed: an endpoint is one filter, whatever number of components use it |
+| `fail(new Error('x'))` → `resource.error()` is that error | `fail(body, status?)` → an `HttpErrorResponse` with that body |
+| Request args = the token function's arguments | [Read from the wire](#request-args): path params are strings, the query comes last |
+| A request to an endpoint without a behavior stays idle | It goes to the real API |
 
-### `window.__openApiMocks__[key]`
-
-| Member | Description |
-|--------|-------------|
-| `resolve(value)` | Set value (JSON-serializable) |
-| `resolveAfter(ms, value)` | Loading immediately, resolve after delay — emits `loading` + `resolve` events |
-| `setLoading()` | Start loading state |
-| `fail(error)` | Set error state |
-| `reset()` | Return to idle |
-| `reload()` | Keep value → `'reloading'`, fire request event; returns `true` if was resolved/local |
-| `setProgress(type, loaded, total?)` | Set transfer progress |
-| `simulateProgress(type, totalBytes, durationMs, finalValue, steps?)` | Animate progress then resolve — emits `loading`, one `progress` event per step, then `resolve` |
-| `getState()` | `{ status, value, error, progress, requestCount }` snapshot |
-| `getHistory()` | Array of all `MockEvent` entries (requests, responses, progress ticks) |
-| `clearHistory()` | Empty the event log — useful for resetting between test scenarios |
-| `onEvent(cb)` | Subscribe to all events; returns unsubscribe fn |
-
-### `MockEvent` types
-
-```typescript
-type MockEvent =
-  | { type: 'request';  args: unknown[]; ts: number }   // factory called by component — function args are called and replaced with their return value
-  | { type: 'resolve';  value: unknown; ts: number }
-  | { type: 'loading';  ts: number }
-  | { type: 'error';    error: unknown; ts: number }
-  | { type: 'reset';    ts: number }
-  | { type: 'progress'; progressType: 'upload' | 'download'; loaded: number; total?: number; ts: number };
-```
+Regenerate the libs with a generator version that emits the 2.x mock files.
 
 ---
 

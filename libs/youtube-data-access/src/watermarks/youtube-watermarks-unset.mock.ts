@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_WATERMARKS_UNSET } from './youtube-watermarks-unset.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { provideYoutubeWatermarksUnset } from './youtube-watermarks-unset.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -15,15 +16,15 @@ const _meta: MockResourceMeta = {
   tag: 'watermarks',
 };
 
+export const YOUTUBE_WATERMARKS_UNSET_MOCK: MockEndpoint<unknown> = {
+  key: 'YOUTUBE_WATERMARKS_UNSET',
+  baseUrl: YOUTUBE_BASE_URL,
+  meta: _meta,
+  provide: provideYoutubeWatermarksUnset,
+};
+
 export function provideYoutubeWatermarksUnsetMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_WATERMARKS_UNSET,
-    'YOUTUBE_WATERMARKS_UNSET',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(YOUTUBE_WATERMARKS_UNSET_MOCK, initialBehavior);
 }

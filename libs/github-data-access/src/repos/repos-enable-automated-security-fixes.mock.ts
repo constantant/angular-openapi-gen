@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_ENABLE_AUTOMATED_SECURITY_FIXES } from './repos-enable-automated-security-fixes.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideReposEnableAutomatedSecurityFixes } from './repos-enable-automated-security-fixes.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_ENABLE_AUTOMATED_SECURITY_FIXES_MOCK: MockEndpoint<unknown> =
+  {
+    key: 'REPOS_ENABLE_AUTOMATED_SECURITY_FIXES',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposEnableAutomatedSecurityFixes,
+  };
+
 export function provideReposEnableAutomatedSecurityFixesMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_ENABLE_AUTOMATED_SECURITY_FIXES,
-    'REPOS_ENABLE_AUTOMATED_SECURITY_FIXES',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_ENABLE_AUTOMATED_SECURITY_FIXES_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

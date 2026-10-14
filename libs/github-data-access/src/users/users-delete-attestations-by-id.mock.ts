@@ -1,11 +1,12 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_DELETE_ATTESTATIONS_BY_ID } from './users-delete-attestations-by-id.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { provideUsersDeleteAttestationsById } from './users-delete-attestations-by-id.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -15,15 +16,18 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_DELETE_ATTESTATIONS_BY_ID_MOCK: MockEndpoint<unknown> = {
+  key: 'USERS_DELETE_ATTESTATIONS_BY_ID',
+  baseUrl: GITHUB_BASE_URL,
+  meta: _meta,
+  provide: provideUsersDeleteAttestationsById,
+};
+
 export function provideUsersDeleteAttestationsByIdMock(
-  initialBehavior?: ProviderInitialBehavior<unknown>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_DELETE_ATTESTATIONS_BY_ID,
-    'USERS_DELETE_ATTESTATIONS_BY_ID',
+  initialBehavior?: MockEndpointBehavior<unknown>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    USERS_DELETE_ATTESTATIONS_BY_ID_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

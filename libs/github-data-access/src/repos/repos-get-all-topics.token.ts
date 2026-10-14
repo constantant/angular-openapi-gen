@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetAllTopicsParams =
   paths['/repos/{owner}/{repo}/topics']['get']['parameters']['query'];
@@ -58,23 +59,26 @@ export function provideReposGetAllTopics(): FactoryProvider {
         params?:
           ReposGetAllTopicsParams | (() => ReposGetAllTopicsParams | undefined),
       ) =>
-        httpResource<ReposGetAllTopicsResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/repos/${owner}/${repo}/topics`,
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_ALL_TOPICS',
+          httpResource<ReposGetAllTopicsResponse>(
+            () => {
+              const _params = typeof params === 'function' ? params() : params;
+              if (typeof params === 'function' && _params === undefined)
+                return undefined;
+              return {
+                url: `${base}/repos/${owner}/${repo}/topics`,
+                params: _params as unknown as Record<
+                  string,
+                  | string
+                  | number
+                  | boolean
+                  | readonly (string | number | boolean)[]
+                >,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

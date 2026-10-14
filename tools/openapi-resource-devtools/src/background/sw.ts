@@ -43,6 +43,86 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   }).catch(() => { /* tab may be a chrome:// page */ });
 });
 
+// ── Panel-managed endpoints ───────────────────────────────────────────────────
+// The panel persists the endpoints it manages (and what was last set on them) under this key; the
+// SW serves them to config.js at document start, so they are mocked even with the panel closed.
+const MANAGED_MOCKS_KEY = 'oarm_local_mocks';
+
+interface StoredMock {
+  meta?: { method: string; path: string };
+  baseUrl?: string;
+  catchMode?: boolean;
+  override?: unknown;
+}
+
+async function configFor(tabId: number): Promise<{ endpoints: unknown[]; catchModes: Record<string, boolean> }> {
+  const sessionKey = `oarm_catch_${tabId}`;
+  const [local, session] = await Promise.all([
+    chrome.storage.local.get(MANAGED_MOCKS_KEY),
+    chrome.storage.session.get(sessionKey),
+  ]);
+  const catchModes: Record<string, boolean> = { ...((session[sessionKey] as Record<string, boolean> | undefined) ?? {}) };
+  const endpoints: unknown[] = [];
+  const stored = (local[MANAGED_MOCKS_KEY] ?? {}) as Record<string, StoredMock>;
+  for (const [key, mock] of Object.entries(stored)) {
+    // Without a base URL the endpoint cannot be matched against requests.
+    if (!mock?.meta || typeof mock.baseUrl !== 'string') continue;
+    endpoints.push({
+      key,
+      rule: { method: mock.meta.method, baseUrl: mock.baseUrl, path: mock.meta.path },
+      meta: mock.meta,
+      behavior: mock.override,
+    });
+    if (mock.catchMode) catchModes[key] = true;
+  }
+  return { endpoints, catchModes };
+}
+
+// ── Per-site interception ─────────────────────────────────────────────────────
+// fetch / XMLHttpRequest are only patched on sites the developer opted in from the panel: the two
+// document-start scripts are registered for that host and persist across browser sessions.
+// Match patterns cannot carry a port, so a host is opted in on all of its ports.
+function siteOf(url: string | undefined): { ids: [string, string]; match: string } | null {
+  if (!url) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+  const id = `oarm-site-${parsed.protocol.slice(0, -1)}-${parsed.hostname}`;
+  return { ids: [`${id}-inject`, `${id}-config`], match: `${parsed.protocol}//${parsed.hostname}/*` };
+}
+
+async function isIntercepting(tabId: number): Promise<boolean> {
+  const site = siteOf((await chrome.tabs.get(tabId)).url);
+  if (!site) return false;
+  const registered = await chrome.scripting.getRegisteredContentScripts({ ids: site.ids });
+  return registered.length > 0;
+}
+
+async function setIntercepting(tabId: number, enabled: boolean): Promise<void> {
+  const site = siteOf((await chrome.tabs.get(tabId)).url);
+  if (!site) return;
+  const registered = await chrome.scripting.getRegisteredContentScripts({ ids: site.ids });
+  if (registered.length > 0) await chrome.scripting.unregisterContentScripts({ ids: registered.map((s) => s.id) });
+  if (!enabled) return; // the page that is open keeps the patch until it reloads
+  await chrome.scripting.registerContentScripts([
+    { id: site.ids[0], js: ['inject.js'], matches: [site.match], runAt: 'document_start', world: 'MAIN', persistAcrossSessions: true },
+    { id: site.ids[1], js: ['config.js'], matches: [site.match], runAt: 'document_start', persistAcrossSessions: true },
+  ]);
+  // The page that is open now: patch it in place, so no reload is needed to start mocking.
+  await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', files: ['inject.js'] });
+  await chrome.scripting.executeScript({ target: { tabId }, files: ['config.js'] });
+}
+
+function postInterceptState(tabId: number, port: chrome.runtime.Port): void {
+  isIntercepting(tabId)
+    .then((enabled) => port.postMessage({ type: 'intercept-state', enabled }))
+    .catch(() => { /* tab closed or port gone */ });
+}
+
 /**
  * Inject a self-contained function into the page's MAIN world via the scripting
  * API. This bypasses both content-script isolation and the page's CSP.
@@ -100,6 +180,30 @@ function injectStateOnly(tabId: number, key: string, port: chrome.runtime.Port):
     .catch(() => { /* tab may have navigated */ });
 }
 
+/**
+ * Read the distinct requests the page made since interception started (method + URL without the
+ * query) and post them to the panel, which suggests base URLs for its specs from them. Read on
+ * demand; nothing is stored by the extension.
+ */
+function injectObserved(tabId: number, port: chrome.runtime.Port): void {
+  chrome.scripting
+    .executeScript({
+      target: { tabId },
+      world: 'MAIN',
+      func: () => {
+        const installed = (
+          window as unknown as { __oarmRuntime__?: { runtime?: { observedRequests?: () => unknown[] } } }
+        ).__oarmRuntime__;
+        return installed?.runtime?.observedRequests?.() ?? [];
+      },
+    })
+    .then((results) => {
+      const requests = results?.[0]?.result;
+      port.postMessage({ type: 'observed-requests', requests: Array.isArray(requests) ? requests : [] });
+    })
+    .catch(() => { /* chrome:// page, or the tab is gone */ });
+}
+
 chrome.runtime.onConnect.addListener((port) => {
   const m = port.name.match(/^devtools-(\d+)$/);
   if (!m) return;
@@ -118,6 +222,23 @@ chrome.runtime.onConnect.addListener((port) => {
       injectStateOnly(tabId, msg.key, port);
       return;
     }
+    if (msg.type === 'get-observed') {
+      injectObserved(tabId, port);
+      return;
+    }
+    if (msg.type === 'get-intercept') {
+      postInterceptState(tabId, port);
+      return;
+    }
+    if (msg.type === 'set-intercept') {
+      setIntercepting(tabId, !!msg.enabled)
+        .catch(() => { /* chrome:// page, or the tab is gone */ })
+        .finally(() => {
+          postInterceptState(tabId, port);
+          injectDiscovery(tabId);
+        });
+      return;
+    }
     if (msg.type === 'control' && msg.detail?.key) {
       const { key, action } = msg.detail as { key: string; action: string };
       if (action === 'setCatchMode') setCatchForTab(tabId, key, true);
@@ -130,7 +251,14 @@ chrome.runtime.onConnect.addListener((port) => {
 });
 
 // Relay: content script → panel
-chrome.runtime.onMessage.addListener((msg, sender) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // config.js asks for the panel-managed endpoints at document start.
+  if (msg.type === 'get-config') {
+    const tabId = sender.tab?.id;
+    if (tabId == null) return;
+    configFor(tabId).then(sendResponse, () => sendResponse({}));
+    return true; // answered asynchronously
+  }
   // Content script asks the SW to run discovery on its behalf (for the retry loop).
   if (msg.type === 'request-discovery') {
     const tabId = sender.tab?.id;

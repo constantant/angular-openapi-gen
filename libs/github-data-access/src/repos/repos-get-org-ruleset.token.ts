@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetOrgRulesetResponse =
   paths['/orgs/{org}/rulesets/{ruleset_id}']['get']['responses']['200']['content']['application/json'];
@@ -1237,11 +1238,14 @@ export function provideReposGetOrgRuleset(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (org: string, rulesetId: string) =>
-        httpResource<ReposGetOrgRulesetResponse>(
-          () => ({
-            url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_ORG_RULESET',
+          httpResource<ReposGetOrgRulesetResponse>(
+            () => ({
+              url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

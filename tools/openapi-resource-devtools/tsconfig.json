@@ -8,7 +8,11 @@
     "lib": ["ES2022", "DOM"],
     "strict": true,
     "skipLibCheck": true,
-    "types": ["chrome"]
+    "types": ["chrome"],
+    "baseUrl": ".",
+    "paths": {
+      "@constantant/openapi-resource-mocks/runtime": ["../openapi-resource-mocks/src/runtime.ts"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist"]

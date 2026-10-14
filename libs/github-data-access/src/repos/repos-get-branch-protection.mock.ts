@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_BRANCH_PROTECTION } from './repos-get-branch-protection.token';
-import type { ReposGetBranchProtectionResponse } from './repos-get-branch-protection.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetBranchProtection,
+  type ReposGetBranchProtectionResponse,
+} from './repos-get-branch-protection.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_BRANCH_PROTECTION_MOCK: MockEndpoint<ReposGetBranchProtectionResponse> =
+  {
+    key: 'REPOS_GET_BRANCH_PROTECTION',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetBranchProtection,
+  };
+
 export function provideReposGetBranchProtectionMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetBranchProtectionResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_BRANCH_PROTECTION,
-    'REPOS_GET_BRANCH_PROTECTION',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposGetBranchProtectionResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_GET_BRANCH_PROTECTION_MOCK, initialBehavior);
 }

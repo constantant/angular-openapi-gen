@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposCheckImmutableReleasesResponse =
   paths['/repos/{owner}/{repo}/immutable-releases']['get']['responses']['200']['content']['application/json'];
@@ -52,11 +53,14 @@ export function provideReposCheckImmutableReleases(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string) =>
-        httpResource<ReposCheckImmutableReleasesResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/immutable-releases`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_CHECK_IMMUTABLE_RELEASES',
+          httpResource<ReposCheckImmutableReleasesResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/immutable-releases`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

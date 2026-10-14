@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_COLLABORATOR_PERMISSION_LEVEL } from './repos-get-collaborator-permission-level.token';
-import type { ReposGetCollaboratorPermissionLevelResponse } from './repos-get-collaborator-permission-level.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetCollaboratorPermissionLevel,
+  type ReposGetCollaboratorPermissionLevelResponse,
+} from './repos-get-collaborator-permission-level.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_COLLABORATOR_PERMISSION_LEVEL_MOCK: MockEndpoint<ReposGetCollaboratorPermissionLevelResponse> =
+  {
+    key: 'REPOS_GET_COLLABORATOR_PERMISSION_LEVEL',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetCollaboratorPermissionLevel,
+  };
+
 export function provideReposGetCollaboratorPermissionLevelMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetCollaboratorPermissionLevelResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_COLLABORATOR_PERMISSION_LEVEL,
-    'REPOS_GET_COLLABORATOR_PERMISSION_LEVEL',
+  initialBehavior?: MockEndpointBehavior<ReposGetCollaboratorPermissionLevelResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_COLLABORATOR_PERMISSION_LEVEL_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

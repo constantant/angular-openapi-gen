@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposUploadReleaseAssetParams =
   paths['/repos/{owner}/{repo}/releases/{release_id}/assets']['post']['parameters']['query'];
@@ -242,29 +243,32 @@ export function provideReposUploadReleaseAsset(): FactoryProvider {
           | ReposUploadReleaseAssetParams
           | (() => ReposUploadReleaseAssetParams | undefined),
       ) =>
-        httpResource<ReposUploadReleaseAssetResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposUploadReleaseAssetBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
-              method: 'POST',
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_UPLOAD_RELEASE_ASSET',
+          httpResource<ReposUploadReleaseAssetResponse>(
+            () => {
+              const _params = typeof params === 'function' ? params() : params;
+              if (typeof params === 'function' && _params === undefined)
+                return undefined;
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposUploadReleaseAssetBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
+                method: 'POST',
+                params: _params as unknown as Record<
+                  string,
+                  | string
+                  | number
+                  | boolean
+                  | readonly (string | number | boolean)[]
+                >,
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

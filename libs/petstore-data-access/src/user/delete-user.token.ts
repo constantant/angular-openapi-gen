@@ -7,6 +7,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type DeleteUserOptions = ResourceCallOptions<unknown>;
 
@@ -24,16 +25,19 @@ export function provideDeleteUser(): FactoryProvider {
       const base = inject(PETSTORE_BASE_URL);
       return ((username: string, options?: DeleteUserOptions) => {
         const _opts = splitCallOptions<unknown>(options);
-        return httpResource<unknown>(() => {
-          return {
-            ..._opts.request,
-            url: `${base}/user/${username}`,
-            method: 'DELETE',
-            headers: {
-              ..._opts.headers,
-            },
-          };
-        }, _opts.resource);
+        return trackResource(
+          'DELETE_USER',
+          httpResource<unknown>(() => {
+            return {
+              ..._opts.request,
+              url: `${base}/user/${username}`,
+              method: 'DELETE',
+              headers: {
+                ..._opts.headers,
+              },
+            };
+          }, _opts.resource),
+        );
       }) as DeleteUserFn;
     },
   };

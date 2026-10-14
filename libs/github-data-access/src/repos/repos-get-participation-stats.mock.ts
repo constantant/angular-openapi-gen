@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_GET_PARTICIPATION_STATS } from './repos-get-participation-stats.token';
-import type { ReposGetParticipationStatsResponse } from './repos-get-participation-stats.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposGetParticipationStats,
+  type ReposGetParticipationStatsResponse,
+} from './repos-get-participation-stats.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_GET_PARTICIPATION_STATS_MOCK: MockEndpoint<ReposGetParticipationStatsResponse> =
+  {
+    key: 'REPOS_GET_PARTICIPATION_STATS',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposGetParticipationStats,
+  };
+
 export function provideReposGetParticipationStatsMock(
-  initialBehavior?: ProviderInitialBehavior<ReposGetParticipationStatsResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_GET_PARTICIPATION_STATS,
-    'REPOS_GET_PARTICIPATION_STATS',
+  initialBehavior?: MockEndpointBehavior<ReposGetParticipationStatsResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    REPOS_GET_PARTICIPATION_STATS_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

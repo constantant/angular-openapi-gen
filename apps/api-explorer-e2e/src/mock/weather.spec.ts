@@ -32,7 +32,8 @@ test.describe('Weather page (mock)', () => {
     expect(params['latitude']).toBe('52.374');
     expect(params['longitude']).toBe('4.89');
     expect(params['timezone']).toBe('Europe/Amsterdam');
-    expect(params['forecast_days']).toBe(3);
+    // Recorded from the request URL, so every query value is a string.
+    expect(params['forecast_days']).toBe('3');
     expect(params['current']).toContain('temperature_2m');
     expect(params['daily']).toContain('temperature_2m_max');
   });
@@ -41,7 +42,7 @@ test.describe('Weather page (mock)', () => {
     // GET_V1_FORECAST is an HttpClient (Observable) token: a cold call that has already
     // emitted and completed can't be changed, so fail it while the request is in flight.
     await expect(page.locator('mat-progress-bar')).toBeVisible();
-    await page.evaluate(() => openApiMock('GET_V1_FORECAST').fail(new Error('503')));
-    await expect(page.getByText("Backend response doesn't match its own API spec — 503")).toBeVisible();
+    await page.evaluate(() => openApiMock('GET_V1_FORECAST').fail({ message: 'unavailable' }, 503));
+    await expect(page.getByText('Request failed (HTTP 503).')).toBeVisible();
   });
 });

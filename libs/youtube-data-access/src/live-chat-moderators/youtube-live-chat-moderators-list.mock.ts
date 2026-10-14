@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { YOUTUBE_LIVE_CHAT_MODERATORS_LIST } from './youtube-live-chat-moderators-list.token';
-import type { YoutubeLiveChatModeratorsListResponse } from './youtube-live-chat-moderators-list.token';
+import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import {
+  provideYoutubeLiveChatModeratorsList,
+  type YoutubeLiveChatModeratorsListResponse,
+} from './youtube-live-chat-moderators-list.token';
 
 const _meta: MockResourceMeta = {
   specId: 'youtube',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'live-chat-moderators',
 };
 
+export const YOUTUBE_LIVE_CHAT_MODERATORS_LIST_MOCK: MockEndpoint<YoutubeLiveChatModeratorsListResponse> =
+  {
+    key: 'YOUTUBE_LIVE_CHAT_MODERATORS_LIST',
+    baseUrl: YOUTUBE_BASE_URL,
+    meta: _meta,
+    provide: provideYoutubeLiveChatModeratorsList,
+  };
+
 export function provideYoutubeLiveChatModeratorsListMock(
-  initialBehavior?: ProviderInitialBehavior<YoutubeLiveChatModeratorsListResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    YOUTUBE_LIVE_CHAT_MODERATORS_LIST,
-    'YOUTUBE_LIVE_CHAT_MODERATORS_LIST',
+  initialBehavior?: MockEndpointBehavior<YoutubeLiveChatModeratorsListResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    YOUTUBE_LIVE_CHAT_MODERATORS_LIST_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

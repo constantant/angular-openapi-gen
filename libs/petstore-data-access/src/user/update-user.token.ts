@@ -7,6 +7,7 @@ import {
   type ResourceRefFor,
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type UpdateUserBody = NonNullable<
   paths['/user/{username}']['put']['requestBody']
@@ -33,21 +34,24 @@ export function provideUpdateUser(): FactoryProvider {
         options?: UpdateUserOptions,
       ) => {
         const _opts = splitCallOptions<unknown>(options);
-        return httpResource<unknown>(() => {
-          const _body =
-            typeof body === 'function'
-              ? (body as Signal<UpdateUserBody>)()
-              : body;
-          return {
-            ..._opts.request,
-            url: `${base}/user/${username}`,
-            method: 'PUT',
-            body: _body,
-            headers: {
-              ..._opts.headers,
-            },
-          };
-        }, _opts.resource);
+        return trackResource(
+          'UPDATE_USER',
+          httpResource<unknown>(() => {
+            const _body =
+              typeof body === 'function'
+                ? (body as Signal<UpdateUserBody>)()
+                : body;
+            return {
+              ..._opts.request,
+              url: `${base}/user/${username}`,
+              method: 'PUT',
+              body: _body,
+              headers: {
+                ..._opts.headers,
+              },
+            };
+          }, _opts.resource),
+        );
       }) as UpdateUserFn;
     },
   };

@@ -34,6 +34,9 @@
       "@constantant/openapi-resource-mocks/testing": [
         "tools/openapi-resource-mocks/src/testing.ts"
       ],
+      "@constantant/openapi-resource-mocks/runtime": [
+        "tools/openapi-resource-mocks/src/runtime.ts"
+      ],
       "@angular-openapi-gen/petstore-data-access/mock": [
         "libs/petstore-data-access/src/index.mock.ts"
       ],

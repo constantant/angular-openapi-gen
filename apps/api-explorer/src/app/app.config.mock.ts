@@ -1,20 +1,10 @@
-import {
-  ApplicationConfig,
-  InjectionToken,
-  WritableSignal,
-  provideBrowserGlobalErrorListeners,
-  signal,
-} from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient, withFetch } from '@angular/common/http';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { appRoutes } from './app.routes';
-import { provideMockResourceBus } from '@constantant/openapi-resource-mocks';
+import { ApplicationConfig, mergeApplicationConfig, signal } from '@angular/core';
+import { YOUTUBE_API_KEY, baseConfig } from './app.config.base';
+import { GITHUB_REPO_FIXTURE, GITHUB_USER_FIXTURE } from './app.config.mock.fixtures';
 import {
   provideUsersGetByUsernameMock,
   provideReposListForUserMock,
 } from '@angular-openapi-gen/github-data-access/mock';
-import { PETSTORE_AUTH } from '@angular-openapi-gen/petstore-data-access';
 import {
   provideFindPetsByStatusMock,
   provideAddPetMock,
@@ -33,35 +23,28 @@ import {
 import { provideGetV1ForecastMock } from '@angular-openapi-gen/weather-data-access/mock';
 import { provideYoutubeSearchListMock } from '@angular-openapi-gen/youtube-data-access/mock';
 
-export const YOUTUBE_API_KEY = new InjectionToken<WritableSignal<string | null>>(
-  'YOUTUBE_API_KEY',
-  { providedIn: 'root', factory: () => signal('mock-api-key') },
-);
+export { YOUTUBE_API_KEY, PETSTORE_SESSION } from './app.config.base';
 
-export const PETSTORE_SESSION = new InjectionToken<WritableSignal<string | null>>(
-  'PETSTORE_SESSION',
-  { providedIn: 'root', factory: () => signal(null) },
-);
-
-export const appConfig: ApplicationConfig = {
+/**
+ * The real application config plus transport-level mocks for the endpoints the demo uses. The
+ * endpoint tokens are the production ones: each `provideXxxMock()` only filters that endpoint's
+ * requests on the patched `fetch` / `XMLHttpRequest`; anything not listed here hits the real API.
+ */
+const mockConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideAnimationsAsync(),
-    provideRouter(appRoutes),
-    provideHttpClient(withFetch()),
-    provideMockResourceBus(),
-    { provide: PETSTORE_AUTH, useExisting: PETSTORE_SESSION },
+    // The YouTube page only searches once an API key is set.
+    { provide: YOUTUBE_API_KEY, useFactory: () => signal<string | null>('mock-api-key') },
 
     provideUsersGetByUsernameMock({
-      value: { login: 'angular', name: 'Angular', public_repos: 300 },
+      value: { ...GITHUB_USER_FIXTURE, login: 'angular', name: 'Angular', public_repos: 300 },
       delay: 500,
     }),
 
     provideReposListForUserMock({
       value: [
-        { id: 1, name: 'angular', description: 'Deliver web apps with confidence', stargazers_count: 93400 },
-        { id: 2, name: 'angular-cli', description: 'CLI tool for Angular', stargazers_count: 26300 },
-        { id: 3, name: 'components', description: 'Material Design components for Angular', stargazers_count: 24100 },
+        { ...GITHUB_REPO_FIXTURE, id: 1, name: 'angular', description: 'Deliver web apps with confidence', stargazers_count: 93400 },
+        { ...GITHUB_REPO_FIXTURE, id: 2, name: 'angular-cli', description: 'CLI tool for Angular', stargazers_count: 26300 },
+        { ...GITHUB_REPO_FIXTURE, id: 3, name: 'components', description: 'Material Design components for Angular', stargazers_count: 24100 },
       ],
       delay: 500,
     }),
@@ -129,6 +112,7 @@ export const appConfig: ApplicationConfig = {
         pageInfo: { totalResults: 3, resultsPerPage: 12 },
         items: [
           {
+            kind: 'youtube#searchResult',
             id: { videoId: 'Ata9cSC2WpM' },
             snippet: {
               title: 'Angular in 100 Seconds',
@@ -137,6 +121,7 @@ export const appConfig: ApplicationConfig = {
             },
           },
           {
+            kind: 'youtube#searchResult',
             id: { videoId: 'xAT0lHYhHMY' },
             snippet: {
               title: 'Angular Signals are here!',
@@ -145,6 +130,7 @@ export const appConfig: ApplicationConfig = {
             },
           },
           {
+            kind: 'youtube#searchResult',
             id: { videoId: 'r5DEBMuStPw' },
             snippet: {
               title: 'Angular 22 New Features',
@@ -158,3 +144,5 @@ export const appConfig: ApplicationConfig = {
     }),
   ],
 };
+
+export const appConfig = mergeApplicationConfig(baseConfig, mockConfig);

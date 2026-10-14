@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposRemoveStatusCheckContextsBody = NonNullable<
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['delete']['requestBody']
@@ -58,19 +59,22 @@ export function provideReposRemoveStatusCheckContexts(): FactoryProvider {
           | ReposRemoveStatusCheckContextsBody
           | Signal<ReposRemoveStatusCheckContextsBody>,
       ) =>
-        httpResource<ReposRemoveStatusCheckContextsResponse>(
-          () => {
-            const _body =
-              typeof body === 'function'
-                ? (body as Signal<ReposRemoveStatusCheckContextsBody>)()
-                : body;
-            return {
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
-              method: 'DELETE',
-              body: _body,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_REMOVE_STATUS_CHECK_CONTEXTS',
+          httpResource<ReposRemoveStatusCheckContextsResponse>(
+            () => {
+              const _body =
+                typeof body === 'function'
+                  ? (body as Signal<ReposRemoveStatusCheckContextsBody>)()
+                  : body;
+              return {
+                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
+                method: 'DELETE',
+                body: _body,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

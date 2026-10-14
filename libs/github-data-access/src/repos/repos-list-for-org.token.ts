@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposListForOrgParams =
   paths['/orgs/{org}/repos']['get']['parameters']['query'];
@@ -784,23 +785,26 @@ export function provideReposListForOrg(): FactoryProvider {
         params?:
           ReposListForOrgParams | (() => ReposListForOrgParams | undefined),
       ) =>
-        httpResource<ReposListForOrgResponse>(
-          () => {
-            const _params = typeof params === 'function' ? params() : params;
-            if (typeof params === 'function' && _params === undefined)
-              return undefined;
-            return {
-              url: `${base}/orgs/${org}/repos`,
-              params: _params as unknown as Record<
-                string,
-                | string
-                | number
-                | boolean
-                | readonly (string | number | boolean)[]
-              >,
-            };
-          },
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_LIST_FOR_ORG',
+          httpResource<ReposListForOrgResponse>(
+            () => {
+              const _params = typeof params === 'function' ? params() : params;
+              if (typeof params === 'function' && _params === undefined)
+                return undefined;
+              return {
+                url: `${base}/orgs/${org}/repos`,
+                params: _params as unknown as Record<
+                  string,
+                  | string
+                  | number
+                  | boolean
+                  | readonly (string | number | boolean)[]
+                >,
+              };
+            },
+            { parse: _validateResponse },
+          ),
         );
     },
   };

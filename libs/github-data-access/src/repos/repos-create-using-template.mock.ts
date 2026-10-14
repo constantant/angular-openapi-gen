@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockResource } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { REPOS_CREATE_USING_TEMPLATE } from './repos-create-using-template.token';
-import type { ReposCreateUsingTemplateResponse } from './repos-create-using-template.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideReposCreateUsingTemplate,
+  type ReposCreateUsingTemplateResponse,
+} from './repos-create-using-template.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,16 @@ const _meta: MockResourceMeta = {
   tag: 'repos',
 };
 
+export const REPOS_CREATE_USING_TEMPLATE_MOCK: MockEndpoint<ReposCreateUsingTemplateResponse> =
+  {
+    key: 'REPOS_CREATE_USING_TEMPLATE',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideReposCreateUsingTemplate,
+  };
+
 export function provideReposCreateUsingTemplateMock(
-  initialBehavior?: ProviderInitialBehavior<ReposCreateUsingTemplateResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockResource(
-    REPOS_CREATE_USING_TEMPLATE,
-    'REPOS_CREATE_USING_TEMPLATE',
-    initialBehavior,
-    _meta,
-    options,
-  );
+  initialBehavior?: MockEndpointBehavior<ReposCreateUsingTemplateResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(REPOS_CREATE_USING_TEMPLATE_MOCK, initialBehavior);
 }

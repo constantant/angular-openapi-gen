@@ -3,6 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposGetWebhookConfigForRepoResponse =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/config']['get']['responses']['200']['content']['application/json'];
@@ -72,11 +73,14 @@ export function provideReposGetWebhookConfigForRepo(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, hookId: string) =>
-        httpResource<ReposGetWebhookConfigForRepoResponse>(
-          () => ({
-            url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/config`,
-          }),
-          { parse: _validateResponse },
+        trackResource(
+          'REPOS_GET_WEBHOOK_CONFIG_FOR_REPO',
+          httpResource<ReposGetWebhookConfigForRepoResponse>(
+            () => ({
+              url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/config`,
+            }),
+            { parse: _validateResponse },
+          ),
         );
     },
   };

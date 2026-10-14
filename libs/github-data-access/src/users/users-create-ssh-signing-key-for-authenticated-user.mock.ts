@@ -1,12 +1,15 @@
-import { FactoryProvider } from '@angular/core';
-import { provideMockObservable } from '@constantant/openapi-resource-mocks';
+import { EnvironmentProviders } from '@angular/core';
+import { provideMockEndpoint } from '@constantant/openapi-resource-mocks';
 import type {
-  ProviderInitialBehavior,
-  MockProviderOptions,
+  MockEndpoint,
+  MockEndpointBehavior,
   MockResourceMeta,
 } from '@constantant/openapi-resource-mocks';
-import { USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER } from './users-create-ssh-signing-key-for-authenticated-user.token';
-import type { UsersCreateSshSigningKeyForAuthenticatedUserResponse } from './users-create-ssh-signing-key-for-authenticated-user.token';
+import { GITHUB_BASE_URL } from '../api-base-url.token';
+import {
+  provideUsersCreateSshSigningKeyForAuthenticatedUser,
+  type UsersCreateSshSigningKeyForAuthenticatedUserResponse,
+} from './users-create-ssh-signing-key-for-authenticated-user.token';
 
 const _meta: MockResourceMeta = {
   specId: 'github',
@@ -16,15 +19,19 @@ const _meta: MockResourceMeta = {
   tag: 'users',
 };
 
+export const USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER_MOCK: MockEndpoint<UsersCreateSshSigningKeyForAuthenticatedUserResponse> =
+  {
+    key: 'USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER',
+    baseUrl: GITHUB_BASE_URL,
+    meta: _meta,
+    provide: provideUsersCreateSshSigningKeyForAuthenticatedUser,
+  };
+
 export function provideUsersCreateSshSigningKeyForAuthenticatedUserMock(
-  initialBehavior?: ProviderInitialBehavior<UsersCreateSshSigningKeyForAuthenticatedUserResponse>,
-  options?: MockProviderOptions,
-): FactoryProvider {
-  return provideMockObservable(
-    USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER,
-    'USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER',
+  initialBehavior?: MockEndpointBehavior<UsersCreateSshSigningKeyForAuthenticatedUserResponse>,
+): EnvironmentProviders {
+  return provideMockEndpoint(
+    USERS_CREATE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER_MOCK,
     initialBehavior,
-    _meta,
-    options,
   );
 }

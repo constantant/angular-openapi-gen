@@ -76,6 +76,37 @@
         </div>
 
         @if (isExpanded(spec.specId)) {
+          <div class="base-url-row">
+            <span class="import-label">Base URL
+              <span class="import-hint">(requests are matched under it; needed for mocks created in the panel)</span>
+            </span>
+            <input class="url-input"
+                   placeholder="https://api.example.com/v1"
+                   [value]="spec.baseUrl ?? ''"
+                   (focus)="bridge.refreshObserved()"
+                   (change)="setBaseUrl(spec.specId, $any($event.target).value)" />
+            @if (baseUrlSuggestions().get(spec.specId); as suggestions) {
+              @if (suggestions.length > 0) {
+                <div class="base-url-suggestions">
+                  <span class="import-hint">Seen on this page:</span>
+                  @for (suggestion of suggestions; track suggestion.baseUrl) {
+                    <button type="button" class="base-url-suggestion"
+                            [matTooltip]="suggestion.operations + (suggestion.operations === 1 ? ' operation' : ' operations') + ' of this spec requested under this URL — click to use it'"
+                            (click)="setBaseUrl(spec.specId, suggestion.baseUrl)">
+                      {{ suggestion.baseUrl }}
+                      <span class="base-url-suggestion-count">{{ suggestion.operations }}</span>
+                    </button>
+                  }
+                </div>
+              }
+            }
+            @if (bridge.intercepting() && !spec.baseUrl && !baseUrlSuggestions().get(spec.specId)?.length) {
+              <span class="import-hint">
+                No request of this spec seen yet — use the app (or reload the page) and the URL it
+                calls will be suggested here.
+              </span>
+            }
+          </div>
           <ul class="endpoint-list">
             @for (mock of spec.mocks; track mock.tokenName) {
               <li class="endpoint-row" [class.unregistered]="!isRegistered(mock.tokenName)">
@@ -87,7 +118,7 @@
                         [class.catch-active]="isCatching(mock.tokenName)"
                         [disabled]="!isRegistered(mock.tokenName)"
                         [matTooltip]="!isRegistered(mock.tokenName)
-                          ? 'Not registered in app — add provideMockResource() to your config'
+                          ? 'Not registered — create it on the Mocks tab with ＋ New mock'
                           : isCatching(mock.tokenName)
                           ? 'Catch mode on — click to disable'
                           : 'Enable catch mode and go to Mocks tab'"

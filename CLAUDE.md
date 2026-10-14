@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI specs via `httpResource`.
 
-> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen` (v1.8.0), `@constantant/openapi-resource-mocks` (v0.5.0), Chrome Extension `openapi-resource-mocks-devtools` (v0.7.0). Data-access libs: `github`, `petstore`, `weather`, `youtube` — all generated with `--includeMocks=true --specId=<name>`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
+> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen`, `@constantant/openapi-resource-mocks`, Chrome Extension `openapi-resource-mocks-devtools` (versions: each `package.json` / `manifest.json`). Data-access libs: `github`, `petstore`, `weather`, `youtube` — all generated with `--includeMocks=true --specId=<name>`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
 
 ---
 
@@ -54,8 +54,9 @@ tools/
           executor.ts         # wraps the generator for nx run project:generate
 
   openapi-resource-mocks/     # published as @constantant/openapi-resource-mocks
-                              # mock bus: window API, DOM events, Chrome Extension bridge
-                              # src/testing.ts — /testing sub-entry (mockResource, MockResourceHandle)
+                              # transport-level mocks: patches fetch / XMLHttpRequest (src/lib/interception/),
+                              # window API, DOM events, Chrome Extension bridge
+                              # src/testing.ts — /testing sub-entry (mockEndpoint, MockEndpointHandle)
 
   openapi-resource-devtools/  # Chrome Extension shell (manifest, content script, service worker,
                               # devtools page). Panel UI lives in apps/devtools-panel/.
@@ -392,13 +393,86 @@ npx nx g @nx/angular:service <name> --project=<project> --no-interactive
 
 ---
 
+## Mocks (v2): transport-level interception
+
+Mocks do **not** replace endpoint tokens. `@constantant/openapi-resource-mocks` patches
+`fetch` and `XMLHttpRequest` in the page (`installMockInterception()`, one shared `MockRuntime`
+per global) and answers requests that match a registered endpoint — method + base URL + path
+template. Everything else, and a registered endpoint with neither a behavior nor catch mode,
+passes through to the real API. The app always runs its real tokens, `HttpClient`, interceptors
+and `--validateResponses` check, so the same mechanism can drive a **production build**.
+
+- Generated `*.mock.ts` exports a descriptor `XXX_MOCK: MockEndpoint<Response>` and
+  `provideXxxMock(behavior?)` → `provideMockEndpoint(XXX_MOCK, behavior)` (an
+  `EnvironmentProviders`: app or route providers, not component providers). Behaviors:
+  `{ value, delay?, status?, headers? } | { loading: true } | { error, delay?, status?, headers? }`,
+  each with optional `progress: MockProgress[]`. `value` is the full response type (no
+  `DeepPartial`): fixtures must satisfy `--validateResponses`.
+- **Live push** — editing a mock (`openApiMock(key).resolve/fail/setLoading/reset`, or the panel)
+  answers held requests, or, when none is held, calls `reload()` on the live `httpResource`s of
+  that endpoint. Tokens hand their resources over through the generated `mock-hook.ts`
+  (`trackResource` → `globalThis.__oarmTrack__`, emitted with `--mockHooks`, default = `includeMocks`).
+  HttpClient (Observable) tokens cannot be re-run: an edit applies to their next request.
+- A mock `error` is a real failing HTTP response (`HttpErrorResponse`, default 500);
+  `fail(error, status?)` sets the status.
+- Request args recorded in history are read from the wire: path params (strings), then the body,
+  then the query (an object of strings).
+- Upload/download progress is simulated on the XHR transport only (as in real browsers, fetch
+  cannot report upload progress).
+- `apps/api-explorer`: `app.config.base.ts` holds the real config; `app.config.mock.ts` (the
+  `mock` build configuration) is `mergeApplicationConfig(baseConfig, mockConfig)`.
+- `@constantant/openapi-resource-mocks/runtime` is the framework-free entry (no Angular): the
+  extension bundles it into `inject.js`; it also suits Playwright `addInitScript`.
+
+### Mocking a production build from the extension
+
+- **Opt-in per site.** The panel's `◉ Intercept` button makes the SW register two
+  `document_start` scripts for the inspected host (`chrome.scripting.registerContentScripts`,
+  persisted across sessions; match patterns carry no port, so all ports of the host):
+  `inject.js` (MAIN world — installs the runtime) and `config.js` (ISOLATED world). The open page
+  is patched in place as well, so no reload is needed to start.
+- **No race with the app's first request.** `inject.js` calls `runtime.hold(1500)`: requests are
+  parked until `config.js` has fetched the panel-managed endpoints from the SW (`get-config`) and
+  delivered them with a `configure` control event (or the timeout releases them to the real API).
+- **Panel-managed endpoints** (`MockEntry.managed`) are persisted in
+  `chrome.storage.local['oarm_local_mocks']` as `Record<key, { meta, catchMode, baseUrl, override }>`
+  — whether or not the page currently has them — and the SW reads that record itself, so they are
+  mocked with the panel closed. `override` is the behavior last set from the panel
+  (resolve / fail / loading; `reset` clears it). An endpoint the app registers itself keeps its own rule.
+- **Base URL per spec** (`SpecEntry.baseUrl`): taken from `servers[0].url` on import, editable in
+  the Specs tab. A managed endpoint without one stays `local` and cannot answer requests.
+- **Base URL suggestions.** `inject.js` calls `runtime.observeRequests()`: the runtime keeps each
+  distinct request the transports see (method + URL without query, capped at 300, in page memory
+  only). The panel pulls them on demand (`get-observed` → SW `executeScript` in the MAIN world →
+  `observed-requests`; `MockBridge.observedRequests` / `refreshObserved()`), and
+  `suggestBaseUrls()` (`apps/devtools-panel/src/app/base-url-suggestions.ts`) matches them against
+  the spec's path templates: a request ending with a template votes for the prefix before it,
+  candidates are ranked by distinct operations seen. Shown as chips under the Base URL field.
+- **Real responses.** The transports report the real response of a request to
+  `runtime.realResponse()` (fetch: a clone; XHR: on `load`) when `wantsRealResponse()` says so.
+  A JSON body ≤ 512 KB becomes the matching entry's `state.value` (unless it has an override or a
+  held request) and a `real` event; with `observeRequests()` on, bodies of unmatched requests are
+  kept too (≤ 4 MB in total, oldest dropped) and claimed by an endpoint registered later — that is
+  how an auto-listed endpoint already has data. The Respond editor pre-fills from `state.value`.
+- **Automatic listing.** The runtime also announces each new distinct request with an
+  `openapi-mock-observed` DOM event (`content.js`, now a `document_start` script, relays it as
+  `observed-request`). While the site is intercepted, an effect in `MOCK_BRIDGE` matches observed
+  requests against every spec that has a base URL (`findOperation()`) and adds each matched
+  operation as a `managed` entry with no behavior — it passes through until a response or catch
+  mode is set. Deleting one puts its key in an in-memory `dismissed` set. `clearAll()` keeps
+  managed entries (the stored record is written from the table, so dropping them would delete them).
+- The scratch check used during development (Playwright + the unpacked extension against
+  `dist/apps/api-explorer/browser`) is not in the repo; there is no automated extension e2e yet.
+
+---
+
 ## Chrome DevTools Extension
 
 ### Architecture
 
 ```
 page (Angular app with @constantant/openapi-resource-mocks)
-  │  window.__openApiMocks__          (MockResourceBus)
+  │  window.__openApiMocks__          (MockRuntime)
   │  window.__oarmPendingCatch__      (pre-injected by SW at page-load start)
   │  DOM events: openapi-mock-event / openapi-mock-control
   ▼
@@ -426,10 +500,9 @@ under `oarm_catch_<tabId>` for SW sleep survival). On `chrome.tabs.onUpdated` wi
 `injectImmediately: true` to set `window.__oarmPendingCatch__ = { KEY: true, ... }` in the
 MAIN world — before Angular's `<script type="module">` tags execute.
 
-`MockResourceBus` constructor reads `window.__oarmPendingCatch__` synchronously and
-pre-populates `catchModeKeys`. This ensures the very first `_notifyRequest()` call (which
-fires synchronously inside `provideMockResource`'s factory during Angular bootstrap) is
-already intercepted, with no async round-trip required.
+`MockRuntime`'s constructor reads `window.__oarmPendingCatch__` synchronously and
+pre-populates `catchModeKeys`, so the very first request of the page is already held, with no
+async round-trip required.
 
 ### MOCK_BRIDGE token
 
@@ -442,19 +515,18 @@ already intercepted, with no async round-trip required.
 
 Never provide `MOCK_BRIDGE` via `@Injectable` — it must always be the token factory.
 
-`MockBridge` interface includes two methods for panel-managed (local) mocks:
+`MockBridge` also exposes `intercepting` / `setIntercepting(enabled)` (per-site interception, see
+"Mocking a production build from the extension") and two methods for panel-managed mocks:
 
-- `createLocalMock(key, meta)` — adds an entry with `status: 'local'`, persists to
-  `chrome.storage.local['oarm_local_mocks']` (schema: `Record<string, { meta, catchMode }>`),
-  and auto-selects the new entry in the table.
-- `deleteLocalMock(key)` — removes the entry and clears it from storage. Guard: only
-  deletes entries whose `state.status === 'local'`, never live entries.
+- `createLocalMock(key, meta)` — adds a `managed` entry with `status: 'local'`, persists it to
+  `chrome.storage.local['oarm_local_mocks']`, registers it in the page (`register` control event)
+  when it has a base URL, and auto-selects it in the table.
+- `deleteLocalMock(key)` — unregisters and removes a `managed` entry; never an app-owned one.
 
-Local mocks are restored from storage on panel init (after `connect()`). When `mock-keys`
-arrives containing a key that was local, the entry is **promoted in-place**: status
-transitions to `'idle'`, `catchMode` is preserved, and the catch-mode re-send loop fires
-the `setCatchMode` control message to the newly-live bus. The entry is removed from
-`oarm_local_mocks` storage at that point.
+Managed mocks are restored from storage on panel init. When `mock-keys` arrives containing a key
+that was local, the entry is **promoted in-place** (status `'idle'`, `catchMode` preserved) but
+stays `managed` and stays in storage. Managed entries missing from `mock-keys` are re-registered
+in the page. Nothing is written to storage before the stored record has been read.
 
 ### DevTools panel tech stack
 
@@ -468,8 +540,8 @@ the `setCatchMode` control message to the newly-live bus. The entry is removed f
   ```
 - **js-yaml** — `load as yamlLoad` — Specs tab accepts `.yaml`/`.yml` files and YAML URLs in addition to JSON.
 - **SPEC_STORE token** (`apps/devtools-panel/src/app/spec-store.token.ts`) — stores OpenAPI specs in `chrome.storage.local`. Uses a module-level `rewrittenDefsCache: Map<string, …>` to defer the expensive `rewriteRefs()` call on large `components/schemas` blobs (e.g. github.yaml) until the first `findSchema()` call, avoiding hangs on import.
-- **MockResourceMeta** — `{ specId, operationId, path, method, tag? }` — embedded in each generated mock file as `export const _meta: MockResourceMeta`. Passed to `provideMockResource()` so the panel can show operation info in the mock table and Respond tab.
-- **CreateMockDialog** — `apps/devtools-panel/src/app/components/create-mock-dialog/` — opened by the "＋ New mock" button in the mock table. Lets developers create panel-managed (local) mocks before `provideMockResource()` exists in the app: pick a spec from `SPEC_STORE`, select an operation, confirm the auto-generated key (`toScreamingSnake(operationId)`, editable). The key is conflict-checked against `MOCK_BRIDGE.mocks()`. Uses `MatDialog` from `@angular/material/dialog`.
+- **MockResourceMeta** — `{ specId, operationId, path, method, tag? }` — embedded in each generated mock file (a module-private `_meta`). Carried by the `MockEndpoint` descriptor so the runtime can match requests and the panel can show operation info in the mock table and Respond tab.
+- **CreateMockDialog** — `apps/devtools-panel/src/app/components/create-mock-dialog/` — opened by the "＋ New mock" button in the mock table. Lets developers create panel-managed mocks for endpoints the app does not register itself: pick a spec from `SPEC_STORE`, select an operation, confirm the auto-generated key (`toScreamingSnake(operationId)`, editable). The key is conflict-checked against `MOCK_BRIDGE.mocks()`. Uses `MatDialog` from `@angular/material/dialog`.
 - **`toScreamingSnake`** — exported from `apps/devtools-panel/src/app/spec-store.token.ts`. Used by `CreateMockDialog` to derive the default key from an operationId, matching the generator's naming convention exactly.
 - **ScenarioDialog** — `apps/devtools-panel/src/app/components/scenario-dialog/` — opened by the "Scenarios" toolbar button. Saves/loads/deletes named mock state snapshots (values + catch modes) and exports/imports current state as JSON. Opened via `MatDialog.open()` — must NOT appear in the host component's `imports[]`.
 - **SCENARIO_STORE token** — `apps/devtools-panel/src/app/scenario-store.token.ts` — `providedIn: 'root'` token. Persists named `Scenario` objects to `chrome.storage.local['oarm_scenarios']` (keyed by name, sorted newest-first). `load()` calls `bridge.sendControl` + `bridge.setCatchMode` per mock entry; skips keys not in `bridge.mocks()` and skips items with invalid shape. `importJson()` applies state immediately without saving a named scenario.
@@ -547,15 +619,15 @@ Conventional Commits PR title (it becomes the squash commit). See
 | `@cfworker/json-schema` Validator class | Use `new Validator(schema).validate(instance)`, NOT the standalone `validate()` function                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | The standalone `validate` export is broken — always returns `{valid: true}`. The `Validator` class API works correctly and resolves `$ref`/`definitions`                                                                                                                                                           |
 | Respond tab pinned footer               | `schema-section`, `delay-row`, and `action-row` moved out of the scrollable `.respond-body` into a `flex-shrink: 0` `.respond-footer` below it                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | When the editor grows tall, schema/delay/actions were scrolled off-screen. Pinning them ensures they are always reachable                                                                                                                                                                                          |
 | Local (unregistered) mocks              | `MockBridge.createLocalMock()` adds a panel-managed entry with `status: 'local'`; persisted in `chrome.storage.local['oarm_local_mocks']` with `catchMode`; promoted in-place when the app registers the key                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Developer pre-configures a mock (catch mode, Respond tab value) before writing the Angular code. All controls work identically to live mocks; control messages to the page are silently ignored until the key is registered                                                                                        |
-| Catch-mode pre-injection                | SW tracks catch modes in memory + `chrome.storage.session['oarm_catch_<tabId>']`; on `tabs.onUpdated(loading)` injects `window.__oarmPendingCatch__` via `executeScript(injectImmediately:true)`; `MockResourceBus` constructor reads and pre-populates `catchModeKeys`                                                                                                                                                                                                                                                                                                                                                                                              | `provideMockResource` calls `_notifyRequest()` synchronously during Angular bootstrap — before any async panel message can arrive. Pre-injection closes this race so the very first request is caught                                                                                                              |
+| Catch-mode pre-injection                | SW tracks catch modes in memory + `chrome.storage.session['oarm_catch_<tabId>']`; on `tabs.onUpdated(loading)` injects `window.__oarmPendingCatch__` via `executeScript(injectImmediately:true)`; `MockRuntime` constructor reads and pre-populates `catchModeKeys`                                                                                                                                                                                                                                                                                                                                                                                              | The app's first requests fire during bootstrap — before any async panel message can arrive. Pre-injection closes this race so the very first request is caught                                                                                                              |
 | `includeMswHandlers`                    | Generator emits `*.msw.ts` alongside each `*.token.ts`; each file exports `listPetsHandler(body?)` + `listPetsHandlers` array; path params converted `{id}` → `:id`; DELETE/no-response endpoints use `new HttpResponse(null, { status: 204 })`; root `index.msw.ts` barrel + `/msw` tsconfig alias added automatically                                                                                                                                                                                                                                                                                                                                              | MSW 2.x is the standard for component-test mocking; this lets consumers drop handlers directly into `server.use(listPetsHandlers)` without writing boilerplate                                                                                                                                                     |
-| `clientType` / HttpClient tokens        | Per-endpoint choice (lib default + `httpClientTags` / `httpClientOperations` overrides). `httpClient` tokens return `(args) => Observable<T>` using `http.request(METHOD, url, opts)`; params/body are plain values; validation runs via `map()`. Mock files use `provideMockObservable()` (cold: each subscribe = one request, settles via `_onSettle` on the ref; a panel `resolve`/`fail` with nothing pending is stored per key and replayed by the next request). Demo: `weather` and `youtube` fully, `petstore` (`store` tag) and `github` (`users` tag) mixed, consumed via `rxResource` — whose `value()` throws in error state, so guard with `hasValue()` | Some consumers want RxJS/interceptor-friendly cold calls instead of signal resources; one token pattern per endpoint keeps tree-shaking and the mock/DevTools flow intact                                                                                                                                          |
-| Per-call options                        | Opt-in `callOptions`: a trailing `options` argument. httpResource tokens get a generic `XxxFn` so a `defaultValue` narrows `value()` to `T`; httpClient tokens take `CallOptions`. Types derive from Angular's `HttpResourceRequest`/`HttpResourceOptions` (so they match the installed version) and `splitCallOptions` routes fields by key list, never naming `debugName` in code. Spec-controlled keys are dropped at runtime. Mocks record `_meta.args`                                                                                                                                                                                                          | Spec-driven requests can't carry an HttpContext, extra headers or a defaultValue. Version-derived types keep Angular 20.0.0 (no debugName) compiling; the mock honours defaultValue so mock mode matches the real resource. petstore-data-access is generated with it                                              |
+| `clientType` / HttpClient tokens        | Per-endpoint choice (lib default + `httpClientTags` / `httpClientOperations` overrides). `httpClient` tokens return `(args) => Observable<T>` using `http.request(METHOD, url, opts)`; params/body are plain values; validation runs via `map()`. Mock files are the same as for httpResource endpoints (v2); a mock edit applies to an Observable's next request. Demo: `weather` and `youtube` fully, `petstore` (`store` tag) and `github` (`users` tag) mixed, consumed via `rxResource` — whose `value()` throws in error state, so guard with `hasValue()` | Some consumers want RxJS/interceptor-friendly cold calls instead of signal resources; one token pattern per endpoint keeps tree-shaking and the mock/DevTools flow intact                                                                                                                                          |
+| Per-call options                        | Opt-in `callOptions`: a trailing `options` argument. httpResource tokens get a generic `XxxFn` so a `defaultValue` narrows `value()` to `T`; httpClient tokens take `CallOptions`. Types derive from Angular's `HttpResourceRequest`/`HttpResourceOptions` (so they match the installed version) and `splitCallOptions` routes fields by key list, never naming `debugName` in code. Spec-controlled keys are dropped at runtime                                                                                                                                                                                                          | Spec-driven requests can't carry an HttpContext, extra headers or a defaultValue. Version-derived types keep Angular 20.0.0 (no debugName) compiling. petstore-data-access is generated with it                                              |
 | Swagger 2.0 input                       | Swagger 2.0 input is converted in memory by `swagger2.ts` (`@scalar/openapi-upgrader`, loaded via `require()` with a dynamic-`import()` fallback because it is ESM-only). Global `produces`/`consumes` are first pushed down into operations; `convertSwagger2: false` rejects Swagger 2.0 instead                                                                                                                                                                                                                                                                                                                                                                   | The upgrader applies a global `produces` over an operation's own, which turned `image/png` downloads into JSON (generator picked the wrong variant). Verified on the real Petstore v2, a compiled integration spec, and Node 20.18 and 24                                                                          |
 | `readWriteMarkers`                      | Opt-in `readWriteMarkers`: calls openapi-typescript with `{ readWriteMarkers: true }` (adds `$Read`/`$Write`/`Readable`/`Writable` to schema.d.ts), then wraps `XxxBody` in `Writable<>` and `XxxResponse` / `XxxError` / discriminated-variant types in `Readable<>` (inside `Readonly<>` with `--readonlyResponses`). Binary bodies and text/blob responses are left alone                                                                                                                                                                                                                                                                                         | Without it one type serves both directions, so a request body requires server-generated ids and a response claims write-only fields (passwords). Verified by compiling real generator output with `@ts-expect-error` probes; no measurable `tsc` cost on the 5 MB GitHub schema                                    |
 | Compatibility floor                     | Generated libs and `openapi-resource-mocks`: Angular ≥ 20; `openapi-resource-gen`: Nx ≥ 20. Enforced by `.github/workflows/compat.yml` → `tools/compat/run.mjs` (a throwaway workspace per version: Angular 20.0.0 and 20.x–22.x, Nx 20–23; strict `tsc` + wire-level tests, or the generator suite + a real end-to-end generation). Peer ranges match the matrix                                                                                                                                                                                                                                                                                                    | The old `>=22` was declared, not required: generated code only uses APIs present since Angular 19.2. 20 is the floor because the mock `Resource` mirrors `ResourceStatus` as strings (a numeric enum in 19) and 19 is out of support. Upload progress needs XHR: default on 20/21, `withXhr()` on 22+              |
-| `reportProgress`                        | Opt-in. httpClient upload/blob-download endpoints yield `Observable<HttpEvent<T>>` (`observe: 'events'`, `reportProgress: true`); validation maps only the `Response` event. Mock files use `provideMockHttpEvents()` (emits `Sent`, `UploadProgress`/`DownloadProgress` from `setProgress`/`simulateProgress`, then `Response`). httpResource only gets `reportProgress: true` on blob downloads                                                                                                                                                                                                                                                                    | Angular 22's `httpResource().progress()` handles `DownloadProgress` only and ignores uploads, so a real upload progress bar needs the HttpClient flavour. Upload progress also needs `provideHttpClient(withXhr())` (the fetch backend can't report it); api-explorer uses `withXhr()`, and its Pets page shows it |
-| `/testing` entry point                  | `@constantant/openapi-resource-mocks/testing` exports `mockResource(TOKEN, behavior?)` returning `MockResourceHandle<T>`, plus `mockObservable` / `mockHttpEvents` for httpClient tokens (cold: each subscription consumes the next behavior; `mockHttpEvents` also emits `Sent` + progress events) — a `FactoryProvider` plus `.ref`, `.calls`, `.expectCalled()`, `.expectCalledWith()`. Supports `{ sequence: [...] }` for multi-step scenarios. No `MockResourceBus`, no DOM events — pure signal state                                                                                                                                                          | Vitest/Jasmine component tests need zero-infrastructure mocking; sequence mode enables pagination, retry, and error-then-success patterns in a single test                                                                                                                                                         |
+| `reportProgress`                        | Opt-in. httpClient upload/blob-download endpoints yield `Observable<HttpEvent<T>>` (`observe: 'events'`, `reportProgress: true`); validation maps only the `Response` event. A mocked upload reports `setProgress`/`simulateProgress` through the real event stream (XHR only). httpResource only gets `reportProgress: true` on blob downloads                                                                                                                                                                                                                                                                    | Angular 22's `httpResource().progress()` handles `DownloadProgress` only and ignores uploads, so a real upload progress bar needs the HttpClient flavour. Upload progress also needs `provideHttpClient(withXhr())` (the fetch backend can't report it); api-explorer uses `withXhr()`, and its Pets page shows it |
+| `/testing` entry point                  | `@constantant/openapi-resource-mocks/testing` exports `mockEndpoint(XXX_MOCK, behavior?)` for every client type: an `EnvironmentProviders` that is also a handle (`.calls`, `.expectCalled()`, `.expectCalledWith()`, `.resolve()`, `.fail()`, `.setLoading()`, `.setProgress()`, `.reset()`). It provides the real token and a default base URL; the test adds `provideHttpClient()`. Supports `{ sequence: [...] }`; without a behavior requests are held. Responses are async: `await fixture.whenStable()`, or `flushMocks()` for a held request                                                                                                                                                          | Vitest/Jasmine component tests need zero-infrastructure mocking; sequence mode enables pagination, retry, and error-then-success patterns in a single test                                                                                                                                                         |
 | Scenario save/load                      | `SCENARIO_STORE` token (`providedIn: 'root'`) persists named `Scenario` objects to `chrome.storage.local['oarm_scenarios']`; `load()` applies via `bridge.sendControl` + `bridge.setCatchMode`; `exportJson()` serialises current mock table to JSON; `importJson()` applies without saving                                                                                                                                                                                                                                                                                                                                                                          | Developers can commit scenario files alongside feature branches and restore a full mock state in one click, or share via JSON export                                                                                                                                                                               |
 | History tab request inspector           | `payloadSections(ev, meta)` extracts path-param names from `meta.path` `{placeholders}`, fills in actual arg values to produce `GET /pet/42` header line, labels remaining args as Query or Body based on HTTP method, renders `[FormData]`/`[Blob]` as badges instead of JSON strings                                                                                                                                                                                                                                                                                                                                                                               | Raw `JSON.stringify(args)` was unreadable for multi-arg calls; path-template parsing gives named labels without any runtime schema                                                                                                                                                                                 |
 | `validateResponses`                     | Opt-in generator flag; embeds the dereferenced response JSON Schema per endpoint and wires a `_validateResponse()` function through `httpResource`'s `parse` hook (using `@cfworker/json-schema`'s `Validator` class, same as the DevTools panel). OAS `nullable: true` is rewritten to a `type` array before embedding. Endpoints with a circular `$ref` in their response schema are skipped (not thrown) — `JSON.stringify`/recursive-walk failure is caught and treated as "no validation for this endpoint"                                                                                                                                                     | Compile-time types vanish at runtime; a spec/server drift on a third-party API otherwise surfaces as an unhandled `TypeError` deep in a component instead of at the `httpResource` boundary. Kept opt-in because embedding a schema per endpoint has a bundle-size cost                                            |

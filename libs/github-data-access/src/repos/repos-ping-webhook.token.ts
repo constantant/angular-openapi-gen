@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { trackResource } from '../mock-hook';
 
 export type ReposPingWebhookError =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/pings']['post']['responses']['404']['content']['application/json'];
@@ -20,10 +21,13 @@ export function provideReposPingWebhook(): FactoryProvider {
     useFactory: () => {
       const base = inject(GITHUB_BASE_URL);
       return (owner: string, repo: string, hookId: string) =>
-        httpResource<unknown>(() => ({
-          url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/pings`,
-          method: 'POST',
-        }));
+        trackResource(
+          'REPOS_PING_WEBHOOK',
+          httpResource<unknown>(() => ({
+            url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/pings`,
+            method: 'POST',
+          })),
+        );
     },
   };
 }
