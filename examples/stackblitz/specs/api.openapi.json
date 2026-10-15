@@ -6,19 +6,19 @@
         "operationId": "listTasks",
         "parameters": [
           {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
             "name": "status",
             "required": false,
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/TaskStatus"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
             }
           }
         ],

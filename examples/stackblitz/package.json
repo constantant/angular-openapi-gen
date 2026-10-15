@@ -2,7 +2,14 @@
   "name": "@org/stackblitz-example",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build:api": "tsc -p apps/api/tsconfig.cli.json",
+    "export-openapi": "npm run build:api && node dist/apps/api/main.js --export-openapi=specs/api.openapi.json",
+    "generate": "npm run export-openapi && openapi-resource-gen specs/api.openapi.json --outputDir libs/tasks-data-access/src --baseUrlToken TASKS_BASE_URL",
+    "start:api": "npm run build:api && node dist/apps/api/main.js",
+    "start:web": "ng serve",
+    "start": "npm run generate && concurrently -k -n api,web \"npm:start:api\" \"npm:start:web\""
+  },
   "private": true,
   "devDependencies": {
     "@angular-devkit/core": "~22.1.0",
@@ -11,7 +18,7 @@
     "@angular/cli": "~22.1.0",
     "@angular/compiler-cli": "~22.1.0",
     "@angular/language-service": "~22.1.0",
-    "@constantant/openapi-resource-gen": "^1.14.1",
+    "@constantant/openapi-resource-gen": "^1.15.0",
     "@eslint/js": "^9.8.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/swagger": "^11.4.7",
@@ -31,6 +38,7 @@
     "@types/node": "^24.0.0",
     "@typescript-eslint/utils": "^8.58.0",
     "angular-eslint": "^22.1.0",
+    "concurrently": "^10.0.6",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "nx": "^23.3.0",

@@ -76,8 +76,8 @@ export interface operations {
   listTasks: {
     parameters: {
       query?: {
-        limit?: number;
         status?: components['schemas']['TaskStatus'];
+        limit?: number;
       };
       header?: never;
       path?: never;

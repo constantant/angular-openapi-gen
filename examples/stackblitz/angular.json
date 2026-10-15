@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "projects": {
+    "web": {
+      "projectType": "application",
+      "root": "apps/web",
+      "sourceRoot": "apps/web/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "outputPath": "dist/apps/web",
+            "browser": "apps/web/src/main.ts",
+            "tsConfig": "apps/web/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/web/public"
+              }
+            ],
+            "styles": [
+              "apps/web/src/styles.css"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kb",
+                  "maximumError": "8kb"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "apps/web/proxy.conf.json"
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "web:build:production"
+            },
+            "development": {
+              "buildTarget": "web:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  }
+}

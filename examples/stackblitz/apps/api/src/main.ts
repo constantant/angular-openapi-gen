@@ -5,7 +5,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
 
 async function bootstrap() {
-  const exportPath = process.env['OPENAPI_EXPORT'];
+  // `--export-openapi=<file>` (or OPENAPI_EXPORT) writes the spec and exits without listening.
+  const exportArg = process.argv.find((a) => a.startsWith('--export-openapi='));
+  const exportPath = exportArg?.slice('--export-openapi='.length) || process.env['OPENAPI_EXPORT'];
   const app = await NestFactory.create(AppModule, { logger: exportPath ? false : undefined });
   app.setGlobalPrefix('api');
 
@@ -18,7 +20,6 @@ async function bootstrap() {
       .build(),
   );
 
-  // `nx run api:export-openapi` writes the spec and exits without listening.
   if (exportPath) {
     writeFileSync(exportPath, JSON.stringify(document, null, 2) + '\n');
     await app.close();
