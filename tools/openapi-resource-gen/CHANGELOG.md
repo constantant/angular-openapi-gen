@@ -1,3 +1,28 @@
+# 2.0.0 (2026-10-15)
+
+### 🚀 Features
+
+- add an openapi-resource-gen CLI that runs without Nx ([#100](https://github.com/constantant/angular-openapi-gen/pull/100))
+- ⚠️  mock at the transport layer so a production build can be mocked ([#97](https://github.com/constantant/angular-openapi-gen/pull/97))
+
+### 🏡 Chore
+
+- bump dependencies (nx 23.3.0, angular group, minor-and-patch) ([#96](https://github.com/constantant/angular-openapi-gen/pull/96))
+
+### ⚠️  Breaking Changes
+
+- mock at the transport layer so a production build can be mocked  ([#97](https://github.com/constantant/angular-openapi-gen/pull/97))
+  the token-replacement mock API is removed. Mock providers
+  are added on top of the real app config instead of replacing it, generated
+  *.mock.ts files have a new shape (regenerate the libs), fixtures must be
+  complete, request args are read from the wire, and an endpoint without a
+  behavior reaches the real API.
+
+### ❤️ Thank You
+
+- kk
+- Konstantin
+
 ## 1.14.1 (2026-10-02)
 
 ### 🩹 Fixes
