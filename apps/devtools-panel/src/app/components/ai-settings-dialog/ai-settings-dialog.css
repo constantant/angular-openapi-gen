@@ -1,0 +1,41 @@
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 360px;
+}
+
+.provider-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.provider {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.provider.active {
+  border-color: #4fc3f7;
+}
+
+.provider-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.provider-name {
+  font-weight: 600;
+}
+
+.provider-hint,
+.note {
+  font-size: 12px;
+  opacity: 0.75;
+}

@@ -63,6 +63,31 @@
           <button mat-button class="schema-toggle"
                   (click)="schemaExpanded.update(v => !v)">{{ schemaExpanded() ? '▲' : '▼' }}</button>
         </div>
+        <div class="ai-row">
+          <input class="ai-prompt" type="text"
+                 placeholder="Describe the data, e.g. 5 orders, one cancelled"
+                 [value]="aiPrompt()"
+                 [disabled]="aiLoading()"
+                 (input)="aiPrompt.set($any($event.target).value)"
+                 (keydown.enter)="generateWithAi()" />
+          @if (aiLoading()) {
+            <button mat-stroked-button (click)="cancelAi()">Cancel</button>
+          } @else {
+            <button mat-stroked-button (click)="generateWithAi()">✨ AI</button>
+          }
+          <button mat-button title="AI settings" (click)="openAiSettings()">⚙</button>
+        </div>
+        <label class="ai-option">
+          <input type="checkbox" [checked]="aiUseCurrent()"
+                 (change)="aiUseCurrent.set($any($event.target).checked)" />
+          Use the JSON above as an example
+          @if (aiSettings.settings().provider === 'anthropic') {
+            <span class="ai-warn">(sent to Anthropic)</span>
+          }
+        </label>
+        @if (aiStatus()) {
+          <div class="ai-status">{{ aiStatus() }}</div>
+        }
         @if (validationErrors() !== null) {
           @if (validationErrors()!.length === 0) {
             <div class="validation-ok">✓ Valid</div>
