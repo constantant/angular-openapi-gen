@@ -54,5 +54,8 @@
   "homepage": "https://github.com/constantant/angular-openapi-gen/tree/master/tools/openapi-resource-gen#readme",
   "bugs": {
     "url": "https://github.com/constantant/angular-openapi-gen/issues"
+  },
+  "bin": {
+    "openapi-resource-gen": "./src/cli.js"
   }
 }

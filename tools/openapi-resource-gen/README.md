@@ -74,6 +74,16 @@ npx nx g @constantant/openapi-resource-gen:api-resource \
   --baseUrlToken=PETSTORE_BASE_URL
 ```
 
+### Without Nx (`openapi-resource-gen` CLI)
+
+The package also ships a standalone command that takes the same options as the generator and runs in any project directory. It does not start Nx or read its project graph, so it also works where Nx cannot run, such as StackBlitz.
+
+```bash
+npx openapi-resource-gen specs/petstore.yaml   --outputDir src/api   --baseUrlToken PETSTORE_BASE_URL   --validateResponses
+```
+
+The first positional argument is `--specPath`. Booleans accept `--flag`, `--flag=false` or `--no-flag`. Run `npx openapi-resource-gen --help` to list every option. Paths are relative to the current directory. Files are formatted with prettier when it is installed.
+
 Re-run the same command whenever your spec changes — the generator overwrites updated files and **deletes any token files that no longer correspond to an endpoint in the spec**.
 
 ### Options
