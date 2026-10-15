@@ -1,0 +1,46 @@
+<main>
+  <h1>Tasks</h1>
+  <p class="hint">
+    Typed with tokens generated from the API's OpenAPI spec by
+    <code>@constantant/openapi-resource-gen</code>.
+  </p>
+
+  <nav aria-label="Filter by status">
+    @for (f of filters; track f) {
+      <button type="button" [class.active]="status() === f" (click)="status.set(f)">
+        {{ f ?? 'all' }}
+      </button>
+    }
+  </nav>
+
+  <form (submit)="$event.preventDefault(); add()">
+    <input
+      placeholder="New task…"
+      [value]="newTitle()"
+      (input)="newTitle.set($any($event.target).value)"
+    />
+    <button type="submit">Add</button>
+  </form>
+
+  @if (tasks.isLoading()) {
+    <p>Loading…</p>
+  }
+  @if (tasks.error()) {
+    <p class="error">Could not load tasks. Is the API running?</p>
+  }
+
+  <ul>
+    @for (task of tasks.hasValue() ? tasks.value() : []; track task.id) {
+      <li>
+        <span class="badge" [attr.data-status]="task.status">{{ task.status }}</span>
+        <span class="title">{{ task.title }}</span>
+        <button type="button" (click)="advance(task.id, task.status)">Next status</button>
+        <button type="button" (click)="remove(task.id)" aria-label="Delete">✕</button>
+      </li>
+    } @empty {
+      @if (!tasks.isLoading()) {
+        <li class="empty">No tasks.</li>
+      }
+    }
+  </ul>
+</main>

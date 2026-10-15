@@ -1,0 +1,33 @@
+{
+  "name": "tasks-data-access",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/tasks-data-access/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "generate": {
+      "executor": "@constantant/openapi-resource-gen:generate",
+      "dependsOn": [
+        "api:export-openapi"
+      ],
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/specs/api.openapi.json"
+      ],
+      "outputs": [
+        "{projectRoot}/src"
+      ],
+      "options": {
+        "specPath": "specs/api.openapi.json",
+        "outputDir": "libs/tasks-data-access/src",
+        "baseUrlToken": "TASKS_BASE_URL",
+        "validateResponses": false,
+        "verbose": true
+      }
+    }
+  }
+}

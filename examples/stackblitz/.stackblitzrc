@@ -1,0 +1,5 @@
+{
+  "installDependencies": true,
+  "startCommand": "npx nx run-many -t serve -p api web",
+  "env": { "NX_DAEMON": "false", "NX_NO_CLOUD": "true", "NX_TUI": "false" }
+}
