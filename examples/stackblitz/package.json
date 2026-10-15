@@ -18,7 +18,7 @@
     "@angular/cli": "~22.1.0",
     "@angular/compiler-cli": "~22.1.0",
     "@angular/language-service": "~22.1.0",
-    "@constantant/openapi-resource-gen": "^1.15.0",
+    "@constantant/openapi-resource-gen": "^2.0.0",
     "@eslint/js": "^9.8.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/swagger": "^11.4.7",
