@@ -3,11 +3,16 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "tools/openapi-resource-gen/src",
   "projectType": "library",
-  "tags": ["scope:tools", "type:generator"],
+  "tags": [
+    "scope:tools",
+    "type:generator"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/tools/openapi-resource-gen",
         "main": "tools/openapi-resource-gen/src/index.ts",
@@ -41,11 +46,6 @@
           {
             "input": "tools/openapi-resource-gen/src",
             "glob": "**/schema.json",
-            "output": "./src"
-          },
-          {
-            "input": "tools/openapi-resource-gen/src",
-            "glob": "**/files/**",
             "output": "./src"
           }
         ]

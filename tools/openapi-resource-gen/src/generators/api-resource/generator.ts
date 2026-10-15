@@ -1,7 +1,6 @@
 import {
   Tree,
   formatFiles,
-  generateFiles,
   joinPathFragments,
   logger,
   updateJson,
@@ -29,6 +28,7 @@ import { renderTokenFile, renderSecurityTokenFile, renderWebhookTokenFile } from
 import { renderMockFile } from './render-mock-file';
 import { renderMswFile } from './render-msw-file';
 import { ensurePackageInstalled } from './ensure-package';
+import { formatChangedFiles } from './format-fallback';
 import { isSwagger2, upgradeSwagger2 } from './swagger2';
 import { renderRequestOptionsFile } from './render-request-options';
 import { renderMockHookFile } from './render-mock-hook';
@@ -378,11 +378,18 @@ async function generateApiResources(
       throw new Error(`Failed to resolve $ref chains in spec: ${(e as Error).message}`, { cause: e });
     }
 
-    // 4. Emit api-base-url.token.ts from the EJS template in files/
-    generateFiles(tree, path.join(__dirname, 'files'), outputDir, {
-      baseUrlToken,
-      tmpl: '',
-    });
+    // 4. Emit api-base-url.token.ts. Written directly rather than through devkit's generateFiles,
+    //    which walks the tree with Nx's native ignore checker (unavailable under WASM, e.g. StackBlitz).
+    tree.write(
+      joinPathFragments(outputDir, 'api-base-url.token.ts'),
+      `import { InjectionToken } from '@angular/core';
+
+export const ${baseUrlToken} = new InjectionToken<string>(
+  '${baseUrlToken}',
+  { providedIn: 'root', factory: () => '' }
+);
+`
+    );
     writtenFiles.add(joinPathFragments(outputDir, 'api-base-url.token.ts'));
 
     // 5. Parse security schemes and build EndpointModels
@@ -565,7 +572,11 @@ async function generateApiResources(
     }
   }
 
-  await formatFiles(tree);
+  try {
+    await formatFiles(tree);
+  } catch {
+    await formatChangedFiles(tree);
+  }
 
   if (options.verbose) {
     const changes = tree.listChanges();
