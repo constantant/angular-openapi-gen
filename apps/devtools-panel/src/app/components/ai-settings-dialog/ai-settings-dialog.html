@@ -1,0 +1,74 @@
+<h2 mat-dialog-title>AI mock generation</h2>
+
+<mat-dialog-content>
+  <div class="provider-list">
+    @for (p of providers; track p.id) {
+    <label class="provider" [class.active]="store.settings().provider === p.id">
+      <input
+        type="radio"
+        name="provider"
+        [checked]="store.settings().provider === p.id"
+        (change)="store.update({ provider: p.id })"
+      />
+      <span class="provider-text">
+        <span class="provider-name">{{ p.label }}</span>
+        <span class="provider-hint">{{ p.hint }}</span>
+      </span>
+    </label>
+    }
+  </div>
+
+  @switch (store.settings().provider) { @case ('anthropic') {
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>API key</mat-label>
+    <input
+      matInput
+      type="password"
+      autocomplete="off"
+      placeholder="sk-ant-…"
+      [value]="store.settings().anthropicKey"
+      (input)="set('anthropicKey', $event)"
+    />
+  </mat-form-field>
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Model</mat-label>
+    <input
+      matInput
+      [value]="store.settings().anthropicModel"
+      (input)="set('anthropicModel', $event)"
+    />
+  </mat-form-field>
+  <div class="note">
+    The key is stored in this browser's extension storage (unencrypted) and only
+    sent to api.anthropic.com.
+  </div>
+  } @case ('chrome') {
+  <div class="note">
+    Status: <strong>{{ chromeState() }}</strong>. @if (chromeState() ===
+    'unsupported') { Needs a recent desktop Chrome with the Prompt API enabled.
+    } @else if (chromeState() === 'downloadable' || chromeState() ===
+    'downloading') { The model downloads on first use. }
+  </div>
+  } @case ('ollama') {
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Server URL</mat-label>
+    <input
+      matInput
+      [value]="store.settings().ollamaUrl"
+      (input)="set('ollamaUrl', $event)"
+    />
+  </mat-form-field>
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Model</mat-label>
+    <input
+      matInput
+      [value]="store.settings().ollamaModel"
+      (input)="set('ollamaModel', $event)"
+    />
+  </mat-form-field>
+  } }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-flat-button mat-dialog-close>Done</button>
+</mat-dialog-actions>

@@ -259,3 +259,33 @@ mat-toolbar.panel-header {
     line-height: 32px;
   }
 }
+
+.ai-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.ai-prompt {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 4px;
+}
+
+.ai-option,
+.ai-status {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.ai-warn {
+  color: #ffb74d;
+}

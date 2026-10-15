@@ -1,9 +1,13 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatToolbar } from '@angular/material/toolbar';
 import { JsonEditorComponent } from '../json-editor/json-editor';
 import { MOCK_BRIDGE } from '../../mock-bridge.token';
 import { SPEC_STORE } from '../../spec-store.token';
+import { AI_MOCK_GENERATOR } from '../../ai/ai-mock-generator.token';
+import { AI_SETTINGS } from '../../ai/ai-settings.token';
+import { AiSettingsDialog } from '../ai-settings-dialog/ai-settings-dialog';
 
 @Component({
   selector: 'app-respond-tab',
@@ -14,6 +18,10 @@ import { SPEC_STORE } from '../../spec-store.token';
 export class RespondTab {
   protected readonly bridge = inject(MOCK_BRIDGE);
   protected readonly specStore = inject(SPEC_STORE);
+  private readonly aiGenerator = inject(AI_MOCK_GENERATOR);
+  protected readonly aiSettings = inject(AI_SETTINGS);
+  private readonly dialog = inject(MatDialog);
+  private aiAbort: AbortController | null = null;
 
   protected readonly json = signal('');
   protected readonly delay = signal('');
@@ -22,6 +30,10 @@ export class RespondTab {
   protected readonly validationErrors = signal<string[] | null>(null);
   protected readonly generateLoading = signal(false);
   protected readonly validateLoading = signal(false);
+  protected readonly aiPrompt = signal('');
+  protected readonly aiUseCurrent = signal(false);
+  protected readonly aiLoading = signal(false);
+  protected readonly aiStatus = signal<string | null>(null);
 
   protected readonly selectedEntry = this.bridge.selectedEntry;
 
@@ -127,6 +139,49 @@ export class RespondTab {
       this.jsonError.set((e as Error).message);
     } finally {
       this.generateLoading.set(false);
+    }
+  }
+
+  protected openAiSettings(): void {
+    this.dialog.open(AiSettingsDialog, { autoFocus: false });
+  }
+
+  protected cancelAi(): void {
+    this.aiAbort?.abort();
+  }
+
+  protected async generateWithAi(): Promise<void> {
+    const schema = this.schema();
+    const entry = this.selectedEntry();
+    if (!schema || this.aiLoading()) return;
+
+    let example: unknown;
+    if (this.aiUseCurrent() && this.json().trim() && !this.jsonError()) {
+      try { example = JSON.parse(this.json()); } catch { /* not valid yet: send no example */ }
+    }
+
+    const abort = (this.aiAbort = new AbortController());
+    this.aiLoading.set(true);
+    this.validationErrors.set(null);
+    this.aiStatus.set('Asking the model…');
+    try {
+      const result = await this.aiGenerator.generate({
+        schema,
+        prompt: this.aiPrompt(),
+        example,
+        operation: entry?.meta ? `${entry.meta.method.toUpperCase()} ${entry.meta.path}` : undefined,
+        signal: abort.signal,
+        onAttempt: (n) => this.aiStatus.set(n === 1 ? 'Asking the model…' : `Fixing schema errors (attempt ${n})…`),
+      });
+      this.json.set(JSON.stringify(result.value, null, 2));
+      this.jsonError.set(null);
+      this.validationErrors.set(result.errors);
+      this.aiStatus.set(null);
+    } catch (e) {
+      this.aiStatus.set(abort.signal.aborted ? 'Cancelled' : (e as Error).message);
+    } finally {
+      this.aiLoading.set(false);
+      this.aiAbort = null;
     }
   }
 
