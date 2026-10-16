@@ -111,6 +111,24 @@ describe('api-resource generator', () => {
     expect(content).toContain('API_BASE_URL');
   });
 
+  it('emits server-variable tokens only when serverVariables is set', async () => {
+    vi.mocked(SwaggerParser.dereference).mockResolvedValue({
+      servers: [{ url: 'https://{region}.example.com', variables: { region: { default: 'eu' } } }],
+      paths: {},
+    } as never);
+    await apiResourceGenerator(tree, { specPath: 'specs/petstore.yaml', outputDir: 'libs/sv-off/src' });
+    expect(tree.exists('libs/sv-off/src/server-variables.token.ts')).toBe(false);
+
+    await apiResourceGenerator(tree, {
+      specPath: 'specs/petstore.yaml',
+      outputDir: 'libs/sv-on/src',
+      serverVariables: true,
+    });
+    expect(tree.read('libs/sv-on/src/server-variables.token.ts', 'utf-8')).toContain('API_REGION');
+    expect(tree.read('libs/sv-on/src/api-base-url.token.ts', 'utf-8')).toContain('inject(API_REGION)');
+    expect(tree.read('libs/sv-on/src/index.ts', 'utf-8')).toContain("./server-variables.token");
+  });
+
   it('uses a custom baseUrlToken name', async () => {
     await apiResourceGenerator(tree, {
       specPath: 'specs/petstore.yaml',

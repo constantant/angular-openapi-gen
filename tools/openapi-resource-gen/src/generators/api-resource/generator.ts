@@ -33,6 +33,7 @@ import { isSwagger2, upgradeSwagger2 } from './swagger2';
 import { renderRequestOptionsFile } from './render-request-options';
 import { renderMockHookFile } from './render-mock-hook';
 import { renderQueryParamsFile } from './render-query-params';
+import { parseServerVariables, renderBaseUrlFile, renderServerVariablesFile } from './render-server-variables';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
@@ -80,6 +81,11 @@ export interface ApiResourceGeneratorSchema {
    * to reject Swagger 2.0 specs instead.
    */
   convertSwagger2?: boolean;
+  /**
+   * Turn the first `servers` entry's `variables` into one InjectionToken each (`server-variables.token.ts`)
+   * and build the default base URL from them. Default: false.
+   */
+  serverVariables?: boolean;
   /** Comma-separated tags whose endpoints use HttpClient regardless of `clientType`. */
   httpClientTags?: string;
   /** Comma-separated operationIds that use HttpClient regardless of `clientType`. */
@@ -382,16 +388,15 @@ async function generateApiResources(
 
     // 4. Emit api-base-url.token.ts. Written directly rather than through devkit's generateFiles,
     //    which walks the tree with Nx's native ignore checker (unavailable under WASM, e.g. StackBlitz).
-    tree.write(
-      joinPathFragments(outputDir, 'api-base-url.token.ts'),
-      `import { InjectionToken } from '@angular/core';
-
-export const ${baseUrlToken} = new InjectionToken<string>(
-  '${baseUrlToken}',
-  { providedIn: 'root', factory: () => '' }
-);
-`
-    );
+    const serverVars = options.serverVariables
+      ? parseServerVariables((api as { servers?: unknown }).servers, baseUrlToken)
+      : undefined;
+    tree.write(joinPathFragments(outputDir, 'api-base-url.token.ts'), renderBaseUrlFile(baseUrlToken, serverVars));
+    if (serverVars) {
+      const svPath = joinPathFragments(outputDir, 'server-variables.token.ts');
+      tree.write(svPath, renderServerVariablesFile(serverVars));
+      writtenFiles.add(svPath);
+    }
     writtenFiles.add(joinPathFragments(outputDir, 'api-base-url.token.ts'));
 
     // 5. Parse security schemes and build EndpointModels
@@ -508,6 +513,7 @@ export const ${baseUrlToken} = new InjectionToken<string>(
     // 8. Root barrel index
     const rootBarrel =
       `export * from './api-base-url.token';\n` +
+      (serverVars ? `export * from './server-variables.token';\n` : '') +
       (options.callOptions ? `export * from './request-options';\n` : '') +
       securitySchemes.map((s) => `export * from './${s.fileName}';\n`).join('') +
       webhookModels.map((wh) => `export * from './${wh.fileName}';\n`).join('') +
