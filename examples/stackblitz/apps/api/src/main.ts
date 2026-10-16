@@ -27,6 +27,8 @@ async function bootstrap() {
   }
 
   SwaggerModule.setup('docs', app, document, { jsonDocumentUrl: 'openapi.json' });
+  // The StackBlitz preview opens this port first: land on Swagger UI instead of a 404.
+  app.getHttpAdapter().get('/', (_req: unknown, res: { redirect(url: string): void }) => res.redirect('/docs'));
   const port = process.env['PORT'] || 3000;
   await app.listen(port);
   Logger.log(`API: http://localhost:${port}/api  ·  spec: http://localhost:${port}/openapi.json`);
