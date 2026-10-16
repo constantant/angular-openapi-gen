@@ -26,7 +26,11 @@ export function provideListTasks(): FactoryProvider {
             return undefined;
           return {
             url: `${base}/api/tasks`,
-            params: _params as unknown as Record<
+            params: Object.fromEntries(
+              Object.entries(_params ?? {}).filter(
+                ([, _v]) => _v !== undefined,
+              ),
+            ) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,
