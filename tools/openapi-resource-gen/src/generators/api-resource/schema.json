@@ -103,6 +103,11 @@
       "type": "string",
       "description": "Comma-separated operationIds that use HttpClient, overriding clientType. Errors if an operationId matches no endpoint."
     },
+    "serverVariables": {
+      "type": "boolean",
+      "default": false,
+      "description": "Emit one InjectionToken per variable of the first servers[] entry (server-variables.token.ts) and build the default base URL token from them, so the host, region or version can be overridden per environment."
+    },
     "validateResponses": {
       "type": "boolean",
       "default": false,
