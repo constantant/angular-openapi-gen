@@ -17,6 +17,28 @@
           "command": "playwright test --config=playwright.mock.config.ts --reporter=blob"
         }
       }
+    },
+    "e2e-extension": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "projects": ["api-explorer"],
+          "target": "build"
+        },
+        {
+          "projects": ["openapi-resource-devtools"],
+          "target": "build"
+        }
+      ],
+      "options": {
+        "command": "playwright test --config=playwright.extension.config.ts",
+        "cwd": "{projectRoot}"
+      },
+      "configurations": {
+        "ci": {
+          "command": "playwright test --config=playwright.extension.config.ts --reporter=blob"
+        }
+      }
     }
   }
 }
