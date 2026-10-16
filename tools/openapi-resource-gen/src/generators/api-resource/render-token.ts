@@ -633,13 +633,16 @@ function appendResourceOptions(
           `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: \`\${${toCamelCase(s.schemeName)}()}\` } : {})`
       )
       .join(', ');
-    const paramsExpr = hasSpecialParams
-      ? `_serializeParams(${useHttpClient ? 'params' : '_params'})`
-      : useHttpClient
-        ? 'params'
-        : usePrecomputedParams
+    // Optional params the caller leaves `undefined` must not reach the wire: HttpClient would
+    // send `?status=undefined`. `_serializeParams` already skips null/undefined itself.
+    const rawParams = useHttpClient
+      ? 'params'
+      : usePrecomputedParams
         ? '_params'
         : `(typeof params === 'function' ? params() : params)`;
+    const paramsExpr = hasSpecialParams
+      ? `_serializeParams(${useHttpClient ? 'params' : '_params'})`
+      : `Object.fromEntries(Object.entries(${rawParams} ?? {}).filter(([, _v]) => _v !== undefined))`;
     const cast = ` as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>`;
 
     if (hasRegularParams && hasAuthQueryParams) {
