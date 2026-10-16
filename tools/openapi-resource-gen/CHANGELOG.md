@@ -1,3 +1,17 @@
+## 2.2.0 (2026-10-16)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** serverVariables option emits a token per server variable ([#108](https://github.com/constantant/angular-openapi-gen/pull/108))
+
+### 📖 Documentation
+
+- link the StackBlitz example ([#107](https://github.com/constantant/angular-openapi-gen/pull/107))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 2.1.0 (2026-10-16)
 
 ### 🩹 Fixes

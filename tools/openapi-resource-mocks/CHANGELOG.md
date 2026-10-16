@@ -1,3 +1,26 @@
+# 2.0.0 (2026-10-16)
+
+### 🚀 Features
+
+- ⚠️  mock at the transport layer so a production build can be mocked ([#97](https://github.com/constantant/angular-openapi-gen/pull/97))
+
+### 📖 Documentation
+
+- improve npm metadata and add copy-ready listing text ([#88](https://github.com/constantant/angular-openapi-gen/pull/88))
+
+### ⚠️  Breaking Changes
+
+- mock at the transport layer so a production build can be mocked  ([#97](https://github.com/constantant/angular-openapi-gen/pull/97))
+  the token-replacement mock API is removed. Mock providers
+  are added on top of the real app config instead of replacing it, generated
+  *.mock.ts files have a new shape (regenerate the libs), fixtures must be
+  complete, request args are read from the wire, and an endpoint without a
+  behavior reaches the real API.
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 1.13.0 (2026-10-02)
 
 ### 🚀 Features
