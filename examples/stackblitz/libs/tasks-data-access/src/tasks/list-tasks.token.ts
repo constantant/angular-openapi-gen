@@ -2,6 +2,7 @@ import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import type { paths } from '../schema.d';
 import { TASKS_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 
 export type ListTasksParams = paths['/api/tasks']['get']['parameters']['query'];
 
@@ -26,11 +27,7 @@ export function provideListTasks(): FactoryProvider {
             return undefined;
           return {
             url: `${base}/api/tasks`,
-            params: Object.fromEntries(
-              Object.entries(_params ?? {}).filter(
-                ([, _v]) => _v !== undefined,
-              ),
-            ) as unknown as Record<
+            params: dropUndefined(_params) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,
