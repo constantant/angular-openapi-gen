@@ -277,7 +277,11 @@ export function provideYoutubePlaylistsUpdate(): FactoryProvider {
             'PUT',
             `${base}/youtube/v3/playlists`,
             {
-              params: params as unknown as Record<
+              params: Object.fromEntries(
+                Object.entries(params ?? {}).filter(
+                  ([, _v]) => _v !== undefined,
+                ),
+              ) as unknown as Record<
                 string,
                 | string
                 | number

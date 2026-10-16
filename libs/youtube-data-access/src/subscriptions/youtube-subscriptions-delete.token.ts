@@ -23,7 +23,9 @@ export function provideYoutubeSubscriptionsDelete(): FactoryProvider {
       const oauth2c = inject(OAUTH2C, { optional: true });
       return (params: YoutubeSubscriptionsDeleteParams) =>
         http.request<unknown>('DELETE', `${base}/youtube/v3/subscriptions`, {
-          params: params as unknown as Record<
+          params: Object.fromEntries(
+            Object.entries(params ?? {}).filter(([, _v]) => _v !== undefined),
+          ) as unknown as Record<
             string,
             string | number | boolean | readonly (string | number | boolean)[]
           >,

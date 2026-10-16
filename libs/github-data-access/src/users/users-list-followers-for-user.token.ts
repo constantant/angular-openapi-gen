@@ -165,7 +165,11 @@ export function provideUsersListFollowersForUser(): FactoryProvider {
             'GET',
             `${base}/users/${username}/followers`,
             {
-              params: params as unknown as Record<
+              params: Object.fromEntries(
+                Object.entries(params ?? {}).filter(
+                  ([, _v]) => _v !== undefined,
+                ),
+              ) as unknown as Record<
                 string,
                 | string
                 | number

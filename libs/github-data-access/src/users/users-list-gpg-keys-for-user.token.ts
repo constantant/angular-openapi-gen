@@ -216,7 +216,11 @@ export function provideUsersListGpgKeysForUser(): FactoryProvider {
             'GET',
             `${base}/users/${username}/gpg_keys`,
             {
-              params: params as unknown as Record<
+              params: Object.fromEntries(
+                Object.entries(params ?? {}).filter(
+                  ([, _v]) => _v !== undefined,
+                ),
+              ) as unknown as Record<
                 string,
                 | string
                 | number

@@ -94,7 +94,11 @@ export function provideUsersListPublicSshKeysForAuthenticatedUser(): FactoryProv
             'GET',
             `${base}/user/keys`,
             {
-              params: params as unknown as Record<
+              params: Object.fromEntries(
+                Object.entries(params ?? {}).filter(
+                  ([, _v]) => _v !== undefined,
+                ),
+              ) as unknown as Record<
                 string,
                 | string
                 | number

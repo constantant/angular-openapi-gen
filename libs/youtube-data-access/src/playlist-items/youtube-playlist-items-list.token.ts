@@ -339,7 +339,11 @@ export function provideYoutubePlaylistItemsList(): FactoryProvider {
             'GET',
             `${base}/youtube/v3/playlistItems`,
             {
-              params: params as unknown as Record<
+              params: Object.fromEntries(
+                Object.entries(params ?? {}).filter(
+                  ([, _v]) => _v !== undefined,
+                ),
+              ) as unknown as Record<
                 string,
                 | string
                 | number

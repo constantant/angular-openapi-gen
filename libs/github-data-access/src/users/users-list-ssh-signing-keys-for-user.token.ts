@@ -70,7 +70,11 @@ export function provideUsersListSshSigningKeysForUser(): FactoryProvider {
             'GET',
             `${base}/users/${username}/ssh_signing_keys`,
             {
-              params: params as unknown as Record<
+              params: Object.fromEntries(
+                Object.entries(params ?? {}).filter(
+                  ([, _v]) => _v !== undefined,
+                ),
+              ) as unknown as Record<
                 string,
                 | string
                 | number

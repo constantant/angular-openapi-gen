@@ -795,7 +795,11 @@ export function provideReposListPublic(): FactoryProvider {
                 return undefined;
               return {
                 url: `${base}/repositories`,
-                params: _params as unknown as Record<
+                params: Object.fromEntries(
+                  Object.entries(_params ?? {}).filter(
+                    ([, _v]) => _v !== undefined,
+                  ),
+                ) as unknown as Record<
                   string,
                   | string
                   | number

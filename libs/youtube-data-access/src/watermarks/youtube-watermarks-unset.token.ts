@@ -23,7 +23,9 @@ export function provideYoutubeWatermarksUnset(): FactoryProvider {
       const oauth2c = inject(OAUTH2C, { optional: true });
       return (params: YoutubeWatermarksUnsetParams) =>
         http.request<unknown>('POST', `${base}/youtube/v3/watermarks/unset`, {
-          params: params as unknown as Record<
+          params: Object.fromEntries(
+            Object.entries(params ?? {}).filter(([, _v]) => _v !== undefined),
+          ) as unknown as Record<
             string,
             string | number | boolean | readonly (string | number | boolean)[]
           >,

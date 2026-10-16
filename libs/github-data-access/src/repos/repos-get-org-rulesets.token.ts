@@ -1262,7 +1262,11 @@ export function provideReposGetOrgRulesets(): FactoryProvider {
                 return undefined;
               return {
                 url: `${base}/orgs/${org}/rulesets`,
-                params: _params as unknown as Record<
+                params: Object.fromEntries(
+                  Object.entries(_params ?? {}).filter(
+                    ([, _v]) => _v !== undefined,
+                  ),
+                ) as unknown as Record<
                   string,
                   | string
                   | number

@@ -26,7 +26,9 @@ export function provideYoutubeCommentsSetModerationStatus(): FactoryProvider {
           'POST',
           `${base}/youtube/v3/comments/setModerationStatus`,
           {
-            params: params as unknown as Record<
+            params: Object.fromEntries(
+              Object.entries(params ?? {}).filter(([, _v]) => _v !== undefined),
+            ) as unknown as Record<
               string,
               string | number | boolean | readonly (string | number | boolean)[]
             >,

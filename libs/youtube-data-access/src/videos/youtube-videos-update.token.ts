@@ -2022,7 +2022,11 @@ export function provideYoutubeVideosUpdate(): FactoryProvider {
             'PUT',
             `${base}/youtube/v3/videos`,
             {
-              params: params as unknown as Record<
+              params: Object.fromEntries(
+                Object.entries(params ?? {}).filter(
+                  ([, _v]) => _v !== undefined,
+                ),
+              ) as unknown as Record<
                 string,
                 | string
                 | number

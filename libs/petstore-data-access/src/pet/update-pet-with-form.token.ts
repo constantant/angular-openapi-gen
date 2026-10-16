@@ -141,7 +141,11 @@ export function provideUpdatePetWithForm(): FactoryProvider {
                 ..._opts.request,
                 url: `${base}/pet/${petId}`,
                 method: 'POST',
-                params: _params as unknown as Record<
+                params: Object.fromEntries(
+                  Object.entries(_params ?? {}).filter(
+                    ([, _v]) => _v !== undefined,
+                  ),
+                ) as unknown as Record<
                   string,
                   | string
                   | number

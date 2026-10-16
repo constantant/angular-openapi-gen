@@ -19,7 +19,9 @@ export function provideYoutubeThirdPartyLinksDelete(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       return (params: YoutubeThirdPartyLinksDeleteParams) =>
         http.request<unknown>('DELETE', `${base}/youtube/v3/thirdPartyLinks`, {
-          params: params as unknown as Record<
+          params: Object.fromEntries(
+            Object.entries(params ?? {}).filter(([, _v]) => _v !== undefined),
+          ) as unknown as Record<
             string,
             string | number | boolean | readonly (string | number | boolean)[]
           >,

@@ -112,7 +112,11 @@ export function provideYoutubeI18nLanguagesList(): FactoryProvider {
             'GET',
             `${base}/youtube/v3/i18nLanguages`,
             {
-              params: params as unknown as Record<
+              params: Object.fromEntries(
+                Object.entries(params ?? {}).filter(
+                  ([, _v]) => _v !== undefined,
+                ),
+              ) as unknown as Record<
                 string,
                 | string
                 | number

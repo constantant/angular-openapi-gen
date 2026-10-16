@@ -59,7 +59,11 @@ export function provideLoginUser(): FactoryProvider {
               return {
                 ..._opts.request,
                 url: `${base}/user/login`,
-                params: _params as unknown as Record<
+                params: Object.fromEntries(
+                  Object.entries(_params ?? {}).filter(
+                    ([, _v]) => _v !== undefined,
+                  ),
+                ) as unknown as Record<
                   string,
                   | string
                   | number

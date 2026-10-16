@@ -144,7 +144,11 @@ export function provideReposGetReadmeInDirectory(): FactoryProvider {
                 return undefined;
               return {
                 url: `${base}/repos/${owner}/${repo}/readme/${dir}`,
-                params: _params as unknown as Record<
+                params: Object.fromEntries(
+                  Object.entries(_params ?? {}).filter(
+                    ([, _v]) => _v !== undefined,
+                  ),
+                ) as unknown as Record<
                   string,
                   | string
                   | number

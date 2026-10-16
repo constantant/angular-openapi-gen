@@ -139,7 +139,11 @@ export function provideFindPetsByTags(): FactoryProvider {
               return {
                 ..._opts.request,
                 url: `${base}/pet/findByTags`,
-                params: _params as unknown as Record<
+                params: Object.fromEntries(
+                  Object.entries(_params ?? {}).filter(
+                    ([, _v]) => _v !== undefined,
+                  ),
+                ) as unknown as Record<
                   string,
                   | string
                   | number

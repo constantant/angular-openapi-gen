@@ -257,7 +257,11 @@ export function provideReposUploadReleaseAsset(): FactoryProvider {
               return {
                 url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
                 method: 'POST',
-                params: _params as unknown as Record<
+                params: Object.fromEntries(
+                  Object.entries(_params ?? {}).filter(
+                    ([, _v]) => _v !== undefined,
+                  ),
+                ) as unknown as Record<
                   string,
                   | string
                   | number
