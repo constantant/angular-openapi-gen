@@ -32,3 +32,6 @@ Nx: `nx serve web` runs the same chain and `npx nx graph` shows it.
 With Nx installed locally: `npx nx run tasks-data-access:generate`, `npx nx run-many -t serve -p api web`.
 
 Swagger UI is at `/docs` on the API port (3000).
+
+The web app also serves the spec at `/api.openapi.json` (from `specs/`), so you can import that URL into the
+[OpenAPI Resource Mocks DevTools extension](https://github.com/constantant/angular-openapi-gen) (Specs tab).
