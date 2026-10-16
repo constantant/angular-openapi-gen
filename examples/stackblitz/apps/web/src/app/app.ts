@@ -37,8 +37,12 @@ export class App {
   protected readonly status = signal<Status | undefined>(undefined);
   protected readonly newTitle = signal('');
 
-  // Re-runs (and cancels the stale request) whenever `status` changes.
-  protected readonly tasks = inject(LIST_TASKS)(() => ({ status: this.status() }));
+  // Re-runs (and cancels the stale request) whenever `status` changes. The key is left out for
+  // "all": HttpClient would serialize `{ status: undefined }` as `?status=undefined`.
+  protected readonly tasks = inject(LIST_TASKS)(() => {
+    const status = this.status();
+    return status ? { status } : {};
+  });
 
   protected add() {
     const title = this.newTitle().trim();
