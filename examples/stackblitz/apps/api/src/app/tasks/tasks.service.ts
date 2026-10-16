@@ -7,7 +7,7 @@ export class TasksService {
   private readonly tasks = new Map<number, Task>(
     [
       ['Read the README', TaskStatus.Done],
-      ['Run nx run tasks-data-access:generate', TaskStatus.InProgress],
+      ['Run npm run generate', TaskStatus.InProgress],
       ['Add an endpoint to the API and regenerate', TaskStatus.Todo],
     ].map(([title, status], i) => [
       i + 1,
