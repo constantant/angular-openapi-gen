@@ -6,6 +6,9 @@ Nx generator that reads an OpenAPI 3.x (or Swagger 2.0) spec and emits one `Inje
 endpoint, each in its own `.ts` file. The result is a tree-shakeable Angular
 data-access library: only tokens that are actually injected end up in the bundle.
 
+**Try it in the browser:** [NestJS API + Angular app on StackBlitz](https://stackblitz.com/github/constantant/angular-openapi-gen/tree/master/examples/stackblitz) (source:
+[`examples/stackblitz`](https://github.com/constantant/angular-openapi-gen/tree/master/examples/stackblitz)).
+
 ## Installation
 
 ```bash

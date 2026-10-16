@@ -9,6 +9,11 @@
 > **Requires Angular 20+ and Nx 20+** — verified in CI, see [Compatibility](#compatibility).
 > The generated code uses [`httpResource()`](https://angular.dev/guide/http/http-resource).
 
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/constantant/angular-openapi-gen/tree/master/examples/stackblitz)
+
+**Try it in the browser:** a NestJS API with an auto-generated OpenAPI spec and an Angular app that consumes
+the generated tokens, [on StackBlitz](https://stackblitz.com/github/constantant/angular-openapi-gen/tree/master/examples/stackblitz). Source: [`examples/stackblitz`](examples/stackblitz).
+
 An Angular 22 · Nx monorepo that demonstrates **tree-shakeable, signal-native API clients** generated from OpenAPI 3.x specs.
 
 The core idea: one `InjectionToken` per API endpoint, each in its own `.ts` file.
