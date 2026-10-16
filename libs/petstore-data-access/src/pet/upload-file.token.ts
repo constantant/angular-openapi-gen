@@ -9,6 +9,7 @@ import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { splitCallOptions, type CallOptions } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type UploadFileParams =
@@ -79,11 +80,7 @@ export function provideUploadFile(): FactoryProvider {
               ..._opts.request,
               observe: 'events',
               reportProgress: true,
-              params: Object.fromEntries(
-                Object.entries(params ?? {}).filter(
-                  ([, _v]) => _v !== undefined,
-                ),
-              ) as unknown as Record<
+              params: dropUndefined(params) as unknown as Record<
                 string,
                 | string
                 | number

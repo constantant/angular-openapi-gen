@@ -4,6 +4,7 @@ import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 import { trackResource } from '../mock-hook';
+import { dropUndefined } from '../query-params';
 
 export type ReposListForUserParams =
   paths['/users/{username}/repos']['get']['parameters']['query'];
@@ -795,11 +796,7 @@ export function provideReposListForUser(): FactoryProvider {
                 return undefined;
               return {
                 url: `${base}/users/${username}/repos`,
-                params: Object.fromEntries(
-                  Object.entries(_params ?? {}).filter(
-                    ([, _v]) => _v !== undefined,
-                  ),
-                ) as unknown as Record<
+                params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string
                   | number

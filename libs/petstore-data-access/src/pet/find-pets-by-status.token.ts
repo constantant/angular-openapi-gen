@@ -9,6 +9,7 @@ import {
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { trackResource } from '../mock-hook';
+import { dropUndefined } from '../query-params';
 import { PETSTORE_AUTH } from '../petstore-auth.security-token';
 
 export type FindPetsByStatusParams =
@@ -140,11 +141,7 @@ export function provideFindPetsByStatus(): FactoryProvider {
               return {
                 ..._opts.request,
                 url: `${base}/pet/findByStatus`,
-                params: Object.fromEntries(
-                  Object.entries(_params ?? {}).filter(
-                    ([, _v]) => _v !== undefined,
-                  ),
-                ) as unknown as Record<
+                params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string
                   | number

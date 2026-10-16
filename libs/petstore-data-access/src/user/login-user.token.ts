@@ -9,6 +9,7 @@ import {
 } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 import { trackResource } from '../mock-hook';
+import { dropUndefined } from '../query-params';
 
 export type LoginUserParams =
   paths['/user/login']['get']['parameters']['query'];
@@ -59,11 +60,7 @@ export function provideLoginUser(): FactoryProvider {
               return {
                 ..._opts.request,
                 url: `${base}/user/login`,
-                params: Object.fromEntries(
-                  Object.entries(_params ?? {}).filter(
-                    ([, _v]) => _v !== undefined,
-                  ),
-                ) as unknown as Record<
+                params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string
                   | number

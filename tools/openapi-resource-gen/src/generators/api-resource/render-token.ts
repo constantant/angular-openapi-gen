@@ -168,6 +168,11 @@ export function yieldsHttpEvents(ep: EndpointModel, client: ClientType, reportPr
   return reportProgress && client === 'httpClient' && transfersFiles(ep);
 }
 
+/** True when the endpoint's query params go through the shared `dropUndefined` helper. */
+export function usesDropUndefined(ep: EndpointModel): boolean {
+  return ep.hasQueryParams && ep.specialQueryParams.length === 0;
+}
+
 export function renderTokenFile(
   ep: EndpointModel,
   baseUrlToken: string,
@@ -248,6 +253,7 @@ export function renderTokenFile(
   }
   lines.push(`import { ${baseUrlToken} } from '../api-base-url.token';`);
   if (mockHooks && !useHttpClient) lines.push(`import { trackResource } from '../mock-hook';`);
+  if (usesDropUndefined(ep)) lines.push(`import { dropUndefined } from '../query-params';`);
   for (const scheme of applicableSchemes) {
     lines.push(`import { ${scheme.tokenName} } from '../${scheme.fileName}';`);
   }
@@ -642,7 +648,7 @@ function appendResourceOptions(
         : `(typeof params === 'function' ? params() : params)`;
     const paramsExpr = hasSpecialParams
       ? `_serializeParams(${useHttpClient ? 'params' : '_params'})`
-      : `Object.fromEntries(Object.entries(${rawParams} ?? {}).filter(([, _v]) => _v !== undefined))`;
+      : `dropUndefined(${rawParams})`;
     const cast = ` as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>`;
 
     if (hasRegularParams && hasAuthQueryParams) {
