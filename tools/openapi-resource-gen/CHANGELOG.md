@@ -1,3 +1,13 @@
+## 2.0.1 (2026-10-16)
+
+### 🩹 Fixes
+
+- drop undefined query params instead of sending ?key=undefined ([#101](https://github.com/constantant/angular-openapi-gen/pull/101))
+
+### ❤️ Thank You
+
+- Konstantin
+
 # 2.0.0 (2026-10-15)
 
 ### 🚀 Features
