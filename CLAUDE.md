@@ -462,8 +462,12 @@ and `--validateResponses` check, so the same mechanism can drive a **production 
   operation as a `managed` entry with no behavior — it passes through until a response or catch
   mode is set. Deleting one puts its key in an in-memory `dismissed` set. `clearAll()` keeps
   managed entries (the stored record is written from the table, so dropping them would delete them).
-- The scratch check used during development (Playwright + the unpacked extension against
-  `dist/apps/api-explorer/browser`) is not in the repo; there is no automated extension e2e yet.
+- **Extension e2e**: `npx nx run api-explorer-e2e:e2e-extension` builds api-explorer and the
+  extension, loads the unpacked extension in Chromium (new headless), enables interception through
+  the SW's `set-intercept` port message (what the panel button sends), and checks that a
+  panel-managed mock answers the production build's Petstore request (and that nothing is
+  intercepted once it is off). It is not part of the CI `e2e` target yet. The panel UI itself has
+  not been exercised inside real Chrome DevTools.
 
 ---
 
