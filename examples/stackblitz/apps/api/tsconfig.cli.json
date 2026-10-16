@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "outDir": "../../dist/apps/api",
+    "rootDir": "src",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "noEmit": false
+  }
+}

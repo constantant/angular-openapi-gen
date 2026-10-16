@@ -1,0 +1,15 @@
+:host { display: block; font-family: system-ui, sans-serif; }
+main { max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+.hint { color: #666; }
+nav, form { display: flex; gap: 0.5rem; margin: 1rem 0; }
+form input { flex: 1; padding: 0.4rem 0.6rem; }
+button { padding: 0.35rem 0.8rem; cursor: pointer; }
+button.active { background: #1976d2; color: #fff; border-color: #1976d2; }
+ul { list-style: none; padding: 0; }
+li { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+.title { flex: 1; }
+.badge { font-size: 0.75rem; padding: 0.1rem 0.5rem; border-radius: 1rem; background: #eee; }
+.badge[data-status='in-progress'] { background: #fff3cd; }
+.badge[data-status='done'] { background: #d4edda; }
+.error { color: #b00020; }
+.empty { color: #888; }

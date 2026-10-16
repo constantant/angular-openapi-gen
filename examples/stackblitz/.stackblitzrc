@@ -1,0 +1,5 @@
+{
+  "installDependencies": true,
+  "startCommand": "npm start",
+  "env": { "NX_DAEMON": "false", "NX_NO_CLOUD": "true" }
+}
