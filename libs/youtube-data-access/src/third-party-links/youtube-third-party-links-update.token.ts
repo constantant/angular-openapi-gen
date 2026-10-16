@@ -4,6 +4,7 @@ import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 
 export type YoutubeThirdPartyLinksUpdateParams =
   paths['/youtube/v3/thirdPartyLinks']['put']['parameters']['query'];
@@ -116,7 +117,7 @@ export function provideYoutubeThirdPartyLinksUpdate(): FactoryProvider {
             'PUT',
             `${base}/youtube/v3/thirdPartyLinks`,
             {
-              params: params as unknown as Record<
+              params: dropUndefined(params) as unknown as Record<
                 string,
                 | string
                 | number

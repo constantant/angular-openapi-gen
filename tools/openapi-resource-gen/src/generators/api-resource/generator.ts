@@ -24,7 +24,7 @@ import { pathToFileURL } from 'url';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
 import { buildEndpoints, parseSecuritySchemes, parseWebhooks } from './parse-spec';
-import { renderTokenFile, renderSecurityTokenFile, renderWebhookTokenFile } from './render-token';
+import { renderTokenFile, renderSecurityTokenFile, renderWebhookTokenFile, usesDropUndefined } from './render-token';
 import { renderMockFile } from './render-mock-file';
 import { renderMswFile } from './render-msw-file';
 import { ensurePackageInstalled } from './ensure-package';
@@ -32,6 +32,7 @@ import { formatChangedFiles } from './format-fallback';
 import { isSwagger2, upgradeSwagger2 } from './swagger2';
 import { renderRequestOptionsFile } from './render-request-options';
 import { renderMockHookFile } from './render-mock-hook';
+import { renderQueryParamsFile } from './render-query-params';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 export interface ApiResourceGeneratorSchema {
@@ -271,6 +272,7 @@ async function generateApiResources(
         f.endsWith('.webhook.ts') ||
         f.endsWith('/request-options.ts') ||
         f.endsWith('/mock-hook.ts') ||
+        f.endsWith('/query-params.ts') ||
         f.endsWith('.mock.ts') ||
         f.endsWith('.msw.ts') ||
         f.endsWith('mocks.manifest.json') ||
@@ -518,6 +520,12 @@ export const ${baseUrlToken} = new InjectionToken<string>(
       const mockHookPath = joinPathFragments(outputDir, 'mock-hook.ts');
       tree.write(mockHookPath, renderMockHookFile());
       writtenFiles.add(mockHookPath);
+    }
+
+    if (endpoints.some(usesDropUndefined)) {
+      const queryParamsPath = joinPathFragments(outputDir, 'query-params.ts');
+      tree.write(queryParamsPath, renderQueryParamsFile());
+      writtenFiles.add(queryParamsPath);
     }
 
     if (options.callOptions) {

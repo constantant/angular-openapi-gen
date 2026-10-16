@@ -4,6 +4,7 @@ import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 
 export type YoutubeYoutubeV3UpdateCommentThreadsParams =
   paths['/youtube/v3/commentThreads']['put']['parameters']['query'];
@@ -350,7 +351,7 @@ export function provideYoutubeYoutubeV3UpdateCommentThreads(): FactoryProvider {
             'PUT',
             `${base}/youtube/v3/commentThreads`,
             {
-              params: params as unknown as Record<
+              params: dropUndefined(params) as unknown as Record<
                 string,
                 | string
                 | number

@@ -4,6 +4,7 @@ import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 
 export type UsersListSshSigningKeysForUserParams =
   paths['/users/{username}/ssh_signing_keys']['get']['parameters']['query'];
@@ -70,7 +71,7 @@ export function provideUsersListSshSigningKeysForUser(): FactoryProvider {
             'GET',
             `${base}/users/${username}/ssh_signing_keys`,
             {
-              params: params as unknown as Record<
+              params: dropUndefined(params) as unknown as Record<
                 string,
                 | string
                 | number

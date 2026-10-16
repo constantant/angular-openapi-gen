@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
@@ -31,7 +32,7 @@ export function provideYoutubeWatermarksSet(): FactoryProvider {
         params: YoutubeWatermarksSetParams,
       ) =>
         http.request<unknown>('POST', `${base}/youtube/v3/watermarks/set`, {
-          params: params as unknown as Record<
+          params: dropUndefined(params) as unknown as Record<
             string,
             string | number | boolean | readonly (string | number | boolean)[]
           >,

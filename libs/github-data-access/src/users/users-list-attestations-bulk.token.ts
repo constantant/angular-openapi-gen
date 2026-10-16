@@ -4,6 +4,7 @@ import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 
 export type UsersListAttestationsBulkParams =
   paths['/users/{username}/attestations/bulk-list']['post']['parameters']['query'];
@@ -114,7 +115,7 @@ export function provideUsersListAttestationsBulk(): FactoryProvider {
             'POST',
             `${base}/users/${username}/attestations/bulk-list`,
             {
-              params: params as unknown as Record<
+              params: dropUndefined(params) as unknown as Record<
                 string,
                 | string
                 | number

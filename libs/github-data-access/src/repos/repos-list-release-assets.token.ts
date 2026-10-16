@@ -4,6 +4,7 @@ import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 import { trackResource } from '../mock-hook';
+import { dropUndefined } from '../query-params';
 
 export type ReposListReleaseAssetsParams =
   paths['/repos/{owner}/{repo}/releases/{release_id}/assets']['get']['parameters']['query'];
@@ -251,7 +252,7 @@ export function provideReposListReleaseAssets(): FactoryProvider {
                 return undefined;
               return {
                 url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
-                params: _params as unknown as Record<
+                params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string
                   | number

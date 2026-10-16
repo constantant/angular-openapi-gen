@@ -4,6 +4,7 @@ import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
 import { trackResource } from '../mock-hook';
+import { dropUndefined } from '../query-params';
 
 export type ReposListCustomDeploymentRuleIntegrationsParams =
   paths['/repos/{owner}/{repo}/environments/{environment_name}/deployment_protection_rules/apps']['get']['parameters']['query'];
@@ -107,7 +108,7 @@ export function provideReposListCustomDeploymentRuleIntegrations(): FactoryProvi
                 return undefined;
               return {
                 url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/apps`,
-                params: _params as unknown as Record<
+                params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string
                   | number

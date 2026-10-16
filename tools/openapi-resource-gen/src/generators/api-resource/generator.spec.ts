@@ -1975,7 +1975,9 @@ describe('api-resource generator', () => {
       expect(c).toMatch(/\(params\?: ListPetsParams\) => Observable<ListPetsResponse>/);
       expect(c).toContain("http.request<ListPetsResponse>('GET'");
       // undefined values are dropped so HttpClient never sends `?key=undefined`
-      expect(c).toContain('Object.entries(params ?? {}).filter(([, _v]) => _v !== undefined)');
+      expect(c).toContain("import { dropUndefined } from '../query-params'");
+      expect(c).toContain('dropUndefined(params)');
+      expect(c).not.toContain('Object.entries');
       expect(c).not.toContain('typeof params');
     });
 
@@ -2534,11 +2536,7 @@ describe('api-resource generator', () => {
 
       it('sends the query params with the request', () => {
         const c = read('create-thing');
-        expect(c).toContain(
-          resource
-            ? 'Object.entries(_params??{}).filter(([,_v])=>_v!==undefined)'
-            : 'Object.entries(params??{}).filter(([,_v])=>_v!==undefined)',
-        );
+        expect(c).toContain(resource ? 'dropUndefined(_params)' : 'dropUndefined(params)');
         expect(c).toContain(resource ? "method:'POST'" : "'POST'");
       });
 

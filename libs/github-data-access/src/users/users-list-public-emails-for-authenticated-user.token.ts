@@ -4,6 +4,7 @@ import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 
 export type UsersListPublicEmailsForAuthenticatedUserParams =
   paths['/user/public_emails']['get']['parameters']['query'];
@@ -76,7 +77,7 @@ export function provideUsersListPublicEmailsForAuthenticatedUser(): FactoryProvi
             'GET',
             `${base}/user/public_emails`,
             {
-              params: params as unknown as Record<
+              params: dropUndefined(params) as unknown as Record<
                 string,
                 | string
                 | number

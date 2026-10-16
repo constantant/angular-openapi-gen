@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
@@ -23,7 +24,7 @@ export function provideYoutubeCaptionsDownload(): FactoryProvider {
       const oauth2c = inject(OAUTH2C, { optional: true });
       return (id: string, params?: YoutubeCaptionsDownloadParams) =>
         http.request<unknown>('GET', `${base}/youtube/v3/captions/${id}`, {
-          params: params as unknown as Record<
+          params: dropUndefined(params) as unknown as Record<
             string,
             string | number | boolean | readonly (string | number | boolean)[]
           >,

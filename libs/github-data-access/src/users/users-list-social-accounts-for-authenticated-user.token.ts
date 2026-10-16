@@ -4,6 +4,7 @@ import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { GITHUB_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 
 export type UsersListSocialAccountsForAuthenticatedUserParams =
   paths['/user/social_accounts']['get']['parameters']['query'];
@@ -67,7 +68,7 @@ export function provideUsersListSocialAccountsForAuthenticatedUser(): FactoryPro
             'GET',
             `${base}/user/social_accounts`,
             {
-              params: params as unknown as Record<
+              params: dropUndefined(params) as unknown as Record<
                 string,
                 | string
                 | number

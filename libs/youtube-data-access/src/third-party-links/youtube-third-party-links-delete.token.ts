@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 
 export type YoutubeThirdPartyLinksDeleteParams =
   paths['/youtube/v3/thirdPartyLinks']['delete']['parameters']['query'];
@@ -19,7 +20,7 @@ export function provideYoutubeThirdPartyLinksDelete(): FactoryProvider {
       const base = inject(YOUTUBE_BASE_URL);
       return (params: YoutubeThirdPartyLinksDeleteParams) =>
         http.request<unknown>('DELETE', `${base}/youtube/v3/thirdPartyLinks`, {
-          params: params as unknown as Record<
+          params: dropUndefined(params) as unknown as Record<
             string,
             string | number | boolean | readonly (string | number | boolean)[]
           >,

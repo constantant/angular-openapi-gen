@@ -4,6 +4,7 @@ import { map, type Observable } from 'rxjs';
 import { Validator, type Schema } from '@cfworker/json-schema';
 import type { paths } from '../schema.d';
 import { YOUTUBE_BASE_URL } from '../api-base-url.token';
+import { dropUndefined } from '../query-params';
 import { OAUTH2 } from '../oauth2.security-token';
 import { OAUTH2C } from '../oauth2c.security-token';
 
@@ -72,7 +73,7 @@ export function provideYoutubeChannelBannersInsert(): FactoryProvider {
             'POST',
             `${base}/youtube/v3/channelBanners/insert`,
             {
-              params: params as unknown as Record<
+              params: dropUndefined(params) as unknown as Record<
                 string,
                 | string
                 | number
