@@ -1,3 +1,13 @@
+## 2.1.0 (2026-10-16)
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** share the undefined-param filter in query-params.ts ([#103](https://github.com/constantant/angular-openapi-gen/pull/103))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 2.0.1 (2026-10-16)
 
 ### 🩹 Fixes
