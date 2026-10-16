@@ -17,6 +17,10 @@
               {
                 "glob": "**/*",
                 "input": "apps/web/public"
+              },
+              {
+                "glob": "api.openapi.json",
+                "input": "specs"
               }
             ],
             "styles": [
