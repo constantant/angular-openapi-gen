@@ -208,9 +208,12 @@ export function provideReposDeleteFile(): FactoryProvider {
                   ? (body as Signal<ReposDeleteFileBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}`,
                 method: 'DELETE',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

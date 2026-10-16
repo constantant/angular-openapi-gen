@@ -116,9 +116,12 @@ export function provideReposCreateDeploymentProtectionRule(): FactoryProvider {
                   ? (body as Signal<ReposCreateDeploymentProtectionRuleBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}/deployment_protection_rules`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

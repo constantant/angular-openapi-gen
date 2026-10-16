@@ -1870,7 +1870,7 @@ export function provideReposCompareCommits(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/compare/${basehead}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/compare/${encodeURIComponent(basehead)}`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

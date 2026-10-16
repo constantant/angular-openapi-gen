@@ -1260,7 +1260,7 @@ export function provideReposGetRepoRuleset(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/rulesets/${encodeURIComponent(rulesetId)}`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

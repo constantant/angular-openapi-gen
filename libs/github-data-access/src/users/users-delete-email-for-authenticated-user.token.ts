@@ -26,7 +26,10 @@ export function provideUsersDeleteEmailForAuthenticatedUser(): FactoryProvider {
       const base = inject(GITHUB_BASE_URL);
       return (body: UsersDeleteEmailForAuthenticatedUserBody) =>
         http.request<unknown>('DELETE', `${base}/user/emails`, {
-          body,
+          body: typeof body === 'string' ? JSON.stringify(body) : body,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
     },
   };

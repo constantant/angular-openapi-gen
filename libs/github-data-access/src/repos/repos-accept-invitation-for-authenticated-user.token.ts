@@ -23,7 +23,7 @@ export function provideReposAcceptInvitationForAuthenticatedUser(): FactoryProvi
         trackResource(
           'REPOS_ACCEPT_INVITATION_FOR_AUTHENTICATED_USER',
           httpResource<unknown>(() => ({
-            url: `${base}/user/repository_invitations/${invitationId}`,
+            url: `${base}/user/repository_invitations/${encodeURIComponent(invitationId)}`,
             method: 'PATCH',
           })),
         );

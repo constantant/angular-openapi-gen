@@ -586,7 +586,7 @@ export function provideReposGetAllEnvironments(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/environments`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

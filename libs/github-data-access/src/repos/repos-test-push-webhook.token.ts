@@ -24,7 +24,7 @@ export function provideReposTestPushWebhook(): FactoryProvider {
         trackResource(
           'REPOS_TEST_PUSH_WEBHOOK',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/tests`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hooks/${encodeURIComponent(hookId)}/tests`,
             method: 'POST',
           })),
         );

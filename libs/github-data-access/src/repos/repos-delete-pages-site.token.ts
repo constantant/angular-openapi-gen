@@ -22,7 +22,7 @@ export function provideReposDeletePagesSite(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_PAGES_SITE',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/pages`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages`,
             method: 'DELETE',
           })),
         );

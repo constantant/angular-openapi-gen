@@ -32,10 +32,10 @@ export function provideYoutubeLiveChatModeratorsDelete(): FactoryProvider {
               string | number | boolean | readonly (string | number | boolean)[]
             >,
             headers: {
-              ...(oauth2?.() != null
+              ...(oauth2?.() != null && oauth2c?.() != null
                 ? { Authorization: `Bearer ${oauth2()}` }
                 : {}),
-              ...(oauth2c?.() != null
+              ...(oauth2?.() != null && oauth2c?.() != null
                 ? { Authorization: `Bearer ${oauth2c()}` }
                 : {}),
             },

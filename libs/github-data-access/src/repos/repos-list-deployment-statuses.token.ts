@@ -598,7 +598,7 @@ export function provideReposListDeploymentStatuses(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}/statuses`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/deployments/${encodeURIComponent(deploymentId)}/statuses`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

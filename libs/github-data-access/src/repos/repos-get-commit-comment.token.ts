@@ -287,7 +287,7 @@ export function provideReposGetCommitComment(): FactoryProvider {
           'REPOS_GET_COMMIT_COMMENT',
           httpResource<ReposGetCommitCommentResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/comments/${commentId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/comments/${encodeURIComponent(commentId)}`,
             }),
             { parse: _validateResponse },
           ),

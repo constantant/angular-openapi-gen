@@ -23,20 +23,24 @@ export function provideYoutubeCaptionsDownload(): FactoryProvider {
       const oauth2 = inject(OAUTH2, { optional: true });
       const oauth2c = inject(OAUTH2C, { optional: true });
       return (id: string, params?: YoutubeCaptionsDownloadParams) =>
-        http.request<unknown>('GET', `${base}/youtube/v3/captions/${id}`, {
-          params: dropUndefined(params) as unknown as Record<
-            string,
-            string | number | boolean | readonly (string | number | boolean)[]
-          >,
-          headers: {
-            ...(oauth2?.() != null
-              ? { Authorization: `Bearer ${oauth2()}` }
-              : {}),
-            ...(oauth2c?.() != null
-              ? { Authorization: `Bearer ${oauth2c()}` }
-              : {}),
+        http.request<unknown>(
+          'GET',
+          `${base}/youtube/v3/captions/${encodeURIComponent(id)}`,
+          {
+            params: dropUndefined(params) as unknown as Record<
+              string,
+              string | number | boolean | readonly (string | number | boolean)[]
+            >,
+            headers: {
+              ...(oauth2?.() != null && oauth2c?.() != null
+                ? { Authorization: `Bearer ${oauth2()}` }
+                : {}),
+              ...(oauth2?.() != null && oauth2c?.() != null
+                ? { Authorization: `Bearer ${oauth2c()}` }
+                : {}),
+            },
           },
-        });
+        );
     },
   };
 }

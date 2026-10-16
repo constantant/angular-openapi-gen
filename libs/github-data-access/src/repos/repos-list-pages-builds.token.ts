@@ -226,7 +226,7 @@ export function provideReposListPagesBuilds(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/pages/builds`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/builds`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

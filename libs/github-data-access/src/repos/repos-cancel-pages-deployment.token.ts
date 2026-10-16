@@ -24,7 +24,7 @@ export function provideReposCancelPagesDeployment(): FactoryProvider {
         trackResource(
           'REPOS_CANCEL_PAGES_DEPLOYMENT',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/pages/deployments/${pagesDeploymentId}/cancel`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/deployments/${encodeURIComponent(pagesDeploymentId)}/cancel`,
             method: 'POST',
           })),
         );

@@ -62,7 +62,7 @@ export function provideReposCreateCommitSignatureProtection(): FactoryProvider {
           'REPOS_CREATE_COMMIT_SIGNATURE_PROTECTION',
           httpResource<ReposCreateCommitSignatureProtectionResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_signatures`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_signatures`,
               method: 'POST',
             }),
             { parse: _validateResponse },

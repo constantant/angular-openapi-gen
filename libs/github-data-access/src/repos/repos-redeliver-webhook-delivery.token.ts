@@ -52,7 +52,7 @@ export function provideReposRedeliverWebhookDelivery(): FactoryProvider {
           'REPOS_REDELIVER_WEBHOOK_DELIVERY',
           httpResource<ReposRedeliverWebhookDeliveryResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/deliveries/${deliveryId}/attempts`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hooks/${encodeURIComponent(hookId)}/deliveries/${encodeURIComponent(deliveryId)}/attempts`,
               method: 'POST',
             }),
             { parse: _validateResponse },

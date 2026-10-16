@@ -115,12 +115,13 @@ export function provideYoutubeAbuseReportsInsert(): FactoryProvider {
                 | boolean
                 | readonly (string | number | boolean)[]
               >,
-              body,
+              body: typeof body === 'string' ? JSON.stringify(body) : body,
               headers: {
-                ...(oauth2?.() != null
+                'Content-Type': 'application/json',
+                ...(oauth2?.() != null && oauth2c?.() != null
                   ? { Authorization: `Bearer ${oauth2()}` }
                   : {}),
-                ...(oauth2c?.() != null
+                ...(oauth2?.() != null && oauth2c?.() != null
                   ? { Authorization: `Bearer ${oauth2c()}` }
                   : {}),
               },

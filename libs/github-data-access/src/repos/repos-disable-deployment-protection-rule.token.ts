@@ -27,7 +27,7 @@ export function provideReposDisableDeploymentProtectionRule(): FactoryProvider {
         trackResource(
           'REPOS_DISABLE_DEPLOYMENT_PROTECTION_RULE',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/${protectionRuleId}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}/deployment_protection_rules/${encodeURIComponent(protectionRuleId)}`,
             method: 'DELETE',
           })),
         );

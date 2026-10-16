@@ -69,7 +69,10 @@ export function provideUsersAddSocialAccountForAuthenticatedUser(): FactoryProvi
             'POST',
             `${base}/user/social_accounts`,
             {
-              body,
+              body: typeof body === 'string' ? JSON.stringify(body) : body,
+              headers: {
+                'Content-Type': 'application/json',
+              },
             },
           )
           .pipe(map(_validateResponse));

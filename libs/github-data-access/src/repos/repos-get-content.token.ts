@@ -398,7 +398,7 @@ export function provideReposGetContent(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

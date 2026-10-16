@@ -1262,7 +1262,7 @@ export function provideReposGetOrgRulesets(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/orgs/${org}/rulesets`,
+                url: `${base}/orgs/${encodeURIComponent(org)}/rulesets`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

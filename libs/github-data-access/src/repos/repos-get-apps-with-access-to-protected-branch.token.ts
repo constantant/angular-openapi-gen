@@ -351,7 +351,7 @@ export function provideReposGetAppsWithAccessToProtectedBranch(): FactoryProvide
           'REPOS_GET_APPS_WITH_ACCESS_TO_PROTECTED_BRANCH',
           httpResource<ReposGetAppsWithAccessToProtectedBranchResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/apps`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/restrictions/apps`,
             }),
             { parse: _validateResponse },
           ),

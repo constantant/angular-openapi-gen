@@ -286,9 +286,8 @@ export function buildEndpoints(
         | undefined;
       const resolvedSecurity =
         operationSecurity !== undefined ? operationSecurity : globalSecurity;
-      const securitySchemeNames = [
-        ...new Set(resolvedSecurity.flatMap((req) => Object.keys(req))),
-      ];
+      const securityAlternatives = resolvedSecurity.map((req) => Object.keys(req));
+      const securitySchemeNames = [...new Set(securityAlternatives.flat())];
 
       const requestBody = operation.requestBody as
         | OpenAPIV3.RequestBodyObject
@@ -398,6 +397,7 @@ export function buildEndpoints(
         isBinaryBody,
         deprecated,
         securitySchemeNames,
+        securityAlternatives,
         errorStatuses,
         discriminator,
         enumExtensions,

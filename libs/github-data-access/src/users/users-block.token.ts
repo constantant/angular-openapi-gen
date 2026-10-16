@@ -21,7 +21,11 @@ export function provideUsersBlock(): FactoryProvider {
       const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (username: string) =>
-        http.request<unknown>('PUT', `${base}/user/blocks/${username}`, {});
+        http.request<unknown>(
+          'PUT',
+          `${base}/user/blocks/${encodeURIComponent(username)}`,
+          {},
+        );
     },
   };
 }

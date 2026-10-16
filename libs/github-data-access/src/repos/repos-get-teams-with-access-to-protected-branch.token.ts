@@ -252,7 +252,7 @@ export function provideReposGetTeamsWithAccessToProtectedBranch(): FactoryProvid
           'REPOS_GET_TEAMS_WITH_ACCESS_TO_PROTECTED_BRANCH',
           httpResource<ReposGetTeamsWithAccessToProtectedBranchResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/teams`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/restrictions/teams`,
             }),
             { parse: _validateResponse },
           ),

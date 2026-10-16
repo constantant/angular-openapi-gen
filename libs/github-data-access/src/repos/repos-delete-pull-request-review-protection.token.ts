@@ -24,7 +24,7 @@ export function provideReposDeletePullRequestReviewProtection(): FactoryProvider
         trackResource(
           'REPOS_DELETE_PULL_REQUEST_REVIEW_PROTECTION',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_pull_request_reviews`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_pull_request_reviews`,
             method: 'DELETE',
           })),
         );

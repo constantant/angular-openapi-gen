@@ -90,9 +90,12 @@ export function provideReposUpdateDeploymentBranchPolicy(): FactoryProvider {
                   ? (body as Signal<ReposUpdateDeploymentBranchPolicyBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}/deployment-branch-policies/${encodeURIComponent(branchPolicyId)}`,
                 method: 'PUT',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

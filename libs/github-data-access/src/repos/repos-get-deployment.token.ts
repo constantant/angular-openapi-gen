@@ -577,7 +577,7 @@ export function provideReposGetDeployment(): FactoryProvider {
           'REPOS_GET_DEPLOYMENT',
           httpResource<ReposGetDeploymentResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/deployments/${encodeURIComponent(deploymentId)}`,
             }),
             { parse: _validateResponse },
           ),

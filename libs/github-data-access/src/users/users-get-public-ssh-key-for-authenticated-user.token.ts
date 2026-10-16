@@ -86,7 +86,7 @@ export function provideUsersGetPublicSshKeyForAuthenticatedUser(): FactoryProvid
         http
           .request<UsersGetPublicSshKeyForAuthenticatedUserResponse>(
             'GET',
-            `${base}/user/keys/${keyId}`,
+            `${base}/user/keys/${encodeURIComponent(keyId)}`,
             {},
           )
           .pipe(map(_validateResponse));

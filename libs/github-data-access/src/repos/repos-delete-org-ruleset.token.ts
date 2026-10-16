@@ -21,7 +21,7 @@ export function provideReposDeleteOrgRuleset(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_ORG_RULESET',
           httpResource<unknown>(() => ({
-            url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
+            url: `${base}/orgs/${encodeURIComponent(org)}/rulesets/${encodeURIComponent(rulesetId)}`,
             method: 'DELETE',
           })),
         );

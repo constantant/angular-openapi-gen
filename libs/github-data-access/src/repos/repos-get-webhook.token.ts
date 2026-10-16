@@ -174,7 +174,7 @@ export function provideReposGetWebhook(): FactoryProvider {
           'REPOS_GET_WEBHOOK',
           httpResource<ReposGetWebhookResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/hooks/${hookId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hooks/${encodeURIComponent(hookId)}`,
             }),
             { parse: _validateResponse },
           ),

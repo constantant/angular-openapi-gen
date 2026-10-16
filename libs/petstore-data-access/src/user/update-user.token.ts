@@ -43,10 +43,11 @@ export function provideUpdateUser(): FactoryProvider {
                 : body;
             return {
               ..._opts.request,
-              url: `${base}/user/${username}`,
+              url: `${base}/user/${encodeURIComponent(username)}`,
               method: 'PUT',
-              body: _body,
+              body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
               headers: {
+                'Content-Type': 'application/json',
                 ..._opts.headers,
               },
             };

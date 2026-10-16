@@ -2049,7 +2049,7 @@ export function provideReposGetBranchProtection(): FactoryProvider {
           'REPOS_GET_BRANCH_PROTECTION',
           httpResource<ReposGetBranchProtectionResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection`,
             }),
             { parse: _validateResponse },
           ),

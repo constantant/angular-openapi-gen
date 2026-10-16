@@ -521,7 +521,7 @@ export function provideReposGetRelease(): FactoryProvider {
           'REPOS_GET_RELEASE',
           httpResource<ReposGetReleaseResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/releases/${releaseId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/${encodeURIComponent(releaseId)}`,
             }),
             { parse: _validateResponse },
           ),

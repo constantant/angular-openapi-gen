@@ -24,7 +24,7 @@ export function provideReposDeleteWebhook(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_WEBHOOK',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/hooks/${hookId}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hooks/${encodeURIComponent(hookId)}`,
             method: 'DELETE',
           })),
         );

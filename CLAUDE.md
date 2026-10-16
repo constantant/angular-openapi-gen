@@ -141,7 +141,15 @@ Rules:
   the resource config; optional ones use a conditional spread (`...(arg != null ? {...} : {})`).
   Auth scheme headers appear alongside them in the same `headers` block.
 
+- Path param values go through `encodeURIComponent` inside the URL template.
+- A JSON request body (`application/json`, `+json`) sends `Content-Type: application/json`, and a
+  string body is `JSON.stringify`'d (Angular would otherwise send it unquoted as `text/plain`).
+
 ### Security tokens
+
+Each entry of a spec's `security` list is an **alternative**; the schemes inside one entry are
+required together. A scheme is applied only when the first alternative whose tokens are all
+provided contains it (`schemeAppliesWhen` in `render-token.ts`); later alternatives are skipped.
 
 When the spec has security schemes, the generator emits one additional file per scheme.
 Two different patterns are used depending on the scheme kind.

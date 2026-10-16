@@ -39,9 +39,12 @@ export function provideReposCreateDispatchEvent(): FactoryProvider {
                 ? (body as Signal<ReposCreateDispatchEventBody>)()
                 : body;
             return {
-              url: `${base}/repos/${owner}/${repo}/dispatches`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/dispatches`,
               method: 'POST',
-              body: _body,
+              body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+              headers: {
+                'Content-Type': 'application/json',
+              },
             };
           }),
         );

@@ -63,9 +63,12 @@ export function provideReposCreateAttestation(): FactoryProvider {
                   ? (body as Signal<ReposCreateAttestationBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/attestations`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/attestations`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

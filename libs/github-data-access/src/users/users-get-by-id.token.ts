@@ -494,7 +494,11 @@ export function provideUsersGetById(): FactoryProvider {
       const base = inject(GITHUB_BASE_URL);
       return (accountId: string) =>
         http
-          .request<UsersGetByIdResponse>('GET', `${base}/user/${accountId}`, {})
+          .request<UsersGetByIdResponse>(
+            'GET',
+            `${base}/user/${encodeURIComponent(accountId)}`,
+            {},
+          )
           .pipe(map(_validateResponse));
     },
   };

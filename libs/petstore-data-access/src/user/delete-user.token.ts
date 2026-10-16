@@ -30,7 +30,7 @@ export function provideDeleteUser(): FactoryProvider {
           httpResource<unknown>(() => {
             return {
               ..._opts.request,
-              url: `${base}/user/${username}`,
+              url: `${base}/user/${encodeURIComponent(username)}`,
               method: 'DELETE',
               headers: {
                 ..._opts.headers,

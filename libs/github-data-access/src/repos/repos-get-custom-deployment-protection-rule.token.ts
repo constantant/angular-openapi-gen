@@ -103,7 +103,7 @@ export function provideReposGetCustomDeploymentProtectionRule(): FactoryProvider
           'REPOS_GET_CUSTOM_DEPLOYMENT_PROTECTION_RULE',
           httpResource<ReposGetCustomDeploymentProtectionRuleResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/${protectionRuleId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}/deployment_protection_rules/${encodeURIComponent(protectionRuleId)}`,
             }),
             { parse: _validateResponse },
           ),

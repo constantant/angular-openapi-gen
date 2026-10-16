@@ -20,7 +20,7 @@ export function provideReposDisableImmutableReleases(): FactoryProvider {
         trackResource(
           'REPOS_DISABLE_IMMUTABLE_RELEASES',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/immutable-releases`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/immutable-releases`,
             method: 'DELETE',
           })),
         );

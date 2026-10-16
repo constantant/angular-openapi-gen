@@ -47,7 +47,7 @@ export function provideReposGetPunchCardStats(): FactoryProvider {
           'REPOS_GET_PUNCH_CARD_STATS',
           httpResource<ReposGetPunchCardStatsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/stats/punch_card`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/stats/punch_card`,
             }),
             { parse: _validateResponse },
           ),

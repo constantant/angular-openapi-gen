@@ -799,7 +799,7 @@ export function provideReposListForks(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/forks`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/forks`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

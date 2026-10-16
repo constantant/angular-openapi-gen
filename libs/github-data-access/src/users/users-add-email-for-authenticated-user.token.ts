@@ -77,7 +77,10 @@ export function provideUsersAddEmailForAuthenticatedUser(): FactoryProvider {
             'POST',
             `${base}/user/emails`,
             {
-              body,
+              body: typeof body === 'string' ? JSON.stringify(body) : body,
+              headers: {
+                'Content-Type': 'application/json',
+              },
             },
           )
           .pipe(map(_validateResponse));

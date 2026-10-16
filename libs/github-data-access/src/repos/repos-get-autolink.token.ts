@@ -73,7 +73,7 @@ export function provideReposGetAutolink(): FactoryProvider {
           'REPOS_GET_AUTOLINK',
           httpResource<ReposGetAutolinkResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/autolinks/${autolinkId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/autolinks/${encodeURIComponent(autolinkId)}`,
             }),
             { parse: _validateResponse },
           ),

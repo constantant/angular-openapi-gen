@@ -27,9 +27,12 @@ export function provideUsersDeleteAttestationsBulk(): FactoryProvider {
       return (username: string, body: UsersDeleteAttestationsBulkBody) =>
         http.request<unknown>(
           'POST',
-          `${base}/users/${username}/attestations/delete-request`,
+          `${base}/users/${encodeURIComponent(username)}/attestations/delete-request`,
           {
-            body,
+            body: typeof body === 'string' ? JSON.stringify(body) : body,
+            headers: {
+              'Content-Type': 'application/json',
+            },
           },
         );
     },

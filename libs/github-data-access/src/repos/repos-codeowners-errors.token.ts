@@ -108,7 +108,7 @@ export function provideReposCodeownersErrors(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/codeowners/errors`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/codeowners/errors`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

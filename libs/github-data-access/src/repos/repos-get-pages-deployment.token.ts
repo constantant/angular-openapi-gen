@@ -63,7 +63,7 @@ export function provideReposGetPagesDeployment(): FactoryProvider {
           'REPOS_GET_PAGES_DEPLOYMENT',
           httpResource<ReposGetPagesDeploymentResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/pages/deployments/${pagesDeploymentId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/deployments/${encodeURIComponent(pagesDeploymentId)}`,
             }),
             { parse: _validateResponse },
           ),

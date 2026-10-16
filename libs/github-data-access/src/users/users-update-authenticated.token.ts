@@ -284,7 +284,10 @@ export function provideUsersUpdateAuthenticated(): FactoryProvider {
       return (body: UsersUpdateAuthenticatedBody) =>
         http
           .request<UsersUpdateAuthenticatedResponse>('PATCH', `${base}/user`, {
-            body,
+            body: typeof body === 'string' ? JSON.stringify(body) : body,
+            headers: {
+              'Content-Type': 'application/json',
+            },
           })
           .pipe(map(_validateResponse));
     },

@@ -576,9 +576,12 @@ export function provideReposCreateOrUpdateEnvironment(): FactoryProvider {
                   ? (body as Signal<ReposCreateOrUpdateEnvironmentBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}`,
                 method: 'PUT',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

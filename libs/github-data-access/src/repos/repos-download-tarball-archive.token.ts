@@ -21,7 +21,7 @@ export function provideReposDownloadTarballArchive(): FactoryProvider {
         trackResource(
           'REPOS_DOWNLOAD_TARBALL_ARCHIVE',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/tarball/${ref}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/tarball/${encodeURIComponent(ref)}`,
           })),
         );
     },

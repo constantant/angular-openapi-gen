@@ -523,7 +523,7 @@ export function provideReposGetLatestRelease(): FactoryProvider {
           'REPOS_GET_LATEST_RELEASE',
           httpResource<ReposGetLatestReleaseResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/releases/latest`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/latest`,
             }),
             { parse: _validateResponse },
           ),

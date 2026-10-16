@@ -22,7 +22,7 @@ export function provideReposDelete(): FactoryProvider {
         trackResource(
           'REPOS_DELETE',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
             method: 'DELETE',
           })),
         );

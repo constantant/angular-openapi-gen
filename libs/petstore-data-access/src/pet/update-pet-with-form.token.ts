@@ -140,7 +140,7 @@ export function provideUpdatePetWithForm(): FactoryProvider {
                 return undefined;
               return {
                 ..._opts.request,
-                url: `${base}/pet/${petId}`,
+                url: `${base}/pet/${encodeURIComponent(petId)}`,
                 method: 'POST',
                 params: dropUndefined(_params) as unknown as Record<
                   string,

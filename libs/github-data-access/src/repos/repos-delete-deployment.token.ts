@@ -25,7 +25,7 @@ export function provideReposDeleteDeployment(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_DEPLOYMENT',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/deployments/${encodeURIComponent(deploymentId)}`,
             method: 'DELETE',
           })),
         );

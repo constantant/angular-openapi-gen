@@ -159,7 +159,7 @@ export function provideReposGetPages(): FactoryProvider {
           'REPOS_GET_PAGES',
           httpResource<ReposGetPagesResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/pages`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages`,
             }),
             { parse: _validateResponse },
           ),

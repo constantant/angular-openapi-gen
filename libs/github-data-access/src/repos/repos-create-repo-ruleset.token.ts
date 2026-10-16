@@ -1257,9 +1257,12 @@ export function provideReposCreateRepoRuleset(): FactoryProvider {
                   ? (body as Signal<ReposCreateRepoRulesetBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/rulesets`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/rulesets`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

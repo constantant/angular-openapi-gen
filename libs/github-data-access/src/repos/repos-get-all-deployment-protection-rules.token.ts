@@ -146,7 +146,7 @@ export function provideReposGetAllDeploymentProtectionRules(): FactoryProvider {
           'REPOS_GET_ALL_DEPLOYMENT_PROTECTION_RULES',
           httpResource<ReposGetAllDeploymentProtectionRulesResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}/deployment_protection_rules`,
             }),
             { parse: _validateResponse },
           ),

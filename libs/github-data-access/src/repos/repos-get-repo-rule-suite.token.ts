@@ -143,7 +143,7 @@ export function provideReposGetRepoRuleSuite(): FactoryProvider {
           'REPOS_GET_REPO_RULE_SUITE',
           httpResource<ReposGetRepoRuleSuiteResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/rulesets/rule-suites/${ruleSuiteId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/rulesets/rule-suites/${encodeURIComponent(ruleSuiteId)}`,
             }),
             { parse: _validateResponse },
           ),

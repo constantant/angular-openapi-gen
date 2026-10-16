@@ -214,9 +214,12 @@ export function provideReposCreateOrUpdateFileContents(): FactoryProvider {
                   ? (body as Signal<ReposCreateOrUpdateFileContentsBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/contents/${path}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeURIComponent(path)}`,
                 method: 'PUT',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

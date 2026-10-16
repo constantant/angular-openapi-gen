@@ -21,7 +21,7 @@ export function provideReposDownloadZipballArchive(): FactoryProvider {
         trackResource(
           'REPOS_DOWNLOAD_ZIPBALL_ARCHIVE',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/zipball/${ref}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/zipball/${encodeURIComponent(ref)}`,
           })),
         );
     },

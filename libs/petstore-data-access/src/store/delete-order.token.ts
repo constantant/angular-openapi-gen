@@ -22,7 +22,7 @@ export function provideDeleteOrder(): FactoryProvider {
         const _opts = splitCallOptions(options);
         return http.request<unknown>(
           'DELETE',
-          `${base}/store/order/${orderId}`,
+          `${base}/store/order/${encodeURIComponent(orderId)}`,
           {
             ..._opts.request,
             headers: {

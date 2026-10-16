@@ -65,7 +65,7 @@ export function provideReposGetCommitActivityStats(): FactoryProvider {
           'REPOS_GET_COMMIT_ACTIVITY_STATS',
           httpResource<ReposGetCommitActivityStatsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/stats/commit_activity`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/stats/commit_activity`,
             }),
             { parse: _validateResponse },
           ),

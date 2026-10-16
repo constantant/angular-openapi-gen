@@ -29,7 +29,10 @@ export function provideUsersDeleteSocialAccountForAuthenticatedUser(): FactoryPr
       const base = inject(GITHUB_BASE_URL);
       return (body: UsersDeleteSocialAccountForAuthenticatedUserBody) =>
         http.request<unknown>('DELETE', `${base}/user/social_accounts`, {
-          body,
+          body: typeof body === 'string' ? JSON.stringify(body) : body,
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
     },
   };

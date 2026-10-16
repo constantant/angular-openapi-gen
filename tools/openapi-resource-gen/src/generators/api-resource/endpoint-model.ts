@@ -102,6 +102,11 @@ export interface EndpointModel {
   deprecated: boolean;
   /** Names of security schemes that apply to this endpoint (resolved from global + operation level). */
   securitySchemeNames: string[];
+  /**
+   * The spec's security requirements as alternatives: each entry is one OR-branch, and the schemes
+   * inside it are required together. Generated code applies the first branch whose tokens are all provided.
+   */
+  securityAlternatives: string[][];
   /** Present when the primary response schema carries a discriminator. */
   discriminator: DiscriminatorModel | null;
   /** Enum parameters/properties with x-enum-varnames or x-enum-descriptions vendor extensions. */

@@ -164,7 +164,7 @@ export function provideUsersListFollowersForUser(): FactoryProvider {
         http
           .request<UsersListFollowersForUserResponse>(
             'GET',
-            `${base}/users/${username}/followers`,
+            `${base}/users/${encodeURIComponent(username)}/followers`,
             {
               params: dropUndefined(params) as unknown as Record<
                 string,

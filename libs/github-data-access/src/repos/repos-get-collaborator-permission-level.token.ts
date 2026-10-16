@@ -204,7 +204,7 @@ export function provideReposGetCollaboratorPermissionLevel(): FactoryProvider {
           'REPOS_GET_COLLABORATOR_PERMISSION_LEVEL',
           httpResource<ReposGetCollaboratorPermissionLevelResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/collaborators/${username}/permission`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/collaborators/${encodeURIComponent(username)}/permission`,
             }),
             { parse: _validateResponse },
           ),

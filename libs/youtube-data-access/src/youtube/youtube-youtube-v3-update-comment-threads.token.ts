@@ -358,7 +358,10 @@ export function provideYoutubeYoutubeV3UpdateCommentThreads(): FactoryProvider {
                 | boolean
                 | readonly (string | number | boolean)[]
               >,
-              body,
+              body: typeof body === 'string' ? JSON.stringify(body) : body,
+              headers: {
+                'Content-Type': 'application/json',
+              },
             },
           )
           .pipe(map(_validateResponse));

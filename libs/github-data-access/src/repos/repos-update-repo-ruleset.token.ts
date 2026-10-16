@@ -1259,9 +1259,12 @@ export function provideReposUpdateRepoRuleset(): FactoryProvider {
                   ? (body as Signal<ReposUpdateRepoRulesetBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/rulesets/${encodeURIComponent(rulesetId)}`,
                 method: 'PUT',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

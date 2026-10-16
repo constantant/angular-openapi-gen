@@ -24,7 +24,7 @@ export function provideReposDeleteCommitComment(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_COMMIT_COMMENT',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/comments/${commentId}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/comments/${encodeURIComponent(commentId)}`,
             method: 'DELETE',
           })),
         );

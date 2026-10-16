@@ -48,7 +48,7 @@ export function provideReposGetCodeFrequencyStats(): FactoryProvider {
           'REPOS_GET_CODE_FREQUENCY_STATS',
           httpResource<ReposGetCodeFrequencyStatsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/stats/code_frequency`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/stats/code_frequency`,
             }),
             { parse: _validateResponse },
           ),

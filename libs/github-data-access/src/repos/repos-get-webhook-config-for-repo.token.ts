@@ -77,7 +77,7 @@ export function provideReposGetWebhookConfigForRepo(): FactoryProvider {
           'REPOS_GET_WEBHOOK_CONFIG_FOR_REPO',
           httpResource<ReposGetWebhookConfigForRepoResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/config`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hooks/${encodeURIComponent(hookId)}/config`,
             }),
             { parse: _validateResponse },
           ),

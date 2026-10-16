@@ -785,9 +785,12 @@ export function provideReposTransfer(): FactoryProvider {
                   ? (body as Signal<ReposTransferBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/transfer`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/transfer`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

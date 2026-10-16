@@ -54,7 +54,7 @@ export function provideReposGetHashAlgorithm(): FactoryProvider {
           'REPOS_GET_HASH_ALGORITHM',
           httpResource<ReposGetHashAlgorithmResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/hash-algorithm`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hash-algorithm`,
             }),
             { parse: _validateResponse },
           ),

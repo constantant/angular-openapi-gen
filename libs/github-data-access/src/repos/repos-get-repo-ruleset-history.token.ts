@@ -90,7 +90,7 @@ export function provideReposGetRepoRulesetHistory(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}/history`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/rulesets/${encodeURIComponent(rulesetId)}/history`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

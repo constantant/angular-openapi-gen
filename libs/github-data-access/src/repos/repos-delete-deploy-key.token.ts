@@ -21,7 +21,7 @@ export function provideReposDeleteDeployKey(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_DEPLOY_KEY',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/keys/${keyId}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/keys/${encodeURIComponent(keyId)}`,
             method: 'DELETE',
           })),
         );

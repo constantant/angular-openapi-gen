@@ -24,7 +24,7 @@ export function provideReposDeleteBranchProtection(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_BRANCH_PROTECTION',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection`,
             method: 'DELETE',
           })),
         );

@@ -303,9 +303,12 @@ export function provideReposUpdateCommitComment(): FactoryProvider {
                   ? (body as Signal<ReposUpdateCommitCommentBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/comments/${commentId}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/comments/${encodeURIComponent(commentId)}`,
                 method: 'PATCH',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

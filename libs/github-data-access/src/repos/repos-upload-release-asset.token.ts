@@ -256,7 +256,7 @@ export function provideReposUploadReleaseAsset(): FactoryProvider {
                   ? (body as Signal<ReposUploadReleaseAssetBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/releases/${releaseId}/assets`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/${encodeURIComponent(releaseId)}/assets`,
                 method: 'POST',
                 params: dropUndefined(_params) as unknown as Record<
                   string,

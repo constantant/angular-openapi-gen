@@ -225,7 +225,7 @@ export function provideReposGetPagesHealthCheck(): FactoryProvider {
           'REPOS_GET_PAGES_HEALTH_CHECK',
           httpResource<ReposGetPagesHealthCheckResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/pages/health`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/health`,
             }),
             { parse: _validateResponse },
           ),

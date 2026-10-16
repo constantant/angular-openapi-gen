@@ -538,9 +538,12 @@ export function provideReposCreateRelease(): FactoryProvider {
                   ? (body as Signal<ReposCreateReleaseBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/releases`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

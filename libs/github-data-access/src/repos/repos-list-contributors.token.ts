@@ -142,7 +142,7 @@ export function provideReposListContributors(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/contributors`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contributors`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

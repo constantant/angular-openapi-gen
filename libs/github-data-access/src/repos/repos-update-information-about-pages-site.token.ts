@@ -43,9 +43,12 @@ export function provideReposUpdateInformationAboutPagesSite(): FactoryProvider {
                 ? (body as Signal<ReposUpdateInformationAboutPagesSiteBody>)()
                 : body;
             return {
-              url: `${base}/repos/${owner}/${repo}/pages`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages`,
               method: 'PUT',
-              body: _body,
+              body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+              headers: {
+                'Content-Type': 'application/json',
+              },
             };
           }),
         );

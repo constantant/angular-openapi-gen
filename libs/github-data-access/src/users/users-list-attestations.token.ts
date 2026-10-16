@@ -91,7 +91,7 @@ export function provideUsersListAttestations(): FactoryProvider {
         http
           .request<UsersListAttestationsResponse>(
             'GET',
-            `${base}/users/${username}/attestations/${subjectDigest}`,
+            `${base}/users/${encodeURIComponent(username)}/attestations/${encodeURIComponent(subjectDigest)}`,
             {
               params: dropUndefined(params) as unknown as Record<
                 string,

@@ -183,7 +183,7 @@ describe('api-resource generator', () => {
     });
     const content = tree.read('libs/petstore/src/pets/get-pet-by-id.token.ts', 'utf-8')!;
     expect(content).toContain('id: string');
-    expect(content).toContain('${id}');
+    expect(content).toContain('${encodeURIComponent(id)}');
   });
 
   it('mutation token includes method and body', async () => {
@@ -2005,13 +2005,13 @@ describe('api-resource generator', () => {
       expect(c).toContain('(body: CreatePetBody) => Observable<CreatePetResponse>');
       expect(c).not.toContain('Signal');
       expect(c).toContain("http.request<CreatePetResponse>('POST'");
-      expect(c).toMatch(/\n\s+body,/);
+      expect(c).toContain("body: typeof body === 'string' ? JSON.stringify(body) : body,");
       expect(c).not.toContain("method: 'POST'");
     });
 
     it('clientType=httpClient: path params and no-response endpoints', async () => {
       await gen({ clientType: 'httpClient' });
-      expect(read('get-pet-by-id')).toContain('`${base}/pets/${id}`');
+      expect(read('get-pet-by-id')).toContain('`${base}/pets/${encodeURIComponent(id)}`');
       expect(read('delete-pet')).toContain('Observable<unknown>');
       expect(read('delete-pet')).toContain("'DELETE'");
     });
@@ -2085,6 +2085,83 @@ describe('api-resource generator', () => {
       );
     });
   });
+  describe('wire-format correctness', () => {
+    const SPEC = {
+      components: {
+        securitySchemes: {
+          bearer: { type: 'http', scheme: 'bearer' },
+          apiKey: { type: 'apiKey', in: 'header', name: 'X-Api-Key' },
+        },
+      },
+      paths: {
+        '/companies/{issuer}': {
+          get: {
+            operationId: 'getCompany',
+            tags: ['c'],
+            security: [{ bearer: [] }, { apiKey: [] }],
+            parameters: [{ in: 'path', name: 'issuer', required: true, schema: { type: 'string' } }],
+            responses: { '200': { content: { 'application/json': { schema: { type: 'object' } } } } },
+          },
+        },
+        '/subscriptions': {
+          post: {
+            operationId: 'subscribe',
+            tags: ['c'],
+            security: [{ bearer: [], apiKey: [] }],
+            requestBody: { content: { 'application/json': { schema: { type: 'string' } } } },
+            responses: { '204': { description: 'ok' } },
+          },
+        },
+        '/upload': {
+          post: {
+            operationId: 'upload',
+            tags: ['c'],
+            requestBody: { content: { 'application/x-www-form-urlencoded': { schema: { type: 'object' } } } },
+            responses: { '204': { description: 'ok' } },
+          },
+        },
+      },
+    };
+
+    const read = async (clientType: 'httpResource' | 'httpClient', file: string): Promise<string> => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(SPEC as never);
+      await apiResourceGenerator(tree, { specPath: 'specs/petstore.yaml', outputDir: 'libs/wire/src', clientType });
+      return tree.read(`libs/wire/src/c/${file}.token.ts`, 'utf-8')!.replace(/\s+/g, ' ');
+    };
+
+    for (const clientType of ['httpResource', 'httpClient'] as const) {
+      describe(clientType, () => {
+        it('percent-encodes path parameters', async () => {
+          expect(await read(clientType, 'get-company')).toContain('/companies/${encodeURIComponent(issuer)}');
+        });
+
+        it('applies security requirements as alternatives, the first fully provided one winning', async () => {
+          const c = await read(clientType, 'get-company');
+          expect(c).toContain('...(bearer?.() != null ? { Authorization: `Bearer ${bearer()}` } : {})');
+          expect(c).toContain("...(apiKey?.() != null && !(bearer?.() != null) ? { 'X-Api-Key': `${apiKey()}` } : {})");
+        });
+
+        it('needs every scheme of one requirement before applying it', async () => {
+          const c = await read(clientType, 'subscribe');
+          expect(c).toContain('bearer?.() != null && apiKey?.() != null ? { Authorization');
+          expect(c).toContain("bearer?.() != null && apiKey?.() != null ? { 'X-Api-Key'");
+        });
+
+        it('sends a JSON body as JSON, quoting a string', async () => {
+          const c = await read(clientType, 'subscribe');
+          expect(c).toContain("'Content-Type': 'application/json'");
+          expect(c).toMatch(/body: typeof _?body === 'string' \? JSON\.stringify\(_?body\) : _?body,/);
+        });
+
+        it('leaves non-JSON bodies alone', async () => {
+          const c = await read(clientType, 'upload');
+          expect(c).not.toContain('Content-Type');
+          expect(c).not.toContain('JSON.stringify');
+        });
+      });
+    }
+  });
+
   describe('request shapes (httpResource and httpClient)', () => {
     const json = (schema: unknown = {}) => ({ 'application/json': { schema } });
     const SHAPES_SPEC = {
@@ -2183,7 +2260,8 @@ describe('api-resource generator', () => {
         expect(list).toContain("'X-Api-Version': xApiVersion");
         expect(list).toContain("...(acceptLanguage != null ? { 'Accept-Language': acceptLanguage } : {})");
         expect(list).toContain("...(keyHeader?.() != null ? { 'X-Key': `${keyHeader()}` } : {})");
-        expect(list).toContain('...(keyQuery?.() != null ? { api_key: `${keyQuery()}` } : {})');
+        // security: [{ keyHeader }, { keyQuery }] are alternatives: the query key only applies without the header key
+        expect(list).toContain('...(keyQuery?.() != null && !(keyHeader?.() != null) ? { api_key: `${keyQuery()}` } : {})');
         expect(list).toContain('_serializeParams');
         expect(list).toContain('join("|")'.replace(/"/g, "'"));
       });
@@ -2581,7 +2659,7 @@ describe('api-resource generator', () => {
         await gen('httpResource');
         const c = read('create-plain');
         expect(c).toContain("const_body=typeofbody==='function'?(bodyasSignal<CreatePlainBody>)():body;");
-        expect(c).toContain('body:_body,');
+        expect(c).toContain("body:typeof_body==='string'?JSON.stringify(_body):_body,");
         // The raw argument must never be placed in the request config: it would send the signal.
         expect(c).not.toMatch(/[{,]body,/);
       });
@@ -2593,7 +2671,7 @@ describe('api-resource generator', () => {
         const body = c.indexOf('const_body=');
         expect(guard).toBeGreaterThan(-1);
         expect(body).toBeGreaterThan(guard);
-        expect(c).toContain('body:_body,');
+        expect(c).toContain("body:typeof_body==='string'?JSON.stringify(_body):_body,");
       });
 
       it('applies to binary bodies too', async () => {
@@ -2625,7 +2703,7 @@ describe('api-resource generator', () => {
         const c = read('create-plain');
         expect(c).not.toContain('_body');
         expect(c).toContain('(body:CreatePlainBody)');
-        expect(c).toMatch(/[{,]body,/);
+        expect(c).toContain("body:typeofbody==='string'?JSON.stringify(body):body,");
       });
     });
 

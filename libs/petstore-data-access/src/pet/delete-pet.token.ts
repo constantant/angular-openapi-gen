@@ -33,7 +33,7 @@ export function provideDeletePet(): FactoryProvider {
           httpResource<unknown>(() => {
             return {
               ..._opts.request,
-              url: `${base}/pet/${petId}`,
+              url: `${base}/pet/${encodeURIComponent(petId)}`,
               method: 'DELETE',
               headers: {
                 ...(apiKey != null ? { api_key: apiKey } : {}),

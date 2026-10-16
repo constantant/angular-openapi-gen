@@ -88,9 +88,12 @@ export function provideReposCreateDeploymentBranchPolicy(): FactoryProvider {
                   ? (body as Signal<ReposCreateDeploymentBranchPolicyBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}/deployment-branch-policies`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

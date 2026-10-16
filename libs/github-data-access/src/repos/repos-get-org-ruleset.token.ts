@@ -1242,7 +1242,7 @@ export function provideReposGetOrgRuleset(): FactoryProvider {
           'REPOS_GET_ORG_RULESET',
           httpResource<ReposGetOrgRulesetResponse>(
             () => ({
-              url: `${base}/orgs/${org}/rulesets/${rulesetId}`,
+              url: `${base}/orgs/${encodeURIComponent(org)}/rulesets/${encodeURIComponent(rulesetId)}`,
             }),
             { parse: _validateResponse },
           ),

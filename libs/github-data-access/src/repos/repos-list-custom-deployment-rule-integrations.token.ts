@@ -107,7 +107,7 @@ export function provideReposListCustomDeploymentRuleIntegrations(): FactoryProvi
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment_protection_rules/apps`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}/deployment_protection_rules/apps`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

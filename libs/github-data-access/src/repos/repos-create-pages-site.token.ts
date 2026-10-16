@@ -174,9 +174,12 @@ export function provideReposCreatePagesSite(): FactoryProvider {
                   ? (body as Signal<ReposCreatePagesSiteBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/pages`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

@@ -78,8 +78,9 @@ export function providePlaceOrder(): FactoryProvider {
         return http
           .request<PlaceOrderResponse>('POST', `${base}/store/order`, {
             ..._opts.request,
-            body,
+            body: typeof body === 'string' ? JSON.stringify(body) : body,
             headers: {
+              'Content-Type': 'application/json',
               ..._opts.headers,
             },
           })

@@ -93,7 +93,10 @@ export function provideUsersCreatePublicSshKeyForAuthenticatedUser(): FactoryPro
             'POST',
             `${base}/user/keys`,
             {
-              body,
+              body: typeof body === 'string' ? JSON.stringify(body) : body,
+              headers: {
+                'Content-Type': 'application/json',
+              },
             },
           )
           .pipe(map(_validateResponse));
