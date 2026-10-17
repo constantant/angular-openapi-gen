@@ -5,6 +5,8 @@ export interface MockRequestInfo {
   url?: string;
   /** Lower-cased names. Headers the browser adds itself (cookies, user agent) are not seen. */
   headers?: Record<string, string>;
+  /** The body as sent, when it was text (a JSON body included): `"en"` and `en` parse alike, the wire does not. */
+  raw?: string;
 }
 
 export type MockEvent =

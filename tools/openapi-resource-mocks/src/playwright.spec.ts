@@ -197,6 +197,17 @@ describe('installOpenApiMocks', () => {
     await context.close();
   }, 30_000);
 
+  it('answers in turn with sequence(): a failure, then the data', async () => {
+    const { context, page, api } = await setup();
+    await page.goto('/');
+    await api.endpoint('ADD_PET').sequence([{ error: { title: 'busy' }, status: 503 }, { value: { id: '9', name: 'Rex' } }]);
+    const post = () => call(page, '/api/pets', { method: 'POST', body: JSON.stringify({ name: 'Rex' }) });
+    expect(await post()).toEqual({ status: 503, body: { title: 'busy' } });
+    expect(await post()).toEqual({ status: 200, body: { id: '9', name: 'Rex' } });
+    expect(await post()).toEqual({ status: 200, body: { id: '9', name: 'Rex' } });
+    await context.close();
+  }, 30_000);
+
   it('rejects keys that are not among the endpoints', async () => {
     const { context, api } = await setup();
     expect(() => api.endpoint('NOPE' as 'GET_PET')).toThrow('"NOPE" is not one of the endpoints given to installOpenApiMocks.');
