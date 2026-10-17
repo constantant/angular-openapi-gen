@@ -20,6 +20,52 @@ export type MockBehavior<T = unknown> = (
   progress?: MockProgress[];
 };
 
+/** What a request must carry for a case to apply. Values are compared as the wire has them: strings. */
+export interface MockRequestMatch {
+  /** The path parameters, in template order (`/bonds/{isin}` → `['XS0000000001']`). */
+  path?: string[];
+  /** Query parameters that must be present with these values; others may be there too. */
+  query?: Record<string, string | string[]>;
+}
+
+/**
+ * Different answers for different requests of one endpoint, e.g. one bond found and another refused: the first case
+ * whose `when` matches answers, else `otherwise` (no answer at all when it is absent: the request goes on as if the
+ * endpoint had no behavior). Serializable, so a tool outside the page (Playwright, DevTools) can send it.
+ */
+export interface MockCases {
+  cases: Array<{ when: MockRequestMatch; then: MockBehavior }>;
+  otherwise?: MockBehavior;
+}
+
+/** A behavior, or cases that pick one per request. */
+export type MockBehaviorOrCases = MockBehavior | MockCases;
+
+/** What a request matched: its path parameters and query, read from the wire. */
+interface RequestParts {
+  pathParams: string[];
+  query: Record<string, string | string[]>;
+}
+
+function sameValue(expected: string | string[], actual: string | string[] | undefined): boolean {
+  if (actual === undefined) return false;
+  const a = Array.isArray(expected) ? expected : [expected];
+  const b = Array.isArray(actual) ? actual : [actual];
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+function matches(when: MockRequestMatch, parts: RequestParts): boolean {
+  if (when.path && !when.path.every((v, i) => parts.pathParams[i] === v)) return false;
+  return Object.entries(when.query ?? {}).every(([name, value]) => sameValue(value, parts.query[name]));
+}
+
+/** The behavior that answers a request: the behavior itself, or the matching case of cases. */
+export function pickBehavior(behavior: MockBehaviorOrCases | undefined, parts: RequestParts | undefined): MockBehavior | undefined {
+  if (!behavior || !('cases' in behavior)) return behavior;
+  const hit = parts ? behavior.cases.find((c) => matches(c.when, parts)) : undefined;
+  return hit ? hit.then : behavior.otherwise;
+}
+
 export interface MockResponse {
   status: number;
   /** Lower-cased header names; includes the `content-type` of `body`. */
@@ -69,8 +115,8 @@ export interface ConfiguredEndpoint {
   key: string;
   rule: EndpointRule;
   meta?: MockResourceMeta;
-  /** What the tool last set (`resolve` / `fail` / `setLoading`); `reset()` drops it. */
-  behavior?: MockBehavior;
+  /** What the tool last set (`resolve` / `fail` / `setLoading` / cases); `reset()` drops it. */
+  behavior?: MockBehaviorOrCases;
 }
 
 export interface MockRuntimeConfig {
@@ -116,8 +162,8 @@ interface UnclaimedResponse {
 
 export interface MockRegistration {
   meta?: MockResourceMeta;
-  /** A fixed behavior, or a function asked once per request (e.g. to step through a sequence). */
-  behavior?: MockBehavior | (() => MockBehavior | undefined);
+  /** A fixed behavior, cases per request, or a function asked once per request (e.g. to step through a sequence). */
+  behavior?: MockBehaviorOrCases | (() => MockBehavior | undefined);
 }
 
 interface Pending {
@@ -126,6 +172,8 @@ interface Pending {
   caught?: { requestId: string; args: unknown[]; ts: number };
   timer?: ReturnType<typeof setTimeout>;
   progress?: (progress: MockProgress) => void;
+  /** What the request matched, to pick a case for it whenever a behavior is applied. */
+  parts?: RequestParts;
 }
 
 /** What a generated `httpResource` token hands to `globalThis.__oarmTrack__`. */
@@ -147,9 +195,9 @@ interface Entry {
   matcher: EndpointMatcher;
   order: number;
   meta?: MockResourceMeta;
-  initial?: MockBehavior | (() => MockBehavior | undefined);
+  initial?: MockBehaviorOrCases | (() => MockBehavior | undefined);
   /** Set from the window API / DevTools panel; wins over `initial` until `reset()`. */
-  override?: MockBehavior;
+  override?: MockBehaviorOrCases;
   pending: Set<Pending>;
   history: MockEvent[];
   listeners: Set<(event: MockEvent) => void>;
@@ -172,7 +220,7 @@ interface ControlDetail {
   steps?: number;
   rule?: EndpointRule;
   meta?: MockResourceMeta;
-  behavior?: MockBehavior;
+  behavior?: MockBehaviorOrCases;
   config?: MockRuntimeConfig;
 }
 
@@ -385,7 +433,7 @@ export class MockRuntime {
    * do but with every field of a behavior (`status`, `headers`, `delay`, `progress`). `undefined`
    * resets it to the behavior it was registered with.
    */
-  setBehavior(key: string, behavior: MockBehavior | undefined): void {
+  setBehavior(key: string, behavior: MockBehaviorOrCases | undefined): void {
     const entry = this.entries.get(key);
     if (!entry) throw new Error(`No mocked endpoint is registered as "${key}".`);
     if (behavior === undefined) {
@@ -394,6 +442,7 @@ export class MockRuntime {
       return;
     }
     this.setOverride(entry, behavior);
+    if ('cases' in behavior) return; // each request reports what it got with its respond event
     if ('loading' in behavior) this.emit(entry, { type: 'loading', ts: Date.now() });
     else if ('error' in behavior) this.emit(entry, { type: 'error', error: behavior.error, ts: Date.now() });
     else this.emit(entry, { type: 'resolve', value: behavior.value, ts: Date.now() });
@@ -591,12 +640,15 @@ export class MockRuntime {
       ? { requestId: `req-${++this.reqCount}`, args, ts: Date.now() }
       : undefined;
     if (caught) this.emit(entry, { type: 'caught', ...caught, ...info });
-    const behavior: MockBehavior | undefined = caught ? { loading: true } : (entry.override ?? this.initialOf(entry));
+    const parts: RequestParts = { pathParams: best.pathParams, query: best.query };
+    const behavior: MockBehavior | undefined = caught
+      ? { loading: true }
+      : pickBehavior(entry.override ?? this.initialOf(entry), parts);
     if (!behavior) return this.refuse(request, 'no-behavior', entry);
 
     let settle!: (result: MockResult) => void;
     const result = new Promise<MockResult>((resolve) => (settle = resolve));
-    const pending: Pending = { settle, caught };
+    const pending: Pending = { settle, caught, parts };
     entry.pending.add(pending);
     entry.state.status = 'loading';
     this.apply(entry, pending, behavior);
@@ -634,11 +686,12 @@ export class MockRuntime {
     return { result: Promise.resolve(response), onProgress: () => undefined, cancel: () => undefined };
   }
 
-  private initialOf(entry: Entry): MockBehavior | undefined {
+  private initialOf(entry: Entry): MockBehaviorOrCases | undefined {
     return typeof entry.initial === 'function' ? entry.initial() : entry.initial;
   }
 
-  private apply(entry: Entry, pending: Pending, behavior: MockBehavior | undefined): void {
+  private apply(entry: Entry, pending: Pending, given: MockBehaviorOrCases | undefined): void {
+    const behavior = pickBehavior(given, pending.parts);
     if (pending.timer !== undefined) clearTimeout(pending.timer);
     pending.timer = undefined;
     if (behavior?.progress?.length) {
@@ -690,7 +743,7 @@ export class MockRuntime {
    * already loaded page shows the edit without a reload. Resources are only re-run while the
    * endpoint has a behavior: with none the request would go to the real API.
    */
-  private setOverride(entry: Entry, behavior: MockBehavior | undefined): void {
+  private setOverride(entry: Entry, behavior: MockBehaviorOrCases | undefined): void {
     entry.override = behavior;
     if (entry.pending.size > 0) {
       for (const pending of [...entry.pending]) this.apply(entry, pending, behavior ?? this.initialOf(entry));
@@ -700,7 +753,9 @@ export class MockRuntime {
     if (behavior !== undefined || entry.initial !== undefined) this.reloadLive(entry);
     // Nothing is waiting: the state shows what the next request will get (unknown for a function).
     const effective = behavior ?? (typeof entry.initial === 'function' ? undefined : entry.initial);
-    if (effective && 'loading' in effective) {
+    if (effective && 'cases' in effective) {
+      // depends on the request: nothing to show before one comes
+    } else if (effective && 'loading' in effective) {
       entry.state.status = 'loading';
     } else if (effective) {
       const response = toResponse(effective, entry.meta);

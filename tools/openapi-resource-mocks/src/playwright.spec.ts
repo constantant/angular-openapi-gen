@@ -172,6 +172,31 @@ describe('installOpenApiMocks', () => {
     await context.close();
   }, 30_000);
 
+  it('answers different requests of one endpoint differently with when(), across page loads, until reset()', async () => {
+    const { context, page, api } = await setup();
+    const getPet = api.endpoint('GET_PET');
+    await getPet.when({ path: ['1'] }).resolve({ id: '1', name: 'Rex' }); // the page's first request
+    await getPet.when({ path: ['2'] }).fail('404', { title: 'gone' });
+    await page.goto('/');
+    expect(await page.evaluate(() => (window as unknown as { first: Promise<unknown> }).first)).toEqual({
+      status: 200,
+      body: { id: '1', name: 'Rex' },
+    });
+    expect(await call(page, '/api/pets/2')).toEqual({ status: 404, body: { title: 'gone' } });
+    // others get the endpoint's own behavior (the default here)
+    expect((await call(page, '/api/pets/3')).body).toEqual({ id: '1', name: 'Default' });
+
+    // a case set again replaces the one for the same match, in the open page and after a reload
+    await getPet.when({ path: ['2'] }).resolve({ id: '2', name: 'Luna' });
+    expect((await call(page, '/api/pets/2')).body).toEqual({ id: '2', name: 'Luna' });
+    await page.reload();
+    expect((await call(page, '/api/pets/2')).body).toEqual({ id: '2', name: 'Luna' });
+
+    await getPet.reset();
+    expect((await call(page, '/api/pets/2')).body).toEqual({ id: '1', name: 'Default' });
+    await context.close();
+  }, 30_000);
+
   it('rejects keys that are not among the endpoints', async () => {
     const { context, api } = await setup();
     expect(() => api.endpoint('NOPE' as 'GET_PET')).toThrow('"NOPE" is not one of the endpoints given to installOpenApiMocks.');

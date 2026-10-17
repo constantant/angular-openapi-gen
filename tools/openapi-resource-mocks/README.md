@@ -380,7 +380,8 @@ How it works:
 | `resolve(value, { status?, headers?, delay? })` | Answer with `value` (typed by `EndpointResponses`) |
 | `fail(status, body, code?)` | A documented error: `fail('404', body)` with `body` typed by `EndpointErrors`; a range or `default` key needs the numeric `code` |
 | `failWith(status, body?, headers?)` | Any failing status, documented or not |
-| `setLoading()` / `set(behavior)` / `reset()` | Hold requests / any behavior (`delay`, `progress`, …) / back to the default |
+| `setLoading()` / `set(behavior)` / `reset()` | Hold requests / any behavior (`delay`, `progress`, …) / back to the default, without cases |
+| `when({ path?, query? })` | The answer to the matching requests only: `.resolve()`, `.fail()`, `.failWith()`, `.setLoading()`, `.set()` (see below) |
 | `requests` / `calls` / `clearRequests()` | What it received, across page loads |
 | `expectCalled(ms?)` / `expectCalledWith(...args)` / `waitForRequest(predicate?, ms?)` | Wait (default 5 s) for a request; the error lists what was received instead |
 
@@ -391,6 +392,25 @@ status per endpoint), it shows which inputs and outputs of the API no test exerc
 
 The runtime script ships prebuilt (`runtime.global.js`); in a source checkout of this repository it is
 bundled with esbuild on first use. `@playwright/test` is an optional peer dependency, used for types.
+
+#### Different answers for different requests
+
+One endpoint, several answers: a bond that is found and one that is refused, a search that finds
+nothing. `when()` matches the path parameters (as strings, in template order) and/or query values
+(the request may carry more); the first case set answers, and every other request gets the
+endpoint's own behavior:
+
+```typescript
+const getBond = api.endpoint('GET_BOND');
+await getBond.resolve(anyBond);                                  // every other bond
+await getBond.when({ path: ['XS0000000001'] }).resolve(eDreams);
+await getBond.when({ path: ['US0000000002'] }).fail('403', { title: 'Subscribers only' });
+await api.endpoint('SEARCH').when({ query: { q: 'nothing' } }).resolve([]);
+```
+
+Setting a case again for the same match replaces it; `reset()` drops every case. In the page this is
+one serializable behavior, `{ cases: [{ when, then }], otherwise }` (`MockCases`), which
+`runtime.setBehavior()` and `configure()` accept too.
 
 ### Mocking without a mock build, by hand
 
@@ -502,7 +522,7 @@ teardown.
 | `register(key, rule, registration?)` | Add an endpoint; returns an unregister function. `rule` is `{ method, baseUrl, path }` |
 | `unregister(key)` | Remove an endpoint |
 | `controls(key)` | The endpoint's `WindowMockEntry`, `undefined` when it is not registered |
-| `setBehavior(key, behavior?)` | Any behavior with every field (`status`, `headers`, `delay`, `progress`); `undefined` resets it |
+| `setBehavior(key, behavior?)` | Any behavior with every field (`status`, `headers`, `delay`, `progress`), or `MockCases` (an answer per request); `undefined` resets it |
 | `setStrict(prefixes \| false)` / `unmatchedRequests()` | Strict mode: requests under these URL prefixes that no behavior answers get a 501 (`UNMATCHED_STATUS`) instead of the network, and are recorded |
 | `setCatchMode(key, enabled)` / `isCatchMode(key)` | Catch mode, also for a key that is not registered yet |
 | `hold(timeoutMs)` | Park all requests until `configure()` is called or the timeout passes |
