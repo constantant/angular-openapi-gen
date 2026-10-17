@@ -1,3 +1,13 @@
+## 2.3.1 (2026-10-17)
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** leave unused schema.d imports out of token files ([#116](https://github.com/constantant/angular-openapi-gen/pull/116))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 2.3.0 (2026-10-17)
 
 ### 🚀 Features
