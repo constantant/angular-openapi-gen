@@ -286,6 +286,16 @@ export function buildEndpoints(
         | undefined;
       const resolvedSecurity =
         operationSecurity !== undefined ? operationSecurity : globalSecurity;
+      // Navigation: `x-navigation` decides when present; otherwise a GET that only ever redirects.
+      const responseCodes = Object.keys(operation.responses ?? {});
+      const xNavigation = (operation as Record<string, unknown>)['x-navigation'];
+      const navigation =
+        typeof xNavigation === 'boolean'
+          ? xNavigation
+          : method === 'get' &&
+            responseCodes.some((c) => /^30[1-3578]$/.test(c)) &&
+            !responseCodes.some((c) => /^2/.test(c));
+
       const securityAlternatives = resolvedSecurity.map((req) => Object.keys(req));
       const securitySchemeNames = [...new Set(securityAlternatives.flat())];
 
@@ -398,6 +408,7 @@ export function buildEndpoints(
         deprecated,
         securitySchemeNames,
         securityAlternatives,
+        navigation,
         errorStatuses,
         discriminator,
         enumExtensions,

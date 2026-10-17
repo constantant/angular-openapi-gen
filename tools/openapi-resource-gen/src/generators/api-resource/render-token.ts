@@ -170,7 +170,7 @@ export function yieldsHttpEvents(ep: EndpointModel, client: ClientType, reportPr
 
 /** True when the endpoint's query params go through the shared `dropUndefined` helper. */
 export function usesDropUndefined(ep: EndpointModel): boolean {
-  return ep.hasQueryParams && ep.specialQueryParams.length === 0;
+  return !ep.navigation && ep.hasQueryParams && ep.specialQueryParams.length === 0;
 }
 
 export function renderTokenFile(

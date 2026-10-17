@@ -33,6 +33,7 @@ import { isSwagger2, upgradeSwagger2 } from './swagger2';
 import { renderRequestOptionsFile } from './render-request-options';
 import { renderMockHookFile } from './render-mock-hook';
 import { renderQueryParamsFile } from './render-query-params';
+import { renderNavigationTokenFile } from './render-navigation';
 import { parseServerVariables, renderBaseUrlFile, renderServerVariablesFile } from './render-server-variables';
 import type { SecuritySchemeModel } from './endpoint-model';
 
@@ -86,6 +87,12 @@ export interface ApiResourceGeneratorSchema {
    * and build the default base URL from them. Default: false.
    */
   serverVariables?: boolean;
+  /**
+   * Comma-separated operationIds that are browser navigations (redirects such as an OAuth login): their
+   * token builds the URL instead of making a request. Adds to what `x-navigation` and an only-3xx
+   * response already mark.
+   */
+  navigationOperations?: string;
   /** Comma-separated tags whose endpoints use HttpClient regardless of `clientType`. */
   httpClientTags?: string;
   /** Comma-separated operationIds that use HttpClient regardless of `clientType`. */
@@ -421,6 +428,13 @@ async function generateApiResources(
 
     const endpoints = buildEndpoints(api, allowedTags, namingConvention);
 
+    const navigationOps = splitList(options.navigationOperations);
+    const unknownNavigation = [...navigationOps].filter((o) => !endpoints.some((e) => e.operationId === o));
+    if (unknownNavigation.length > 0) {
+      throw new Error(`navigationOperations matched no endpoints: ${unknownNavigation.join(', ')}`);
+    }
+    for (const ep of endpoints) if (navigationOps.has(ep.operationId)) ep.navigation = true;
+
     // Per-endpoint client selection: lib-wide default, overridden per tag / operationId.
     const httpClientTags = splitList(options.httpClientTags);
     const httpClientOps = splitList(options.httpClientOperations);
@@ -454,6 +468,12 @@ async function generateApiResources(
       for (const ep of tagEndpoints) {
         const filePath = joinPathFragments(tagDir, `${ep.fileName}.token.ts`);
         const client = clientFor(ep);
+        if (ep.navigation) {
+          // A URL builder: nothing to mock, so no .mock.ts / .msw.ts either.
+          tree.write(filePath, renderNavigationTokenFile(ep, baseUrlToken, providedIn));
+          writtenFiles.add(filePath);
+          continue;
+        }
         tree.write(filePath, renderTokenFile(ep, baseUrlToken, {
           providedIn,
           schemesByName,
@@ -493,9 +513,10 @@ async function generateApiResources(
         const mockBarrelPath = joinPathFragments(tagDir, 'index.mock.ts');
         const mockBarrel =
           tagEndpoints
+            .filter((ep) => !ep.navigation)
             .map((ep) => `export * from './${ep.fileName}.mock';`)
             .join('\n') + '\n';
-        tree.write(mockBarrelPath, mockBarrel);
+        tree.write(mockBarrelPath, mockBarrel.trim() ? mockBarrel : 'export {};\n');
         writtenFiles.add(mockBarrelPath);
       }
 
@@ -503,9 +524,10 @@ async function generateApiResources(
         const mswBarrelPath = joinPathFragments(tagDir, 'index.msw.ts');
         const mswBarrel =
           tagEndpoints
+            .filter((ep) => !ep.navigation)
             .map((ep) => `export * from './${ep.fileName}.msw';`)
             .join('\n') + '\n';
-        tree.write(mswBarrelPath, mswBarrel);
+        tree.write(mswBarrelPath, mswBarrel.trim() ? mswBarrel : 'export {};\n');
         writtenFiles.add(mswBarrelPath);
       }
     }
@@ -528,9 +550,10 @@ async function generateApiResources(
       writtenFiles.add(mockHookPath);
     }
 
-    if (endpoints.some(usesDropUndefined)) {
+    const needsQueryString = endpoints.some((ep) => ep.navigation && ep.hasQueryParams);
+    if (needsQueryString || endpoints.some(usesDropUndefined)) {
       const queryParamsPath = joinPathFragments(outputDir, 'query-params.ts');
-      tree.write(queryParamsPath, renderQueryParamsFile());
+      tree.write(queryParamsPath, renderQueryParamsFile(needsQueryString));
       writtenFiles.add(queryParamsPath);
     }
 
@@ -547,7 +570,7 @@ async function generateApiResources(
       writtenFiles.add(joinPathFragments(outputDir, 'index.mock.ts'));
       addMockPathAlias(tree, outputDir);
 
-      const manifestMocks = endpoints.map((ep) => ({
+      const manifestMocks = endpoints.filter((ep) => !ep.navigation).map((ep) => ({
         tokenName: ep.tokenName,
         operationId: ep.operationId,
         path: ep.apiPath,

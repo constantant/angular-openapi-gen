@@ -107,6 +107,12 @@ export interface EndpointModel {
    * inside it are required together. Generated code applies the first branch whose tokens are all provided.
    */
   securityAlternatives: string[][];
+  /**
+   * The operation is meant for browser navigation (a redirect such as an OAuth login), not an XHR call.
+   * Its token builds the URL instead of making a request. Set by `x-navigation`, an only-3xx response,
+   * or the `navigationOperations` option.
+   */
+  navigation: boolean;
   /** Present when the primary response schema carries a discriminator. */
   discriminator: DiscriminatorModel | null;
   /** Enum parameters/properties with x-enum-varnames or x-enum-descriptions vendor extensions. */
