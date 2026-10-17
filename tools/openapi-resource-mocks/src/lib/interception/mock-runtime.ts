@@ -2,7 +2,7 @@ import type { MockEvent, MockProgress } from '../mock-events';
 import type { MockResourceMeta } from '../mock-resource-meta';
 import type { WindowMockEntry } from '../window-mock-entry';
 import { isJsonContentType, pageHref } from './transport-utils';
-import { compileEndpointRule, type EndpointMatcher, type EndpointRule } from './url-matcher';
+import { compileEndpointRule, isUnderPrefix, type EndpointMatcher, type EndpointRule } from './url-matcher';
 
 /**
  * How a mocked endpoint answers. `value` is sent as the response body (JSON unless it is a string,
@@ -38,7 +38,23 @@ export interface InterceptedRequest {
   url: string;
   /** Request body, already parsed when it was JSON. */
   body?: unknown;
+  /** Headers the app set, lower-cased names. */
+  headers?: Record<string, string>;
 }
+
+/** A request strict mode refused: it matched no endpoint, or one without a behavior. */
+export interface UnmatchedRequest {
+  /** Upper-case HTTP method. */
+  method: string;
+  url: string;
+  reason: 'no-endpoint' | 'no-behavior';
+  /** The endpoint, for `no-behavior`. */
+  key?: string;
+  ts: number;
+}
+
+/** The status strict mode answers a refused request with. */
+export const UNMATCHED_STATUS = 501;
 
 export interface Interception {
   result: Promise<MockResult>;
@@ -60,6 +76,8 @@ export interface ConfiguredEndpoint {
 export interface MockRuntimeConfig {
   endpoints?: ConfiguredEndpoint[];
   catchModes?: Record<string, boolean>;
+  /** URL prefixes strict mode covers, or `false` to turn it off; see {@link MockRuntime.setStrict}. */
+  strict?: string[] | false;
 }
 
 /** A request the page made, as kept by {@link MockRuntime.observeRequests}: no query, no body. */
@@ -213,6 +231,9 @@ export class MockRuntime {
   /** Real responses to requests that matched no endpoint, kept while observing; see {@link realResponse}. */
   private readonly unclaimed = new Map<string, UnclaimedResponse>();
   private unclaimedSize = 0;
+  /** URL prefixes under which nothing may reach the network; see {@link setStrict}. */
+  private strictPrefixes: string[] | undefined;
+  private readonly unmatched: UnmatchedRequest[] = [];
   private order = 0;
   private reqCount = 0;
   private readonly onControl = (e: Event): void => this.control((e as CustomEvent<ControlDetail>).detail);
@@ -343,8 +364,44 @@ export class MockRuntime {
     held?.forEach((resume) => resume());
   }
 
+  /**
+   * Strict mode: a request under one of `prefixes` (absolute, or relative to the page; `''` is the
+   * page's whole origin) that matches no endpoint, or an endpoint without a behavior, never reaches
+   * the network. It is answered with {@link UNMATCHED_STATUS} and recorded (see
+   * {@link unmatchedRequests}, and the `openapi-mock-unmatched` DOM event), so a test fails loudly
+   * instead of quietly talking to a real API. `false` turns it off.
+   */
+  setStrict(prefixes: string[] | false): void {
+    this.strictPrefixes = prefixes === false ? undefined : [...prefixes];
+  }
+
+  /** The requests strict mode refused since the runtime was installed. */
+  unmatchedRequests(): UnmatchedRequest[] {
+    return [...this.unmatched];
+  }
+
+  /**
+   * Sets what an endpoint answers from now on, as `resolve` / `fail` / `setLoading` on its controls
+   * do but with every field of a behavior (`status`, `headers`, `delay`, `progress`). `undefined`
+   * resets it to the behavior it was registered with.
+   */
+  setBehavior(key: string, behavior: MockBehavior | undefined): void {
+    const entry = this.entries.get(key);
+    if (!entry) throw new Error(`No mocked endpoint is registered as "${key}".`);
+    if (behavior === undefined) {
+      this.reset(entry);
+      this.emit(entry, { type: 'reset', ts: Date.now() });
+      return;
+    }
+    this.setOverride(entry, behavior);
+    if ('loading' in behavior) this.emit(entry, { type: 'loading', ts: Date.now() });
+    else if ('error' in behavior) this.emit(entry, { type: 'error', error: behavior.error, ts: Date.now() });
+    else this.emit(entry, { type: 'resolve', value: behavior.value, ts: Date.now() });
+  }
+
   /** Registers the endpoints of an outside tool with what it last set on them, then releases {@link hold}. */
   configure(config: MockRuntimeConfig): void {
+    if (config.strict !== undefined) this.setStrict(config.strict);
     for (const [key, enabled] of Object.entries(config.catchModes ?? {})) this.setCatchMode(key, enabled);
     for (const endpoint of config.endpoints ?? []) this.registerConfigured(endpoint);
     this.release();
@@ -515,15 +572,16 @@ export class MockRuntime {
   private interceptNow(request: InterceptedRequest): Interception | undefined {
     const method = request.method.toUpperCase();
     const best = this.bestMatch(method, request.url);
-    if (!best) return undefined;
+    if (!best) return this.refuse(request, 'no-endpoint');
 
     const { entry } = best;
     const args: unknown[] = [...best.pathParams];
     if (BODY_METHODS.has(method) && request.body !== undefined) args.push(request.body);
     if (Object.keys(best.query).length > 0) args.push(best.query);
+    const info = { method, url: request.url, headers: request.headers ?? {} };
 
     entry.state.requestCount++;
-    this.emit(entry, { type: 'request', args, ts: Date.now() });
+    this.emit(entry, { type: 'request', args, ...info, ts: Date.now() });
 
     // A request caused by a mock edit (see `reloadLive`) delivers that edit; catching it again would
     // leave the resource loading forever.
@@ -532,9 +590,9 @@ export class MockRuntime {
     const caught = !pushed && this.catchModeKeys.has(entry.key)
       ? { requestId: `req-${++this.reqCount}`, args, ts: Date.now() }
       : undefined;
-    if (caught) this.emit(entry, { type: 'caught', ...caught });
+    if (caught) this.emit(entry, { type: 'caught', ...caught, ...info });
     const behavior: MockBehavior | undefined = caught ? { loading: true } : (entry.override ?? this.initialOf(entry));
-    if (!behavior) return undefined;
+    if (!behavior) return this.refuse(request, 'no-behavior', entry);
 
     let settle!: (result: MockResult) => void;
     const result = new Promise<MockResult>((resolve) => (settle = resolve));
@@ -553,6 +611,27 @@ export class MockRuntime {
         entry.pending.delete(pending);
       },
     };
+  }
+
+  /**
+   * A request no behavior answers: outside strict mode it goes to the network (`undefined`); under
+   * a strict prefix it is answered with {@link UNMATCHED_STATUS} and recorded.
+   */
+  private refuse(request: InterceptedRequest, reason: UnmatchedRequest['reason'], entry?: Entry): Interception | undefined {
+    if (!this.strictPrefixes?.some((prefix) => isUnderPrefix(prefix, request.url))) return undefined;
+    const method = request.method.toUpperCase();
+    const refused: UnmatchedRequest = { method, url: request.url, reason, ...(entry ? { key: entry.key } : {}), ts: Date.now() };
+    this.unmatched.push(refused);
+    if (typeof document !== 'undefined') {
+      document.dispatchEvent(new CustomEvent('openapi-mock-unmatched', { detail: refused }));
+    }
+    const message =
+      reason === 'no-endpoint'
+        ? `openapi-resource-mocks (strict): no endpoint is mocked for ${method} ${request.url}`
+        : `openapi-resource-mocks (strict): ${entry?.key} has no behavior for ${method} ${request.url}`;
+    const response = toResponse({ error: { message }, status: UNMATCHED_STATUS });
+    if (entry) this.emit(entry, { type: 'respond', status: response.status, ts: Date.now() });
+    return { result: Promise.resolve(response), onProgress: () => undefined, cancel: () => undefined };
   }
 
   private initialOf(entry: Entry): MockBehavior | undefined {
@@ -601,6 +680,7 @@ export class MockRuntime {
       entry.state.error = undefined;
       entry.state.progress = undefined;
     }
+    if (result !== 'passthrough') this.emit(entry, { type: 'respond', status: result.status, ts: Date.now() });
     pending.settle(result);
   }
 

@@ -4,7 +4,7 @@
  * page, a Playwright test can load it with `addInitScript` — or for apps not built with Angular.
  */
 export { installMockInterception, uninstallMockInterception } from './lib/interception/install';
-export { MockRuntime } from './lib/interception/mock-runtime';
+export { MockRuntime, UNMATCHED_STATUS } from './lib/interception/mock-runtime';
 export type {
   MockBehavior,
   MockResponse,
@@ -16,8 +16,9 @@ export type {
   ObservedRequest,
   RealResponse,
   Interception,
+  UnmatchedRequest,
 } from './lib/interception/mock-runtime';
 export type { EndpointRule } from './lib/interception/url-matcher';
 export type { WindowMockEntry } from './lib/window-mock-entry';
 export type { MockResourceMeta } from './lib/mock-resource-meta';
-export type { MockEvent, MockProgress } from './lib/mock-events';
+export type { MockEvent, MockProgress, MockRequestInfo } from './lib/mock-events';

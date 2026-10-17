@@ -334,7 +334,10 @@ describe('mock interception', () => {
       document.addEventListener('openapi-mock-event', listener);
       await fetch(`${BASE}/pets`);
       document.removeEventListener('openapi-mock-event', listener);
-      expect(seen).toMatchObject([{ key: 'LIST', event: { type: 'request' } }]);
+      expect(seen).toMatchObject([
+        { key: 'LIST', event: { type: 'request' } },
+        { key: 'LIST', event: { type: 'respond', status: 200 } },
+      ]);
     });
 
     it('re-registering a key keeps its override and history', async () => {
@@ -387,6 +390,106 @@ describe('mock interception', () => {
       xhr.abort();
       entry('LIST').resolve([]);
       expect(events).toEqual(['abort', 'loadend']);
+    });
+
+    it('records the headers the app set', async () => {
+      runtime.register('ADD', { method: 'post', baseUrl: BASE, path: '/pets' }, { behavior: { value: {} } });
+      await new Promise<void>((resolve) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${BASE}/pets`);
+        xhr.setRequestHeader('Authorization', 'Bearer t');
+        xhr.setRequestHeader('Accept-Language', 'it');
+        xhr.setRequestHeader('accept-language', 'en');
+        xhr.addEventListener('load', () => resolve());
+        xhr.send('{}');
+      });
+      const [event] = entry('ADD').getHistory() as Extract<MockEvent, { type: 'request' }>[];
+      expect(event.headers).toEqual({ authorization: 'Bearer t', 'accept-language': 'it, en' });
+      expect(event.method).toBe('POST');
+    });
+  });
+
+  describe('what a request carried, and what was served', () => {
+    const requests = () => entry('GET').getHistory().filter((e) => e.type === 'request') as Extract<MockEvent, { type: 'request' }>[];
+
+    it('records method, URL and headers of a fetch, from init and from a Request', async () => {
+      runtime.register('GET', { method: 'get', baseUrl: BASE, path: '/pets/{id}' }, { behavior: { value: {} } });
+      await fetch(`${BASE}/pets/1?lang=it`, { headers: { Authorization: 'Bearer a', 'X-Trace': '1' } });
+      await fetch(new Request(`${BASE}/pets/2`, { headers: { authorization: 'Bearer b' } }));
+      expect(requests().map(({ method, url, headers, args }) => ({ method, url, headers, args }))).toEqual([
+        { method: 'GET', url: `${BASE}/pets/1?lang=it`, headers: { authorization: 'Bearer a', 'x-trace': '1' }, args: ['1', { lang: 'it' }] },
+        { method: 'GET', url: `${BASE}/pets/2`, headers: { authorization: 'Bearer b' }, args: ['2'] },
+      ]);
+    });
+
+    it('emits a respond event with the status of every mocked answer, and none for a passthrough', async () => {
+      runtime.register('GET', { method: 'get', baseUrl: BASE, path: '/pets/{id}' }, { behavior: { value: {} } });
+      await fetch(`${BASE}/pets/1`);
+      entry('GET').fail({ title: 'gone' }, 404);
+      await fetch(`${BASE}/pets/1`);
+      runtime.register('LIST', { method: 'get', baseUrl: BASE, path: '/pets' });
+      await fetch(`${BASE}/pets`);
+      const served = (key: string) => entry(key).getHistory().flatMap((e) => (e.type === 'respond' ? [e.status] : []));
+      expect(served('GET')).toEqual([200, 404]);
+      expect(served('LIST')).toEqual([]);
+    });
+  });
+
+  describe('strict mode', () => {
+    it('refuses requests under a strict prefix that no behavior answers, and leaves others alone', async () => {
+      runtime.setStrict(['/api/']);
+      runtime.register('USER', { method: 'get', baseUrl: '/api', path: '/user' });
+      runtime.register('PETS', { method: 'get', baseUrl: '/api', path: '/pets' }, { behavior: { value: [] } });
+      const unmatched: unknown[] = [];
+      document.addEventListener('openapi-mock-unmatched', (e) => unmatched.push((e as CustomEvent).detail));
+
+      expect((await fetch('/api/pets')).status).toBe(200);
+      const noEndpoint = await fetch('/api/orders', { method: 'POST' });
+      expect(noEndpoint.status).toBe(501);
+      expect((await noEndpoint.json()).message).toContain('no endpoint is mocked for POST /api/orders');
+      expect((await fetch('/api/user')).status).toBe(501);
+      // Outside the prefix: the real network, as without strict mode.
+      expect(await (await fetch('/assets/i18n.json')).json()).toBe('real');
+      expect(nativeFetch).toHaveBeenCalledTimes(1);
+
+      expect(runtime.unmatchedRequests().map(({ method, url, reason, key }) => ({ method, url, reason, key }))).toEqual([
+        { method: 'POST', url: '/api/orders', reason: 'no-endpoint', key: undefined },
+        { method: 'GET', url: '/api/user', reason: 'no-behavior', key: 'USER' },
+      ]);
+      expect(unmatched).toHaveLength(2);
+      // The refusal of a registered endpoint is visible in its history too.
+      expect(entry('USER').getHistory().map((e) => e.type)).toEqual(['request', 'respond']);
+    });
+
+    it('is set by configure() and turned off with false', async () => {
+      runtime.configure({ strict: [''] });
+      expect((await fetch('/anything')).status).toBe(501);
+      runtime.configure({ strict: false });
+      expect((await fetch('/anything')).status).toBe(200);
+    });
+  });
+
+  describe('setBehavior()', () => {
+    it('sets any behavior, delivers it to held requests, and resets with undefined', async () => {
+      runtime.register('GET', { method: 'get', baseUrl: BASE, path: '/pets/{id}' }, { behavior: { value: { id: 1 } } });
+      runtime.setBehavior('GET', { loading: true });
+      const held = fetch(`${BASE}/pets/1`);
+      runtime.setBehavior('GET', { error: [{ code: 'X' }], status: 400, headers: { 'x-why': 'bad' } });
+      const res = await held;
+      expect(res.status).toBe(400);
+      expect(res.headers.get('x-why')).toBe('bad');
+      expect(await res.json()).toEqual([{ code: 'X' }]);
+
+      runtime.setBehavior('GET', undefined);
+      expect(await (await fetch(`${BASE}/pets/1`)).json()).toEqual({ id: 1 });
+      // A held request is answered by the edit itself, so its respond comes before the error event.
+      expect(entry('GET').getHistory().map((e) => e.type)).toEqual(
+        ['loading', 'request', 'respond', 'error', 'reset', 'request', 'respond'],
+      );
+    });
+
+    it('throws for an unknown key', () => {
+      expect(() => runtime.setBehavior('NOPE', { value: 1 })).toThrow('No mocked endpoint is registered as "NOPE".');
     });
   });
 });

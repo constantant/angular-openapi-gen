@@ -1,5 +1,5 @@
 import type { MockResponse, MockRuntime } from './mock-runtime';
-import { isJsonContentType, readRequestBody } from './transport-utils';
+import { isJsonContentType, readRequestBody, readRequestHeaders } from './transport-utils';
 
 const NULL_BODY_STATUS = new Set([101, 204, 205, 304]);
 
@@ -43,7 +43,8 @@ export function patchFetch(target: { fetch: typeof fetch }, runtime: MockRuntime
       });
     };
 
-    const interception = runtime.intercept({ method, url, body: readRequestBody(init?.body) });
+    const headers = readRequestHeaders(isRequest ? input.headers : undefined, init?.headers);
+    const interception = runtime.intercept({ method, url, body: readRequestBody(init?.body), headers });
     if (!interception) return real();
 
     return new Promise<Response>((resolve, reject) => {

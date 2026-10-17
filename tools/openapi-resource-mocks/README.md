@@ -328,11 +328,75 @@ declare global {
 The full walk-through (serve target, separate Playwright config) is in
 [guide 4](../../docs/04-e2e-tests.md).
 
-### Mocking without a mock build
+### Mocking the production build (`/playwright`)
+
+A mock build is not needed: `@constantant/openapi-resource-mocks/playwright` loads the runtime into
+the pages of the build you deploy, so the e2e tests run against that exact build. It runs in the
+Playwright process and needs no Angular there.
+
+```typescript
+import { test, expect } from '@playwright/test';
+import { installOpenApiMocks } from '@constantant/openapi-resource-mocks/playwright';
+// Generated with --includeMocks: plain data and types, no Angular at runtime.
+import { ENDPOINTS, type EndpointResponses, type EndpointErrors } from '@myapp/petstore-data-access/endpoints';
+
+test('shows the pet, then the not-found page', async ({ page }) => {
+  const api = await installOpenApiMocks<EndpointResponses, EndpointErrors>(page, {
+    baseUrl: 'https://petstore3.swagger.io/api/v3',   // as the app requests it; relative works too
+    endpoints: ENDPOINTS,
+    defaults: { FIND_PETS_BY_STATUS: { value: [] } },  // answered until a test sets something else
+    strict: true,                                      // nothing under baseUrl reaches the network
+  });
+
+  const getPet = api.endpoint('GET_PET_BY_ID');
+  await getPet.resolve({ id: 7, name: 'Rex', photoUrls: [] });  // typed by the spec
+  await page.goto('/pets/7');
+  await expect(page.getByRole('heading', { name: 'Rex' })).toBeVisible();
+  await getPet.expectCalledWith('7');                           // path params, body, query: from the wire
+
+  await getPet.failWith(404, { message: 'no pet' });            // applied in the open page and later loads
+  await page.reload();
+  await expect(page.getByText('Pet not found')).toBeVisible();
+
+  api.expectNoUnmatched();
+});
+```
+
+How it works:
+
+- Before any page script runs, every page gets the runtime and the helper's bootstrap (main frame
+  only). The bootstrap **holds the page's requests** until Node has sent the endpoints and their
+  current behaviors, so the app's very first request is already mocked (`holdMs`, default 5 s).
+- A behavior set from the test applies to the pages that are open **and** to every later page load
+  in the page or context: a reload or a full navigation keeps it.
+- Every request is recorded **in Node**: `requests` (args, method, URL, the headers the app set)
+  and `calls` (the args) cover all page loads, oldest first.
+- `strict: true` fails closed under `baseUrl` (or pass URL prefixes, e.g. `['/api/']`, when the API
+  shares the site's origin): a request no endpoint answers, or one whose endpoint has no behavior,
+  gets a 501 and is listed in `api.unmatched`, instead of quietly reaching a real API.
+
+| `EndpointMock` member | |
+|---|---|
+| `resolve(value, { status?, headers?, delay? })` | Answer with `value` (typed by `EndpointResponses`) |
+| `fail(status, body, code?)` | A documented error: `fail('404', body)` with `body` typed by `EndpointErrors`; a range or `default` key needs the numeric `code` |
+| `failWith(status, body?, headers?)` | Any failing status, documented or not |
+| `setLoading()` / `set(behavior)` / `reset()` | Hold requests / any behavior (`delay`, `progress`, …) / back to the default |
+| `requests` / `calls` / `clearRequests()` | What it received, across page loads |
+| `expectCalled(ms?)` / `expectCalledWith(...args)` / `waitForRequest(predicate?, ms?)` | Wait (default 5 s) for a request; the error lists what was received instead |
+
+`api.coverage()` reports, per endpoint, how many requests it received, the statuses the mocks
+**served** it, and whether a test asserted what it was **sent** (`expectCalledWith`, or
+`waitForRequest` with a predicate). Joined with the generated `mocks.manifest.json` (every documented
+status per endpoint), it shows which inputs and outputs of the API no test exercises.
+
+The runtime script ships prebuilt (`runtime.global.js`); in a source checkout of this repository it is
+bundled with esbuild on first use. `@playwright/test` is an optional peer dependency, used for types.
+
+### Mocking without a mock build, by hand
 
 `@constantant/openapi-resource-mocks/runtime` is the same runtime without the Angular providers. It
 has no framework dependency, so a tool can install it from outside the app — this is what the
-DevTools extension injects into production builds:
+DevTools extension injects into production builds, and what the Playwright helper loads:
 
 ```typescript
 import { installMockInterception } from '@constantant/openapi-resource-mocks/runtime';
@@ -370,6 +434,9 @@ document.dispatchEvent(new CustomEvent('openapi-mock-control', {
 ```javascript
 document.addEventListener('openapi-mock-event', (e) => {
   const { key, event } = e.detail; // event: MockEvent
+});
+document.addEventListener('openapi-mock-unmatched', (e) => {
+  const { method, url, reason, key } = e.detail; // UnmatchedRequest: refused by strict mode
 });
 ```
 
@@ -433,11 +500,13 @@ teardown.
 | Member | Description |
 |--------|-------------|
 | `register(key, rule, registration?)` | Add an endpoint; returns an unregister function. `rule` is `{ method, baseUrl, path }` |
-| `unregister(key)` / `has(key)` | Remove / look up an endpoint |
-| `controls(key)` | The endpoint's `WindowMockEntry` |
+| `unregister(key)` | Remove an endpoint |
+| `controls(key)` | The endpoint's `WindowMockEntry`, `undefined` when it is not registered |
+| `setBehavior(key, behavior?)` | Any behavior with every field (`status`, `headers`, `delay`, `progress`); `undefined` resets it |
+| `setStrict(prefixes \| false)` / `unmatchedRequests()` | Strict mode: requests under these URL prefixes that no behavior answers get a 501 (`UNMATCHED_STATUS`) instead of the network, and are recorded |
 | `setCatchMode(key, enabled)` / `isCatchMode(key)` | Catch mode, also for a key that is not registered yet |
 | `hold(timeoutMs)` | Park all requests until `configure()` is called or the timeout passes |
-| `configure(config)` | Deliver endpoints and catch modes from outside the app, and release held requests |
+| `configure(config)` | Deliver endpoints, catch modes and `strict` from outside the app, and release held requests |
 | `observeRequests()` / `observedRequests()` | Start keeping, and read, the distinct requests the page makes (method + URL without query) — the DevTools panel suggests base URLs from them. Off unless called |
 
 ### `openApiMock(key)` / `window.__openApiMocks__[key]`
@@ -462,8 +531,9 @@ teardown.
 
 ```typescript
 type MockEvent =
-  | { type: 'request';   args: unknown[]; ts: number }
-  | { type: 'caught';    args: unknown[]; requestId: string; ts: number }
+  | { type: 'request';   args: unknown[]; method?: string; url?: string; headers?: Record<string, string>; ts: number }
+  | { type: 'caught';    args: unknown[]; requestId: string; method?: string; url?: string; headers?: Record<string, string>; ts: number }
+  | { type: 'respond';   status: number; ts: number } // a mocked response was sent, with this status
   | { type: 'resolve';   value: unknown; ts: number }
   | { type: 'real';      status: number; value: unknown; ts: number } // the real API answered an unmocked request
   | { type: 'loading';   ts: number }
