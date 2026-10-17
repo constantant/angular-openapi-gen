@@ -38,7 +38,7 @@ const _responseSchema: Schema = {
       type: ['string', 'null'],
       description: 'The status of the most recent build of the Page.',
       example: 'built',
-      enum: ['built', 'building', 'errored'],
+      enum: ['built', 'building', 'errored', null],
     },
     cname: {
       description: "The Pages site's custom domain",
@@ -49,7 +49,7 @@ const _responseSchema: Schema = {
       type: ['string', 'null'],
       description: 'The state if the domain is verified',
       example: 'pending',
-      enum: ['pending', 'verified', 'unverified'],
+      enum: ['pending', 'verified', 'unverified', null],
     },
     pending_domain_unverified_at: {
       type: ['string', 'null'],
@@ -72,7 +72,7 @@ const _responseSchema: Schema = {
       type: ['string', 'null'],
       description: 'The process in which the Page will be built.',
       example: 'legacy',
-      enum: ['legacy', 'workflow'],
+      enum: ['legacy', 'workflow', null],
     },
     source: {
       title: 'Pages Source Hash',
