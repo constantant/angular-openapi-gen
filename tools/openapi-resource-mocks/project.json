@@ -5,7 +5,7 @@
   "projectType": "library",
   "tags": ["scope:tools", "type:mocks"],
   "targets": {
-    "build": {
+    "build-lib": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
@@ -29,6 +29,20 @@
             "output": "."
           }
         ]
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build-lib"],
+      "outputs": [
+        "{workspaceRoot}/dist/tools/openapi-resource-mocks/src/runtime.global.js"
+      ],
+      "options": {
+        "command": "node tools/openapi-resource-mocks/scripts/bundle-runtime.mjs",
+        "cwd": "{workspaceRoot}"
+      },
+      "metadata": {
+        "description": "Builds the package (build-lib), then bundles the runtime script the Playwright helper loads into pages."
       }
     },
     "test": {

@@ -74,3 +74,17 @@ export function compileEndpointRule(rule: EndpointRule): EndpointMatcher {
     },
   };
 }
+
+/**
+ * Whether `url` lies under `prefix` (absolute, or relative to the page): same origin, and a path
+ * that starts with the prefix's path. `''` and `'/'` cover the whole origin of the page.
+ */
+export function isUnderPrefix(prefix: string, url: string): boolean {
+  try {
+    const base = new URL(prefix || '/', pageHref());
+    const target = new URL(url, pageHref());
+    return target.origin === base.origin && target.pathname.startsWith(base.pathname);
+  } catch {
+    return false;
+  }
+}

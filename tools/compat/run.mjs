@@ -83,7 +83,11 @@ async function angular() {
   for (const name of readdirSync(join(repo, 'libs')).filter((n) => n.endsWith('-data-access'))) {
     cpSync(join(repo, 'libs', name, 'src'), join(dir, 'src', 'libs', name.replace('-data-access', '')), { recursive: true });
   }
-  cpSync(join(repo, 'tools', 'openapi-resource-mocks', 'src'), join(dir, 'src', 'mocks'), { recursive: true });
+  // Not the Playwright helper (`playwright.ts` and its spec): it runs in Node, not against Angular.
+  cpSync(join(repo, 'tools', 'openapi-resource-mocks', 'src'), join(dir, 'src', 'mocks'), {
+    recursive: true,
+    filter: (source) => !/[\\/]playwright(\.spec)?\.ts$/.test(source),
+  });
 
   // The repo's own wire-level spec, re-pointed at the copied libs. `TestBed.tick()` only exists from
   // Angular 20.x onward, so go through a tolerant helper.

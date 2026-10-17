@@ -28,11 +28,13 @@ export function patchXhr(target: { XMLHttpRequest: typeof XMLHttpRequest }, runt
 
   class MockedXMLHttpRequest extends Native {
     private _request?: { method: string; url: string };
+    private _headers: Record<string, string> = {};
     private _interception?: Interception;
     private _mock?: MockResponse;
 
     override open(method: string, url: string | URL, async?: boolean, username?: string | null, password?: string | null): void {
       this._request = { method, url: String(url) };
+      this._headers = {};
       this._interception?.cancel();
       this._interception = undefined;
       this._mock = undefined;
@@ -40,9 +42,16 @@ export function patchXhr(target: { XMLHttpRequest: typeof XMLHttpRequest }, runt
       else super.open(method, url, async, username, password);
     }
 
+    override setRequestHeader(name: string, value: string): void {
+      // Repeated headers are combined, as the platform does.
+      const key = name.toLowerCase();
+      this._headers[key] = key in this._headers ? `${this._headers[key]}, ${value}` : value;
+      super.setRequestHeader(name, value);
+    }
+
     override send(body?: Document | XMLHttpRequestBodyInit | null): void {
       const interception = this._request
-        ? runtime.intercept({ ...this._request, body: readRequestBody(body) })
+        ? runtime.intercept({ ...this._request, body: readRequestBody(body), headers: { ...this._headers } })
         : undefined;
       if (!interception) return this._sendReal(body);
 

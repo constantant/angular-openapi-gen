@@ -316,8 +316,10 @@ A mock build is the simplest setup for CI. The runtime itself does not need one:
 `@constantant/openapi-resource-mocks/runtime` is a framework-free entry (`installMockInterception()`
 and `MockRuntime.register()`), which a tool can load into a page that bundles no mock code. The
 [DevTools extension](./05-devtools.md#mocking-a-production-build) does exactly that, interactively.
-There is no ready-made Playwright helper for it yet; you would bundle that entry yourself and load
-it with `page.addInitScript()`.
+`@constantant/openapi-resource-mocks/playwright` does that for Playwright: `installOpenApiMocks(page,
+{ baseUrl, endpoints: ENDPOINTS, strict: true })` loads the runtime into every page, keeps the
+behaviors you set across reloads and records every request in Node, so the tests can run against
+the build you deploy. See [Mocking the production build](../tools/openapi-resource-mocks/README.md#mocking-the-production-build-playwright).
 
 ---
 
