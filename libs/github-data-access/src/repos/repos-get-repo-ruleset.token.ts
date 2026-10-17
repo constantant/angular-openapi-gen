@@ -128,288 +128,298 @@ const _responseSchema: Schema = {
     conditions: {
       anyOf: [
         {
-          title: 'Repository ruleset conditions for ref names',
-          type: 'object',
-          description: 'Parameters for a repository ruleset ref name condition',
-          properties: {
-            ref_name: {
+          anyOf: [
+            {
+              title: 'Repository ruleset conditions for ref names',
               type: 'object',
+              description:
+                'Parameters for a repository ruleset ref name condition',
               properties: {
-                include: {
-                  type: 'array',
-                  description:
-                    'Array of ref names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~DEFAULT_BRANCH` to include the default branch or `~ALL` to include all branches.',
-                  items: {
-                    type: 'string',
-                  },
-                },
-                exclude: {
-                  type: 'array',
-                  description:
-                    'Array of ref names or patterns to exclude. The condition will not pass if any of these patterns match.',
-                  items: {
-                    type: 'string',
+                ref_name: {
+                  type: 'object',
+                  properties: {
+                    include: {
+                      type: 'array',
+                      description:
+                        'Array of ref names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~DEFAULT_BRANCH` to include the default branch or `~ALL` to include all branches.',
+                      items: {
+                        type: 'string',
+                      },
+                    },
+                    exclude: {
+                      type: 'array',
+                      description:
+                        'Array of ref names or patterns to exclude. The condition will not pass if any of these patterns match.',
+                      items: {
+                        type: 'string',
+                      },
+                    },
                   },
                 },
               },
             },
-          },
-        },
-        {
-          title: 'Organization ruleset conditions',
-          type: 'object',
-          description:
-            'Conditions for an organization ruleset.\nThe branch and tag rulesets conditions object should contain both `repository_name` and `ref_name` properties, or both `repository_id` and `ref_name` properties, or both `repository_property` and `ref_name` properties.\nThe push rulesets conditions object does not require the `ref_name` property.\nFor repository policy rulesets, the conditions object should only contain the `repository_name`, the `repository_id`, or the `repository_property`.',
-          oneOf: [
             {
+              title: 'Organization ruleset conditions',
               type: 'object',
-              title: 'repository_name_and_ref_name',
               description:
-                'Conditions to target repositories by name and refs by name',
-              allOf: [
+                'Conditions for an organization ruleset.\nThe branch and tag rulesets conditions object should contain both `repository_name` and `ref_name` properties, or both `repository_id` and `ref_name` properties, or both `repository_property` and `ref_name` properties.\nThe push rulesets conditions object does not require the `ref_name` property.\nFor repository policy rulesets, the conditions object should only contain the `repository_name`, the `repository_id`, or the `repository_property`.',
+              oneOf: [
                 {
-                  title: 'Repository ruleset conditions for ref names',
                   type: 'object',
+                  title: 'repository_name_and_ref_name',
                   description:
-                    'Parameters for a repository ruleset ref name condition',
-                  properties: {
-                    ref_name: {
+                    'Conditions to target repositories by name and refs by name',
+                  allOf: [
+                    {
+                      title: 'Repository ruleset conditions for ref names',
                       type: 'object',
+                      description:
+                        'Parameters for a repository ruleset ref name condition',
                       properties: {
-                        include: {
-                          type: 'array',
-                          description:
-                            'Array of ref names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~DEFAULT_BRANCH` to include the default branch or `~ALL` to include all branches.',
-                          items: {
-                            type: 'string',
-                          },
-                        },
-                        exclude: {
-                          type: 'array',
-                          description:
-                            'Array of ref names or patterns to exclude. The condition will not pass if any of these patterns match.',
-                          items: {
-                            type: 'string',
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-                {
-                  title: 'Repository ruleset conditions for repository names',
-                  type: 'object',
-                  description: 'Parameters for a repository name condition',
-                  properties: {
-                    repository_name: {
-                      type: 'object',
-                      properties: {
-                        include: {
-                          type: 'array',
-                          description:
-                            'Array of repository names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~ALL` to include all repositories.',
-                          items: {
-                            type: 'string',
-                          },
-                        },
-                        exclude: {
-                          type: 'array',
-                          description:
-                            'Array of repository names or patterns to exclude. The condition will not pass if any of these patterns match.',
-                          items: {
-                            type: 'string',
-                          },
-                        },
-                        protected: {
-                          type: 'boolean',
-                          description:
-                            'Whether renaming of target repositories is prevented.',
-                        },
-                      },
-                    },
-                  },
-                  required: ['repository_name'],
-                },
-              ],
-            },
-            {
-              type: 'object',
-              title: 'repository_id_and_ref_name',
-              description:
-                'Conditions to target repositories by id and refs by name',
-              allOf: [
-                {
-                  title: 'Repository ruleset conditions for ref names',
-                  type: 'object',
-                  description:
-                    'Parameters for a repository ruleset ref name condition',
-                  properties: {
-                    ref_name: {
-                      type: 'object',
-                      properties: {
-                        include: {
-                          type: 'array',
-                          description:
-                            'Array of ref names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~DEFAULT_BRANCH` to include the default branch or `~ALL` to include all branches.',
-                          items: {
-                            type: 'string',
-                          },
-                        },
-                        exclude: {
-                          type: 'array',
-                          description:
-                            'Array of ref names or patterns to exclude. The condition will not pass if any of these patterns match.',
-                          items: {
-                            type: 'string',
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-                {
-                  title: 'Repository ruleset conditions for repository IDs',
-                  type: 'object',
-                  description: 'Parameters for a repository ID condition',
-                  properties: {
-                    repository_id: {
-                      type: 'object',
-                      properties: {
-                        repository_ids: {
-                          type: 'array',
-                          description:
-                            'The repository IDs that the ruleset applies to. One of these IDs must match for the condition to pass.',
-                          items: {
-                            type: 'integer',
-                          },
-                        },
-                      },
-                    },
-                  },
-                  required: ['repository_id'],
-                },
-              ],
-            },
-            {
-              type: 'object',
-              title: 'repository_property_and_ref_name',
-              description:
-                'Conditions to target repositories by property and refs by name',
-              allOf: [
-                {
-                  title: 'Repository ruleset conditions for ref names',
-                  type: 'object',
-                  description:
-                    'Parameters for a repository ruleset ref name condition',
-                  properties: {
-                    ref_name: {
-                      type: 'object',
-                      properties: {
-                        include: {
-                          type: 'array',
-                          description:
-                            'Array of ref names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~DEFAULT_BRANCH` to include the default branch or `~ALL` to include all branches.',
-                          items: {
-                            type: 'string',
-                          },
-                        },
-                        exclude: {
-                          type: 'array',
-                          description:
-                            'Array of ref names or patterns to exclude. The condition will not pass if any of these patterns match.',
-                          items: {
-                            type: 'string',
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-                {
-                  title:
-                    'Repository ruleset conditions for repository properties',
-                  type: 'object',
-                  description: 'Parameters for a repository property condition',
-                  properties: {
-                    repository_property: {
-                      type: 'object',
-                      properties: {
-                        include: {
-                          type: 'array',
-                          description:
-                            'The repository properties and values to include. All of these properties must match for the condition to pass.',
-                          items: {
-                            title:
-                              'Repository ruleset property targeting definition',
-                            type: 'object',
-                            description:
-                              'Parameters for a targeting a repository property',
-                            properties: {
-                              name: {
+                        ref_name: {
+                          type: 'object',
+                          properties: {
+                            include: {
+                              type: 'array',
+                              description:
+                                'Array of ref names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~DEFAULT_BRANCH` to include the default branch or `~ALL` to include all branches.',
+                              items: {
                                 type: 'string',
-                                description:
-                                  'The name of the repository property to target',
-                              },
-                              property_values: {
-                                type: 'array',
-                                description:
-                                  'The values to match for the repository property',
-                                items: {
-                                  type: 'string',
-                                },
-                              },
-                              source: {
-                                type: 'string',
-                                description:
-                                  "The source of the repository property. Defaults to 'custom' if not specified.",
-                                enum: ['custom', 'system'],
                               },
                             },
-                            required: ['name', 'property_values'],
-                          },
-                        },
-                        exclude: {
-                          type: 'array',
-                          description:
-                            'The repository properties and values to exclude. The condition will not pass if any of these properties match.',
-                          items: {
-                            title:
-                              'Repository ruleset property targeting definition',
-                            type: 'object',
-                            description:
-                              'Parameters for a targeting a repository property',
-                            properties: {
-                              name: {
+                            exclude: {
+                              type: 'array',
+                              description:
+                                'Array of ref names or patterns to exclude. The condition will not pass if any of these patterns match.',
+                              items: {
                                 type: 'string',
-                                description:
-                                  'The name of the repository property to target',
-                              },
-                              property_values: {
-                                type: 'array',
-                                description:
-                                  'The values to match for the repository property',
-                                items: {
-                                  type: 'string',
-                                },
-                              },
-                              source: {
-                                type: 'string',
-                                description:
-                                  "The source of the repository property. Defaults to 'custom' if not specified.",
-                                enum: ['custom', 'system'],
                               },
                             },
-                            required: ['name', 'property_values'],
                           },
                         },
                       },
                     },
-                  },
-                  required: ['repository_property'],
+                    {
+                      title:
+                        'Repository ruleset conditions for repository names',
+                      type: 'object',
+                      description: 'Parameters for a repository name condition',
+                      properties: {
+                        repository_name: {
+                          type: 'object',
+                          properties: {
+                            include: {
+                              type: 'array',
+                              description:
+                                'Array of repository names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~ALL` to include all repositories.',
+                              items: {
+                                type: 'string',
+                              },
+                            },
+                            exclude: {
+                              type: 'array',
+                              description:
+                                'Array of repository names or patterns to exclude. The condition will not pass if any of these patterns match.',
+                              items: {
+                                type: 'string',
+                              },
+                            },
+                            protected: {
+                              type: 'boolean',
+                              description:
+                                'Whether renaming of target repositories is prevented.',
+                            },
+                          },
+                        },
+                      },
+                      required: ['repository_name'],
+                    },
+                  ],
+                },
+                {
+                  type: 'object',
+                  title: 'repository_id_and_ref_name',
+                  description:
+                    'Conditions to target repositories by id and refs by name',
+                  allOf: [
+                    {
+                      title: 'Repository ruleset conditions for ref names',
+                      type: 'object',
+                      description:
+                        'Parameters for a repository ruleset ref name condition',
+                      properties: {
+                        ref_name: {
+                          type: 'object',
+                          properties: {
+                            include: {
+                              type: 'array',
+                              description:
+                                'Array of ref names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~DEFAULT_BRANCH` to include the default branch or `~ALL` to include all branches.',
+                              items: {
+                                type: 'string',
+                              },
+                            },
+                            exclude: {
+                              type: 'array',
+                              description:
+                                'Array of ref names or patterns to exclude. The condition will not pass if any of these patterns match.',
+                              items: {
+                                type: 'string',
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                    {
+                      title: 'Repository ruleset conditions for repository IDs',
+                      type: 'object',
+                      description: 'Parameters for a repository ID condition',
+                      properties: {
+                        repository_id: {
+                          type: 'object',
+                          properties: {
+                            repository_ids: {
+                              type: 'array',
+                              description:
+                                'The repository IDs that the ruleset applies to. One of these IDs must match for the condition to pass.',
+                              items: {
+                                type: 'integer',
+                              },
+                            },
+                          },
+                        },
+                      },
+                      required: ['repository_id'],
+                    },
+                  ],
+                },
+                {
+                  type: 'object',
+                  title: 'repository_property_and_ref_name',
+                  description:
+                    'Conditions to target repositories by property and refs by name',
+                  allOf: [
+                    {
+                      title: 'Repository ruleset conditions for ref names',
+                      type: 'object',
+                      description:
+                        'Parameters for a repository ruleset ref name condition',
+                      properties: {
+                        ref_name: {
+                          type: 'object',
+                          properties: {
+                            include: {
+                              type: 'array',
+                              description:
+                                'Array of ref names or patterns to include. One of these patterns must match for the condition to pass. Also accepts `~DEFAULT_BRANCH` to include the default branch or `~ALL` to include all branches.',
+                              items: {
+                                type: 'string',
+                              },
+                            },
+                            exclude: {
+                              type: 'array',
+                              description:
+                                'Array of ref names or patterns to exclude. The condition will not pass if any of these patterns match.',
+                              items: {
+                                type: 'string',
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                    {
+                      title:
+                        'Repository ruleset conditions for repository properties',
+                      type: 'object',
+                      description:
+                        'Parameters for a repository property condition',
+                      properties: {
+                        repository_property: {
+                          type: 'object',
+                          properties: {
+                            include: {
+                              type: 'array',
+                              description:
+                                'The repository properties and values to include. All of these properties must match for the condition to pass.',
+                              items: {
+                                title:
+                                  'Repository ruleset property targeting definition',
+                                type: 'object',
+                                description:
+                                  'Parameters for a targeting a repository property',
+                                properties: {
+                                  name: {
+                                    type: 'string',
+                                    description:
+                                      'The name of the repository property to target',
+                                  },
+                                  property_values: {
+                                    type: 'array',
+                                    description:
+                                      'The values to match for the repository property',
+                                    items: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  source: {
+                                    type: 'string',
+                                    description:
+                                      "The source of the repository property. Defaults to 'custom' if not specified.",
+                                    enum: ['custom', 'system'],
+                                  },
+                                },
+                                required: ['name', 'property_values'],
+                              },
+                            },
+                            exclude: {
+                              type: 'array',
+                              description:
+                                'The repository properties and values to exclude. The condition will not pass if any of these properties match.',
+                              items: {
+                                title:
+                                  'Repository ruleset property targeting definition',
+                                type: 'object',
+                                description:
+                                  'Parameters for a targeting a repository property',
+                                properties: {
+                                  name: {
+                                    type: 'string',
+                                    description:
+                                      'The name of the repository property to target',
+                                  },
+                                  property_values: {
+                                    type: 'array',
+                                    description:
+                                      'The values to match for the repository property',
+                                    items: {
+                                      type: 'string',
+                                    },
+                                  },
+                                  source: {
+                                    type: 'string',
+                                    description:
+                                      "The source of the repository property. Defaults to 'custom' if not specified.",
+                                    enum: ['custom', 'system'],
+                                  },
+                                },
+                                required: ['name', 'property_values'],
+                              },
+                            },
+                          },
+                        },
+                      },
+                      required: ['repository_property'],
+                    },
+                  ],
                 },
               ],
             },
           ],
+        },
+        {
+          type: 'null',
         },
       ],
     },
