@@ -2671,7 +2671,7 @@ export function provideReposGetBranch(): FactoryProvider {
           'REPOS_GET_BRANCH',
           httpResource<ReposGetBranchResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}`,
             }),
             { parse: _validateResponse },
           ),

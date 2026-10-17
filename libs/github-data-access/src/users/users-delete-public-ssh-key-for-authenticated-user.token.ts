@@ -21,7 +21,11 @@ export function provideUsersDeletePublicSshKeyForAuthenticatedUser(): FactoryPro
       const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (keyId: string) =>
-        http.request<unknown>('DELETE', `${base}/user/keys/${keyId}`, {});
+        http.request<unknown>(
+          'DELETE',
+          `${base}/user/keys/${encodeURIComponent(keyId)}`,
+          {},
+        );
     },
   };
 }

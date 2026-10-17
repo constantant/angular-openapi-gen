@@ -598,9 +598,12 @@ export function provideReposMerge(): FactoryProvider {
                   ? (body as Signal<ReposMergeBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/merges`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/merges`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

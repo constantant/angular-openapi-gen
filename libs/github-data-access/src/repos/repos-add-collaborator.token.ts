@@ -1101,9 +1101,12 @@ export function provideReposAddCollaborator(): FactoryProvider {
                   ? (body as Signal<ReposAddCollaboratorBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/collaborators/${username}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/collaborators/${encodeURIComponent(username)}`,
                 method: 'PUT',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

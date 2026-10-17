@@ -21,7 +21,11 @@ export function provideUsersCheckPersonIsFollowedByAuthenticated(): FactoryProvi
       const http = inject(HttpClient);
       const base = inject(GITHUB_BASE_URL);
       return (username: string) =>
-        http.request<unknown>('GET', `${base}/user/following/${username}`, {});
+        http.request<unknown>(
+          'GET',
+          `${base}/user/following/${encodeURIComponent(username)}`,
+          {},
+        );
     },
   };
 }

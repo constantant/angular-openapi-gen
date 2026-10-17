@@ -578,7 +578,7 @@ export function provideReposGetDeploymentStatus(): FactoryProvider {
           'REPOS_GET_DEPLOYMENT_STATUS',
           httpResource<ReposGetDeploymentStatusResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/deployments/${deploymentId}/statuses/${statusId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/deployments/${encodeURIComponent(deploymentId)}/statuses/${encodeURIComponent(statusId)}`,
             }),
             { parse: _validateResponse },
           ),

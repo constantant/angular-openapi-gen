@@ -110,8 +110,9 @@ export function provideCreateUsersWithListInput(): FactoryProvider {
                 ..._opts.request,
                 url: `${base}/user/createWithList`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
                 headers: {
+                  'Content-Type': 'application/json',
                   ..._opts.headers,
                 },
               };

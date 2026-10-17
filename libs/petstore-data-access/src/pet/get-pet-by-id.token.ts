@@ -123,10 +123,10 @@ export function provideGetPetById(): FactoryProvider {
             () => {
               return {
                 ..._opts.request,
-                url: `${base}/pet/${petId}`,
+                url: `${base}/pet/${encodeURIComponent(petId)}`,
                 headers: {
                   ...(apiKey?.() != null ? { api_key: `${apiKey()}` } : {}),
-                  ...(petstoreAuth?.() != null
+                  ...(petstoreAuth?.() != null && !(apiKey?.() != null)
                     ? { Authorization: `Bearer ${petstoreAuth()}` }
                     : {}),
                   ..._opts.headers,

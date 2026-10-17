@@ -20,7 +20,7 @@ export function provideUsersDeleteAttestationsBySubjectDigest(): FactoryProvider
       return (username: string, subjectDigest: string) =>
         http.request<unknown>(
           'DELETE',
-          `${base}/users/${username}/attestations/digest/${subjectDigest}`,
+          `${base}/users/${encodeURIComponent(username)}/attestations/digest/${encodeURIComponent(subjectDigest)}`,
           {},
         );
     },

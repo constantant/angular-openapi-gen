@@ -69,7 +69,7 @@ export function provideUsersListSshSigningKeysForUser(): FactoryProvider {
         http
           .request<UsersListSshSigningKeysForUserResponse>(
             'GET',
-            `${base}/users/${username}/ssh_signing_keys`,
+            `${base}/users/${encodeURIComponent(username)}/ssh_signing_keys`,
             {
               params: dropUndefined(params) as unknown as Record<
                 string,

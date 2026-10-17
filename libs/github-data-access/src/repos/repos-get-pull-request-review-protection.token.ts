@@ -1406,7 +1406,7 @@ export function provideReposGetPullRequestReviewProtection(): FactoryProvider {
           'REPOS_GET_PULL_REQUEST_REVIEW_PROTECTION',
           httpResource<ReposGetPullRequestReviewProtectionResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_pull_request_reviews`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_pull_request_reviews`,
             }),
             { parse: _validateResponse },
           ),

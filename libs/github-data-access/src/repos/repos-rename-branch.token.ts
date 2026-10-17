@@ -2688,9 +2688,12 @@ export function provideReposRenameBranch(): FactoryProvider {
                   ? (body as Signal<ReposRenameBranchBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/branches/${branch}/rename`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/rename`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

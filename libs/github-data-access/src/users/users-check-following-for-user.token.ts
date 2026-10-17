@@ -17,7 +17,7 @@ export function provideUsersCheckFollowingForUser(): FactoryProvider {
       return (username: string, targetUser: string) =>
         http.request<unknown>(
           'GET',
-          `${base}/users/${username}/following/${targetUser}`,
+          `${base}/users/${encodeURIComponent(username)}/following/${encodeURIComponent(targetUser)}`,
           {},
         );
     },

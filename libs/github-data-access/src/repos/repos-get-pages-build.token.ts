@@ -207,7 +207,7 @@ export function provideReposGetPagesBuild(): FactoryProvider {
           'REPOS_GET_PAGES_BUILD',
           httpResource<ReposGetPagesBuildResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/pages/builds/${buildId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/builds/${encodeURIComponent(buildId)}`,
             }),
             { parse: _validateResponse },
           ),

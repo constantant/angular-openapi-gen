@@ -203,7 +203,7 @@ export function provideReposGetContributorsStats(): FactoryProvider {
           'REPOS_GET_CONTRIBUTORS_STATS',
           httpResource<ReposGetContributorsStatsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/stats/contributors`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/stats/contributors`,
             }),
             { parse: _validateResponse },
           ),

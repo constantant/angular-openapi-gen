@@ -75,7 +75,7 @@ export function provideUploadFile(): FactoryProvider {
         return http
           .request<UploadFileResponse>(
             'POST',
-            `${base}/pet/${petId}/uploadImage`,
+            `${base}/pet/${encodeURIComponent(petId)}/uploadImage`,
             {
               ..._opts.request,
               observe: 'events',

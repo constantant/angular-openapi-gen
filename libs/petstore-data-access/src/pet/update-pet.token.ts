@@ -134,8 +134,9 @@ export function provideUpdatePet(): FactoryProvider {
                 ..._opts.request,
                 url: `${base}/pet`,
                 method: 'PUT',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
                 headers: {
+                  'Content-Type': 'application/json',
                   ...(petstoreAuth?.() != null
                     ? { Authorization: `Bearer ${petstoreAuth()}` }
                     : {}),

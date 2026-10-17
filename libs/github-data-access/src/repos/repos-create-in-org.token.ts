@@ -3596,9 +3596,12 @@ export function provideReposCreateInOrg(): FactoryProvider {
                   ? (body as Signal<ReposCreateInOrgBody>)()
                   : body;
               return {
-                url: `${base}/orgs/${org}/repos`,
+                url: `${base}/orgs/${encodeURIComponent(org)}/repos`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

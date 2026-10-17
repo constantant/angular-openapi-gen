@@ -304,9 +304,12 @@ export function provideReposCreateCommitComment(): FactoryProvider {
                   ? (body as Signal<ReposCreateCommitCommentBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/comments`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits/${encodeURIComponent(commitSha)}/comments`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

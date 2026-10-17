@@ -97,9 +97,12 @@ export function provideReposCreatePagesDeployment(): FactoryProvider {
                   ? (body as Signal<ReposCreatePagesDeploymentBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/pages/deployments`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/deployments`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

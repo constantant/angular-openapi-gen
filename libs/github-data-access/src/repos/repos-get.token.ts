@@ -3584,7 +3584,7 @@ export function provideReposGet(): FactoryProvider {
           'REPOS_GET',
           httpResource<ReposGetResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
             }),
             { parse: _validateResponse },
           ),

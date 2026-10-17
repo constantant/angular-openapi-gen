@@ -1430,9 +1430,12 @@ export function provideReposUpdatePullRequestReviewProtection(): FactoryProvider
                     )()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_pull_request_reviews`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_pull_request_reviews`,
                 method: 'PATCH',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

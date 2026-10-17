@@ -57,7 +57,7 @@ export function provideReposCheckImmutableReleases(): FactoryProvider {
           'REPOS_CHECK_IMMUTABLE_RELEASES',
           httpResource<ReposCheckImmutableReleasesResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/immutable-releases`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/immutable-releases`,
             }),
             { parse: _validateResponse },
           ),

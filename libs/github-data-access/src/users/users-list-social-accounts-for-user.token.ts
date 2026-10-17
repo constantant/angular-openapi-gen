@@ -64,7 +64,7 @@ export function provideUsersListSocialAccountsForUser(): FactoryProvider {
         http
           .request<UsersListSocialAccountsForUserResponse>(
             'GET',
-            `${base}/users/${username}/social_accounts`,
+            `${base}/users/${encodeURIComponent(username)}/social_accounts`,
             {
               params: dropUndefined(params) as unknown as Record<
                 string,

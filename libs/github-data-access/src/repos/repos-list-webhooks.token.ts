@@ -193,7 +193,7 @@ export function provideReposListWebhooks(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/hooks`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hooks`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

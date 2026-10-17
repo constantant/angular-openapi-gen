@@ -115,7 +115,7 @@ export function provideReposGetOrgRuleSuites(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/orgs/${org}/rulesets/rule-suites`,
+                url: `${base}/orgs/${encodeURIComponent(org)}/rulesets/rule-suites`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

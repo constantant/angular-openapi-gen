@@ -23,7 +23,7 @@ export function provideUsersDeleteSshSigningKeyForAuthenticatedUser(): FactoryPr
       return (sshSigningKeyId: string) =>
         http.request<unknown>(
           'DELETE',
-          `${base}/user/ssh_signing_keys/${sshSigningKeyId}`,
+          `${base}/user/ssh_signing_keys/${encodeURIComponent(sshSigningKeyId)}`,
           {},
         );
     },

@@ -21,7 +21,7 @@ export function provideReposDeleteInvitation(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_INVITATION',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/invitations/${encodeURIComponent(invitationId)}`,
             method: 'DELETE',
           })),
         );

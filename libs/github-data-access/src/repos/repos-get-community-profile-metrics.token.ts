@@ -223,7 +223,7 @@ export function provideReposGetCommunityProfileMetrics(): FactoryProvider {
           'REPOS_GET_COMMUNITY_PROFILE_METRICS',
           httpResource<ReposGetCommunityProfileMetricsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/community/profile`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/community/profile`,
             }),
             { parse: _validateResponse },
           ),

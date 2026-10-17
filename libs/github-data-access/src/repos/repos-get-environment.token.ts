@@ -552,7 +552,7 @@ export function provideReposGetEnvironment(): FactoryProvider {
           'REPOS_GET_ENVIRONMENT',
           httpResource<ReposGetEnvironmentResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}`,
             }),
             { parse: _validateResponse },
           ),

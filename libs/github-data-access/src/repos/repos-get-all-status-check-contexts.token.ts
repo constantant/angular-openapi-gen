@@ -48,7 +48,7 @@ export function provideReposGetAllStatusCheckContexts(): FactoryProvider {
           'REPOS_GET_ALL_STATUS_CHECK_CONTEXTS',
           httpResource<ReposGetAllStatusCheckContextsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_status_checks/contexts`,
             }),
             { parse: _validateResponse },
           ),

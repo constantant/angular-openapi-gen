@@ -79,7 +79,10 @@ export function provideUsersSetPrimaryEmailVisibilityForAuthenticatedUser(): Fac
             'PATCH',
             `${base}/user/email/visibility`,
             {
-              body,
+              body: typeof body === 'string' ? JSON.stringify(body) : body,
+              headers: {
+                'Content-Type': 'application/json',
+              },
             },
           )
           .pipe(map(_validateResponse));

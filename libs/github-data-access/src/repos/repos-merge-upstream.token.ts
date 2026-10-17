@@ -67,9 +67,12 @@ export function provideReposMergeUpstream(): FactoryProvider {
                   ? (body as Signal<ReposMergeUpstreamBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/merge-upstream`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/merge-upstream`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

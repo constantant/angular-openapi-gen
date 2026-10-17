@@ -495,7 +495,7 @@ export function provideUsersGetByUsername(): FactoryProvider {
         http
           .request<UsersGetByUsernameResponse>(
             'GET',
-            `${base}/users/${username}`,
+            `${base}/users/${encodeURIComponent(username)}`,
             {},
           )
           .pipe(map(_validateResponse));

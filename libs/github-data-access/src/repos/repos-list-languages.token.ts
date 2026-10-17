@@ -44,7 +44,7 @@ export function provideReposListLanguages(): FactoryProvider {
           'REPOS_LIST_LANGUAGES',
           httpResource<ReposListLanguagesResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/languages`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/languages`,
             }),
             { parse: _validateResponse },
           ),

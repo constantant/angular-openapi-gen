@@ -86,9 +86,12 @@ export function provideReposCreateAutolink(): FactoryProvider {
                   ? (body as Signal<ReposCreateAutolinkBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/autolinks`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/autolinks`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

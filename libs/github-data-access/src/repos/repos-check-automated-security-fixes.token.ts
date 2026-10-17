@@ -58,7 +58,7 @@ export function provideReposCheckAutomatedSecurityFixes(): FactoryProvider {
           'REPOS_CHECK_AUTOMATED_SECURITY_FIXES',
           httpResource<ReposCheckAutomatedSecurityFixesResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/automated-security-fixes`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/automated-security-fixes`,
             }),
             { parse: _validateResponse },
           ),

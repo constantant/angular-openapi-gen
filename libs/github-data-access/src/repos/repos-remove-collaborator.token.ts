@@ -25,7 +25,7 @@ export function provideReposRemoveCollaborator(): FactoryProvider {
         trackResource(
           'REPOS_REMOVE_COLLABORATOR',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/collaborators/${username}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/collaborators/${encodeURIComponent(username)}`,
             method: 'DELETE',
           })),
         );

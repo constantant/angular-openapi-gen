@@ -215,7 +215,7 @@ export function provideUsersListGpgKeysForUser(): FactoryProvider {
         http
           .request<UsersListGpgKeysForUserResponse>(
             'GET',
-            `${base}/users/${username}/gpg_keys`,
+            `${base}/users/${encodeURIComponent(username)}/gpg_keys`,
             {
               params: dropUndefined(params) as unknown as Record<
                 string,

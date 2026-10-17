@@ -113,7 +113,7 @@ export function provideUsersListAttestationsBulk(): FactoryProvider {
         http
           .request<UsersListAttestationsBulkResponse>(
             'POST',
-            `${base}/users/${username}/attestations/bulk-list`,
+            `${base}/users/${encodeURIComponent(username)}/attestations/bulk-list`,
             {
               params: dropUndefined(params) as unknown as Record<
                 string,
@@ -122,7 +122,10 @@ export function provideUsersListAttestationsBulk(): FactoryProvider {
                 | boolean
                 | readonly (string | number | boolean)[]
               >,
-              body,
+              body: typeof body === 'string' ? JSON.stringify(body) : body,
+              headers: {
+                'Content-Type': 'application/json',
+              },
             },
           )
           .pipe(map(_validateResponse));

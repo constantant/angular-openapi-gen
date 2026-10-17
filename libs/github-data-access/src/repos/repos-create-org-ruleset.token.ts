@@ -1255,9 +1255,12 @@ export function provideReposCreateOrgRuleset(): FactoryProvider {
                   ? (body as Signal<ReposCreateOrgRulesetBody>)()
                   : body;
               return {
-                url: `${base}/orgs/${org}/rulesets`,
+                url: `${base}/orgs/${encodeURIComponent(org)}/rulesets`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

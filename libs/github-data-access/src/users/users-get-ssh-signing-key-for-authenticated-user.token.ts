@@ -64,7 +64,7 @@ export function provideUsersGetSshSigningKeyForAuthenticatedUser(): FactoryProvi
         http
           .request<UsersGetSshSigningKeyForAuthenticatedUserResponse>(
             'GET',
-            `${base}/user/ssh_signing_keys/${sshSigningKeyId}`,
+            `${base}/user/ssh_signing_keys/${encodeURIComponent(sshSigningKeyId)}`,
             {},
           )
           .pipe(map(_validateResponse));

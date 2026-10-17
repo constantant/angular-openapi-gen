@@ -194,7 +194,8 @@ export function renderTokenFile(
   // httpResource().progress() only carries *download* progress, so only blob downloads get the flag.
   const withProgress = reportProgress && !useHttpClient && ep.responseVariant === 'blob';
   const pascal = toPascalCase(ep.operationId);
-  const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${${toCamelCase(p)}}`);
+  // Path values are user data: '#', '?', '/' or '%' in them would otherwise change the URL's meaning.
+  const urlTemplate = ep.apiPath.replace(/\{([\w-]+)\}/g, (_, p) => `\${encodeURIComponent(${toCamelCase(p)})}`);
   const isGet = ep.method === 'get';
   const { responseStatuses, responseVariant } = ep;
   const hasJsonResponse = responseStatuses.length > 0;
@@ -605,6 +606,31 @@ export function renderTokenFile(
   return lines.join('\n');
 }
 
+/**
+ * Condition (a TS expression over the injected auth signals) under which `scheme` is applied. Each
+ * security requirement of the spec is an alternative whose schemes are required together, and the
+ * first alternative with every token provided wins - schemes of the others stay unused.
+ */
+function schemeAppliesWhen(ep: EndpointModel, usable: Set<string>, scheme: SecuritySchemeModel): string {
+  const alternatives = ep.securityAlternatives.map((alt) => alt.filter((n) => usable.has(n)));
+  const provided = (alt: string[]) => (alt.length ? alt.map((n) => `${toCamelCase(n)}?.() != null`).join(' && ') : 'true');
+  const branches: string[] = [];
+  for (let k = 0; k < alternatives.length; k++) {
+    if (!alternatives[k].includes(scheme.schemeName)) continue;
+    // An earlier alternative that is a subset of this one (or needs no token) is provided whenever this
+    // one is, so this one never wins.
+    if (alternatives.slice(0, k).some((prev) => prev.every((n) => alternatives[k].includes(n)))) continue;
+    const earlier = alternatives.slice(0, k).map(provided);
+    branches.push([provided(alternatives[k]), ...earlier.map((e) => `!(${e})`)].join(' && '));
+  }
+  if (!branches.length) return 'false';
+  return branches.length === 1 ? branches[0] : branches.map((b) => `(${b})`).join(' || ');
+}
+
+function isJsonMedia(contentType: string | null): boolean {
+  return contentType !== null && /^application\/([\w.-]+\+)?json(;|$)/i.test(contentType);
+}
+
 function appendResourceOptions(
   lines: string[],
   ep: EndpointModel,
@@ -628,6 +654,7 @@ function appendResourceOptions(
     lines.push(`${indent}reportProgress: true,`);
   }
 
+  const usableSchemes = new Set([...headerSchemes, ...querySchemes].map((s) => s.schemeName));
   const hasRegularParams = ep.hasQueryParams;
   const hasAuthQueryParams = querySchemes.length > 0;
   const hasSpecialParams = ep.specialQueryParams.length > 0 && hasRegularParams;
@@ -636,7 +663,7 @@ function appendResourceOptions(
     const authQueryParts = querySchemes
       .map(
         (s) =>
-          `...(${toCamelCase(s.schemeName)}?.() != null ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: \`\${${toCamelCase(s.schemeName)}()}\` } : {})`
+          `...(${schemeAppliesWhen(ep, usableSchemes, s)} ? { ${JSON.stringify(s.apiKeyParamName ?? s.schemeName)}: \`\${${toCamelCase(s.schemeName)}()}\` } : {})`
       )
       .join(', ');
     // Optional params the caller leaves `undefined` must not reach the wire: HttpClient would
@@ -662,14 +689,23 @@ function appendResourceOptions(
 
   if (!isGet && ep.hasBody) {
     // httpResource reads the (possibly signal) body inside its reactive lambda as `_body`.
-    lines.push(`${indent}${useHttpClient ? 'body' : 'body: _body'},`);
+    const bodyVar = useHttpClient ? 'body' : '_body';
+    // A string reaching a JSON endpoint is a JSON string value: Angular would send it unquoted.
+    lines.push(
+      isJsonMedia(ep.bodyContentType)
+        ? `${indent}body: typeof ${bodyVar} === 'string' ? JSON.stringify(${bodyVar}) : ${bodyVar},`
+        : `${indent}${useHttpClient ? 'body' : 'body: _body'},`,
+    );
   }
+  const jsonBody = !isGet && ep.hasBody && isJsonMedia(ep.bodyContentType);
 
   const hasHeaderParams = ep.headerParams.length > 0;
   const hasCookieParams = ep.cookieParams.length > 0;
   // With call options the caller's `headers` are always merged last, so the block is always emitted.
-  if (headerSchemes.length > 0 || hasHeaderParams || hasCookieParams || callOptions) {
+  if (headerSchemes.length > 0 || hasHeaderParams || hasCookieParams || jsonBody || callOptions) {
     lines.push(`${indent}headers: {`);
+    // Without it a string body would go out as text/plain.
+    if (jsonBody) lines.push(`${indent}  'Content-Type': 'application/json',`);
     // Explicit header params from the spec (e.g. X-Api-Version, Accept-Language)
     for (const h of ep.headerParams) {
       const varName = toCamelCase(h.name);
@@ -693,7 +729,7 @@ function appendResourceOptions(
     // Auth scheme headers (signal-based, always optional)
     for (const s of headerSchemes) {
       const varName = toCamelCase(s.schemeName);
-      lines.push(`${indent}  ...(${varName}?.() != null ? ${headerEntryForScheme(s, varName)} : {}),`);
+      lines.push(`${indent}  ...(${schemeAppliesWhen(ep, usableSchemes, s)} ? ${headerEntryForScheme(s, varName)} : {}),`);
     }
     if (callOptions) lines.push(`${indent}  ..._opts.headers,`);
     lines.push(`${indent}},`);

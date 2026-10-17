@@ -3600,9 +3600,12 @@ export function provideReposCreateFork(): FactoryProvider {
                   ? (body as Signal<ReposCreateForkBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/forks`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/forks`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

@@ -539,9 +539,12 @@ export function provideReposUpdateRelease(): FactoryProvider {
                   ? (body as Signal<ReposUpdateReleaseBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/releases/${releaseId}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/${encodeURIComponent(releaseId)}`,
                 method: 'PATCH',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

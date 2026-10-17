@@ -502,7 +502,7 @@ export function provideReposGetAccessRestrictions(): FactoryProvider {
           'REPOS_GET_ACCESS_RESTRICTIONS',
           httpResource<ReposGetAccessRestrictionsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/restrictions`,
             }),
             { parse: _validateResponse },
           ),

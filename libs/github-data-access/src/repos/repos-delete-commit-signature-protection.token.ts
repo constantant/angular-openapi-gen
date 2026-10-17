@@ -24,7 +24,7 @@ export function provideReposDeleteCommitSignatureProtection(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_COMMIT_SIGNATURE_PROTECTION',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_signatures`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_signatures`,
             method: 'DELETE',
           })),
         );

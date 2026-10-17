@@ -185,9 +185,12 @@ export function provideReposAddUserAccessRestrictions(): FactoryProvider {
                   ? (body as Signal<ReposAddUserAccessRestrictionsBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/restrictions/users`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

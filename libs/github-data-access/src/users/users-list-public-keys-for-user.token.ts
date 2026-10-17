@@ -65,7 +65,7 @@ export function provideUsersListPublicKeysForUser(): FactoryProvider {
         http
           .request<UsersListPublicKeysForUserResponse>(
             'GET',
-            `${base}/users/${username}/keys`,
+            `${base}/users/${encodeURIComponent(username)}/keys`,
             {
               params: dropUndefined(params) as unknown as Record<
                 string,

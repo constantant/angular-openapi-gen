@@ -58,7 +58,7 @@ export function provideReposGetParticipationStats(): FactoryProvider {
           'REPOS_GET_PARTICIPATION_STATS',
           httpResource<ReposGetParticipationStatsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/stats/participation`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/stats/participation`,
             }),
             { parse: _validateResponse },
           ),

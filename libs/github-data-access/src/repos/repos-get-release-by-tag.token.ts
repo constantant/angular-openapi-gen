@@ -524,7 +524,7 @@ export function provideReposGetReleaseByTag(): FactoryProvider {
           'REPOS_GET_RELEASE_BY_TAG',
           httpResource<ReposGetReleaseByTagResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/releases/tags/${tag}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/tags/${encodeURIComponent(tag)}`,
             }),
             { parse: _validateResponse },
           ),

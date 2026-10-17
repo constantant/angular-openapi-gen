@@ -76,7 +76,7 @@ export function provideGetOrderById(): FactoryProvider {
         return http
           .request<GetOrderByIdResponse>(
             'GET',
-            `${base}/store/order/${orderId}`,
+            `${base}/store/order/${encodeURIComponent(orderId)}`,
             {
               ..._opts.request,
               headers: {

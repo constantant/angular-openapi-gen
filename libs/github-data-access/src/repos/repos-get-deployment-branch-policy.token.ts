@@ -73,7 +73,7 @@ export function provideReposGetDeploymentBranchPolicy(): FactoryProvider {
           'REPOS_GET_DEPLOYMENT_BRANCH_POLICY',
           httpResource<ReposGetDeploymentBranchPolicyResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/environments/${environmentName}/deployment-branch-policies/${branchPolicyId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}/deployment-branch-policies/${encodeURIComponent(branchPolicyId)}`,
             }),
             { parse: _validateResponse },
           ),

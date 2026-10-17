@@ -66,7 +66,7 @@ export function provideReposGetTopPaths(): FactoryProvider {
           'REPOS_GET_TOP_PATHS',
           httpResource<ReposGetTopPathsResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/traffic/popular/paths`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/traffic/popular/paths`,
             }),
             { parse: _validateResponse },
           ),

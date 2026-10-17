@@ -96,9 +96,12 @@ export function provideReposUpdateWebhookConfigForRepo(): FactoryProvider {
                   ? (body as Signal<ReposUpdateWebhookConfigForRepoBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/config`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hooks/${encodeURIComponent(hookId)}/config`,
                 method: 'PATCH',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

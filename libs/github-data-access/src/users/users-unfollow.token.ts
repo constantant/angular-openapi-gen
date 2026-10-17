@@ -22,7 +22,7 @@ export function provideUsersUnfollow(): FactoryProvider {
       return (username: string) =>
         http.request<unknown>(
           'DELETE',
-          `${base}/user/following/${username}`,
+          `${base}/user/following/${encodeURIComponent(username)}`,
           {},
         );
     },

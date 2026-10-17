@@ -795,7 +795,7 @@ export function provideReposListForUser(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/users/${username}/repos`,
+                url: `${base}/users/${encodeURIComponent(username)}/repos`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

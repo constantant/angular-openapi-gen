@@ -62,7 +62,7 @@ export function provideReposGetTopReferrers(): FactoryProvider {
           'REPOS_GET_TOP_REFERRERS',
           httpResource<ReposGetTopReferrersResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/traffic/popular/referrers`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/traffic/popular/referrers`,
             }),
             { parse: _validateResponse },
           ),

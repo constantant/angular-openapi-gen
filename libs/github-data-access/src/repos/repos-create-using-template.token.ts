@@ -3595,9 +3595,12 @@ export function provideReposCreateUsingTemplate(): FactoryProvider {
                   ? (body as Signal<ReposCreateUsingTemplateBody>)()
                   : body;
               return {
-                url: `${base}/repos/${templateOwner}/${templateRepo}/generate`,
+                url: `${base}/repos/${encodeURIComponent(templateOwner)}/${encodeURIComponent(templateRepo)}/generate`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

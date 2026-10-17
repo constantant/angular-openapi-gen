@@ -24,7 +24,7 @@ export function provideReposDeleteAutolink(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_AUTOLINK',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/autolinks/${autolinkId}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/autolinks/${encodeURIComponent(autolinkId)}`,
             method: 'DELETE',
           })),
         );

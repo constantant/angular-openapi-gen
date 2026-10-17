@@ -72,7 +72,7 @@ export function provideReposListBranchesForHeadCommit(): FactoryProvider {
           'REPOS_LIST_BRANCHES_FOR_HEAD_COMMIT',
           httpResource<ReposListBranchesForHeadCommitResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/commits/${commitSha}/branches-where-head`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits/${encodeURIComponent(commitSha)}/branches-where-head`,
             }),
             { parse: _validateResponse },
           ),

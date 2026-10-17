@@ -3605,7 +3605,10 @@ export function provideReposCreateForAuthenticatedUser(): FactoryProvider {
               return {
                 url: `${base}/user/repos`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

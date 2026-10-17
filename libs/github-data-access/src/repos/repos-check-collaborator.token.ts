@@ -21,7 +21,7 @@ export function provideReposCheckCollaborator(): FactoryProvider {
         trackResource(
           'REPOS_CHECK_COLLABORATOR',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/collaborators/${username}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/collaborators/${encodeURIComponent(username)}`,
           })),
         );
     },

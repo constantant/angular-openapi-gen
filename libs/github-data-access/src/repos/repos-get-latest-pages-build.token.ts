@@ -206,7 +206,7 @@ export function provideReposGetLatestPagesBuild(): FactoryProvider {
           'REPOS_GET_LATEST_PAGES_BUILD',
           httpResource<ReposGetLatestPagesBuildResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/pages/builds/latest`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/builds/latest`,
             }),
             { parse: _validateResponse },
           ),

@@ -794,7 +794,7 @@ export function provideReposListForOrg(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/orgs/${org}/repos`,
+                url: `${base}/orgs/${encodeURIComponent(org)}/repos`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

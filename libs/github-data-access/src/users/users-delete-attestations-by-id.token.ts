@@ -21,7 +21,7 @@ export function provideUsersDeleteAttestationsById(): FactoryProvider {
       return (username: string, attestationId: string) =>
         http.request<unknown>(
           'DELETE',
-          `${base}/users/${username}/attestations/${attestationId}`,
+          `${base}/users/${encodeURIComponent(username)}/attestations/${encodeURIComponent(attestationId)}`,
           {},
         );
     },

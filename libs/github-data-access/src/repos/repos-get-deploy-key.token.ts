@@ -87,7 +87,7 @@ export function provideReposGetDeployKey(): FactoryProvider {
           'REPOS_GET_DEPLOY_KEY',
           httpResource<ReposGetDeployKeyResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/keys/${keyId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/keys/${encodeURIComponent(keyId)}`,
             }),
             { parse: _validateResponse },
           ),

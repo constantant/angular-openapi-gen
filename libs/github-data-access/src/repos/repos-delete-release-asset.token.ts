@@ -24,7 +24,7 @@ export function provideReposDeleteReleaseAsset(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_RELEASE_ASSET',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/releases/assets/${assetId}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/assets/${encodeURIComponent(assetId)}`,
             method: 'DELETE',
           })),
         );

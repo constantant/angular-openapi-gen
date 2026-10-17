@@ -21,7 +21,7 @@ export function provideReposDeleteAccessRestrictions(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_ACCESS_RESTRICTIONS',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/restrictions`,
             method: 'DELETE',
           })),
         );

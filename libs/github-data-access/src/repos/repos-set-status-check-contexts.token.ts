@@ -67,9 +67,12 @@ export function provideReposSetStatusCheckContexts(): FactoryProvider {
                   ? (body as Signal<ReposSetStatusCheckContextsBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks/contexts`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_status_checks/contexts`,
                 method: 'PUT',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

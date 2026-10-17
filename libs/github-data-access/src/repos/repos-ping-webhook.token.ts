@@ -24,7 +24,7 @@ export function provideReposPingWebhook(): FactoryProvider {
         trackResource(
           'REPOS_PING_WEBHOOK',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/hooks/${hookId}/pings`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/hooks/${encodeURIComponent(hookId)}/pings`,
             method: 'POST',
           })),
         );

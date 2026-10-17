@@ -57,7 +57,7 @@ export function provideReposGetAdminBranchProtection(): FactoryProvider {
           'REPOS_GET_ADMIN_BRANCH_PROTECTION',
           httpResource<ReposGetAdminBranchProtectionResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/enforce_admins`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/enforce_admins`,
             }),
             { parse: _validateResponse },
           ),

@@ -67,7 +67,7 @@ export function provideUsersGetContextForUser(): FactoryProvider {
         http
           .request<UsersGetContextForUserResponse>(
             'GET',
-            `${base}/users/${username}/hovercard`,
+            `${base}/users/${encodeURIComponent(username)}/hovercard`,
             {
               params: dropUndefined(params) as unknown as Record<
                 string,

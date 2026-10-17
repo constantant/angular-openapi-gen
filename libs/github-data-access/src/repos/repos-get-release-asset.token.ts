@@ -233,7 +233,7 @@ export function provideReposGetReleaseAsset(): FactoryProvider {
           'REPOS_GET_RELEASE_ASSET',
           httpResource<ReposGetReleaseAssetResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/releases/assets/${assetId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/assets/${encodeURIComponent(assetId)}`,
             }),
             { parse: _validateResponse },
           ),

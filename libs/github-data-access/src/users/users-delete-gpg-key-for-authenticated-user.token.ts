@@ -23,7 +23,7 @@ export function provideUsersDeleteGpgKeyForAuthenticatedUser(): FactoryProvider 
       return (gpgKeyId: string) =>
         http.request<unknown>(
           'DELETE',
-          `${base}/user/gpg_keys/${gpgKeyId}`,
+          `${base}/user/gpg_keys/${encodeURIComponent(gpgKeyId)}`,
           {},
         );
     },

@@ -21,7 +21,7 @@ export function provideReposRemoveStatusCheckProtection(): FactoryProvider {
         trackResource(
           'REPOS_REMOVE_STATUS_CHECK_PROTECTION',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_status_checks`,
             method: 'DELETE',
           })),
         );

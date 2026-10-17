@@ -72,9 +72,12 @@ export function provideReposGenerateReleaseNotes(): FactoryProvider {
                   ? (body as Signal<ReposGenerateReleaseNotesBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/releases/generate-notes`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases/generate-notes`,
                 method: 'POST',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

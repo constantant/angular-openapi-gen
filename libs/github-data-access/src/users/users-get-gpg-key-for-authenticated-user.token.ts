@@ -212,7 +212,7 @@ export function provideUsersGetGpgKeyForAuthenticatedUser(): FactoryProvider {
         http
           .request<UsersGetGpgKeyForAuthenticatedUserResponse>(
             'GET',
-            `${base}/user/gpg_keys/${gpgKeyId}`,
+            `${base}/user/gpg_keys/${encodeURIComponent(gpgKeyId)}`,
             {},
           )
           .pipe(map(_validateResponse));

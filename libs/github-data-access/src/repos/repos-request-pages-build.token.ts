@@ -54,7 +54,7 @@ export function provideReposRequestPagesBuild(): FactoryProvider {
           'REPOS_REQUEST_PAGES_BUILD',
           httpResource<ReposRequestPagesBuildResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/pages/builds`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pages/builds`,
               method: 'POST',
             }),
             { parse: _validateResponse },

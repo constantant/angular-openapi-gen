@@ -74,7 +74,7 @@ export function provideReposCustomPropertiesForReposGetRepositoryValues(): Facto
           'REPOS_CUSTOM_PROPERTIES_FOR_REPOS_GET_REPOSITORY_VALUES',
           httpResource<ReposCustomPropertiesForReposGetRepositoryValuesResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/properties/values`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/properties/values`,
             }),
             { parse: _validateResponse },
           ),

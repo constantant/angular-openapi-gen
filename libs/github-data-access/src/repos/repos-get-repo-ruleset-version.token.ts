@@ -89,7 +89,7 @@ export function provideReposGetRepoRulesetVersion(): FactoryProvider {
           'REPOS_GET_REPO_RULESET_VERSION',
           httpResource<ReposGetRepoRulesetVersionResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/rulesets/${rulesetId}/history/${versionId}`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/rulesets/${encodeURIComponent(rulesetId)}/history/${encodeURIComponent(versionId)}`,
             }),
             { parse: _validateResponse },
           ),

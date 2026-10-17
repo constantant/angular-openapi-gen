@@ -68,9 +68,12 @@ export function provideReposReplaceAllTopics(): FactoryProvider {
                   ? (body as Signal<ReposReplaceAllTopicsBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/topics`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/topics`,
                 method: 'PUT',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },

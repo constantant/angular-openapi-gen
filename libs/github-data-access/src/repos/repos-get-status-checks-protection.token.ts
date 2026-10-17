@@ -89,7 +89,7 @@ export function provideReposGetStatusChecksProtection(): FactoryProvider {
           'REPOS_GET_STATUS_CHECKS_PROTECTION',
           httpResource<ReposGetStatusChecksProtectionResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/required_status_checks`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/required_status_checks`,
             }),
             { parse: _validateResponse },
           ),

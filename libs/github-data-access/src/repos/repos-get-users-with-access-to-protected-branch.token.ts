@@ -169,7 +169,7 @@ export function provideReposGetUsersWithAccessToProtectedBranch(): FactoryProvid
           'REPOS_GET_USERS_WITH_ACCESS_TO_PROTECTED_BRANCH',
           httpResource<ReposGetUsersWithAccessToProtectedBranchResponse>(
             () => ({
-              url: `${base}/repos/${owner}/${repo}/branches/${branch}/protection/restrictions/users`,
+              url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches/${encodeURIComponent(branch)}/protection/restrictions/users`,
             }),
             { parse: _validateResponse },
           ),

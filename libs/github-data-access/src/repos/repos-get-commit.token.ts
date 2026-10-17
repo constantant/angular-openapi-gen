@@ -603,7 +603,7 @@ export function provideReposGetCommit(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/commits/${ref}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits/${encodeURIComponent(ref)}`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

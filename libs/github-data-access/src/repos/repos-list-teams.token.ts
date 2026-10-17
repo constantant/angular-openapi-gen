@@ -260,7 +260,7 @@ export function provideReposListTeams(): FactoryProvider {
               if (typeof params === 'function' && _params === undefined)
                 return undefined;
               return {
-                url: `${base}/repos/${owner}/${repo}/teams`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/teams`,
                 params: dropUndefined(_params) as unknown as Record<
                   string,
                   | string

@@ -21,7 +21,7 @@ export function provideReposDeleteAnEnvironment(): FactoryProvider {
         trackResource(
           'REPOS_DELETE_AN_ENVIRONMENT',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/environments/${environmentName}`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/environments/${encodeURIComponent(environmentName)}`,
             method: 'DELETE',
           })),
         );

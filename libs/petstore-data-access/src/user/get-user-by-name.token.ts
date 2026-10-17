@@ -93,7 +93,7 @@ export function provideGetUserByName(): FactoryProvider {
             () => {
               return {
                 ..._opts.request,
-                url: `${base}/user/${username}`,
+                url: `${base}/user/${encodeURIComponent(username)}`,
                 headers: {
                   ..._opts.headers,
                 },

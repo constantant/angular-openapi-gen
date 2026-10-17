@@ -17,7 +17,7 @@ export function provideReposDisableAutomatedSecurityFixes(): FactoryProvider {
         trackResource(
           'REPOS_DISABLE_AUTOMATED_SECURITY_FIXES',
           httpResource<unknown>(() => ({
-            url: `${base}/repos/${owner}/${repo}/automated-security-fixes`,
+            url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/automated-security-fixes`,
             method: 'DELETE',
           })),
         );

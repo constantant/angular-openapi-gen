@@ -1097,9 +1097,12 @@ export function provideReposUpdateInvitation(): FactoryProvider {
                   ? (body as Signal<ReposUpdateInvitationBody>)()
                   : body;
               return {
-                url: `${base}/repos/${owner}/${repo}/invitations/${invitationId}`,
+                url: `${base}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/invitations/${encodeURIComponent(invitationId)}`,
                 method: 'PATCH',
-                body: _body,
+                body: typeof _body === 'string' ? JSON.stringify(_body) : _body,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
               };
             },
             { parse: _validateResponse },
