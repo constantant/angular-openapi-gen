@@ -432,6 +432,10 @@ and `--validateResponses` check, so the same mechanism can drive a **production 
   HttpClient (Observable) tokens cannot be re-run: an edit applies to their next request.
 - A mock `error` is a real failing HTTP response (`HttpErrorResponse`, default 500);
   `fail(error, status?)` sets the status.
+- A behavior can also be `{ cases: [{ when: { path?, query? }, then }], otherwise? }` (`MockCases`): the
+  first case whose path params (strings, template order) and query values match answers the request,
+  other requests get `otherwise` or no behavior (network, or 501 in strict mode). Resolved per request,
+  serializable (Playwright `endpoint.when(match).resolve/fail/...`, extension `configure`).
 - Request args recorded in history are read from the wire: path params (strings), then the body,
   then the query (an object of strings).
 - Upload/download progress is simulated on the XHR transport only (as in real browsers, fetch

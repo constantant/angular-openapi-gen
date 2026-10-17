@@ -155,11 +155,15 @@ pets.expectCalledWith({ status: 'available' });
 // Playwright, against a production build: no mock code in the app
 const api = await installOpenApiMocks(page, { baseUrl, endpoints: ENDPOINTS, strict: true });
 await api.endpoint('GET_PET_BY_ID').failWith(404, { message: 'no pet' });
+// One endpoint, different answers per request:
+await api.endpoint('GET_PET_BY_ID').when({ path: ['7'] }).resolve(rex);
 await page.goto('/pets/7');
 ```
 
 - Behaviors: `{ value }`, `{ error, status }`, `{ loading: true }`, `{ sequence: [...] }`, each with
   `delay`, `headers` and simulated upload/download `progress`.
+- **Per-request answers:** `{ cases: [{ when: { path?, query? }, then }], otherwise }`, or
+  `endpoint.when({ path: ['7'] }).resolve(...)` in Playwright: a pet that is found and one that is refused.
 - **Live edits:** changing a mock re-runs the resources already on screen.
 - Entry points: `/testing` (unit tests), `/playwright` (E2E on any build), `/runtime` (no Angular).
 - Optional [MSW 2.x handlers](tools/openapi-resource-gen/README.md#msw-handlers---includemswhandlers)
