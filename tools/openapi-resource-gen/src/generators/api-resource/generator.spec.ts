@@ -2162,6 +2162,78 @@ describe('api-resource generator', () => {
     }
   });
 
+  describe('navigation endpoints (URL builders)', () => {
+    const SPEC = {
+      paths: {
+        '/auth/{provider}/login': {
+          get: {
+            operationId: 'login',
+            tags: ['auth'],
+            parameters: [
+              { in: 'path', name: 'provider', required: true, schema: { type: 'string' } },
+              { in: 'query', name: 'returnUrl', schema: { type: 'string' } },
+            ],
+            responses: { '302': { description: 'redirect' } },
+          },
+        },
+        '/auth/logout': {
+          get: { operationId: 'logout', tags: ['auth'], 'x-navigation': true, responses: { '200': { description: 'ok' } } },
+        },
+        '/auth/me': {
+          get: {
+            operationId: 'me',
+            tags: ['auth'],
+            responses: { '200': { content: { 'application/json': { schema: { type: 'object' } } } } },
+          },
+        },
+        '/auth/callback': {
+          get: { operationId: 'callback', tags: ['auth'], responses: { '200': { description: 'ok' }, '302': { description: 'r' } } },
+        },
+      },
+    };
+    const gen = async (extra: object = {}) => {
+      vi.mocked(SwaggerParser.dereference).mockResolvedValue(SPEC as never);
+      await apiResourceGenerator(tree, {
+        specPath: 'specs/petstore.yaml',
+        outputDir: 'libs/nav/src',
+        includeMocks: true,
+        ...extra,
+      });
+    };
+    const read = (f: string) => tree.read(`libs/nav/src/${f}`, 'utf-8')!.replace(/\s+/g, ' ');
+
+    it('turns an only-redirecting GET into a URL builder', async () => {
+      await gen();
+      const c = read('auth/login.token.ts');
+      expect(c).toContain('(provider: string, params?: LoginParams) => string');
+      expect(c).toContain('`${base}/auth/${encodeURIComponent(provider)}/login` + toQueryString(params)');
+      expect(c).not.toContain('httpResource');
+      expect(read('query-params.ts')).toContain('export function toQueryString');
+    });
+
+    it('honours x-navigation, and leaves a redirect next to a 2xx as a request', async () => {
+      await gen();
+      expect(read('auth/logout.token.ts')).toContain('=> string');
+      expect(read('auth/callback.token.ts')).toContain('httpResource');
+      expect(read('auth/me.token.ts')).toContain('httpResource');
+    });
+
+    it('can mark an operation with navigationOperations, and rejects unknown ones', async () => {
+      await gen({ navigationOperations: 'me' });
+      expect(read('auth/me.token.ts')).toContain('=> string');
+      await expect(gen({ navigationOperations: 'nope' })).rejects.toThrow('navigationOperations matched no endpoints: nope');
+    });
+
+    it('emits no mock for a navigation endpoint and keeps it out of the manifest', async () => {
+      await gen();
+      expect(tree.exists('libs/nav/src/auth/login.mock.ts')).toBe(false);
+      expect(tree.exists('libs/nav/src/auth/me.mock.ts')).toBe(true);
+      const manifest = JSON.parse(tree.read('libs/nav/src/mocks.manifest.json', 'utf-8')!);
+      expect(manifest.mocks.map((m: { operationId: string }) => m.operationId).sort()).toEqual(['callback', 'me']);
+      expect(read('auth/index.mock.ts')).not.toContain('login');
+    });
+  });
+
   describe('request shapes (httpResource and httpClient)', () => {
     const json = (schema: unknown = {}) => ({ 'application/json': { schema } });
     const SHAPES_SPEC = {
