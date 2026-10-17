@@ -19,6 +19,12 @@ export type ReposRenameBranchError =
   | paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['422']['content']['application/json'];
 
+export type ReposRenameBranchErrors = {
+  '403': paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['403']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/rename']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Branch With Protection',
   description: 'Branch With Protection',

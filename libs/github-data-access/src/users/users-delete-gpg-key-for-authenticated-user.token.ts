@@ -12,6 +12,13 @@ export type UsersDeleteGpgKeyForAuthenticatedUserError =
   | paths['/user/gpg_keys/{gpg_key_id}']['delete']['responses']['404']['content']['application/json']
   | paths['/user/gpg_keys/{gpg_key_id}']['delete']['responses']['422']['content']['application/json'];
 
+export type UsersDeleteGpgKeyForAuthenticatedUserErrors = {
+  '401': paths['/user/gpg_keys/{gpg_key_id}']['delete']['responses']['401']['content']['application/json'];
+  '403': paths['/user/gpg_keys/{gpg_key_id}']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/user/gpg_keys/{gpg_key_id}']['delete']['responses']['404']['content']['application/json'];
+  '422': paths['/user/gpg_keys/{gpg_key_id}']['delete']['responses']['422']['content']['application/json'];
+};
+
 export const USERS_DELETE_GPG_KEY_FOR_AUTHENTICATED_USER = new InjectionToken<
   (gpgKeyId: string) => Observable<void>
 >('USERS_DELETE_GPG_KEY_FOR_AUTHENTICATED_USER');

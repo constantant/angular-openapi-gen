@@ -13,6 +13,10 @@ export type ReposGetPagesResponse =
 export type ReposGetPagesError =
   paths['/repos/{owner}/{repo}/pages']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetPagesErrors = {
+  '404': paths['/repos/{owner}/{repo}/pages']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'GitHub Pages',
   description: 'The configuration for GitHub Pages for a repository.',

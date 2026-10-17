@@ -13,6 +13,10 @@ export type ReposGetStatusChecksProtectionResponse =
 export type ReposGetStatusChecksProtectionError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetStatusChecksProtectionErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Status Check Policy',
   description: 'Status Check Policy',

@@ -20,6 +20,13 @@ export type ReposListCommitsError =
   | paths['/repos/{owner}/{repo}/commits']['get']['responses']['409']['content']['application/json']
   | paths['/repos/{owner}/{repo}/commits']['get']['responses']['500']['content']['application/json'];
 
+export type ReposListCommitsErrors = {
+  '400': paths['/repos/{owner}/{repo}/commits']['get']['responses']['400']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}/commits']['get']['responses']['404']['content']['application/json'];
+  '409': paths['/repos/{owner}/{repo}/commits']['get']['responses']['409']['content']['application/json'];
+  '500': paths['/repos/{owner}/{repo}/commits']['get']['responses']['500']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

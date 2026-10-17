@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposDeleteAdminBranchProtectionError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins']['delete']['responses']['404']['content']['application/json'];
 
+export type ReposDeleteAdminBranchProtectionErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const REPOS_DELETE_ADMIN_BRANCH_PROTECTION = new InjectionToken<
   (
     owner: string,

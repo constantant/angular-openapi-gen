@@ -10,6 +10,11 @@ export type ReposDeleteDeploymentError =
   | paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['delete']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['delete']['responses']['422']['content']['application/json'];
 
+export type ReposDeleteDeploymentErrors = {
+  '404': paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['delete']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['delete']['responses']['422']['content']['application/json'];
+};
+
 export const REPOS_DELETE_DEPLOYMENT = new InjectionToken<
   (
     owner: string,

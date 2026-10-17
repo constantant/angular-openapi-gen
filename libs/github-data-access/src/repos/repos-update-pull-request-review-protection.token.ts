@@ -17,6 +17,10 @@ export type ReposUpdatePullRequestReviewProtectionResponse =
 export type ReposUpdatePullRequestReviewProtectionError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['patch']['responses']['422']['content']['application/json'];
 
+export type ReposUpdatePullRequestReviewProtectionErrors = {
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['patch']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Protected Branch Pull Request Review',
   description: 'Protected Branch Pull Request Review',

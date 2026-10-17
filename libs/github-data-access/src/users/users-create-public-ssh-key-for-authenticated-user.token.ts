@@ -20,6 +20,13 @@ export type UsersCreatePublicSshKeyForAuthenticatedUserError =
   | paths['/user/keys']['post']['responses']['404']['content']['application/json']
   | paths['/user/keys']['post']['responses']['422']['content']['application/json'];
 
+export type UsersCreatePublicSshKeyForAuthenticatedUserErrors = {
+  '401': paths['/user/keys']['post']['responses']['401']['content']['application/json'];
+  '403': paths['/user/keys']['post']['responses']['403']['content']['application/json'];
+  '404': paths['/user/keys']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/user/keys']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Key',
   description: 'Key',

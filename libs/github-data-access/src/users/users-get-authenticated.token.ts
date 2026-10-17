@@ -14,6 +14,11 @@ export type UsersGetAuthenticatedError =
   | paths['/user']['get']['responses']['401']['content']['application/json']
   | paths['/user']['get']['responses']['403']['content']['application/json'];
 
+export type UsersGetAuthenticatedErrors = {
+  '401': paths['/user']['get']['responses']['401']['content']['application/json'];
+  '403': paths['/user']['get']['responses']['403']['content']['application/json'];
+};
+
 export type UsersGetAuthenticatedDiscriminatorKey = 'public' | 'private';
 
 export type UsersGetAuthenticatedPublic =

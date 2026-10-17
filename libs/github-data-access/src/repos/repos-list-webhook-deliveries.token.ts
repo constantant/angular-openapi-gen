@@ -18,6 +18,11 @@ export type ReposListWebhookDeliveriesError =
   | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['responses']['400']['content']['application/json']
   | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['responses']['422']['content']['application/json'];
 
+export type ReposListWebhookDeliveriesErrors = {
+  '400': paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['responses']['400']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries']['get']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

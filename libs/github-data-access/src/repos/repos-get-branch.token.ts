@@ -13,6 +13,10 @@ export type ReposGetBranchResponse =
 export type ReposGetBranchError =
   paths['/repos/{owner}/{repo}/branches/{branch}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetBranchErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Branch With Protection',
   description: 'Branch With Protection',

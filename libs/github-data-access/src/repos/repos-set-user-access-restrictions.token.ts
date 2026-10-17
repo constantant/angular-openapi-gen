@@ -17,6 +17,10 @@ export type ReposSetUserAccessRestrictionsResponse =
 export type ReposSetUserAccessRestrictionsError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['put']['responses']['422']['content']['application/json'];
 
+export type ReposSetUserAccessRestrictionsErrors = {
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['put']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

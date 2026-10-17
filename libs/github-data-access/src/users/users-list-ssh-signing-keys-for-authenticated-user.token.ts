@@ -19,6 +19,12 @@ export type UsersListSshSigningKeysForAuthenticatedUserError =
   | paths['/user/ssh_signing_keys']['get']['responses']['403']['content']['application/json']
   | paths['/user/ssh_signing_keys']['get']['responses']['404']['content']['application/json'];
 
+export type UsersListSshSigningKeysForAuthenticatedUserErrors = {
+  '401': paths['/user/ssh_signing_keys']['get']['responses']['401']['content']['application/json'];
+  '403': paths['/user/ssh_signing_keys']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/user/ssh_signing_keys']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

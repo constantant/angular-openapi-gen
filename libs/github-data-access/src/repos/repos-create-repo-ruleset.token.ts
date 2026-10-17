@@ -19,6 +19,12 @@ export type ReposCreateRepoRulesetError =
   | paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['422']['content']['application/json']
   | paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['500']['content']['application/json'];
 
+export type ReposCreateRepoRulesetErrors = {
+  '404': paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['422']['content']['application/json'];
+  '500': paths['/repos/{owner}/{repo}/rulesets']['post']['responses']['500']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Repository ruleset',
   type: 'object',

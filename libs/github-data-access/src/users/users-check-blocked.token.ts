@@ -11,6 +11,12 @@ export type UsersCheckBlockedError =
   | paths['/user/blocks/{username}']['get']['responses']['403']['content']['application/json']
   | paths['/user/blocks/{username}']['get']['responses']['404']['content']['application/json'];
 
+export type UsersCheckBlockedErrors = {
+  '401': paths['/user/blocks/{username}']['get']['responses']['401']['content']['application/json'];
+  '403': paths['/user/blocks/{username}']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/user/blocks/{username}']['get']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_CHECK_BLOCKED = new InjectionToken<
   (username: string) => Observable<void>
 >('USERS_CHECK_BLOCKED');

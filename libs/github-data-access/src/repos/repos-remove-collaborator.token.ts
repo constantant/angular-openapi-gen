@@ -10,6 +10,11 @@ export type ReposRemoveCollaboratorError =
   | paths['/repos/{owner}/{repo}/collaborators/{username}']['delete']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}/collaborators/{username}']['delete']['responses']['422']['content']['application/json'];
 
+export type ReposRemoveCollaboratorErrors = {
+  '403': paths['/repos/{owner}/{repo}/collaborators/{username}']['delete']['responses']['403']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/collaborators/{username}']['delete']['responses']['422']['content']['application/json'];
+};
+
 export const REPOS_REMOVE_COLLABORATOR = new InjectionToken<
   (
     owner: string,

@@ -17,6 +17,10 @@ export type ReposListReleasesResponse =
 export type ReposListReleasesError =
   paths['/repos/{owner}/{repo}/releases']['get']['responses']['404']['content']['application/json'];
 
+export type ReposListReleasesErrors = {
+  '404': paths['/repos/{owner}/{repo}/releases']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

@@ -17,6 +17,10 @@ export type ReposListBranchesResponse =
 export type ReposListBranchesError =
   paths['/repos/{owner}/{repo}/branches']['get']['responses']['404']['content']['application/json'];
 
+export type ReposListBranchesErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

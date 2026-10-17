@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposEnableImmutableReleasesError =
   paths['/repos/{owner}/{repo}/immutable-releases']['put']['responses']['409']['content']['application/json'];
 
+export type ReposEnableImmutableReleasesErrors = {
+  '409': paths['/repos/{owner}/{repo}/immutable-releases']['put']['responses']['409']['content']['application/json'];
+};
+
 export const REPOS_ENABLE_IMMUTABLE_RELEASES = new InjectionToken<
   (owner: string, repo: string) => ReturnType<typeof httpResource<void>>
 >('REPOS_ENABLE_IMMUTABLE_RELEASES');

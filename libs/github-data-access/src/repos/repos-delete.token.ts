@@ -11,6 +11,12 @@ export type ReposDeleteError =
   | paths['/repos/{owner}/{repo}']['delete']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}']['delete']['responses']['409']['content']['application/json'];
 
+export type ReposDeleteErrors = {
+  '403': paths['/repos/{owner}/{repo}']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}']['delete']['responses']['404']['content']['application/json'];
+  '409': paths['/repos/{owner}/{repo}']['delete']['responses']['409']['content']['application/json'];
+};
+
 export const REPOS_DELETE = new InjectionToken<
   (owner: string, repo: string) => ReturnType<typeof httpResource<void>>
 >('REPOS_DELETE');

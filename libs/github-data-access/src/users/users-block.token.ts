@@ -12,6 +12,13 @@ export type UsersBlockError =
   | paths['/user/blocks/{username}']['put']['responses']['404']['content']['application/json']
   | paths['/user/blocks/{username}']['put']['responses']['422']['content']['application/json'];
 
+export type UsersBlockErrors = {
+  '401': paths['/user/blocks/{username}']['put']['responses']['401']['content']['application/json'];
+  '403': paths['/user/blocks/{username}']['put']['responses']['403']['content']['application/json'];
+  '404': paths['/user/blocks/{username}']['put']['responses']['404']['content']['application/json'];
+  '422': paths['/user/blocks/{username}']['put']['responses']['422']['content']['application/json'];
+};
+
 export const USERS_BLOCK = new InjectionToken<
   (username: string) => Observable<void>
 >('USERS_BLOCK');

@@ -17,6 +17,10 @@ export type ReposUpdateCommitCommentResponse =
 export type ReposUpdateCommitCommentError =
   paths['/repos/{owner}/{repo}/comments/{comment_id}']['patch']['responses']['404']['content']['application/json'];
 
+export type ReposUpdateCommitCommentErrors = {
+  '404': paths['/repos/{owner}/{repo}/comments/{comment_id}']['patch']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Commit Comment',
   description: 'Commit Comment',

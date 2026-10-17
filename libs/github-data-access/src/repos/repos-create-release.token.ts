@@ -18,6 +18,11 @@ export type ReposCreateReleaseError =
   | paths['/repos/{owner}/{repo}/releases']['post']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/releases']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreateReleaseErrors = {
+  '404': paths['/repos/{owner}/{repo}/releases']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/releases']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Release',
   description: 'A release.',

@@ -18,6 +18,11 @@ export type ReposCreatePagesSiteError =
   | paths['/repos/{owner}/{repo}/pages']['post']['responses']['409']['content']['application/json']
   | paths['/repos/{owner}/{repo}/pages']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreatePagesSiteErrors = {
+  '409': paths['/repos/{owner}/{repo}/pages']['post']['responses']['409']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/pages']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'GitHub Pages',
   description: 'The configuration for GitHub Pages for a repository.',

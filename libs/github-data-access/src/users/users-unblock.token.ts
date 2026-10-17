@@ -11,6 +11,12 @@ export type UsersUnblockError =
   | paths['/user/blocks/{username}']['delete']['responses']['403']['content']['application/json']
   | paths['/user/blocks/{username}']['delete']['responses']['404']['content']['application/json'];
 
+export type UsersUnblockErrors = {
+  '401': paths['/user/blocks/{username}']['delete']['responses']['401']['content']['application/json'];
+  '403': paths['/user/blocks/{username}']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/user/blocks/{username}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_UNBLOCK = new InjectionToken<
   (username: string) => Observable<void>
 >('USERS_UNBLOCK');

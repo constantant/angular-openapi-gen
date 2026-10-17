@@ -14,6 +14,11 @@ export type ReposListBranchesForHeadCommitError =
   | paths['/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head']['get']['responses']['409']['content']['application/json']
   | paths['/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head']['get']['responses']['422']['content']['application/json'];
 
+export type ReposListBranchesForHeadCommitErrors = {
+  '409': paths['/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head']['get']['responses']['409']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/commits/{commit_sha}/branches-where-head']['get']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

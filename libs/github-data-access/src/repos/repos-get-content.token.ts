@@ -18,6 +18,11 @@ export type ReposGetContentError =
   | paths['/repos/{owner}/{repo}/contents/{path}']['get']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}/contents/{path}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetContentErrors = {
+  '403': paths['/repos/{owner}/{repo}/contents/{path}']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}/contents/{path}']['get']['responses']['404']['content']['application/json'];
+};
+
 export type ReposGetContentDiscriminatorKey =
   'array' | 'file' | 'symlink' | 'submodule';
 

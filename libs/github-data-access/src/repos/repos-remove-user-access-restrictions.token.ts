@@ -17,6 +17,10 @@ export type ReposRemoveUserAccessRestrictionsResponse =
 export type ReposRemoveUserAccessRestrictionsError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['delete']['responses']['422']['content']['application/json'];
 
+export type ReposRemoveUserAccessRestrictionsErrors = {
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/users']['delete']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

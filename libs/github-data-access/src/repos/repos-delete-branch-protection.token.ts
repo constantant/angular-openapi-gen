@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposDeleteBranchProtectionError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection']['delete']['responses']['403']['content']['application/json'];
 
+export type ReposDeleteBranchProtectionErrors = {
+  '403': paths['/repos/{owner}/{repo}/branches/{branch}/protection']['delete']['responses']['403']['content']['application/json'];
+};
+
 export const REPOS_DELETE_BRANCH_PROTECTION = new InjectionToken<
   (
     owner: string,

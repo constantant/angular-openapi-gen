@@ -141,7 +141,7 @@ function collectDateFields(schema: OpenAPIV3.SchemaObject | null | undefined): D
  * (JSON Schema has no `nullable` keyword — a validator would otherwise reject
  * legitimately-null fields the spec explicitly allows).
  */
-function normalizeSchemaForValidation(schema: unknown): unknown {
+export function normalizeSchemaForValidation(schema: unknown): unknown {
   if (Array.isArray(schema)) return schema.map(normalizeSchemaForValidation);
   if (!schema || typeof schema !== 'object') return schema;
 
@@ -418,6 +418,16 @@ export function buildEndpoints(
         responseIsArray,
         responseVariant,
         responseSchema,
+        parameters: allParams.map((p) => ({
+          name: p.name,
+          in: p.in as 'path' | 'query' | 'header' | 'cookie',
+          required: p.required === true,
+        })),
+        bodyRequired: requestBody?.required === true,
+        responses: Object.entries(operation.responses ?? {}).map(([status, response]) => ({
+          status,
+          mediaTypes: Object.keys((response as OpenAPIV3.ResponseObject | undefined)?.content ?? {}),
+        })),
       });
     }
   }

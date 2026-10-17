@@ -17,6 +17,10 @@ export type ReposSetTeamAccessRestrictionsResponse =
 export type ReposSetTeamAccessRestrictionsError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['put']['responses']['422']['content']['application/json'];
 
+export type ReposSetTeamAccessRestrictionsErrors = {
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['put']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

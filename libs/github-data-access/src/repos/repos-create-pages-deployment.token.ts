@@ -19,6 +19,12 @@ export type ReposCreatePagesDeploymentError =
   | paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreatePagesDeploymentErrors = {
+  '400': paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['400']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/pages/deployments']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'GitHub Pages',
   description: 'The GitHub Pages deployment status.',

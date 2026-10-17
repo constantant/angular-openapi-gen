@@ -17,6 +17,10 @@ export type ReposCreateDeploymentStatusResponse =
 export type ReposCreateDeploymentStatusError =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreateDeploymentStatusErrors = {
+  '422': paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Deployment Status',
   description: 'The status of a deployment.',

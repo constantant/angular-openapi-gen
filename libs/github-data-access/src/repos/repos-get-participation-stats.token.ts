@@ -13,6 +13,10 @@ export type ReposGetParticipationStatsResponse =
 export type ReposGetParticipationStatsError =
   paths['/repos/{owner}/{repo}/stats/participation']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetParticipationStatsErrors = {
+  '404': paths['/repos/{owner}/{repo}/stats/participation']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Participation Stats',
   type: 'object',

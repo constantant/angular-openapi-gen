@@ -18,6 +18,11 @@ export type ReposRemoveStatusCheckContextsError =
   | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['delete']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['delete']['responses']['422']['content']['application/json'];
 
+export type ReposRemoveStatusCheckContextsErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['delete']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['delete']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

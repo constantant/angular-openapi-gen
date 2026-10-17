@@ -15,6 +15,12 @@ export type UsersGetSshSigningKeyForAuthenticatedUserError =
   | paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['get']['responses']['403']['content']['application/json']
   | paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['get']['responses']['404']['content']['application/json'];
 
+export type UsersGetSshSigningKeyForAuthenticatedUserErrors = {
+  '401': paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['get']['responses']['401']['content']['application/json'];
+  '403': paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'SSH Signing Key',
   description: 'A public SSH key used to sign Git commits',

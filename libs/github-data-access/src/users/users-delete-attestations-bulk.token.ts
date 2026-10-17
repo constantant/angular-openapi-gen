@@ -13,6 +13,10 @@ export type UsersDeleteAttestationsBulkBody = NonNullable<
 export type UsersDeleteAttestationsBulkError =
   paths['/users/{username}/attestations/delete-request']['post']['responses']['404']['content']['application/json'];
 
+export type UsersDeleteAttestationsBulkErrors = {
+  '404': paths['/users/{username}/attestations/delete-request']['post']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_DELETE_ATTESTATIONS_BULK = new InjectionToken<
   (username: string, body: UsersDeleteAttestationsBulkBody) => Observable<void>
 >('USERS_DELETE_ATTESTATIONS_BULK');

@@ -13,6 +13,10 @@ export type ReposGetDeployKeyResponse =
 export type ReposGetDeployKeyError =
   paths['/repos/{owner}/{repo}/keys/{key_id}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetDeployKeyErrors = {
+  '404': paths['/repos/{owner}/{repo}/keys/{key_id}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Deploy Key',
   description: 'An SSH key granting access to a single repository.',

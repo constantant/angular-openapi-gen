@@ -20,6 +20,13 @@ export type UsersAddEmailForAuthenticatedUserError =
   | paths['/user/emails']['post']['responses']['404']['content']['application/json']
   | paths['/user/emails']['post']['responses']['422']['content']['application/json'];
 
+export type UsersAddEmailForAuthenticatedUserErrors = {
+  '401': paths['/user/emails']['post']['responses']['401']['content']['application/json'];
+  '403': paths['/user/emails']['post']['responses']['403']['content']['application/json'];
+  '404': paths['/user/emails']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/user/emails']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

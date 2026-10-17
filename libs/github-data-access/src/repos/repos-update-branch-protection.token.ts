@@ -19,6 +19,12 @@ export type ReposUpdateBranchProtectionError =
   | paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['422']['content']['application/json'];
 
+export type ReposUpdateBranchProtectionErrors = {
+  '403': paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['403']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection']['put']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Protected Branch',
   description: 'Branch protections protect branches',

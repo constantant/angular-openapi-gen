@@ -6,532 +6,7295 @@
       "operationId": "youtube.abuseReports.insert",
       "path": "/youtube/v3/abuseReports",
       "method": "post",
-      "tag": "abuse-reports"
+      "tag": "abuse-reports",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_ACTIVITIES_LIST",
       "operationId": "youtube.activities.list",
       "path": "/youtube/v3/activities",
       "method": "get",
-      "tag": "activities"
+      "tag": "activities",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "home",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mine",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "publishedAfter",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "publishedBefore",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "regionCode",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CAPTIONS_LIST",
       "operationId": "youtube.captions.list",
       "path": "/youtube/v3/captions",
       "method": "get",
-      "tag": "captions"
+      "tag": "captions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "videoId",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOf",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CAPTIONS_INSERT",
       "operationId": "youtube.captions.insert",
       "path": "/youtube/v3/captions",
       "method": "post",
-      "tag": "captions"
+      "tag": "captions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOf",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "sync",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/octet-stream",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CAPTIONS_UPDATE",
       "operationId": "youtube.captions.update",
       "path": "/youtube/v3/captions",
       "method": "put",
-      "tag": "captions"
+      "tag": "captions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOf",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "sync",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/octet-stream",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CAPTIONS_DELETE",
       "operationId": "youtube.captions.delete",
       "path": "/youtube/v3/captions",
       "method": "delete",
-      "tag": "captions"
+      "tag": "captions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOf",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CAPTIONS_DOWNLOAD",
       "operationId": "youtube.captions.download",
       "path": "/youtube/v3/captions/{id}",
       "method": "get",
-      "tag": "captions"
+      "tag": "captions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "path",
+          "required": true
+        },
+        {
+          "name": "onBehalfOf",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "tfmt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "tlang",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CHANNEL_BANNERS_INSERT",
       "operationId": "youtube.channelBanners.insert",
       "path": "/youtube/v3/channelBanners/insert",
       "method": "post",
-      "tag": "channel-banners"
+      "tag": "channel-banners",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/octet-stream",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CHANNEL_SECTIONS_LIST",
       "operationId": "youtube.channelSections.list",
       "path": "/youtube/v3/channelSections",
       "method": "get",
-      "tag": "channel-sections"
+      "tag": "channel-sections",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mine",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CHANNEL_SECTIONS_INSERT",
       "operationId": "youtube.channelSections.insert",
       "path": "/youtube/v3/channelSections",
       "method": "post",
-      "tag": "channel-sections"
+      "tag": "channel-sections",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CHANNEL_SECTIONS_UPDATE",
       "operationId": "youtube.channelSections.update",
       "path": "/youtube/v3/channelSections",
       "method": "put",
-      "tag": "channel-sections"
+      "tag": "channel-sections",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CHANNEL_SECTIONS_DELETE",
       "operationId": "youtube.channelSections.delete",
       "path": "/youtube/v3/channelSections",
       "method": "delete",
-      "tag": "channel-sections"
+      "tag": "channel-sections",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CHANNELS_LIST",
       "operationId": "youtube.channels.list",
       "path": "/youtube/v3/channels",
       "method": "get",
-      "tag": "channels"
+      "tag": "channels",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "categoryId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "forUsername",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "managedByMe",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mine",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mySubscribers",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_CHANNELS_UPDATE",
       "operationId": "youtube.channels.update",
       "path": "/youtube/v3/channels",
       "method": "put",
-      "tag": "channels"
+      "tag": "channels",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_COMMENT_THREADS_LIST",
       "operationId": "youtube.commentThreads.list",
       "path": "/youtube/v3/commentThreads",
       "method": "get",
-      "tag": "comment-threads"
+      "tag": "comment-threads",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "allThreadsRelatedToChannelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "moderationStatus",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "order",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "searchTerms",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "textFormat",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoId",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_COMMENT_THREADS_INSERT",
       "operationId": "youtube.commentThreads.insert",
       "path": "/youtube/v3/commentThreads",
       "method": "post",
-      "tag": "comment-threads"
+      "tag": "comment-threads",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_YOUTUBE_V3_UPDATE_COMMENT_THREADS",
       "operationId": "youtube.youtube.v3.updateCommentThreads",
       "path": "/youtube/v3/commentThreads",
       "method": "put",
-      "tag": "youtube"
+      "tag": "youtube",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "YOUTUBE_COMMENTS_LIST",
       "operationId": "youtube.comments.list",
       "path": "/youtube/v3/comments",
       "method": "get",
-      "tag": "comments"
+      "tag": "comments",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "parentId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "textFormat",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_COMMENTS_INSERT",
       "operationId": "youtube.comments.insert",
       "path": "/youtube/v3/comments",
       "method": "post",
-      "tag": "comments"
+      "tag": "comments",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_COMMENTS_UPDATE",
       "operationId": "youtube.comments.update",
       "path": "/youtube/v3/comments",
       "method": "put",
-      "tag": "comments"
+      "tag": "comments",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_COMMENTS_DELETE",
       "operationId": "youtube.comments.delete",
       "path": "/youtube/v3/comments",
       "method": "delete",
-      "tag": "comments"
+      "tag": "comments",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_COMMENTS_MARK_AS_SPAM",
       "operationId": "youtube.comments.markAsSpam",
       "path": "/youtube/v3/comments/markAsSpam",
       "method": "post",
-      "tag": "comments"
+      "tag": "comments",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_COMMENTS_SET_MODERATION_STATUS",
       "operationId": "youtube.comments.setModerationStatus",
       "path": "/youtube/v3/comments/setModerationStatus",
       "method": "post",
-      "tag": "comments"
+      "tag": "comments",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "moderationStatus",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "banAuthor",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_I18N_LANGUAGES_LIST",
       "operationId": "youtube.i18nLanguages.list",
       "path": "/youtube/v3/i18nLanguages",
       "method": "get",
-      "tag": "i18n-languages"
+      "tag": "i18n-languages",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_I18N_REGIONS_LIST",
       "operationId": "youtube.i18nRegions.list",
       "path": "/youtube/v3/i18nRegions",
       "method": "get",
-      "tag": "i18n-regions"
+      "tag": "i18n-regions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_BROADCASTS_LIST",
       "operationId": "youtube.liveBroadcasts.list",
       "path": "/youtube/v3/liveBroadcasts",
       "method": "get",
-      "tag": "live-broadcasts"
+      "tag": "live-broadcasts",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "broadcastStatus",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "broadcastType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mine",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_BROADCASTS_INSERT",
       "operationId": "youtube.liveBroadcasts.insert",
       "path": "/youtube/v3/liveBroadcasts",
       "method": "post",
-      "tag": "live-broadcasts"
+      "tag": "live-broadcasts",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_BROADCASTS_UPDATE",
       "operationId": "youtube.liveBroadcasts.update",
       "path": "/youtube/v3/liveBroadcasts",
       "method": "put",
-      "tag": "live-broadcasts"
+      "tag": "live-broadcasts",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_BROADCASTS_DELETE",
       "operationId": "youtube.liveBroadcasts.delete",
       "path": "/youtube/v3/liveBroadcasts",
       "method": "delete",
-      "tag": "live-broadcasts"
+      "tag": "live-broadcasts",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_BROADCASTS_BIND",
       "operationId": "youtube.liveBroadcasts.bind",
       "path": "/youtube/v3/liveBroadcasts/bind",
       "method": "post",
-      "tag": "live-broadcasts"
+      "tag": "live-broadcasts",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "streamId",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_BROADCASTS_INSERT_CUEPOINT",
       "operationId": "youtube.liveBroadcasts.insertCuepoint",
       "path": "/youtube/v3/liveBroadcasts/cuepoint",
       "method": "post",
-      "tag": "live-broadcasts"
+      "tag": "live-broadcasts",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_BROADCASTS_TRANSITION",
       "operationId": "youtube.liveBroadcasts.transition",
       "path": "/youtube/v3/liveBroadcasts/transition",
       "method": "post",
-      "tag": "live-broadcasts"
+      "tag": "live-broadcasts",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "broadcastStatus",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_CHAT_BANS_INSERT",
       "operationId": "youtube.liveChatBans.insert",
       "path": "/youtube/v3/liveChat/bans",
       "method": "post",
-      "tag": "live-chat-bans"
+      "tag": "live-chat-bans",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_CHAT_BANS_DELETE",
       "operationId": "youtube.liveChatBans.delete",
       "path": "/youtube/v3/liveChat/bans",
       "method": "delete",
-      "tag": "live-chat-bans"
+      "tag": "live-chat-bans",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_CHAT_MESSAGES_LIST",
       "operationId": "youtube.liveChatMessages.list",
       "path": "/youtube/v3/liveChat/messages",
       "method": "get",
-      "tag": "live-chat-messages"
+      "tag": "live-chat-messages",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "liveChatId",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "profileImageSize",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_CHAT_MESSAGES_INSERT",
       "operationId": "youtube.liveChatMessages.insert",
       "path": "/youtube/v3/liveChat/messages",
       "method": "post",
-      "tag": "live-chat-messages"
+      "tag": "live-chat-messages",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_CHAT_MESSAGES_DELETE",
       "operationId": "youtube.liveChatMessages.delete",
       "path": "/youtube/v3/liveChat/messages",
       "method": "delete",
-      "tag": "live-chat-messages"
+      "tag": "live-chat-messages",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_CHAT_MODERATORS_LIST",
       "operationId": "youtube.liveChatModerators.list",
       "path": "/youtube/v3/liveChat/moderators",
       "method": "get",
-      "tag": "live-chat-moderators"
+      "tag": "live-chat-moderators",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "liveChatId",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_CHAT_MODERATORS_INSERT",
       "operationId": "youtube.liveChatModerators.insert",
       "path": "/youtube/v3/liveChat/moderators",
       "method": "post",
-      "tag": "live-chat-moderators"
+      "tag": "live-chat-moderators",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_CHAT_MODERATORS_DELETE",
       "operationId": "youtube.liveChatModerators.delete",
       "path": "/youtube/v3/liveChat/moderators",
       "method": "delete",
-      "tag": "live-chat-moderators"
+      "tag": "live-chat-moderators",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_STREAMS_LIST",
       "operationId": "youtube.liveStreams.list",
       "path": "/youtube/v3/liveStreams",
       "method": "get",
-      "tag": "live-streams"
+      "tag": "live-streams",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mine",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_STREAMS_INSERT",
       "operationId": "youtube.liveStreams.insert",
       "path": "/youtube/v3/liveStreams",
       "method": "post",
-      "tag": "live-streams"
+      "tag": "live-streams",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_STREAMS_UPDATE",
       "operationId": "youtube.liveStreams.update",
       "path": "/youtube/v3/liveStreams",
       "method": "put",
-      "tag": "live-streams"
+      "tag": "live-streams",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_LIVE_STREAMS_DELETE",
       "operationId": "youtube.liveStreams.delete",
       "path": "/youtube/v3/liveStreams",
       "method": "delete",
-      "tag": "live-streams"
+      "tag": "live-streams",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_MEMBERS_LIST",
       "operationId": "youtube.members.list",
       "path": "/youtube/v3/members",
       "method": "get",
-      "tag": "members"
+      "tag": "members",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "filterByMemberChannelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "hasAccessToLevel",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_MEMBERSHIPS_LEVELS_LIST",
       "operationId": "youtube.membershipsLevels.list",
       "path": "/youtube/v3/membershipsLevels",
       "method": "get",
-      "tag": "memberships-levels"
+      "tag": "memberships-levels",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_PLAYLIST_ITEMS_LIST",
       "operationId": "youtube.playlistItems.list",
       "path": "/youtube/v3/playlistItems",
       "method": "get",
-      "tag": "playlist-items"
+      "tag": "playlist-items",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "playlistId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoId",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_PLAYLIST_ITEMS_INSERT",
       "operationId": "youtube.playlistItems.insert",
       "path": "/youtube/v3/playlistItems",
       "method": "post",
-      "tag": "playlist-items"
+      "tag": "playlist-items",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_PLAYLIST_ITEMS_UPDATE",
       "operationId": "youtube.playlistItems.update",
       "path": "/youtube/v3/playlistItems",
       "method": "put",
-      "tag": "playlist-items"
+      "tag": "playlist-items",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_PLAYLIST_ITEMS_DELETE",
       "operationId": "youtube.playlistItems.delete",
       "path": "/youtube/v3/playlistItems",
       "method": "delete",
-      "tag": "playlist-items"
+      "tag": "playlist-items",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_PLAYLISTS_LIST",
       "operationId": "youtube.playlists.list",
       "path": "/youtube/v3/playlists",
       "method": "get",
-      "tag": "playlists"
+      "tag": "playlists",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mine",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_PLAYLISTS_INSERT",
       "operationId": "youtube.playlists.insert",
       "path": "/youtube/v3/playlists",
       "method": "post",
-      "tag": "playlists"
+      "tag": "playlists",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_PLAYLISTS_UPDATE",
       "operationId": "youtube.playlists.update",
       "path": "/youtube/v3/playlists",
       "method": "put",
-      "tag": "playlists"
+      "tag": "playlists",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_PLAYLISTS_DELETE",
       "operationId": "youtube.playlists.delete",
       "path": "/youtube/v3/playlists",
       "method": "delete",
-      "tag": "playlists"
+      "tag": "playlists",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_SEARCH_LIST",
       "operationId": "youtube.search.list",
       "path": "/youtube/v3/search",
       "method": "get",
-      "tag": "search"
+      "tag": "search",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "channelType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "eventType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "forContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "forDeveloper",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "forMine",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "location",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "locationRadius",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "order",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "publishedAfter",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "publishedBefore",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "q",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "regionCode",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "relatedToVideoId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "relevanceLanguage",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "safeSearch",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "topicId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "type",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoCaption",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoCategoryId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoDefinition",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoDimension",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoDuration",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoEmbeddable",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoLicense",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoSyndicated",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoType",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_SUBSCRIPTIONS_LIST",
       "operationId": "youtube.subscriptions.list",
       "path": "/youtube/v3/subscriptions",
       "method": "get",
-      "tag": "subscriptions"
+      "tag": "subscriptions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "forChannelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mine",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "myRecentSubscribers",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "mySubscribers",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "order",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_SUBSCRIPTIONS_INSERT",
       "operationId": "youtube.subscriptions.insert",
       "path": "/youtube/v3/subscriptions",
       "method": "post",
-      "tag": "subscriptions"
+      "tag": "subscriptions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_SUBSCRIPTIONS_DELETE",
       "operationId": "youtube.subscriptions.delete",
       "path": "/youtube/v3/subscriptions",
       "method": "delete",
-      "tag": "subscriptions"
+      "tag": "subscriptions",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_SUPER_CHAT_EVENTS_LIST",
       "operationId": "youtube.superChatEvents.list",
       "path": "/youtube/v3/superChatEvents",
       "method": "get",
-      "tag": "super-chat-events"
+      "tag": "super-chat-events",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_TESTS_INSERT",
       "operationId": "youtube.tests.insert",
       "path": "/youtube/v3/tests",
       "method": "post",
-      "tag": "tests"
+      "tag": "tests",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "externalChannelId",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [["Oauth2", "Oauth2c"]]
     },
     {
       "tokenName": "YOUTUBE_THIRD_PARTY_LINKS_LIST",
       "operationId": "youtube.thirdPartyLinks.list",
       "path": "/youtube/v3/thirdPartyLinks",
       "method": "get",
-      "tag": "third-party-links"
+      "tag": "third-party-links",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "externalChannelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "linkingToken",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "type",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "YOUTUBE_THIRD_PARTY_LINKS_INSERT",
       "operationId": "youtube.thirdPartyLinks.insert",
       "path": "/youtube/v3/thirdPartyLinks",
       "method": "post",
-      "tag": "third-party-links"
+      "tag": "third-party-links",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "externalChannelId",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "YOUTUBE_THIRD_PARTY_LINKS_UPDATE",
       "operationId": "youtube.thirdPartyLinks.update",
       "path": "/youtube/v3/thirdPartyLinks",
       "method": "put",
-      "tag": "third-party-links"
+      "tag": "third-party-links",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "externalChannelId",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "YOUTUBE_THIRD_PARTY_LINKS_DELETE",
       "operationId": "youtube.thirdPartyLinks.delete",
       "path": "/youtube/v3/thirdPartyLinks",
       "method": "delete",
-      "tag": "third-party-links"
+      "tag": "third-party-links",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "linkingToken",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "type",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "externalChannelId",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "YOUTUBE_THUMBNAILS_SET",
       "operationId": "youtube.thumbnails.set",
       "path": "/youtube/v3/thumbnails/set",
       "method": "post",
-      "tag": "thumbnails"
+      "tag": "thumbnails",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoId",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEO_ABUSE_REPORT_REASONS_LIST",
       "operationId": "youtube.videoAbuseReportReasons.list",
       "path": "/youtube/v3/videoAbuseReportReasons",
       "method": "get",
-      "tag": "video-abuse-report-reasons"
+      "tag": "video-abuse-report-reasons",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEO_CATEGORIES_LIST",
       "operationId": "youtube.videoCategories.list",
       "path": "/youtube/v3/videoCategories",
       "method": "get",
-      "tag": "video-categories"
+      "tag": "video-categories",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "regionCode",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEOS_LIST",
       "operationId": "youtube.videos.list",
       "path": "/youtube/v3/videos",
       "method": "get",
-      "tag": "videos"
+      "tag": "videos",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "chart",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "hl",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "locale",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxHeight",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxResults",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "maxWidth",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "myRating",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "pageToken",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "regionCode",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "videoCategoryId",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEOS_INSERT",
       "operationId": "youtube.videos.insert",
       "path": "/youtube/v3/videos",
       "method": "post",
-      "tag": "videos"
+      "tag": "videos",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "autoLevels",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "notifySubscribers",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwnerChannel",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "stabilize",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/octet-stream",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEOS_UPDATE",
       "operationId": "youtube.videos.update",
       "path": "/youtube/v3/videos",
       "method": "put",
-      "tag": "videos"
+      "tag": "videos",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEOS_DELETE",
       "operationId": "youtube.videos.delete",
       "path": "/youtube/v3/videos",
       "method": "delete",
-      "tag": "videos"
+      "tag": "videos",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEOS_GET_RATING",
       "operationId": "youtube.videos.getRating",
       "path": "/youtube/v3/videos/getRating",
       "method": "get",
-      "tag": "videos"
+      "tag": "videos",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEOS_RATE",
       "operationId": "youtube.videos.rate",
       "path": "/youtube/v3/videos/rate",
       "method": "post",
-      "tag": "videos"
+      "tag": "videos",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "rating",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_VIDEOS_REPORT_ABUSE",
       "operationId": "youtube.videos.reportAbuse",
       "path": "/youtube/v3/videos/reportAbuse",
       "method": "post",
-      "tag": "videos"
+      "tag": "videos",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_WATERMARKS_SET",
       "operationId": "youtube.watermarks.set",
       "path": "/youtube/v3/watermarks/set",
       "method": "post",
-      "tag": "watermarks"
+      "tag": "watermarks",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/octet-stream",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     },
     {
       "tokenName": "YOUTUBE_WATERMARKS_UNSET",
       "operationId": "youtube.watermarks.unset",
       "path": "/youtube/v3/watermarks/unset",
       "method": "post",
-      "tag": "watermarks"
+      "tag": "watermarks",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "$.xgafv",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "access_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "alt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "callback",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "fields",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "key",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "oauth_token",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "prettyPrint",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "quotaUser",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "upload_protocol",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "uploadType",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "channelId",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "onBehalfOfContentOwner",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        }
+      ],
+      "security": [
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"],
+        ["Oauth2", "Oauth2c"]
+      ]
     }
   ]
 }

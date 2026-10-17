@@ -13,6 +13,10 @@ export type ReposCreateCommitSignatureProtectionResponse =
 export type ReposCreateCommitSignatureProtectionError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures']['post']['responses']['404']['content']['application/json'];
 
+export type ReposCreateCommitSignatureProtectionErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures']['post']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Protected Branch Admin Enforced',
   description: 'Protected Branch Admin Enforced',

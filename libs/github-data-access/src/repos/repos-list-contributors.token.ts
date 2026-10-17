@@ -18,6 +18,11 @@ export type ReposListContributorsError =
   | paths['/repos/{owner}/{repo}/contributors']['get']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}/contributors']['get']['responses']['404']['content']['application/json'];
 
+export type ReposListContributorsErrors = {
+  '403': paths['/repos/{owner}/{repo}/contributors']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}/contributors']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

@@ -14,6 +14,11 @@ export type ReposRedeliverWebhookDeliveryError =
   | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}/attempts']['post']['responses']['400']['content']['application/json']
   | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}/attempts']['post']['responses']['422']['content']['application/json'];
 
+export type ReposRedeliverWebhookDeliveryErrors = {
+  '400': paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}/attempts']['post']['responses']['400']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}/attempts']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'object',
 };

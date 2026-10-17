@@ -18,6 +18,11 @@ export type ReposUpdateWebhookError =
   | paths['/repos/{owner}/{repo}/hooks/{hook_id}']['patch']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/hooks/{hook_id}']['patch']['responses']['422']['content']['application/json'];
 
+export type ReposUpdateWebhookErrors = {
+  '404': paths['/repos/{owner}/{repo}/hooks/{hook_id}']['patch']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/hooks/{hook_id}']['patch']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Webhook',
   description: 'Webhooks for repositories.',

@@ -13,6 +13,10 @@ export type ReposGetReleaseByTagResponse =
 export type ReposGetReleaseByTagError =
   paths['/repos/{owner}/{repo}/releases/tags/{tag}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetReleaseByTagErrors = {
+  '404': paths['/repos/{owner}/{repo}/releases/tags/{tag}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Release',
   description: 'A release.',

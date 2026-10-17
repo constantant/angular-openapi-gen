@@ -17,6 +17,10 @@ export type ReposGetCombinedStatusForRefResponse =
 export type ReposGetCombinedStatusForRefError =
   paths['/repos/{owner}/{repo}/commits/{ref}/status']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetCombinedStatusForRefErrors = {
+  '404': paths['/repos/{owner}/{repo}/commits/{ref}/status']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Combined Commit Status',
   description: 'Combined Commit Status',

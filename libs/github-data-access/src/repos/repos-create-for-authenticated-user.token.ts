@@ -21,6 +21,14 @@ export type ReposCreateForAuthenticatedUserError =
   | paths['/user/repos']['post']['responses']['404']['content']['application/json']
   | paths['/user/repos']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreateForAuthenticatedUserErrors = {
+  '400': paths['/user/repos']['post']['responses']['400']['content']['application/json'];
+  '401': paths['/user/repos']['post']['responses']['401']['content']['application/json'];
+  '403': paths['/user/repos']['post']['responses']['403']['content']['application/json'];
+  '404': paths['/user/repos']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/user/repos']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Full Repository',
   description: 'Full Repository',

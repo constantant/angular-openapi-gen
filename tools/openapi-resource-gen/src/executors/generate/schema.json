@@ -139,6 +139,11 @@
     "excludeSecuritySchemes": {
       "type": "string",
       "description": "Comma-separated security scheme names to drop, or * for all: no security token is emitted for them and every security alternative that names one is removed, so tokens never send those credentials (use it when an interceptor adds auth)."
+    },
+    "emitSchemas": {
+      "type": "boolean",
+      "default": false,
+      "description": "Write api.schemas.json next to the lib: the JSON Schemas of every request body and documented response (components.schemas kept at the same pointer, nullable rewritten to a type array), for fixture checks and contract tests outside the bundle. Never imported by the lib."
     }
   },
   "required": ["specPath", "outputDir"]

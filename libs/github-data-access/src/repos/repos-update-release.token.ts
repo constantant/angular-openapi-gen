@@ -17,6 +17,10 @@ export type ReposUpdateReleaseResponse =
 export type ReposUpdateReleaseError =
   paths['/repos/{owner}/{repo}/releases/{release_id}']['patch']['responses']['404']['content']['application/json'];
 
+export type ReposUpdateReleaseErrors = {
+  '404': paths['/repos/{owner}/{repo}/releases/{release_id}']['patch']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Release',
   description: 'A release.',

@@ -15,6 +15,12 @@ export type ReposUpdateInformationAboutPagesSiteError =
   | paths['/repos/{owner}/{repo}/pages']['put']['responses']['409']['content']['application/json']
   | paths['/repos/{owner}/{repo}/pages']['put']['responses']['422']['content']['application/json'];
 
+export type ReposUpdateInformationAboutPagesSiteErrors = {
+  '400': paths['/repos/{owner}/{repo}/pages']['put']['responses']['400']['content']['application/json'];
+  '409': paths['/repos/{owner}/{repo}/pages']['put']['responses']['409']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/pages']['put']['responses']['422']['content']['application/json'];
+};
+
 export const REPOS_UPDATE_INFORMATION_ABOUT_PAGES_SITE = new InjectionToken<
   (
     owner: string,

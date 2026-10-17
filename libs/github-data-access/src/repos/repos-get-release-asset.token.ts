@@ -13,6 +13,10 @@ export type ReposGetReleaseAssetResponse =
 export type ReposGetReleaseAssetError =
   paths['/repos/{owner}/{repo}/releases/assets/{asset_id}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetReleaseAssetErrors = {
+  '404': paths['/repos/{owner}/{repo}/releases/assets/{asset_id}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Release Asset',
   description: 'Data related to a release.',

@@ -36,6 +36,8 @@ import { renderQueryParamsFile } from './render-query-params';
 import { renderNavigationTokenFile } from './render-navigation';
 import { parseServerVariables, renderBaseUrlFile, renderServerVariablesFile } from './render-server-variables';
 import { preprocessSpec, type OverlayDocument } from './preprocess-spec';
+import { renderEndpointsFile } from './render-endpoints';
+import { renderSchemasDocument } from './render-schemas';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 /** First line of every generated .ts file. */
@@ -114,6 +116,11 @@ export interface ApiResourceGeneratorSchema {
   excludeOperations?: string;
   /** Comma-separated security scheme names to drop from the spec (`*` for all of them). */
   excludeSecuritySchemes?: string;
+  /**
+   * Write `api.schemas.json`: the JSON Schemas of every request body and documented response, for
+   * tools outside the bundle (fixture checks, contract tests). Never imported by the lib.
+   */
+  emitSchemas?: boolean;
 }
 
 function splitList(v: string | undefined): Set<string> {
@@ -207,6 +214,34 @@ function addMockPathAlias(tree: Tree, outputDir: string): void {
     const mockKey = `${existingKey}/mock`;
     if (!paths[mockKey]) {
       paths[mockKey] = [indexMockTsValue];
+    }
+    return json;
+  });
+}
+
+/**
+ * Add a /{lib}/endpoints path alias for mocks.endpoints.ts: the /mock barrel loads Angular at
+ * runtime, this one does not, so Node tools (Playwright) import it instead.
+ */
+function addEndpointsPathAlias(tree: Tree, outputDir: string): void {
+  const tsconfigPath = 'tsconfig.base.json';
+  if (!tree.exists(tsconfigPath)) return;
+
+  const normalizedDir = outputDir.replace(/\\/g, '/').replace(/\/$/, '');
+  const indexTsValue = `${normalizedDir}/index.ts`;
+
+  updateJson(tree, tsconfigPath, (json) => {
+    const paths = json?.compilerOptions?.paths as Record<string, string[]> | undefined;
+    if (!paths) return json;
+
+    const existingKey = Object.keys(paths).find((key) =>
+      paths[key].some((v) => v.replace(/\\/g, '/') === indexTsValue),
+    );
+    if (!existingKey) return json;
+
+    const endpointsKey = `${existingKey}/endpoints`;
+    if (!paths[endpointsKey]) {
+      paths[endpointsKey] = [`${normalizedDir}/mocks.endpoints.ts`];
     }
     return json;
   });
@@ -317,6 +352,8 @@ async function generateApiResources(
         f.endsWith('.mock.ts') ||
         f.endsWith('.msw.ts') ||
         f.endsWith('mocks.manifest.json') ||
+        f.endsWith('/mocks.endpoints.ts') ||
+        f.endsWith('/api.schemas.json') ||
         f.endsWith('/index.ts') ||
         f.endsWith('/index.mock.ts') ||
         f.endsWith('/index.msw.ts'),
@@ -607,12 +644,18 @@ async function generateApiResources(
       writtenFiles.add(joinPathFragments(outputDir, 'index.mock.ts'));
       addMockPathAlias(tree, outputDir);
 
-      const manifestMocks = endpoints.filter((ep) => !ep.navigation).map((ep) => ({
+      const mockable = endpoints.filter((ep) => !ep.navigation);
+      const manifestMocks = mockable.map((ep) => ({
         tokenName: ep.tokenName,
         operationId: ep.operationId,
         path: ep.apiPath,
         method: ep.method,
         ...(ep.tag !== 'default' ? { tag: ep.tag } : {}),
+        responseType: ep.responseVariant,
+        parameters: ep.parameters,
+        ...(ep.bodyContentType ? { requestBody: { mediaType: ep.bodyContentType, required: ep.bodyRequired } } : {}),
+        responses: ep.responses.map((r) => ({ status: r.status, mediaTypes: r.mediaTypes })),
+        security: ep.securityAlternatives,
       }));
       const manifestPath = joinPathFragments(outputDir, 'mocks.manifest.json');
       tree.write(
@@ -620,6 +663,17 @@ async function generateApiResources(
         JSON.stringify({ specId, mocks: manifestMocks }, null, 2) + '\n',
       );
       writtenFiles.add(manifestPath);
+
+      const endpointsPath = joinPathFragments(outputDir, 'mocks.endpoints.ts');
+      tree.write(endpointsPath, renderEndpointsFile(mockable, specId));
+      writtenFiles.add(endpointsPath);
+      addEndpointsPathAlias(tree, outputDir);
+    }
+
+    if (options.emitSchemas) {
+      const schemasPath = joinPathFragments(outputDir, 'api.schemas.json');
+      tree.write(schemasPath, renderSchemasDocument(cleanedParsed as Record<string, unknown>, endpoints.filter((ep) => !ep.navigation), specId));
+      writtenFiles.add(schemasPath);
     }
 
     if (includeMswHandlers) {

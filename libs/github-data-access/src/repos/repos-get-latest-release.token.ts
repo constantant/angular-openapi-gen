@@ -13,6 +13,10 @@ export type ReposGetLatestReleaseResponse =
 export type ReposGetLatestReleaseError =
   paths['/repos/{owner}/{repo}/releases/latest']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetLatestReleaseErrors = {
+  '404': paths['/repos/{owner}/{repo}/releases/latest']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Release',
   description: 'A release.',

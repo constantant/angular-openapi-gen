@@ -11,6 +11,12 @@ export type ReposDeclineInvitationForAuthenticatedUserError =
   | paths['/user/repository_invitations/{invitation_id}']['delete']['responses']['404']['content']['application/json']
   | paths['/user/repository_invitations/{invitation_id}']['delete']['responses']['409']['content']['application/json'];
 
+export type ReposDeclineInvitationForAuthenticatedUserErrors = {
+  '403': paths['/user/repository_invitations/{invitation_id}']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/user/repository_invitations/{invitation_id}']['delete']['responses']['404']['content']['application/json'];
+  '409': paths['/user/repository_invitations/{invitation_id}']['delete']['responses']['409']['content']['application/json'];
+};
+
 export const REPOS_DECLINE_INVITATION_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (invitationId: string) => ReturnType<typeof httpResource<void>>

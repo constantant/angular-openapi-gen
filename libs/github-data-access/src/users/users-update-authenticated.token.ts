@@ -20,6 +20,13 @@ export type UsersUpdateAuthenticatedError =
   | paths['/user']['patch']['responses']['404']['content']['application/json']
   | paths['/user']['patch']['responses']['422']['content']['application/json'];
 
+export type UsersUpdateAuthenticatedErrors = {
+  '401': paths['/user']['patch']['responses']['401']['content']['application/json'];
+  '403': paths['/user']['patch']['responses']['403']['content']['application/json'];
+  '404': paths['/user']['patch']['responses']['404']['content']['application/json'];
+  '422': paths['/user']['patch']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Private User',
   description: 'Private User',

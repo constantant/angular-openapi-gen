@@ -18,6 +18,11 @@ export type ReposGetRepoRulesetHistoryError =
   | paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['500']['content']['application/json'];
 
+export type ReposGetRepoRulesetHistoryErrors = {
+  '404': paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['404']['content']['application/json'];
+  '500': paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history']['get']['responses']['500']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

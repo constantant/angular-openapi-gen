@@ -11,6 +11,12 @@ export type UsersDeleteSshSigningKeyForAuthenticatedUserError =
   | paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['delete']['responses']['403']['content']['application/json']
   | paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['delete']['responses']['404']['content']['application/json'];
 
+export type UsersDeleteSshSigningKeyForAuthenticatedUserErrors = {
+  '401': paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['delete']['responses']['401']['content']['application/json'];
+  '403': paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/user/ssh_signing_keys/{ssh_signing_key_id}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_DELETE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<(sshSigningKeyId: string) => Observable<void>>(
     'USERS_DELETE_SSH_SIGNING_KEY_FOR_AUTHENTICATED_USER',

@@ -18,6 +18,11 @@ export type ReposUpdateStatusCheckProtectionError =
   | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['patch']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['patch']['responses']['422']['content']['application/json'];
 
+export type ReposUpdateStatusCheckProtectionErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['patch']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks']['patch']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Status Check Policy',
   description: 'Status Check Policy',

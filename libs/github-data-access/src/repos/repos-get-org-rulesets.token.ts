@@ -18,6 +18,11 @@ export type ReposGetOrgRulesetsError =
   | paths['/orgs/{org}/rulesets']['get']['responses']['404']['content']['application/json']
   | paths['/orgs/{org}/rulesets']['get']['responses']['500']['content']['application/json'];
 
+export type ReposGetOrgRulesetsErrors = {
+  '404': paths['/orgs/{org}/rulesets']['get']['responses']['404']['content']['application/json'];
+  '500': paths['/orgs/{org}/rulesets']['get']['responses']['500']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

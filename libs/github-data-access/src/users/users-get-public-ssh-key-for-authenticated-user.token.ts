@@ -15,6 +15,12 @@ export type UsersGetPublicSshKeyForAuthenticatedUserError =
   | paths['/user/keys/{key_id}']['get']['responses']['403']['content']['application/json']
   | paths['/user/keys/{key_id}']['get']['responses']['404']['content']['application/json'];
 
+export type UsersGetPublicSshKeyForAuthenticatedUserErrors = {
+  '401': paths['/user/keys/{key_id}']['get']['responses']['401']['content']['application/json'];
+  '403': paths['/user/keys/{key_id}']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/user/keys/{key_id}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Key',
   description: 'Key',

@@ -17,6 +17,10 @@ export type ReposSetAppAccessRestrictionsResponse =
 export type ReposSetAppAccessRestrictionsError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['put']['responses']['422']['content']['application/json'];
 
+export type ReposSetAppAccessRestrictionsErrors = {
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['put']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

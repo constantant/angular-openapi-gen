@@ -14,6 +14,10 @@ export type ReposGetPagesHealthCheckResponse =
 export type ReposGetPagesHealthCheckError =
   paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetPagesHealthCheckErrors = {
+  '404': paths['/repos/{owner}/{repo}/pages/health']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Pages Health Check Status',
   description: 'Pages Health Check Status',

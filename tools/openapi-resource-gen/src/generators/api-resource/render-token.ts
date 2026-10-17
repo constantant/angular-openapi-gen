@@ -341,6 +341,14 @@ export function renderTokenFile(
       }
       lines.push('');
     }
+    // The same bodies keyed by status, so a mocked or asserted error can be typed by its status.
+    lines.push(`export type ${pascal}Errors = {`);
+    for (const code of ep.errorStatuses) {
+      lines.push(
+        `  '${code}': ${ro(`paths['${ep.apiPath}']['${ep.method}']['responses']['${code}']['content']['application/json']`)};`
+      );
+    }
+    lines.push('};', '');
   }
 
   // Discriminated union helpers — emitted when the primary response schema has a discriminator.

@@ -11,6 +11,12 @@ export type ReposAcceptInvitationForAuthenticatedUserError =
   | paths['/user/repository_invitations/{invitation_id}']['patch']['responses']['404']['content']['application/json']
   | paths['/user/repository_invitations/{invitation_id}']['patch']['responses']['409']['content']['application/json'];
 
+export type ReposAcceptInvitationForAuthenticatedUserErrors = {
+  '403': paths['/user/repository_invitations/{invitation_id}']['patch']['responses']['403']['content']['application/json'];
+  '404': paths['/user/repository_invitations/{invitation_id}']['patch']['responses']['404']['content']['application/json'];
+  '409': paths['/user/repository_invitations/{invitation_id}']['patch']['responses']['409']['content']['application/json'];
+};
+
 export const REPOS_ACCEPT_INVITATION_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (invitationId: string) => ReturnType<typeof httpResource<void>>

@@ -21,6 +21,14 @@ export type ReposGetCommitError =
   | paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['500']['content']['application/json']
   | paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['503']['content']['application/json'];
 
+export type ReposGetCommitErrors = {
+  '404': paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['404']['content']['application/json'];
+  '409': paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['409']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['422']['content']['application/json'];
+  '500': paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['500']['content']['application/json'];
+  '503': paths['/repos/{owner}/{repo}/commits/{ref}']['get']['responses']['503']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Commit',
   description: 'Commit',

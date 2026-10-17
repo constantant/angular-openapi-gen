@@ -10,6 +10,11 @@ export type UsersDeleteAttestationsByIdError =
   | paths['/users/{username}/attestations/{attestation_id}']['delete']['responses']['403']['content']['application/json']
   | paths['/users/{username}/attestations/{attestation_id}']['delete']['responses']['404']['content']['application/json'];
 
+export type UsersDeleteAttestationsByIdErrors = {
+  '403': paths['/users/{username}/attestations/{attestation_id}']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/users/{username}/attestations/{attestation_id}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_DELETE_ATTESTATIONS_BY_ID = new InjectionToken<
   (username: string, attestationId: string) => Observable<void>
 >('USERS_DELETE_ATTESTATIONS_BY_ID');

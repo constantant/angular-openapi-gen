@@ -17,6 +17,10 @@ export type ReposListCollaboratorsResponse =
 export type ReposListCollaboratorsError =
   paths['/repos/{owner}/{repo}/collaborators']['get']['responses']['404']['content']['application/json'];
 
+export type ReposListCollaboratorsErrors = {
+  '404': paths['/repos/{owner}/{repo}/collaborators']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {
