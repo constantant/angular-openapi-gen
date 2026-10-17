@@ -173,7 +173,27 @@ export function usesDropUndefined(ep: EndpointModel): boolean {
   return !ep.navigation && ep.hasQueryParams && ep.specialQueryParams.length === 0;
 }
 
-export function renderTokenFile(
+/**
+ * Keeps only the `schema.d` type imports the file uses, and drops the import when none is left: an
+ * operation without params, body or JSON response types (a text endpoint, a bodiless 204) would
+ * otherwise import `paths` for nothing, which fails `noUnusedLocals`.
+ */
+export function pruneSchemaImports(code: string): string {
+  return code.replace(/^import type \{ ([^}]+) \} from '\.\.\/schema\.d';\n/m, (line, names: string, offset: number) => {
+    const rest = code.slice(0, offset) + code.slice(offset + line.length);
+    const used = names
+      .split(',')
+      .map((n) => n.trim())
+      .filter((n) => new RegExp(`\\b${n}\\b`).test(rest));
+    return used.length > 0 ? `import type { ${used.join(', ')} } from '../schema.d';\n` : '';
+  });
+}
+
+export function renderTokenFile(ep: EndpointModel, baseUrlToken: string, options: RenderTokenOptions = {}): string {
+  return pruneSchemaImports(renderTokenFileUnpruned(ep, baseUrlToken, options));
+}
+
+function renderTokenFileUnpruned(
   ep: EndpointModel,
   baseUrlToken: string,
   {
