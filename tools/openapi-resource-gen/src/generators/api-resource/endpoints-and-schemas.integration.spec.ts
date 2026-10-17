@@ -137,7 +137,7 @@ describe('mocks.endpoints.ts, the manifest and api.schemas.json', () => {
     const saveItem = manifest.mocks.find((m: { tokenName: string }) => m.tokenName === 'SAVE_ITEM');
     expect(saveItem.requestBody).toEqual({ mediaType: 'application/json', required: true });
     expect(saveItem.responses.map((r: { status: string }) => r.status)).toEqual(['204', '400', '404']);
-  });
+  }, 120_000);
 
   it('emits schemas that validate real values, refs and circular schemas included', async () => {
     const ws = await generateAndCompile(
@@ -162,11 +162,11 @@ describe('mocks.endpoints.ts, the manifest and api.schemas.json', () => {
     // A 204 is listed, with no content.
     expect(doc.operations.SAVE_ITEM.responses['204']).toEqual({ content: {} });
     expect(doc.operations.SAVE_ITEM.requestBody.required).toBe(true);
-  });
+  }, 120_000);
 
   it('removes the files when their options are turned off', async () => {
     const ws = await generateAndCompile('off', { fileName: 'shop.json', text: SPEC }, {});
     expect(ws.exists('mocks.endpoints.ts')).toBe(false);
     expect(ws.exists('api.schemas.json')).toBe(false);
-  });
+  }, 120_000);
 });

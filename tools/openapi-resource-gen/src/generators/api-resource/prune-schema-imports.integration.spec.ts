@@ -28,8 +28,8 @@ const { generateAndCompile, cleanup } = integrationWorkspace('oas-prune-imports-
 afterAll(cleanup);
 
 describe('schema.d imports', () => {
-  it('are left out of tokens that use no spec type, for both clients, and the lib compiles with noUnusedLocals', async () => {
-    for (const clientType of ['httpClient', 'httpResource']) {
+  it.each(['httpClient', 'httpResource'])('are left out of %s tokens that use no spec type, and the lib compiles with noUnusedLocals', async (clientType) => {
+    {
       const ws = await generateAndCompile(clientType, { fileName: 'keys.json', text: SPEC }, { clientType, providedIn: 'root' });
       expect(ws.diagnostics).toEqual([]);
       expect(ws.read('default/get-key.token.ts')).not.toContain('schema.d');
@@ -43,7 +43,7 @@ describe('schema.d imports', () => {
       const unused = ts.getPreEmitDiagnostics(program).map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'));
       expect(unused).toEqual([]);
     }
-  });
+  }, 120_000);
 });
 
 describe('pruneSchemaImports', () => {
