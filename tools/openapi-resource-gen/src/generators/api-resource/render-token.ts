@@ -447,7 +447,7 @@ export function renderTokenFile(
     lines.push(`}`, '');
   }
 
-  const responseT = hasResponse ? `${pascal}Response` : 'unknown';
+  const responseT = hasResponse ? `${pascal}Response` : ep.noContent ? 'void' : 'unknown';
   // Token generic and call site differ by responseVariant.
   // json  → InjectionToken<(...) => ReturnType<typeof httpResource<T>>>
   // text  → InjectionToken<(...) => ReturnType<typeof httpResource.text>>
@@ -760,7 +760,7 @@ interface ResourceCallOptionsCtx {
   headerSchemes: SecuritySchemeModel[];
   querySchemes: SecuritySchemeModel[];
   canValidate: boolean;
-  /** The resource's value type: the response alias, `string`, `Blob` or `unknown`. */
+  /** The resource's value type: the response alias, `string`, `Blob`, `void` or `unknown`. */
   valueT: string;
   /** The call expression up to its argument list; may open a `trackResource(` wrapper… */
   resourceCall: string;

@@ -348,6 +348,8 @@ export function buildEndpoints(
         }
       }
 
+      const noContent = !hasResponse && responseCodes.some((c) => /^2/.test(c));
+
       const errorStatuses = Object.keys(operation.responses ?? {})
         .filter((code) => code === 'default' || /^[45]/.test(code))
         .filter((code) => {
@@ -409,6 +411,7 @@ export function buildEndpoints(
         securitySchemeNames,
         securityAlternatives,
         navigation,
+        noContent,
         errorStatuses,
         discriminator,
         enumExtensions,

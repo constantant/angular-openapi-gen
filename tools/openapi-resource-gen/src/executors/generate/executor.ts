@@ -7,7 +7,8 @@ import {
   ApiResourceGeneratorSchema,
 } from '../../generators/api-resource/generator';
 
-export type GenerateExecutorSchema = ApiResourceGeneratorSchema;
+/** `check` writes nothing and fails when the generated output is out of date (for CI). */
+export type GenerateExecutorSchema = ApiResourceGeneratorSchema & { check?: boolean };
 
 export default async function generateExecutor(
   options: GenerateExecutorSchema,
@@ -17,6 +18,11 @@ export default async function generateExecutor(
     const tree = new FsTree(context.root, context.isVerbose ?? false);
     await apiResourceGenerator(tree, options);
     const changes = tree.listChanges();
+    if (options.check) {
+      for (const c of changes) console.log(`${c.type === 'CREATE' ? '+' : c.type === 'DELETE' ? '-' : '~'} ${c.path}`);
+      if (changes.length > 0) console.error(`${changes.length} generated file(s) are out of date. Regenerate them.`);
+      return { success: changes.length === 0 };
+    }
     flushChanges(context.root, changes);
     printChanges(changes);
     return { success: true };

@@ -25,16 +25,21 @@ export function loadSchema(): SchemaJson {
   return JSON.parse(fs.readFileSync(file, 'utf8')) as SchemaJson;
 }
 
-export function parseArgs(argv: string[], schema: SchemaJson): { options: Record<string, string | boolean>; help: boolean } {
+export function parseArgs(argv: string[], schema: SchemaJson): { options: Record<string, string | boolean>; help: boolean; check: boolean } {
   const props = schema.properties;
   const options: Record<string, string | boolean> = {};
   let help = false;
+  let check = false;
   const positionals: string[] = [];
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '-h' || arg === '--help') {
       help = true;
+      continue;
+    }
+    if (arg === '--check') {
+      check = true;
       continue;
     }
     if (!arg.startsWith('--')) {
@@ -66,7 +71,7 @@ export function parseArgs(argv: string[], schema: SchemaJson): { options: Record
   // The first positional argument is the spec path, as with the Nx generator.
   if (positionals.length > 0 && options['specPath'] === undefined) options['specPath'] = positionals.shift() as string;
   if (positionals.length > 0) throw new Error(`Unexpected argument "${positionals[0]}".`);
-  return { options, help };
+  return { options, help, check };
 }
 
 export function helpText(schema: SchemaJson): string {
@@ -77,7 +82,13 @@ export function helpText(schema: SchemaJson): string {
     const req = schema.required?.includes(name) ? ' [required]' : '';
     lines.push(`  ${flags}${req}`, `      ${spec.description ?? ''}${def}`);
   }
-  lines.push('', '  Booleans accept --flag, --flag=false or --no-flag.', '  -h, --help');
+  lines.push(
+    '  --check',
+    '      Write nothing; list what would change and exit 1 if the output is out of date (for CI).',
+    '',
+    '  Booleans accept --flag, --flag=false or --no-flag.',
+    '  -h, --help',
+  );
   return lines.join('\n');
 }
 
@@ -85,7 +96,7 @@ export function helpText(schema: SchemaJson): string {
 export async function runCli(argv: string[], cwd: string = process.cwd()): Promise<number> {
   try {
     const schema = loadSchema();
-    const { options, help } = parseArgs(argv, schema);
+    const { options, help, check } = parseArgs(argv, schema);
     if (help) {
       console.log(helpText(schema));
       return 0;
@@ -96,6 +107,11 @@ export async function runCli(argv: string[], cwd: string = process.cwd()): Promi
     const tree = new FsTree(cwd, false);
     await apiResourceGenerator(tree, options as unknown as ApiResourceGeneratorSchema);
     const changes = tree.listChanges();
+    if (check) {
+      for (const c of changes) console.log(`${c.type === 'CREATE' ? '+' : c.type === 'DELETE' ? '-' : '~'} ${c.path}`);
+      if (changes.length > 0) console.error(`${changes.length} generated file(s) are out of date. Regenerate them.`);
+      return changes.length > 0 ? 1 : 0;
+    }
     flushChanges(cwd, changes);
     printChanges(changes);
     return 0;
