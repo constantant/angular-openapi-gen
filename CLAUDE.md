@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Angular 22 · Nx monorepo · InjectionToken-based REST data access from OpenAPI specs via `httpResource`.
 
-> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen`, `@constantant/openapi-resource-mocks`, Chrome Extension `openapi-resource-mocks-devtools` (versions: each `package.json` / `manifest.json`). Data-access libs: `github`, `petstore`, `weather`, `youtube` — all generated with `--includeMocks=true --specId=<name>`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
+> **Implementation status**: Three published packages — `@constantant/openapi-resource-gen` (also a standalone `openapi-resource-gen` CLI), `@constantant/openapi-resource-mocks`, Chrome Extension `openapi-resource-devtools` (versions: each `package.json` / `manifest.json`). Data-access libs: `github`, `petstore`, `weather`, `youtube` — all generated with `--includeMocks=true --specId=<name>`. `apps/api-explorer` is wired up with routes and Angular Material UI. `apps/devtools-panel` is the Angular 22 panel app bundled inside the Chrome Extension.
 
 ---
 
@@ -242,6 +242,12 @@ provideHttpClient(withInterceptors([myapiDigestAuthInterceptor])),
   "check": "true | false (default: false) — CLI/executor only: write nothing, exit non-zero when generated output is out of date",
   "navigationOperations": "optional: comma-separated operationIds emitted as URL-builder tokens ((args) => string) instead of requests; also detected via x-navigation or an only-3xx GET",
   "serverVariables": "true | false (default: false) — one InjectionToken per variable of servers[0] (server-variables.token.ts); the default base URL is built from them",
+  "overlay": "optional: comma-separated OpenAPI Overlay 1.0 documents applied to the spec before generating",
+  "stripPathPrefix": "optional: path prefix left out of operationIds derived for operations that have none",
+  "includeOperations": "optional: comma-separated 'METHOD /path' entries or operationIds to generate (errors if one matches nothing)",
+  "excludeOperations": "optional: comma-separated 'METHOD /path' entries or operationIds to leave out (errors if one matches nothing)",
+  "excludeSecuritySchemes": "optional: comma-separated security scheme names to drop, or * for all",
+  "emitSchemas": "true | false (default: false) — write api.schemas.json (request/response JSON Schemas for contract tests; never imported by the lib)",
   "httpClientTags": "optional: comma-separated tags that use HttpClient regardless of clientType (errors if unmatched)",
   "httpClientOperations": "optional: comma-separated operationIds that use HttpClient regardless of clientType (errors if unmatched)",
   "validateResponses": "true | false (default: false) — validate JSON responses at runtime against the spec schema via httpResource's parse hook; requires @cfworker/json-schema",
@@ -426,6 +432,10 @@ and `--validateResponses` check, so the same mechanism can drive a **production 
   HttpClient (Observable) tokens cannot be re-run: an edit applies to their next request.
 - A mock `error` is a real failing HTTP response (`HttpErrorResponse`, default 500);
   `fail(error, status?)` sets the status.
+- A behavior can also be `{ cases: [{ when: { path?, query? }, then }], otherwise? }` (`MockCases`): the
+  first case whose path params (strings, template order) and query values match answers the request,
+  other requests get `otherwise` or no behavior (network, or 501 in strict mode). Resolved per request,
+  serializable (Playwright `endpoint.when(match).resolve/fail/...`, extension `configure`).
 - Request args recorded in history are read from the wire: path params (strings), then the body,
   then the query (an object of strings).
 - Upload/download progress is simulated on the XHR transport only (as in real browsers, fetch

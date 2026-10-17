@@ -2,9 +2,17 @@
 
 [![npm](https://img.shields.io/npm/v/@constantant/openapi-resource-gen)](https://www.npmjs.com/package/@constantant/openapi-resource-gen)
 
-Nx generator that reads an OpenAPI 3.x (or Swagger 2.0) spec and emits one `InjectionToken` per
-endpoint, each in its own `.ts` file. The result is a tree-shakeable Angular
-data-access library: only tokens that are actually injected end up in the bundle.
+**Tree-shakeable, signal-native Angular API clients from OpenAPI: one `InjectionToken` per endpoint.**
+
+The generator reads an OpenAPI 3.x (or Swagger 2.0) spec and emits one `InjectionToken` per
+endpoint, each in its own `.ts` file, backed by `httpResource` or `HttpClient`. A token you never
+`inject()` is dropped from the bundle, types come straight from the spec (via `openapi-typescript`),
+and the output works with Angular 20+ and Nx 20+ (or the standalone CLI, no Nx needed).
+
+- Runtime safety on request: response validation, read-only/write-only properties, date revival.
+- Specs you do not own: overlays, operation filters, redirect endpoints as URL builders, server variables.
+- Testing included: mocks, MSW handlers and a Chrome DevTools panel (see the mocks package).
+- CI gate: `--check` fails when the generated code is out of date.
 
 **Try it in the browser:** [NestJS API + Angular app on StackBlitz](https://stackblitz.com/github/constantant/angular-openapi-gen/tree/master/examples/stackblitz) (source:
 [`examples/stackblitz`](https://github.com/constantant/angular-openapi-gen/tree/master/examples/stackblitz)).
@@ -1540,33 +1548,6 @@ file cleanup like all other generated files.
 
 ---
 
-## Implementation notes
-
-| Step | Tool | Purpose |
-|------|------|---------|
-| Spec loading | `js-yaml` + custom `stripNonSchemaRefs()` | Handle YAML and remove non-spec `$ref` links (markdown, images) that would break parsing |
-| Type generation | `openapi-typescript` programmatic API | Emit `schema.d.ts` — the single source of truth for all request/response types |
-| Spec dereferencing | `@apidevtools/swagger-parser` | Resolve all `$ref` chains for endpoint extraction |
-| Security parsing | `parseSecuritySchemes(api)` | Extract scheme definitions; resolve per-operation overrides |
-| Code generation | `renderTokenFile()` / `renderSecurityTokenFile()` / `renderMockFile()` / `renderMswFile()` | Direct string assembly for token, mock, and MSW handler files |
-| Formatting | `@nx/devkit` `formatFiles()` | Runs Prettier over all written files |
-
-Hyphenated path parameter names (e.g. `{enterprise-team}` in the GitHub spec)
-and dotted operationIds (e.g. `youtube.search.list`) are converted to camelCase /
-PascalCase via `toCamelCase()` / `toPascalCase()` to produce valid JavaScript identifiers.
-
----
-
-## Contributing
-
-This package is developed in the [`angular-openapi-gen`](https://github.com/constantant/angular-openapi-gen)
-Nx workspace. Issues and pull requests are welcome — see
-[CONTRIBUTING.md](https://github.com/constantant/angular-openapi-gen/blob/master/CONTRIBUTING.md).
-
-## License
-
-[MIT](https://github.com/constantant/angular-openapi-gen/blob/master/LICENSE)
-
 ## HttpClient tokens (`--clientType=httpClient`)
 
 ```typescript
@@ -1649,3 +1630,32 @@ through the same `HttpEvent` stream — on the XHR backend only, like a real upl
   (`httpResource<void>` / `Observable<void>`), not `unknown`.
 - The CLI declares `nx`, `@nx/devkit` and `typescript` as dependencies, so `npx openapi-resource-gen`
   works outside an Nx workspace.
+
+---
+
+## Implementation notes
+
+| Step | Tool | Purpose |
+|------|------|---------|
+| Spec loading | `js-yaml` + custom `stripNonSchemaRefs()` | Handle YAML and remove non-spec `$ref` links (markdown, images) that would break parsing |
+| Type generation | `openapi-typescript` programmatic API | Emit `schema.d.ts` — the single source of truth for all request/response types |
+| Spec dereferencing | `@apidevtools/swagger-parser` | Resolve all `$ref` chains for endpoint extraction |
+| Security parsing | `parseSecuritySchemes(api)` | Extract scheme definitions; resolve per-operation overrides |
+| Code generation | `renderTokenFile()` / `renderSecurityTokenFile()` / `renderMockFile()` / `renderMswFile()` | Direct string assembly for token, mock, and MSW handler files |
+| Formatting | `@nx/devkit` `formatFiles()` | Runs Prettier over all written files |
+
+Hyphenated path parameter names (e.g. `{enterprise-team}` in the GitHub spec)
+and dotted operationIds (e.g. `youtube.search.list`) are converted to camelCase /
+PascalCase via `toCamelCase()` / `toPascalCase()` to produce valid JavaScript identifiers.
+
+---
+
+## Contributing
+
+This package is developed in the [`angular-openapi-gen`](https://github.com/constantant/angular-openapi-gen)
+Nx workspace. Issues and pull requests are welcome — see
+[CONTRIBUTING.md](https://github.com/constantant/angular-openapi-gen/blob/master/CONTRIBUTING.md).
+
+## License
+
+[MIT](https://github.com/constantant/angular-openapi-gen/blob/master/LICENSE)

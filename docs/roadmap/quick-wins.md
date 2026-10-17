@@ -3,6 +3,9 @@
 _Written 2026-10-02 after a competitive review of Angular/OpenAPI tooling. This is a plan, not a
 commitment: every item lists what to verify first and what "done" means._
 
+**Update (2026-10-17):** the standalone CLI, the StackBlitz demo, the Angular 20 / Nx 20 floor and the
+mocks v2 rewrite have all shipped since this was written; read the lines below as of 2026-10-02.
+
 **Status (2026-10-02):** #1–#4 shipped in `openapi-resource-gen` 1.14.0 / `openapi-resource-mocks`
 1.13.0 (PRs #80–#83); the temp-file leak under _Housekeeping_ is fixed (#84). #5 is partly done:
 README comparison, migration guides and the bundle-size benchmark are in (#85, #86); the runnable

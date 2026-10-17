@@ -42,6 +42,10 @@ npx nx g @constantant/openapi-resource-gen:api-resource \
 > `--specId` is the identifier the Chrome DevTools panel uses to match mocks to spec entries.
 > Both are optional but recommended if you plan to use the mock tools.
 
+> **No Nx?** The package also ships a standalone CLI with the same options:
+> `npx openapi-resource-gen https://petstore3.swagger.io/api/v3/openapi.yaml --outputDir src/api --baseUrlToken PETSTORE_BASE_URL`.
+> Add `--check` in CI to fail the build when the committed output is out of date.
+
 ---
 
 ## Step 3 — what was generated
