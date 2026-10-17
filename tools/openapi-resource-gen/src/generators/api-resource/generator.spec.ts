@@ -2836,8 +2836,8 @@ describe('api-resource generator', () => {
       expect(read('list-pets')).toMatch(/import type \{ paths, Readable \} from '\.\.\/schema\.d'/);
       // POST: body and response
       expect(read('create-pet')).toMatch(/import type \{ paths, Readable, Writable \} from '\.\.\/schema\.d'/);
-      // DELETE with neither a body nor a JSON response
-      expect(read('delete-pet')).toMatch(/import type \{ paths \} from '\.\.\/schema\.d'/);
+      // DELETE with neither a body nor a JSON response: nothing to import (it would fail noUnusedLocals)
+      expect(read('delete-pet')).not.toContain('schema.d');
     });
 
     it('composes with readonlyResponses as Readonly<Readable<…>>', async () => {
@@ -2886,7 +2886,7 @@ describe('api-resource generator', () => {
       const c = read('put-file');
       expect(c).toContain('export type PutFileBody = Blob | ArrayBuffer;');
       expect(c).toContain('export type PutFileResponse = string;');
-      expect(c).toMatch(/import type \{ paths \} from '\.\.\/schema\.d'/);
+      expect(c).not.toContain('schema.d');
     });
 
     it('wraps component schemas in discriminated-union variants', async () => {

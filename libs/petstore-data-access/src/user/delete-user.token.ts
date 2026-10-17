@@ -2,7 +2,6 @@
 
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import type { paths } from '../schema.d';
 import {
   splitCallOptions,
   type ResourceCallOptions,

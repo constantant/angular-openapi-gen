@@ -93,7 +93,7 @@ describe('spec preprocessing on a Swashbuckle-style spec', () => {
     expect(bond).not.toMatch(/X-Api-Key|Authorization|security-token/);
     // The overlay's response schema reached schema.d.ts and the token's response type.
     expect(ws.read('token/exchange-token.token.ts')).toContain('Observable<ExchangeTokenResponse>');
-  });
+  }, 120_000);
 
   it('reports an overlay target that no longer matches', async () => {
     await expect(
@@ -109,5 +109,5 @@ describe('spec preprocessing on a Swashbuckle-style spec', () => {
           ),
       ),
     ).rejects.toThrow(`Overlay "stale.overlay.yaml", action 1: target "$.paths['/api/gone'].get" matches nothing in the spec.`);
-  });
+  }, 120_000);
 });

@@ -3,7 +3,6 @@
 import { InjectionToken, inject, FactoryProvider } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import type { Observable } from 'rxjs';
-import type { paths } from '../schema.d';
 import { splitCallOptions, type CallOptions } from '../request-options';
 import { PETSTORE_BASE_URL } from '../api-base-url.token';
 
