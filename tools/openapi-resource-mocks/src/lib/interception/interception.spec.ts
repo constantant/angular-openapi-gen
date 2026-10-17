@@ -422,6 +422,23 @@ describe('mock interception', () => {
       ]);
     });
 
+    it('keeps a text body as sent, so a JSON string is told from plain text', async () => {
+      runtime.register('LANG', { method: 'put', baseUrl: BASE, path: '/language' }, { behavior: { value: undefined } });
+      await fetch(`${BASE}/language`, { method: 'PUT', body: '"en"', headers: { 'content-type': 'application/json' } });
+      await new Promise<void>((resolve) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', `${BASE}/language`);
+        xhr.addEventListener('load', () => resolve());
+        xhr.send('en');
+      });
+      const requests = entry('LANG').getHistory().filter((e) => e.type === 'request') as Extract<MockEvent, { type: 'request' }>[];
+      // both parse to the same args; only raw shows that the second is not JSON
+      expect(requests.map((r) => [r.args, r.raw])).toEqual([
+        [['en'], '"en"'],
+        [['en'], 'en'],
+      ]);
+    });
+
     it('emits a respond event with the status of every mocked answer, and none for a passthrough', async () => {
       runtime.register('GET', { method: 'get', baseUrl: BASE, path: '/pets/{id}' }, { behavior: { value: {} } });
       await fetch(`${BASE}/pets/1`);

@@ -51,7 +51,12 @@ export function patchXhr(target: { XMLHttpRequest: typeof XMLHttpRequest }, runt
 
     override send(body?: Document | XMLHttpRequestBodyInit | null): void {
       const interception = this._request
-        ? runtime.intercept({ ...this._request, body: readRequestBody(body), headers: { ...this._headers } })
+        ? runtime.intercept({
+            ...this._request,
+            body: readRequestBody(body),
+            headers: { ...this._headers },
+            ...(typeof body === 'string' ? { raw: body } : {}),
+          })
         : undefined;
       if (!interception) return this._sendReal(body);
 

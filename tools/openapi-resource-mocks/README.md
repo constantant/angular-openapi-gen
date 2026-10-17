@@ -369,7 +369,8 @@ How it works:
   current behaviors, so the app's very first request is already mocked (`holdMs`, default 5 s).
 - A behavior set from the test applies to the pages that are open **and** to every later page load
   in the page or context: a reload or a full navigation keeps it.
-- Every request is recorded **in Node**: `requests` (args, method, URL, the headers the app set)
+- Every request is recorded **in Node**: `requests` (args, method, URL, the headers the app set, and `raw`, a text body
+  as sent: a JSON string `"en"` and plain `en` parse to the same args)
   and `calls` (the args) cover all page loads, oldest first.
 - `strict: true` fails closed under `baseUrl` (or pass URL prefixes, e.g. `['/api/']`, when the API
   shares the site's origin): a request no endpoint answers, or one whose endpoint has no behavior,

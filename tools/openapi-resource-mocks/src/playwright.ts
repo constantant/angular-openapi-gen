@@ -75,6 +75,8 @@ export interface RecordedRequest {
   method: string;
   url: string;
   headers: Record<string, string>;
+  /** The body as sent, when it was text: tells a JSON string (`"en"`) from plain text (`en`). */
+  raw?: string;
   ts: number;
 }
 
@@ -281,6 +283,7 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
         method: event.method ?? '',
         url: event.url ?? '',
         headers: event.headers ?? {},
+        ...(event.raw !== undefined ? { raw: event.raw } : {}),
         ts: event.ts,
       });
       r.waiters.forEach((wake) => wake());

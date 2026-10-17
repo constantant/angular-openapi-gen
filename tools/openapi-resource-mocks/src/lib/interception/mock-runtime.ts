@@ -109,6 +109,8 @@ export interface InterceptedRequest {
   body?: unknown;
   /** Headers the app set, lower-cased names. */
   headers?: Record<string, string>;
+  /** The body as sent, when it was a string. */
+  raw?: string;
 }
 
 /** A request strict mode refused: it matched no endpoint, or one without a behavior. */
@@ -653,7 +655,12 @@ export class MockRuntime {
     const args: unknown[] = [...best.pathParams];
     if (BODY_METHODS.has(method) && request.body !== undefined) args.push(request.body);
     if (Object.keys(best.query).length > 0) args.push(best.query);
-    const info = { method, url: request.url, headers: request.headers ?? {} };
+    const info = {
+      method,
+      url: request.url,
+      headers: request.headers ?? {},
+      ...(request.raw !== undefined ? { raw: request.raw } : {}),
+    };
 
     entry.state.requestCount++;
     this.emit(entry, { type: 'request', args, ...info, ts: Date.now() });
