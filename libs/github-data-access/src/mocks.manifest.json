@@ -1269,13 +1269,6 @@
       "tag": "repos"
     },
     {
-      "tokenName": "REPOS_DOWNLOAD_TARBALL_ARCHIVE",
-      "operationId": "repos/download-tarball-archive",
-      "path": "/repos/{owner}/{repo}/tarball/{ref}",
-      "method": "get",
-      "tag": "repos"
-    },
-    {
       "tokenName": "REPOS_LIST_TEAMS",
       "operationId": "repos/list-teams",
       "path": "/repos/{owner}/{repo}/teams",
@@ -1350,13 +1343,6 @@
       "operationId": "repos/disable-vulnerability-alerts",
       "path": "/repos/{owner}/{repo}/vulnerability-alerts",
       "method": "delete",
-      "tag": "repos"
-    },
-    {
-      "tokenName": "REPOS_DOWNLOAD_ZIPBALL_ARCHIVE",
-      "operationId": "repos/download-zipball-archive",
-      "path": "/repos/{owner}/{repo}/zipball/{ref}",
-      "method": "get",
       "tag": "repos"
     },
     {

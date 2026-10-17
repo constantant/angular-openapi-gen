@@ -101,6 +101,11 @@
       "type": "string",
       "description": "Comma-separated operationIds that use HttpClient, overriding clientType."
     },
+    "check": {
+      "type": "boolean",
+      "default": false,
+      "description": "Write nothing; list what would change and fail if the generated output is out of date (for CI)."
+    },
     "navigationOperations": {
       "type": "string",
       "description": "Comma-separated operationIds that are browser navigations (a redirect such as an OAuth login). Their token is a URL builder (args) => string instead of a request. Operations with x-navigation: true, or a GET that only answers 3xx, are detected without this."

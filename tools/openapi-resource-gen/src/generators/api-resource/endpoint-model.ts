@@ -113,6 +113,8 @@ export interface EndpointModel {
    * or the `navigationOperations` option.
    */
   navigation: boolean;
+  /** A 2xx response is documented but none carries a body, so the success value is `void`. */
+  noContent: boolean;
   /** Present when the primary response schema carries a discriminator. */
   discriminator: DiscriminatorModel | null;
   /** Enum parameters/properties with x-enum-varnames or x-enum-descriptions vendor extensions. */
