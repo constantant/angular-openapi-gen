@@ -1,3 +1,13 @@
+## 2.2.0 (2026-10-17)
+
+### 🚀 Features
+
+- **openapi-resource-mocks:** different answers for different requests of one endpoint ([#117](https://github.com/constantant/angular-openapi-gen/pull/117))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 2.1.0 (2026-10-17)
 
 ### 🚀 Features
