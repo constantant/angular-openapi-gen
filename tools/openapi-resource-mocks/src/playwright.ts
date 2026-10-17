@@ -25,7 +25,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { isDeepStrictEqual } from 'util';
 import type { BrowserContext, Page } from '@playwright/test';
-import type { ConfiguredEndpoint, MockBehavior, MockRuntimeConfig, UnmatchedRequest } from './lib/interception/mock-runtime';
+import type {
+  ConfiguredEndpoint,
+  MockBehavior,
+  MockBehaviorOrCases,
+  MockRequestMatch,
+  MockRuntimeConfig,
+  UnmatchedRequest,
+} from './lib/interception/mock-runtime';
 import type { MockEvent } from './lib/mock-events';
 import type { MockResourceMeta } from './lib/mock-resource-meta';
 
@@ -93,7 +100,14 @@ export interface EndpointMock<T, Errs> {
   setLoading(): Promise<void>;
   /** Any behavior, with every field (`delay`, `progress`, …). */
   set(behavior: Behavior<T>): Promise<void>;
-  /** Back to the default given to `installOpenApiMocks` (or no behavior). */
+  /**
+   * The answer to the requests that match (path params in template order, query values as strings), e.g.
+   * `when({ path: ['XS0000000001'] }).fail('403', body)` while other bonds resolve. Cases are tried in the
+   * order they were first set; setting one again for the same match replaces it. Other requests get the endpoint's
+   * own behavior.
+   */
+  when(match: MockRequestMatch): EndpointCase<T, Errs>;
+  /** Back to the default given to `installOpenApiMocks` (or no behavior), and no cases. */
   reset(): Promise<void>;
   /** Throws when the endpoint received no request within the timeout. */
   expectCalled(timeoutMs?: number): Promise<RecordedRequest>;
@@ -103,6 +117,15 @@ export interface EndpointMock<T, Errs> {
   waitForRequest(predicate?: (request: RecordedRequest) => boolean, timeoutMs?: number): Promise<RecordedRequest>;
   /** Forget the requests recorded so far. */
   clearRequests(): void;
+}
+
+/** The answer of an endpoint to the requests that match a case (see `EndpointMock.when`). */
+export interface EndpointCase<T, Errs> {
+  resolve(value: T, options?: ValueOptions): Promise<void>;
+  fail<S extends Extract<keyof Errs, string>>(status: S, body: Errs[S], code?: number): Promise<void>;
+  failWith(status: number, body?: unknown, headers?: Record<string, string>): Promise<void>;
+  setLoading(): Promise<void>;
+  set(behavior: Behavior<T>): Promise<void>;
 }
 
 /** What the tests exercised on one endpoint, for a coverage report. */
@@ -204,6 +227,7 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
     : Object.values(options.endpoints as Record<string, EndpointDescription>);
   const byKey = new Map(descriptions.map((d) => [d.key, d]));
   const overrides = new Map<string, MockBehavior>();
+  const cases = new Map<string, Array<{ when: MockRequestMatch; then: MockBehavior }>>();
   const recorded = new Map<string, Recorded>();
   const unmatched: UnmatchedRequest[] = [];
   const timeoutMs = options.timeoutMs ?? 5000;
@@ -215,7 +239,11 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
     if (!r) recorded.set(key, (r = { requests: [], served: new Set(), inputsAsserted: false, waiters: new Set() }));
     return r;
   };
-  const current = (key: string): MockBehavior | undefined => overrides.get(key) ?? options.defaults?.[key];
+  const current = (key: string): MockBehaviorOrCases | undefined => {
+    const base = overrides.get(key) ?? options.defaults?.[key];
+    const list = cases.get(key);
+    return list?.length ? { cases: list, ...(base ? { otherwise: base } : {}) } : base;
+  };
 
   const config = (): MockRuntimeConfig => ({
     strict,
@@ -270,9 +298,25 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
    * runtime; pages loaded later get it from `config()`.
    */
   const apply = async (key: string, behavior: MockBehavior | undefined): Promise<void> => {
+    if (behavior === undefined) {
+      overrides.delete(key);
+      cases.delete(key);
+    } else overrides.set(key, behavior);
+    return push(key);
+  };
+
+  const applyCase = (key: string, when: MockRequestMatch, then: MockBehavior): Promise<void> => {
+    const list = cases.get(key) ?? [];
+    const same = list.findIndex((c) => isDeepStrictEqual(c.when, when));
+    if (same >= 0) list[same] = { when, then };
+    else list.push({ when, then });
+    cases.set(key, list);
+    return push(key);
+  };
+
+  /** Sends the endpoint's current behavior (cases included) to every open page that has the runtime. */
+  const push = async (key: string): Promise<void> => {
     if (!byKey.has(key)) throw new Error(`"${key}" is not one of the endpoints given to installOpenApiMocks.`);
-    if (behavior === undefined) overrides.delete(key);
-    else overrides.set(key, behavior);
     const pages = isContext(target) ? target.pages() : [target];
     await Promise.all(
       pages.map((page) =>
@@ -336,6 +380,17 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
       failWith: (status, body, headers) => apply(key, { error: body, status, ...(headers ? { headers } : {}) }),
       setLoading: () => apply(key, { loading: true }),
       set: (behavior) => apply(key, behavior as MockBehavior),
+      when: (match) => ({
+        resolve: (value, opts) => applyCase(key, match, { value, ...opts }),
+        fail: (status, body, code) => {
+          const numeric = code ?? Number(status);
+          if (!Number.isInteger(numeric)) throw new Error(`${key}: give the numeric status for "${status}" as the third argument.`);
+          return applyCase(key, match, { error: body, status: numeric });
+        },
+        failWith: (status, body, headers) => applyCase(key, match, { error: body, status, ...(headers ? { headers } : {}) }),
+        setLoading: () => applyCase(key, match, { loading: true }),
+        set: (behavior) => applyCase(key, match, behavior as MockBehavior),
+      }),
       reset: () => apply(key, undefined),
       expectCalled: (ms = timeoutMs) => waitFor(key, () => true, ms, () => `${key} was not requested within ${ms} ms.`),
       expectCalledWith: (...args) => {
@@ -375,5 +430,5 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
   };
 }
 
-export type { MockBehavior, UnmatchedRequest } from './lib/interception/mock-runtime';
+export type { MockBehavior, MockCases, MockRequestMatch, UnmatchedRequest } from './lib/interception/mock-runtime';
 export type { MockEvent } from './lib/mock-events';

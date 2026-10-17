@@ -492,4 +492,55 @@ describe('mock interception', () => {
       expect(() => runtime.setBehavior('NOPE', { value: 1 })).toThrow('No mocked endpoint is registered as "NOPE".');
     });
   });
+
+  describe('cases: different answers for different requests of one endpoint', () => {
+    const get = async (url: string) => {
+      const res = await fetch(url);
+      const text = await res.text();
+      return { status: res.status, body: text ? JSON.parse(text) : null };
+    };
+
+    it('answers by path params and query, first match wins, otherwise the fallback', async () => {
+      runtime.register('BOND', { method: 'get', baseUrl: BASE, path: '/bonds/{isin}' });
+      runtime.setBehavior('BOND', {
+        cases: [
+          { when: { path: ['A'] }, then: { value: { isin: 'A' } } },
+          { when: { path: ['B'] }, then: { error: { title: 'subscribers only' }, status: 403 } },
+          { when: { query: { lang: 'it', tag: ['x', 'y'] } }, then: { value: { lang: 'it' } } },
+        ],
+        otherwise: { error: undefined, status: 404 },
+      });
+      expect(await get(`${BASE}/bonds/A`)).toEqual({ status: 200, body: { isin: 'A' } });
+      expect(await get(`${BASE}/bonds/B`)).toEqual({ status: 403, body: { title: 'subscribers only' } });
+      expect(await get(`${BASE}/bonds/C?lang=it&tag=x&tag=y&more=1`)).toEqual({ status: 200, body: { lang: 'it' } });
+      // a query value that is only part of what was asked does not match
+      expect((await get(`${BASE}/bonds/C?lang=it&tag=x`)).status).toBe(404);
+      expect((await get(`${BASE}/bonds/C`)).status).toBe(404);
+      const served = entry('BOND').getHistory().flatMap((e) => (e.type === 'respond' ? [e.status] : []));
+      expect(served).toEqual([200, 403, 200, 404, 404]);
+    });
+
+    it('without a fallback, an unmatched request is one without a behavior: the network, or a 501 in strict mode', async () => {
+      runtime.register('BOND', { method: 'get', baseUrl: '/api', path: '/bonds/{isin}' });
+      runtime.setBehavior('BOND', { cases: [{ when: { path: ['A'] }, then: { value: 1 } }] });
+      expect((await get('/api/bonds/A')).body).toBe(1);
+      expect(await get('/api/bonds/Z')).toEqual({ status: 200, body: 'real' });
+      runtime.setStrict(['/api/']);
+      expect((await get('/api/bonds/Z')).status).toBe(501);
+      expect(runtime.unmatchedRequests().map((u) => u.reason)).toEqual(['no-behavior']);
+    });
+
+    it('answers a held request by its own case when cases arrive while it waits', async () => {
+      runtime.register('BOND', { method: 'get', baseUrl: BASE, path: '/bonds/{isin}' }, { behavior: { loading: true } });
+      const a = get(`${BASE}/bonds/A`);
+      const b = get(`${BASE}/bonds/B`);
+      await Promise.resolve();
+      runtime.setBehavior('BOND', {
+        cases: [{ when: { path: ['A'] }, then: { value: 'a' } }],
+        otherwise: { value: 'other' },
+      });
+      expect(await a).toEqual({ status: 200, body: 'a' });
+      expect(await b).toEqual({ status: 200, body: 'other' });
+    });
+  });
 });
