@@ -14,6 +14,11 @@ export type ReposGetHashAlgorithmError =
   | paths['/repos/{owner}/{repo}/hash-algorithm']['get']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}/hash-algorithm']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetHashAlgorithmErrors = {
+  '403': paths['/repos/{owner}/{repo}/hash-algorithm']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}/hash-algorithm']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Repository hash algorithm',
   description: 'Repository hash algorithm',

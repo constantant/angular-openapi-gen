@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposDeleteReleaseError =
   paths['/repos/{owner}/{repo}/releases/{release_id}']['delete']['responses']['404']['content']['application/json'];
 
+export type ReposDeleteReleaseErrors = {
+  '404': paths['/repos/{owner}/{repo}/releases/{release_id}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const REPOS_DELETE_RELEASE = new InjectionToken<
   (
     owner: string,

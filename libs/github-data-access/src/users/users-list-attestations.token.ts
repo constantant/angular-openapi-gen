@@ -18,6 +18,10 @@ export type UsersListAttestationsResponse =
 export type UsersListAttestationsError =
   paths['/users/{username}/attestations/{subject_digest}']['get']['responses']['404']['content']['application/json'];
 
+export type UsersListAttestationsErrors = {
+  '404': paths['/users/{username}/attestations/{subject_digest}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'object',
   properties: {

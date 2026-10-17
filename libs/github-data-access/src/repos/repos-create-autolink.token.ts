@@ -17,6 +17,10 @@ export type ReposCreateAutolinkResponse =
 export type ReposCreateAutolinkError =
   paths['/repos/{owner}/{repo}/autolinks']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreateAutolinkErrors = {
+  '422': paths['/repos/{owner}/{repo}/autolinks']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Autolink reference',
   description: 'An autolink reference.',

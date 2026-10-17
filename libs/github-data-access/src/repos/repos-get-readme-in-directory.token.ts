@@ -18,6 +18,11 @@ export type ReposGetReadmeInDirectoryError =
   | paths['/repos/{owner}/{repo}/readme/{dir}']['get']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/readme/{dir}']['get']['responses']['422']['content']['application/json'];
 
+export type ReposGetReadmeInDirectoryErrors = {
+  '404': paths['/repos/{owner}/{repo}/readme/{dir}']['get']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/readme/{dir}']['get']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Content File',
   description: 'Content File',

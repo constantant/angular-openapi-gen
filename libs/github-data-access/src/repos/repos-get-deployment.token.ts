@@ -13,6 +13,10 @@ export type ReposGetDeploymentResponse =
 export type ReposGetDeploymentError =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetDeploymentErrors = {
+  '404': paths['/repos/{owner}/{repo}/deployments/{deployment_id}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Deployment',
   description: 'A request for a specific ref(branch,sha,tag) to be deployed',

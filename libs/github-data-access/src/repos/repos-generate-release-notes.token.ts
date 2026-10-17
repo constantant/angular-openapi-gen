@@ -17,6 +17,10 @@ export type ReposGenerateReleaseNotesResponse =
 export type ReposGenerateReleaseNotesError =
   paths['/repos/{owner}/{repo}/releases/generate-notes']['post']['responses']['404']['content']['application/json'];
 
+export type ReposGenerateReleaseNotesErrors = {
+  '404': paths['/repos/{owner}/{repo}/releases/generate-notes']['post']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Generated Release Notes Content',
   description: 'Generated name and body describing a release',

@@ -18,6 +18,11 @@ export type UsersListFollowersForAuthenticatedUserError =
   | paths['/user/followers']['get']['responses']['401']['content']['application/json']
   | paths['/user/followers']['get']['responses']['403']['content']['application/json'];
 
+export type UsersListFollowersForAuthenticatedUserErrors = {
+  '401': paths['/user/followers']['get']['responses']['401']['content']['application/json'];
+  '403': paths['/user/followers']['get']['responses']['403']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

@@ -17,6 +17,10 @@ export type ReposListActivitiesResponse =
 export type ReposListActivitiesError =
   paths['/repos/{owner}/{repo}/activity']['get']['responses']['422']['content']['application/json'];
 
+export type ReposListActivitiesErrors = {
+  '422': paths['/repos/{owner}/{repo}/activity']['get']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

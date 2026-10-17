@@ -14,6 +14,11 @@ export type ReposGetOrgRulesetError =
   | paths['/orgs/{org}/rulesets/{ruleset_id}']['get']['responses']['404']['content']['application/json']
   | paths['/orgs/{org}/rulesets/{ruleset_id}']['get']['responses']['500']['content']['application/json'];
 
+export type ReposGetOrgRulesetErrors = {
+  '404': paths['/orgs/{org}/rulesets/{ruleset_id}']['get']['responses']['404']['content']['application/json'];
+  '500': paths['/orgs/{org}/rulesets/{ruleset_id}']['get']['responses']['500']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Repository ruleset',
   type: 'object',

@@ -19,6 +19,12 @@ export type ReposCompareCommitsError =
   | paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['500']['content']['application/json']
   | paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['503']['content']['application/json'];
 
+export type ReposCompareCommitsErrors = {
+  '404': paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['404']['content']['application/json'];
+  '500': paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['500']['content']['application/json'];
+  '503': paths['/repos/{owner}/{repo}/compare/{basehead}']['get']['responses']['503']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Commit Comparison',
   description: 'Commit Comparison',

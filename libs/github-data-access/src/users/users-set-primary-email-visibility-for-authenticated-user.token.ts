@@ -21,6 +21,13 @@ export type UsersSetPrimaryEmailVisibilityForAuthenticatedUserError =
   | paths['/user/email/visibility']['patch']['responses']['404']['content']['application/json']
   | paths['/user/email/visibility']['patch']['responses']['422']['content']['application/json'];
 
+export type UsersSetPrimaryEmailVisibilityForAuthenticatedUserErrors = {
+  '401': paths['/user/email/visibility']['patch']['responses']['401']['content']['application/json'];
+  '403': paths['/user/email/visibility']['patch']['responses']['403']['content']['application/json'];
+  '404': paths['/user/email/visibility']['patch']['responses']['404']['content']['application/json'];
+  '422': paths['/user/email/visibility']['patch']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

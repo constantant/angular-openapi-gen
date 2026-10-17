@@ -16,6 +16,13 @@ export type UsersDeleteEmailForAuthenticatedUserError =
   | paths['/user/emails']['delete']['responses']['404']['content']['application/json']
   | paths['/user/emails']['delete']['responses']['422']['content']['application/json'];
 
+export type UsersDeleteEmailForAuthenticatedUserErrors = {
+  '401': paths['/user/emails']['delete']['responses']['401']['content']['application/json'];
+  '403': paths['/user/emails']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/user/emails']['delete']['responses']['404']['content']['application/json'];
+  '422': paths['/user/emails']['delete']['responses']['422']['content']['application/json'];
+};
+
 export const USERS_DELETE_EMAIL_FOR_AUTHENTICATED_USER = new InjectionToken<
   (body: UsersDeleteEmailForAuthenticatedUserBody) => Observable<void>
 >('USERS_DELETE_EMAIL_FOR_AUTHENTICATED_USER');

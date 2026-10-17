@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposCancelPagesDeploymentError =
   paths['/repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}/cancel']['post']['responses']['404']['content']['application/json'];
 
+export type ReposCancelPagesDeploymentErrors = {
+  '404': paths['/repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}/cancel']['post']['responses']['404']['content']['application/json'];
+};
+
 export const REPOS_CANCEL_PAGES_DEPLOYMENT = new InjectionToken<
   (
     owner: string,

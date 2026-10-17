@@ -14,6 +14,11 @@ export type ReposGetOrgRuleSuiteError =
   | paths['/orgs/{org}/rulesets/rule-suites/{rule_suite_id}']['get']['responses']['404']['content']['application/json']
   | paths['/orgs/{org}/rulesets/rule-suites/{rule_suite_id}']['get']['responses']['500']['content']['application/json'];
 
+export type ReposGetOrgRuleSuiteErrors = {
+  '404': paths['/orgs/{org}/rulesets/rule-suites/{rule_suite_id}']['get']['responses']['404']['content']['application/json'];
+  '500': paths['/orgs/{org}/rulesets/rule-suites/{rule_suite_id}']['get']['responses']['500']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Rule Suite',
   description: 'Response',

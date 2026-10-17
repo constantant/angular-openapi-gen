@@ -14,6 +14,11 @@ export type ReposGetWebhookDeliveryError =
   | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['400']['content']['application/json']
   | paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['422']['content']['application/json'];
 
+export type ReposGetWebhookDeliveryErrors = {
+  '400': paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['400']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}']['get']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Webhook delivery',
   description: 'Delivery made by a webhook.',

@@ -10,6 +10,11 @@ export type ReposDeleteOrgRulesetError =
   | paths['/orgs/{org}/rulesets/{ruleset_id}']['delete']['responses']['404']['content']['application/json']
   | paths['/orgs/{org}/rulesets/{ruleset_id}']['delete']['responses']['500']['content']['application/json'];
 
+export type ReposDeleteOrgRulesetErrors = {
+  '404': paths['/orgs/{org}/rulesets/{ruleset_id}']['delete']['responses']['404']['content']['application/json'];
+  '500': paths['/orgs/{org}/rulesets/{ruleset_id}']['delete']['responses']['500']['content']['application/json'];
+};
+
 export const REPOS_DELETE_ORG_RULESET = new InjectionToken<
   (org: string, rulesetId: string) => ReturnType<typeof httpResource<void>>
 >('REPOS_DELETE_ORG_RULESET');

@@ -17,6 +17,10 @@ export type ReposCreateOrUpdateEnvironmentResponse =
 export type ReposCreateOrUpdateEnvironmentError =
   paths['/repos/{owner}/{repo}/environments/{environment_name}']['put']['responses']['422']['content']['application/json'];
 
+export type ReposCreateOrUpdateEnvironmentErrors = {
+  '422': paths['/repos/{owner}/{repo}/environments/{environment_name}']['put']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Environment',
   description: 'Details of a deployment environment',

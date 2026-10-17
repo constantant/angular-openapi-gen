@@ -6,7 +6,136 @@
       "operationId": "get_v1_forecast",
       "path": "/v1/forecast",
       "method": "get",
-      "tag": "weather-forecast-apis"
+      "tag": "weather-forecast-apis",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "latitude",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "longitude",
+          "in": "query",
+          "required": true
+        },
+        {
+          "name": "hourly",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "daily",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "current",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "minutely_15",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "elevation",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "temperature_unit",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "wind_speed_unit",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "precipitation_unit",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "timeformat",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "timezone",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "past_days",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "forecast_days",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "past_hours",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "forecast_hours",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "tilt",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "azimuth",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "cell_selection",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "apikey",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "models",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": ["application/json"]
+        }
+      ],
+      "security": []
     }
   ]
 }

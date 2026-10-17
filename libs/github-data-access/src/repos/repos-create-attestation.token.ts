@@ -18,6 +18,11 @@ export type ReposCreateAttestationError =
   | paths['/repos/{owner}/{repo}/attestations']['post']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}/attestations']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreateAttestationErrors = {
+  '403': paths['/repos/{owner}/{repo}/attestations']['post']['responses']['403']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/attestations']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'object',
   properties: {

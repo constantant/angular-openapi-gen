@@ -17,6 +17,10 @@ export type ReposRemoveAppAccessRestrictionsResponse =
 export type ReposRemoveAppAccessRestrictionsError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['delete']['responses']['422']['content']['application/json'];
 
+export type ReposRemoveAppAccessRestrictionsErrors = {
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/apps']['delete']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

@@ -17,6 +17,10 @@ export type ReposGetAllTopicsResponse =
 export type ReposGetAllTopicsError =
   paths['/repos/{owner}/{repo}/topics']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetAllTopicsErrors = {
+  '404': paths['/repos/{owner}/{repo}/topics']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Topic',
   description: 'A topic aggregates entities that are related to a subject.',

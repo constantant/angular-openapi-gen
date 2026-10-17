@@ -13,6 +13,10 @@ export type ReposGetTeamsWithAccessToProtectedBranchResponse =
 export type ReposGetTeamsWithAccessToProtectedBranchError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetTeamsWithAccessToProtectedBranchErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions/teams']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

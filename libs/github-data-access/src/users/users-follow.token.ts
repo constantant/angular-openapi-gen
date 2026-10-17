@@ -12,6 +12,13 @@ export type UsersFollowError =
   | paths['/user/following/{username}']['put']['responses']['404']['content']['application/json']
   | paths['/user/following/{username}']['put']['responses']['422']['content']['application/json'];
 
+export type UsersFollowErrors = {
+  '401': paths['/user/following/{username}']['put']['responses']['401']['content']['application/json'];
+  '403': paths['/user/following/{username}']['put']['responses']['403']['content']['application/json'];
+  '404': paths['/user/following/{username}']['put']['responses']['404']['content']['application/json'];
+  '422': paths['/user/following/{username}']['put']['responses']['422']['content']['application/json'];
+};
+
 export const USERS_FOLLOW = new InjectionToken<
   (username: string) => Observable<void>
 >('USERS_FOLLOW');

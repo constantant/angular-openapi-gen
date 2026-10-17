@@ -17,6 +17,10 @@ export type ReposGetViewsResponse =
 export type ReposGetViewsError =
   paths['/repos/{owner}/{repo}/traffic/views']['get']['responses']['403']['content']['application/json'];
 
+export type ReposGetViewsErrors = {
+  '403': paths['/repos/{owner}/{repo}/traffic/views']['get']['responses']['403']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'View Traffic',
   description: 'View Traffic',

@@ -14,6 +14,11 @@ export type ReposGetRepoRulesetVersionError =
   | paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}']['get']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}']['get']['responses']['500']['content']['application/json'];
 
+export type ReposGetRepoRulesetVersionErrors = {
+  '404': paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}']['get']['responses']['404']['content']['application/json'];
+  '500': paths['/repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}']['get']['responses']['500']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   allOf: [
     {

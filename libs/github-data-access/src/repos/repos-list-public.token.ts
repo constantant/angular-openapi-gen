@@ -17,6 +17,10 @@ export type ReposListPublicResponse =
 export type ReposListPublicError =
   paths['/repositories']['get']['responses']['422']['content']['application/json'];
 
+export type ReposListPublicErrors = {
+  '422': paths['/repositories']['get']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

@@ -14,6 +14,11 @@ export type ReposGetError =
   | paths['/repos/{owner}/{repo}']['get']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetErrors = {
+  '403': paths['/repos/{owner}/{repo}']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Full Repository',
   description: 'Full Repository',

@@ -18,6 +18,11 @@ export type ReposReplaceAllTopicsError =
   | paths['/repos/{owner}/{repo}/topics']['put']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/topics']['put']['responses']['422']['content']['application/json'];
 
+export type ReposReplaceAllTopicsErrors = {
+  '404': paths['/repos/{owner}/{repo}/topics']['put']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/topics']['put']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Topic',
   description: 'A topic aggregates entities that are related to a subject.',

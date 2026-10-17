@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposDeleteCommitCommentError =
   paths['/repos/{owner}/{repo}/comments/{comment_id}']['delete']['responses']['404']['content']['application/json'];
 
+export type ReposDeleteCommitCommentErrors = {
+  '404': paths['/repos/{owner}/{repo}/comments/{comment_id}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const REPOS_DELETE_COMMIT_COMMENT = new InjectionToken<
   (
     owner: string,

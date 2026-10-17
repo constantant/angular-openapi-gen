@@ -13,6 +13,10 @@ export type ReposGetAccessRestrictionsResponse =
 export type ReposGetAccessRestrictionsError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetAccessRestrictionsErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/restrictions']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Branch Restriction Policy',
   description: 'Branch Restriction Policy',

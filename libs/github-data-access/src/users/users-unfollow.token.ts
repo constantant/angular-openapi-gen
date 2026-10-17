@@ -11,6 +11,12 @@ export type UsersUnfollowError =
   | paths['/user/following/{username}']['delete']['responses']['403']['content']['application/json']
   | paths['/user/following/{username}']['delete']['responses']['404']['content']['application/json'];
 
+export type UsersUnfollowErrors = {
+  '401': paths['/user/following/{username}']['delete']['responses']['401']['content']['application/json'];
+  '403': paths['/user/following/{username}']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/user/following/{username}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_UNFOLLOW = new InjectionToken<
   (username: string) => Observable<void>
 >('USERS_UNFOLLOW');

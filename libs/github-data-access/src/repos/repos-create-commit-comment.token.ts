@@ -18,6 +18,11 @@ export type ReposCreateCommitCommentError =
   | paths['/repos/{owner}/{repo}/commits/{commit_sha}/comments']['post']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}/commits/{commit_sha}/comments']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreateCommitCommentErrors = {
+  '403': paths['/repos/{owner}/{repo}/commits/{commit_sha}/comments']['post']['responses']['403']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/commits/{commit_sha}/comments']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Commit Comment',
   description: 'Commit Comment',

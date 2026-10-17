@@ -19,6 +19,12 @@ export type ReposCreateOrgRulesetError =
   | paths['/orgs/{org}/rulesets']['post']['responses']['422']['content']['application/json']
   | paths['/orgs/{org}/rulesets']['post']['responses']['500']['content']['application/json'];
 
+export type ReposCreateOrgRulesetErrors = {
+  '404': paths['/orgs/{org}/rulesets']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/orgs/{org}/rulesets']['post']['responses']['422']['content']['application/json'];
+  '500': paths['/orgs/{org}/rulesets']['post']['responses']['500']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Repository ruleset',
   type: 'object',

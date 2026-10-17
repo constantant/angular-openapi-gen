@@ -17,6 +17,10 @@ export type ReposListWebhooksResponse =
 export type ReposListWebhooksError =
   paths['/repos/{owner}/{repo}/hooks']['get']['responses']['404']['content']['application/json'];
 
+export type ReposListWebhooksErrors = {
+  '404': paths['/repos/{owner}/{repo}/hooks']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

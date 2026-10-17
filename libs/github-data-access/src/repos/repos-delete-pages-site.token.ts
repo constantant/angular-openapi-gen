@@ -11,6 +11,12 @@ export type ReposDeletePagesSiteError =
   | paths['/repos/{owner}/{repo}/pages']['delete']['responses']['409']['content']['application/json']
   | paths['/repos/{owner}/{repo}/pages']['delete']['responses']['422']['content']['application/json'];
 
+export type ReposDeletePagesSiteErrors = {
+  '404': paths['/repos/{owner}/{repo}/pages']['delete']['responses']['404']['content']['application/json'];
+  '409': paths['/repos/{owner}/{repo}/pages']['delete']['responses']['409']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/pages']['delete']['responses']['422']['content']['application/json'];
+};
+
 export const REPOS_DELETE_PAGES_SITE = new InjectionToken<
   (owner: string, repo: string) => ReturnType<typeof httpResource<void>>
 >('REPOS_DELETE_PAGES_SITE');

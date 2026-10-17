@@ -11,6 +11,12 @@ export type UsersDeletePublicSshKeyForAuthenticatedUserError =
   | paths['/user/keys/{key_id}']['delete']['responses']['403']['content']['application/json']
   | paths['/user/keys/{key_id}']['delete']['responses']['404']['content']['application/json'];
 
+export type UsersDeletePublicSshKeyForAuthenticatedUserErrors = {
+  '401': paths['/user/keys/{key_id}']['delete']['responses']['401']['content']['application/json'];
+  '403': paths['/user/keys/{key_id}']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/user/keys/{key_id}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_DELETE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER =
   new InjectionToken<(keyId: string) => Observable<void>>(
     'USERS_DELETE_PUBLIC_SSH_KEY_FOR_AUTHENTICATED_USER',

@@ -9,6 +9,10 @@ import { GITHUB_BASE_URL } from '../api-base-url.token';
 export type UsersDeleteAttestationsBySubjectDigestError =
   paths['/users/{username}/attestations/digest/{subject_digest}']['delete']['responses']['404']['content']['application/json'];
 
+export type UsersDeleteAttestationsBySubjectDigestErrors = {
+  '404': paths['/users/{username}/attestations/digest/{subject_digest}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_DELETE_ATTESTATIONS_BY_SUBJECT_DIGEST = new InjectionToken<
   (username: string, subjectDigest: string) => Observable<void>
 >('USERS_DELETE_ATTESTATIONS_BY_SUBJECT_DIGEST');

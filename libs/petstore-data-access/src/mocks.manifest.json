@@ -6,133 +6,609 @@
       "operationId": "addPet",
       "path": "/pet",
       "method": "post",
-      "tag": "pet"
+      "tag": "pet",
+      "responseType": "json",
+      "parameters": [],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": true
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "422",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["petstore_auth"]]
     },
     {
       "tokenName": "UPDATE_PET",
       "operationId": "updatePet",
       "path": "/pet",
       "method": "put",
-      "tag": "pet"
+      "tag": "pet",
+      "responseType": "json",
+      "parameters": [],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": true
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "404",
+          "mediaTypes": []
+        },
+        {
+          "status": "422",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["petstore_auth"]]
     },
     {
       "tokenName": "FIND_PETS_BY_STATUS",
       "operationId": "findPetsByStatus",
       "path": "/pet/findByStatus",
       "method": "get",
-      "tag": "pet"
+      "tag": "pet",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "status",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["petstore_auth"]]
     },
     {
       "tokenName": "FIND_PETS_BY_TAGS",
       "operationId": "findPetsByTags",
       "path": "/pet/findByTags",
       "method": "get",
-      "tag": "pet"
+      "tag": "pet",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "tags",
+          "in": "query",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["petstore_auth"]]
     },
     {
       "tokenName": "GET_PET_BY_ID",
       "operationId": "getPetById",
       "path": "/pet/{petId}",
       "method": "get",
-      "tag": "pet"
+      "tag": "pet",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "404",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["api_key"], ["petstore_auth"]]
     },
     {
       "tokenName": "UPDATE_PET_WITH_FORM",
       "operationId": "updatePetWithForm",
       "path": "/pet/{petId}",
       "method": "post",
-      "tag": "pet"
+      "tag": "pet",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "name": "name",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "status",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["petstore_auth"]]
     },
     {
       "tokenName": "DELETE_PET",
       "operationId": "deletePet",
       "path": "/pet/{petId}",
       "method": "delete",
-      "tag": "pet"
+      "tag": "pet",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "api_key",
+          "in": "header",
+          "required": false
+        },
+        {
+          "name": "petId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["petstore_auth"]]
     },
     {
       "tokenName": "UPLOAD_FILE",
       "operationId": "uploadFile",
       "path": "/pet/{petId}/uploadImage",
       "method": "post",
-      "tag": "pet"
+      "tag": "pet",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "petId",
+          "in": "path",
+          "required": true
+        },
+        {
+          "name": "additionalMetadata",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/octet-stream",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "404",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["petstore_auth"]]
     },
     {
       "tokenName": "GET_INVENTORY",
       "operationId": "getInventory",
       "path": "/store/inventory",
       "method": "get",
-      "tag": "store"
+      "tag": "store",
+      "responseType": "json",
+      "parameters": [],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": [["api_key"]]
     },
     {
       "tokenName": "PLACE_ORDER",
       "operationId": "placeOrder",
       "path": "/store/order",
       "method": "post",
-      "tag": "store"
+      "tag": "store",
+      "responseType": "json",
+      "parameters": [],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "422",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "GET_ORDER_BY_ID",
       "operationId": "getOrderById",
       "path": "/store/order/{orderId}",
       "method": "get",
-      "tag": "store"
+      "tag": "store",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "orderId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "404",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "DELETE_ORDER",
       "operationId": "deleteOrder",
       "path": "/store/order/{orderId}",
       "method": "delete",
-      "tag": "store"
+      "tag": "store",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "orderId",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "404",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "CREATE_USER",
       "operationId": "createUser",
       "path": "/user",
       "method": "post",
-      "tag": "user"
+      "tag": "user",
+      "responseType": "json",
+      "parameters": [],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "CREATE_USERS_WITH_LIST_INPUT",
       "operationId": "createUsersWithListInput",
       "path": "/user/createWithList",
       "method": "post",
-      "tag": "user"
+      "tag": "user",
+      "responseType": "json",
+      "parameters": [],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "LOGIN_USER",
       "operationId": "loginUser",
       "path": "/user/login",
       "method": "get",
-      "tag": "user"
+      "tag": "user",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "username",
+          "in": "query",
+          "required": false
+        },
+        {
+          "name": "password",
+          "in": "query",
+          "required": false
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/xml", "application/json"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "LOGOUT_USER",
       "operationId": "logoutUser",
       "path": "/user/logout",
       "method": "get",
-      "tag": "user"
+      "tag": "user",
+      "responseType": "json",
+      "parameters": [],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "GET_USER_BY_NAME",
       "operationId": "getUserByName",
       "path": "/user/{username}",
       "method": "get",
-      "tag": "user"
+      "tag": "user",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "username",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": ["application/json", "application/xml"]
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "404",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "UPDATE_USER",
       "operationId": "updateUser",
       "path": "/user/{username}",
       "method": "put",
-      "tag": "user"
+      "tag": "user",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "username",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "requestBody": {
+        "mediaType": "application/json",
+        "required": false
+      },
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "404",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     },
     {
       "tokenName": "DELETE_USER",
       "operationId": "deleteUser",
       "path": "/user/{username}",
       "method": "delete",
-      "tag": "user"
+      "tag": "user",
+      "responseType": "json",
+      "parameters": [
+        {
+          "name": "username",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "responses": [
+        {
+          "status": "200",
+          "mediaTypes": []
+        },
+        {
+          "status": "400",
+          "mediaTypes": []
+        },
+        {
+          "status": "404",
+          "mediaTypes": []
+        },
+        {
+          "status": "default",
+          "mediaTypes": []
+        }
+      ],
+      "security": []
     }
   ]
 }

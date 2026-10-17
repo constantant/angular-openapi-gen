@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposDeleteAutolinkError =
   paths['/repos/{owner}/{repo}/autolinks/{autolink_id}']['delete']['responses']['404']['content']['application/json'];
 
+export type ReposDeleteAutolinkErrors = {
+  '404': paths['/repos/{owner}/{repo}/autolinks/{autolink_id}']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const REPOS_DELETE_AUTOLINK = new InjectionToken<
   (
     owner: string,

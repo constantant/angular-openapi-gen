@@ -20,6 +20,13 @@ export type UsersAddSocialAccountForAuthenticatedUserError =
   | paths['/user/social_accounts']['post']['responses']['404']['content']['application/json']
   | paths['/user/social_accounts']['post']['responses']['422']['content']['application/json'];
 
+export type UsersAddSocialAccountForAuthenticatedUserErrors = {
+  '401': paths['/user/social_accounts']['post']['responses']['401']['content']['application/json'];
+  '403': paths['/user/social_accounts']['post']['responses']['403']['content']['application/json'];
+  '404': paths['/user/social_accounts']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/user/social_accounts']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

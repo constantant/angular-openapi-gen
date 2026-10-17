@@ -13,6 +13,10 @@ export type ReposGetAllStatusCheckContextsResponse =
 export type ReposGetAllStatusCheckContextsError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetAllStatusCheckContextsErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

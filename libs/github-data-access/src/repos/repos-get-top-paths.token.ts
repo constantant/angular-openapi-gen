@@ -13,6 +13,10 @@ export type ReposGetTopPathsResponse =
 export type ReposGetTopPathsError =
   paths['/repos/{owner}/{repo}/traffic/popular/paths']['get']['responses']['403']['content']['application/json'];
 
+export type ReposGetTopPathsErrors = {
+  '403': paths['/repos/{owner}/{repo}/traffic/popular/paths']['get']['responses']['403']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

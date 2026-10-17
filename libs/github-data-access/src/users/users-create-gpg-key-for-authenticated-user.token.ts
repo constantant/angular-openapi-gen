@@ -20,6 +20,13 @@ export type UsersCreateGpgKeyForAuthenticatedUserError =
   | paths['/user/gpg_keys']['post']['responses']['404']['content']['application/json']
   | paths['/user/gpg_keys']['post']['responses']['422']['content']['application/json'];
 
+export type UsersCreateGpgKeyForAuthenticatedUserErrors = {
+  '401': paths['/user/gpg_keys']['post']['responses']['401']['content']['application/json'];
+  '403': paths['/user/gpg_keys']['post']['responses']['403']['content']['application/json'];
+  '404': paths['/user/gpg_keys']['post']['responses']['404']['content']['application/json'];
+  '422': paths['/user/gpg_keys']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'GPG Key',
   description: 'A unique encryption key',

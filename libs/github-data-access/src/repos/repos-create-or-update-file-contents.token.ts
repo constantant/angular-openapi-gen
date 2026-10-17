@@ -20,6 +20,12 @@ export type ReposCreateOrUpdateFileContentsError =
   | paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['409']['content']['application/json']
   | paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['422']['content']['application/json'];
 
+export type ReposCreateOrUpdateFileContentsErrors = {
+  '404': paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['404']['content']['application/json'];
+  '409': paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['409']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/contents/{path}']['put']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'File Commit',
   description: 'File Commit',

@@ -20,6 +20,13 @@ export type ReposDeleteFileError =
   | paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['422']['content']['application/json']
   | paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['503']['content']['application/json'];
 
+export type ReposDeleteFileErrors = {
+  '404': paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['404']['content']['application/json'];
+  '409': paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['409']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['422']['content']['application/json'];
+  '503': paths['/repos/{owner}/{repo}/contents/{path}']['delete']['responses']['503']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'File Commit',
   description: 'File Commit',

@@ -13,6 +13,10 @@ export type UsersGetByIdResponse =
 export type UsersGetByIdError =
   paths['/user/{account_id}']['get']['responses']['404']['content']['application/json'];
 
+export type UsersGetByIdErrors = {
+  '404': paths['/user/{account_id}']['get']['responses']['404']['content']['application/json'];
+};
+
 export type UsersGetByIdDiscriminatorKey = 'public' | 'private';
 
 export type UsersGetByIdPublic = components['schemas']['public-user'] & {

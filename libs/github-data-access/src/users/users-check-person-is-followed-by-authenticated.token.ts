@@ -11,6 +11,12 @@ export type UsersCheckPersonIsFollowedByAuthenticatedError =
   | paths['/user/following/{username}']['get']['responses']['403']['content']['application/json']
   | paths['/user/following/{username}']['get']['responses']['404']['content']['application/json'];
 
+export type UsersCheckPersonIsFollowedByAuthenticatedErrors = {
+  '401': paths['/user/following/{username}']['get']['responses']['401']['content']['application/json'];
+  '403': paths['/user/following/{username}']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/user/following/{username}']['get']['responses']['404']['content']['application/json'];
+};
+
 export const USERS_CHECK_PERSON_IS_FOLLOWED_BY_AUTHENTICATED =
   new InjectionToken<(username: string) => Observable<void>>(
     'USERS_CHECK_PERSON_IS_FOLLOWED_BY_AUTHENTICATED',

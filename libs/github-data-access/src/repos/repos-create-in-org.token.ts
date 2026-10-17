@@ -18,6 +18,11 @@ export type ReposCreateInOrgError =
   | paths['/orgs/{org}/repos']['post']['responses']['403']['content']['application/json']
   | paths['/orgs/{org}/repos']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreateInOrgErrors = {
+  '403': paths['/orgs/{org}/repos']['post']['responses']['403']['content']['application/json'];
+  '422': paths['/orgs/{org}/repos']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Full Repository',
   description: 'Full Repository',

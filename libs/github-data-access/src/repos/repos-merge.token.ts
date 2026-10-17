@@ -18,6 +18,11 @@ export type ReposMergeError =
   | paths['/repos/{owner}/{repo}/merges']['post']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}/merges']['post']['responses']['422']['content']['application/json'];
 
+export type ReposMergeErrors = {
+  '403': paths['/repos/{owner}/{repo}/merges']['post']['responses']['403']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/merges']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Commit',
   description: 'Commit',

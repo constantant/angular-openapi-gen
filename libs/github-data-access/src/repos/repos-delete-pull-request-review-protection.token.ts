@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposDeletePullRequestReviewProtectionError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['delete']['responses']['404']['content']['application/json'];
 
+export type ReposDeletePullRequestReviewProtectionErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const REPOS_DELETE_PULL_REQUEST_REVIEW_PROTECTION = new InjectionToken<
   (
     owner: string,

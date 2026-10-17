@@ -13,6 +13,10 @@ export type ReposGetCollaboratorPermissionLevelResponse =
 export type ReposGetCollaboratorPermissionLevelError =
   paths['/repos/{owner}/{repo}/collaborators/{username}/permission']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetCollaboratorPermissionLevelErrors = {
+  '404': paths['/repos/{owner}/{repo}/collaborators/{username}/permission']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Repository Collaborator Permission',
   description: 'Repository Collaborator Permission',

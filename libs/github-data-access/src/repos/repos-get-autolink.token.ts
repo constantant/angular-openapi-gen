@@ -13,6 +13,10 @@ export type ReposGetAutolinkResponse =
 export type ReposGetAutolinkError =
   paths['/repos/{owner}/{repo}/autolinks/{autolink_id}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetAutolinkErrors = {
+  '404': paths['/repos/{owner}/{repo}/autolinks/{autolink_id}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Autolink reference',
   description: 'An autolink reference.',

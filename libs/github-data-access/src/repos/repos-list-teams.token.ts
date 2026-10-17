@@ -17,6 +17,10 @@ export type ReposListTeamsResponse =
 export type ReposListTeamsError =
   paths['/repos/{owner}/{repo}/teams']['get']['responses']['404']['content']['application/json'];
 
+export type ReposListTeamsErrors = {
+  '404': paths['/repos/{owner}/{repo}/teams']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

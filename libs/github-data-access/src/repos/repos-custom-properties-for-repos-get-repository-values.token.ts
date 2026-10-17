@@ -14,6 +14,11 @@ export type ReposCustomPropertiesForReposGetRepositoryValuesError =
   | paths['/repos/{owner}/{repo}/properties/values']['get']['responses']['403']['content']['application/json']
   | paths['/repos/{owner}/{repo}/properties/values']['get']['responses']['404']['content']['application/json'];
 
+export type ReposCustomPropertiesForReposGetRepositoryValuesErrors = {
+  '403': paths['/repos/{owner}/{repo}/properties/values']['get']['responses']['403']['content']['application/json'];
+  '404': paths['/repos/{owner}/{repo}/properties/values']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

@@ -16,6 +16,10 @@ export type GetV1ForecastResponse =
 export type GetV1ForecastError =
   paths['/v1/forecast']['get']['responses']['400']['content']['application/json'];
 
+export type GetV1ForecastErrors = {
+  '400': paths['/v1/forecast']['get']['responses']['400']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'object',
   properties: {

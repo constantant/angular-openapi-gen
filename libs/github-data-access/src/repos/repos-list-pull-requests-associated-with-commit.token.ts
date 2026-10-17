@@ -17,6 +17,10 @@ export type ReposListPullRequestsAssociatedWithCommitResponse =
 export type ReposListPullRequestsAssociatedWithCommitError =
   paths['/repos/{owner}/{repo}/commits/{commit_sha}/pulls']['get']['responses']['409']['content']['application/json'];
 
+export type ReposListPullRequestsAssociatedWithCommitErrors = {
+  '409': paths['/repos/{owner}/{repo}/commits/{commit_sha}/pulls']['get']['responses']['409']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

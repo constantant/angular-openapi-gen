@@ -17,6 +17,10 @@ export type ReposGetClonesResponse =
 export type ReposGetClonesError =
   paths['/repos/{owner}/{repo}/traffic/clones']['get']['responses']['403']['content']['application/json'];
 
+export type ReposGetClonesErrors = {
+  '403': paths['/repos/{owner}/{repo}/traffic/clones']['get']['responses']['403']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Clone Traffic',
   description: 'Clone Traffic',

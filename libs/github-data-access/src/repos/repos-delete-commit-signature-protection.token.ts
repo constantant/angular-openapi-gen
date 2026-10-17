@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposDeleteCommitSignatureProtectionError =
   paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures']['delete']['responses']['404']['content']['application/json'];
 
+export type ReposDeleteCommitSignatureProtectionErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures']['delete']['responses']['404']['content']['application/json'];
+};
+
 export const REPOS_DELETE_COMMIT_SIGNATURE_PROTECTION = new InjectionToken<
   (
     owner: string,

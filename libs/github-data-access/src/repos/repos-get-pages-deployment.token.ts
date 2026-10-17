@@ -13,6 +13,10 @@ export type ReposGetPagesDeploymentResponse =
 export type ReposGetPagesDeploymentError =
   paths['/repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}']['get']['responses']['404']['content']['application/json'];
 
+export type ReposGetPagesDeploymentErrors = {
+  '404': paths['/repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'GitHub Pages deployment status',
   type: 'object',

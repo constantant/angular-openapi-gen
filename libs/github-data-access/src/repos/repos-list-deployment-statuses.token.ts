@@ -17,6 +17,10 @@ export type ReposListDeploymentStatusesResponse =
 export type ReposListDeploymentStatusesError =
   paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['get']['responses']['404']['content']['application/json'];
 
+export type ReposListDeploymentStatusesErrors = {
+  '404': paths['/repos/{owner}/{repo}/deployments/{deployment_id}/statuses']['get']['responses']['404']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

@@ -18,6 +18,10 @@ export type ReposCreateDeploymentResponse =
 export type ReposCreateDeploymentError =
   paths['/repos/{owner}/{repo}/deployments']['post']['responses']['422']['content']['application/json'];
 
+export type ReposCreateDeploymentErrors = {
+  '422': paths['/repos/{owner}/{repo}/deployments']['post']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Deployment',
   description: 'A request for a specific ref(branch,sha,tag) to be deployed',

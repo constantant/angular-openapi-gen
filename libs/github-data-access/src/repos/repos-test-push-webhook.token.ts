@@ -9,6 +9,10 @@ import { trackResource } from '../mock-hook';
 export type ReposTestPushWebhookError =
   paths['/repos/{owner}/{repo}/hooks/{hook_id}/tests']['post']['responses']['404']['content']['application/json'];
 
+export type ReposTestPushWebhookErrors = {
+  '404': paths['/repos/{owner}/{repo}/hooks/{hook_id}/tests']['post']['responses']['404']['content']['application/json'];
+};
+
 export const REPOS_TEST_PUSH_WEBHOOK = new InjectionToken<
   (
     owner: string,

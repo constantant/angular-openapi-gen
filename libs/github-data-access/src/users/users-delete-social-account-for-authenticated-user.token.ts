@@ -16,6 +16,13 @@ export type UsersDeleteSocialAccountForAuthenticatedUserError =
   | paths['/user/social_accounts']['delete']['responses']['404']['content']['application/json']
   | paths['/user/social_accounts']['delete']['responses']['422']['content']['application/json'];
 
+export type UsersDeleteSocialAccountForAuthenticatedUserErrors = {
+  '401': paths['/user/social_accounts']['delete']['responses']['401']['content']['application/json'];
+  '403': paths['/user/social_accounts']['delete']['responses']['403']['content']['application/json'];
+  '404': paths['/user/social_accounts']['delete']['responses']['404']['content']['application/json'];
+  '422': paths['/user/social_accounts']['delete']['responses']['422']['content']['application/json'];
+};
+
 export const USERS_DELETE_SOCIAL_ACCOUNT_FOR_AUTHENTICATED_USER =
   new InjectionToken<
     (body: UsersDeleteSocialAccountForAuthenticatedUserBody) => Observable<void>

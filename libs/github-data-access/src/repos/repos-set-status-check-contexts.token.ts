@@ -18,6 +18,11 @@ export type ReposSetStatusCheckContextsError =
   | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['responses']['404']['content']['application/json']
   | paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['responses']['422']['content']['application/json'];
 
+export type ReposSetStatusCheckContextsErrors = {
+  '404': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['responses']['404']['content']['application/json'];
+  '422': paths['/repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks/contexts']['put']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   type: 'array',
   items: {

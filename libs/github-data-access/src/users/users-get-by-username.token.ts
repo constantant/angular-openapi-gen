@@ -13,6 +13,10 @@ export type UsersGetByUsernameResponse =
 export type UsersGetByUsernameError =
   paths['/users/{username}']['get']['responses']['404']['content']['application/json'];
 
+export type UsersGetByUsernameErrors = {
+  '404': paths['/users/{username}']['get']['responses']['404']['content']['application/json'];
+};
+
 export type UsersGetByUsernameDiscriminatorKey = 'public' | 'private';
 
 export type UsersGetByUsernamePublic = components['schemas']['public-user'] & {

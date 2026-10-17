@@ -18,6 +18,11 @@ export type UsersGetContextForUserError =
   | paths['/users/{username}/hovercard']['get']['responses']['404']['content']['application/json']
   | paths['/users/{username}/hovercard']['get']['responses']['422']['content']['application/json'];
 
+export type UsersGetContextForUserErrors = {
+  '404': paths['/users/{username}/hovercard']['get']['responses']['404']['content']['application/json'];
+  '422': paths['/users/{username}/hovercard']['get']['responses']['422']['content']['application/json'];
+};
+
 const _responseSchema: Schema = {
   title: 'Hovercard',
   description: 'Hovercard',
