@@ -28,6 +28,7 @@ import type { BrowserContext, Page } from '@playwright/test';
 import type {
   ConfiguredEndpoint,
   MockBehavior,
+  MockAnswer,
   MockBehaviorOrCases,
   MockRequestMatch,
   MockRuntimeConfig,
@@ -100,6 +101,8 @@ export interface EndpointMock<T, Errs> {
   setLoading(): Promise<void>;
   /** Any behavior, with every field (`delay`, `progress`, …). */
   set(behavior: Behavior<T>): Promise<void>;
+  /** Answers in turn: each request takes the next behavior, the last one repeats (counted again on a new behavior or page). */
+  sequence(behaviors: Behavior<T>[]): Promise<void>;
   /**
    * The answer to the requests that match (path params in template order, query values as strings), e.g.
    * `when({ path: ['XS0000000001'] }).fail('403', body)` while other bonds resolve. Cases are tried in the
@@ -126,6 +129,8 @@ export interface EndpointCase<T, Errs> {
   failWith(status: number, body?: unknown, headers?: Record<string, string>): Promise<void>;
   setLoading(): Promise<void>;
   set(behavior: Behavior<T>): Promise<void>;
+  /** Answers in turn: each request takes the next behavior, the last one repeats (counted again on a new behavior or page). */
+  sequence(behaviors: Behavior<T>[]): Promise<void>;
 }
 
 /** What the tests exercised on one endpoint, for a coverage report. */
@@ -226,8 +231,8 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
     ? (options.endpoints as readonly EndpointDescription[])
     : Object.values(options.endpoints as Record<string, EndpointDescription>);
   const byKey = new Map(descriptions.map((d) => [d.key, d]));
-  const overrides = new Map<string, MockBehavior>();
-  const cases = new Map<string, Array<{ when: MockRequestMatch; then: MockBehavior }>>();
+  const overrides = new Map<string, MockAnswer>();
+  const cases = new Map<string, Array<{ when: MockRequestMatch; then: MockAnswer }>>();
   const recorded = new Map<string, Recorded>();
   const unmatched: UnmatchedRequest[] = [];
   const timeoutMs = options.timeoutMs ?? 5000;
@@ -297,7 +302,7 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
    * Sets an endpoint's behavior (`undefined`: back to its default) in every open page that has the
    * runtime; pages loaded later get it from `config()`.
    */
-  const apply = async (key: string, behavior: MockBehavior | undefined): Promise<void> => {
+  const apply = async (key: string, behavior: MockAnswer | undefined): Promise<void> => {
     if (behavior === undefined) {
       overrides.delete(key);
       cases.delete(key);
@@ -305,7 +310,7 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
     return push(key);
   };
 
-  const applyCase = (key: string, when: MockRequestMatch, then: MockBehavior): Promise<void> => {
+  const applyCase = (key: string, when: MockRequestMatch, then: MockAnswer): Promise<void> => {
     const list = cases.get(key) ?? [];
     const same = list.findIndex((c) => isDeepStrictEqual(c.when, when));
     if (same >= 0) list[same] = { when, then };
@@ -380,6 +385,7 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
       failWith: (status, body, headers) => apply(key, { error: body, status, ...(headers ? { headers } : {}) }),
       setLoading: () => apply(key, { loading: true }),
       set: (behavior) => apply(key, behavior as MockBehavior),
+      sequence: (behaviors) => apply(key, { sequence: behaviors as MockBehavior[] }),
       when: (match) => ({
         resolve: (value, opts) => applyCase(key, match, { value, ...opts }),
         fail: (status, body, code) => {
@@ -390,6 +396,7 @@ export async function installOpenApiMocks<R = Record<string, unknown>, E = Recor
         failWith: (status, body, headers) => applyCase(key, match, { error: body, status, ...(headers ? { headers } : {}) }),
         setLoading: () => applyCase(key, match, { loading: true }),
         set: (behavior) => applyCase(key, match, behavior as MockBehavior),
+        sequence: (behaviors) => applyCase(key, match, { sequence: behaviors as MockBehavior[] }),
       }),
       reset: () => apply(key, undefined),
       expectCalled: (ms = timeoutMs) => waitFor(key, () => true, ms, () => `${key} was not requested within ${ms} ms.`),

@@ -17,6 +17,8 @@ export type {
   MockCases,
   MockRequestMatch,
   MockBehaviorOrCases,
+  MockSequence,
+  MockAnswer,
 } from './lib/interception/mock-runtime';
 export type { EndpointRule } from './lib/interception/url-matcher';
 export type { WindowMockEntry } from './lib/window-mock-entry';

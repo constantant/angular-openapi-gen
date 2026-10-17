@@ -530,6 +530,25 @@ describe('mock interception', () => {
       expect(runtime.unmatchedRequests().map((u) => u.reason)).toEqual(['no-behavior']);
     });
 
+    it('answers in turn with a sequence, repeats its last entry, and counts again on a new behavior', async () => {
+      runtime.register('ME', { method: 'get', baseUrl: BASE, path: '/me' });
+      runtime.setBehavior('ME', { sequence: [{ error: 'expired', status: 401 }, { value: 'ann' }] });
+      expect((await get(`${BASE}/me`)).status).toBe(401);
+      expect(await get(`${BASE}/me`)).toEqual({ status: 200, body: 'ann' });
+      expect(await get(`${BASE}/me`)).toEqual({ status: 200, body: 'ann' });
+      runtime.setBehavior('ME', { sequence: [{ error: 'expired', status: 401 }, { value: 'bob' }] });
+      expect((await get(`${BASE}/me`)).status).toBe(401);
+      // a sequence inside a case, counted on its own
+      runtime.register('BOND', { method: 'get', baseUrl: BASE, path: '/bonds/{isin}' });
+      runtime.setBehavior('BOND', {
+        cases: [{ when: { path: ['A'] }, then: { sequence: [{ value: 1 }, { value: 2 }] } }],
+        otherwise: { value: 0 },
+      });
+      expect((await get(`${BASE}/bonds/A`)).body).toBe(1);
+      expect((await get(`${BASE}/bonds/B`)).body).toBe(0);
+      expect((await get(`${BASE}/bonds/A`)).body).toBe(2);
+    });
+
     it('answers a held request by its own case when cases arrive while it waits', async () => {
       runtime.register('BOND', { method: 'get', baseUrl: BASE, path: '/bonds/{isin}' }, { behavior: { loading: true } });
       const a = get(`${BASE}/bonds/A`);

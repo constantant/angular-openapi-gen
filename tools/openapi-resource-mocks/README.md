@@ -382,6 +382,7 @@ How it works:
 | `failWith(status, body?, headers?)` | Any failing status, documented or not |
 | `setLoading()` / `set(behavior)` / `reset()` | Hold requests / any behavior (`delay`, `progress`, …) / back to the default, without cases |
 | `when({ path?, query? })` | The answer to the matching requests only: `.resolve()`, `.fail()`, `.failWith()`, `.setLoading()`, `.set()` (see below) |
+| `sequence([behavior, …])` | Answers in turn: each request takes the next, the last repeats (a 401, then the data). Also on `when()` |
 | `requests` / `calls` / `clearRequests()` | What it received, across page loads |
 | `expectCalled(ms?)` / `expectCalledWith(...args)` / `waitForRequest(predicate?, ms?)` | Wait (default 5 s) for a request; the error lists what was received instead |
 
@@ -407,6 +408,15 @@ await getBond.when({ path: ['XS0000000001'] }).resolve(eDreams);
 await getBond.when({ path: ['US0000000002'] }).fail('403', { title: 'Subscribers only' });
 await api.endpoint('SEARCH').when({ query: { q: 'nothing' } }).resolve([]);
 ```
+
+A sequence answers in turn, e.g. an expired token once and then the data:
+
+```typescript
+await api.endpoint('GET_USER').sequence([{ error: undefined, status: 401 }, { value: user }]);
+```
+
+In the page it is `{ sequence: [...] }` (`MockSequence`); its count starts again with a new behavior, and on a new
+page (each page has its own runtime).
 
 Setting a case again for the same match replaces it; `reset()` drops every case. In the page this is
 one serializable behavior, `{ cases: [{ when, then }], otherwise }` (`MockCases`), which
