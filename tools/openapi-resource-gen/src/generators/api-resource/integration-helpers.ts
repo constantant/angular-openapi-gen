@@ -32,6 +32,8 @@ export function integrationWorkspace(cacheName: string) {
     spec: { fileName: string; text: string },
     options: Record<string, unknown>,
     probe = '',
+    /** Writes extra input files (an overlay, say) into the workspace before generating. */
+    setup?: (root: string) => void,
   ): Promise<GeneratedWorkspace> {
     const root = path.join(cacheRoot, name);
     fs.rmSync(root, { recursive: true, force: true });
@@ -40,6 +42,7 @@ export function integrationWorkspace(cacheName: string) {
     fs.writeFileSync(path.join(root, 'tsconfig.base.json'), JSON.stringify({ compilerOptions: { paths: {} } }));
     fs.writeFileSync(path.join(root, 'package.json'), '{"name":"ws"}');
     fs.writeFileSync(path.join(root, 'probe.ts'), probe);
+    setup?.(root);
 
     const previous = process.cwd();
     process.chdir(root);

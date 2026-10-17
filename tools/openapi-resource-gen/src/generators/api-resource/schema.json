@@ -116,6 +116,26 @@
       "type": "boolean",
       "default": false,
       "description": "Validate JSON responses at runtime against the spec's response schema via httpResource's parse hook, throwing on mismatch. Requires @cfworker/json-schema to be installed. Endpoints whose response schema has a circular $ref are skipped."
+    },
+    "overlay": {
+      "type": "string",
+      "description": "Comma-separated paths of OpenAPI Overlay 1.0 documents (YAML or JSON), applied to the spec in order before generating. Use them to add operationIds, fix wrong types or remove operations without editing a spec you do not own. A target that matches nothing is an error."
+    },
+    "stripPathPrefix": {
+      "type": "string",
+      "description": "Path prefix left out of the operationIds derived for operations that have none: with /api, GET /api/pets/{id} becomes get_pets_id (token GET_PETS_ID) instead of get_api_pets_id."
+    },
+    "includeOperations": {
+      "type": "string",
+      "description": "Comma-separated \"METHOD /path\" entries or operationIds: generate only these operations. Errors if an entry matches no operation."
+    },
+    "excludeOperations": {
+      "type": "string",
+      "description": "Comma-separated \"METHOD /path\" entries or operationIds to leave out (e.g. \"GET /sitemap.xml\"). Errors if an entry matches no operation."
+    },
+    "excludeSecuritySchemes": {
+      "type": "string",
+      "description": "Comma-separated security scheme names to drop, or * for all: no security token is emitted for them and every security alternative that names one is removed, so tokens never send those credentials (use it when an interceptor adds auth)."
     }
   },
   "required": ["specPath", "outputDir"]

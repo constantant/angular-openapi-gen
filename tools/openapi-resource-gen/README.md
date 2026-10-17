@@ -116,7 +116,83 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `reportProgress` | no | `false` | Report transfer progress. `httpClient` binary/multipart uploads and blob downloads yield `Observable<HttpEvent<T>>`; `httpResource` blob downloads get `reportProgress: true` (see [Upload / download progress](#upload--download-progress---reportprogress)) |
 | `httpClientTags` | no | — | Comma-separated tags whose endpoints use `HttpClient`, overriding `clientType`. Errors if a tag matches no endpoint. |
 | `httpClientOperations` | no | — | Comma-separated `operationId`s that use `HttpClient`, overriding `clientType`. Errors if an id matches no endpoint. |
+| `overlay` | no | — | Comma-separated paths of [OpenAPI Overlay 1.0](https://spec.openapis.org/overlay/v1.0.0.html) documents applied to the spec before generating. See [Fixing a spec you don't own](#fixing-a-spec-you-dont-own---overlay-and-friends) |
+| `stripPathPrefix` | no | — | Path prefix left out of the operationIds derived for operations that have none: with `/api`, `GET /api/pets/{id}` becomes `GET_PETS_ID` instead of `GET_API_PETS_ID` |
+| `includeOperations` | no | all | Comma-separated `METHOD /path` entries or operationIds: generate only these. Errors if one matches nothing |
+| `excludeOperations` | no | — | Comma-separated `METHOD /path` entries or operationIds to leave out (e.g. `GET /sitemap.xml`). Errors if one matches nothing |
+| `excludeSecuritySchemes` | no | — | Comma-separated security scheme names to drop, or `*` for all: no security token for them, and tokens never send those credentials. Use it when an interceptor adds auth |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
+
+---
+
+## Fixing a spec you don't own (`--overlay` and friends)
+
+Specs exported by a backend framework are often almost right: no `operationId`s, a `200` without the
+schema the API really returns, an endpoint that is not an API at all, an API key scheme next to the
+one the browser uses. Four options change the spec in memory before anything is generated, so the
+tokens, `schema.d.ts`, the mocks and the manifest all see the corrected spec. The spec file itself is
+never written.
+
+They run in this order: overlays, then `stripPathPrefix`, then the operation filters, then
+`excludeSecuritySchemes`. The filters can therefore select an operation by the name an overlay or
+`stripPathPrefix` gave it.
+
+```bash
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=specs/bonds.json --outputDir=libs/bonds-data-access/src \
+  --overlay=specs/bonds.overlay.yaml \
+  --stripPathPrefix=/api \
+  --excludeOperations="GET /sitemap.xml" \
+  --excludeSecuritySchemes="*"
+```
+
+### Overlays
+
+An [Overlay 1.0](https://spec.openapis.org/overlay/v1.0.0.html) document is a list of actions, each
+with a JSONPath `target` and either an `update` or `remove: true`:
+
+```yaml
+# specs/bonds.overlay.yaml
+overlay: 1.0.0
+info: { title: Fixes to the bonds API spec, version: 1.0.0 }
+actions:
+  - target: "$.paths['/api/token/exchange'].post"
+    update:
+      operationId: exchangeToken          # the token is EXCHANGE_TOKEN
+      responses:
+        '200':                            # the API returns a body the spec does not declare
+          content:
+            application/json:
+              schema: { type: object, properties: { accessToken: { type: string, nullable: true } } }
+  - target: "$.paths['/api/user/change-password'].post.responses['400']"
+    update:                               # the real error shape (a list), so mocks and error types match it
+      content:
+        application/json:
+          schema: { type: array, items: { $ref: '#/components/schemas/IdentityError' } }
+  - target: "$.paths['/api/internal/health']"
+    remove: true
+```
+
+- `update` merges into every object the target finds: nested objects are merged, arrays and other
+  values are replaced. When the target itself is an array, the update is appended to it.
+- `remove: true` deletes every node the target finds.
+- **A target that matches nothing is an error.** When the backend fixes its spec or renames a path,
+  generation fails and points at the action, instead of silently keeping a stale fix.
+- Supported JSONPath: `$`, `.name`, `['name']` / `["name"]` (for paths such as `'/pets/{id}'`), `[0]`,
+  `*` / `[*]` and `..`. Filter expressions (`[?(...)]`) are rejected with an error.
+- Several overlays (`--overlay=a.yaml,b.yaml`) are applied in the order given.
+
+### Names, operation filters and security schemes
+
+- `--stripPathPrefix=/api` only affects operations **without** an `operationId` (an overlay can give
+  any operation an explicit one). Two operations that end up with the same id are an error.
+- `--includeOperations` / `--excludeOperations` take `METHOD /path` (`GET /pets/{id}`) or an
+  operationId, including a derived one such as `get_pets_id`. The types of a removed operation are
+  not in `schema.d.ts` either.
+- `--excludeSecuritySchemes=ApiKey` removes that scheme's token and its entries from every security
+  requirement: a requirement `[{ Bearer, Google }, { ApiKey }]` becomes `[{ Bearer, Google }]`, so no
+  token can send an `X-Api-Key`. With `*` the tokens carry no auth at all, which is what you want when
+  an `HttpInterceptor` adds the `Authorization` header (and refreshes it).
 
 ---
 
