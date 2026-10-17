@@ -35,6 +35,7 @@ import { renderMockHookFile } from './render-mock-hook';
 import { renderQueryParamsFile } from './render-query-params';
 import { renderNavigationTokenFile } from './render-navigation';
 import { parseServerVariables, renderBaseUrlFile, renderServerVariablesFile } from './render-server-variables';
+import { preprocessSpec, type OverlayDocument } from './preprocess-spec';
 import type { SecuritySchemeModel } from './endpoint-model';
 
 /** First line of every generated .ts file. */
@@ -100,6 +101,19 @@ export interface ApiResourceGeneratorSchema {
   httpClientTags?: string;
   /** Comma-separated operationIds that use HttpClient regardless of `clientType`. */
   httpClientOperations?: string;
+  /**
+   * Comma-separated paths of OpenAPI Overlay 1.0 documents (YAML or JSON), applied to the spec in
+   * order before anything is generated: add operationIds, fix response types, remove operations.
+   */
+  overlay?: string;
+  /** Path prefix left out of the operationIds derived for operations that have none (`/api`). */
+  stripPathPrefix?: string;
+  /** Comma-separated `METHOD /path` entries or operationIds: generate only these operations. */
+  includeOperations?: string;
+  /** Comma-separated `METHOD /path` entries or operationIds: leave these operations out. */
+  excludeOperations?: string;
+  /** Comma-separated security scheme names to drop from the spec (`*` for all of them). */
+  excludeSecuritySchemes?: string;
 }
 
 function splitList(v: string | undefined): Set<string> {
@@ -133,6 +147,17 @@ function stripNonSchemaRefs(obj: unknown): unknown {
     return result;
   }
   return obj;
+}
+
+/** Read an overlay document (YAML or JSON) from a local path. */
+function loadOverlay(file: string): OverlayDocument {
+  const absolute = path.resolve(file);
+  if (!fs.existsSync(absolute)) throw new Error(`Overlay file not found: ${absolute}`);
+  try {
+    return jsYaml.load(fs.readFileSync(absolute, 'utf-8')) as OverlayDocument;
+  } catch (e) {
+    throw new Error(`Failed to parse overlay "${file}" as YAML/JSON: ${(e as Error).message}`, { cause: e });
+  }
 }
 
 /** Download a URL to a local temp file. Returns the temp file path. */
@@ -356,6 +381,14 @@ async function generateApiResources(
       `Found: "${openapiVersion || String(specObj['swagger'] ?? '') || '(no openapi or swagger field)'}".`
     );
   }
+  preprocessSpec(specObj, {
+    overlays: [...splitList(options.overlay)].map((file) => ({ source: file, document: loadOverlay(file) })),
+    stripPathPrefix: options.stripPathPrefix,
+    includeOperations: [...splitList(options.includeOperations)],
+    excludeOperations: [...splitList(options.excludeOperations)],
+    excludeSecuritySchemes: [...splitList(options.excludeSecuritySchemes)],
+  });
+
   const hasPaths = specObj['paths'] && typeof specObj['paths'] === 'object';
   const hasWebhooks = specObj['webhooks'] && typeof specObj['webhooks'] === 'object';
   if (!hasPaths && !hasWebhooks) {

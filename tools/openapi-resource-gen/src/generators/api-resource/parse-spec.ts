@@ -1,5 +1,6 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { OpenAPIV3 } from 'openapi-types';
+import { fallbackOperationId } from './preprocess-spec';
 import type { DateField, DiscriminatorModel, DiscriminatorVariant, EndpointModel, EnumExtension, SecurityKind, SecuritySchemeModel, SpecialQueryParam, WebhookModel } from './endpoint-model';
 
 const HTTP_METHODS: ReadonlyArray<OpenAPIV3.HttpMethods> = [
@@ -228,9 +229,7 @@ export function buildEndpoints(
       const tag = operation.tags?.[0] ?? 'default';
       if (allowedTags && !allowedTags.includes(tag)) continue;
 
-      const rawId =
-        operation.operationId ??
-        `${method}_${apiPath.replace(/\W+/g, '_').replace(/^_|_$/g, '')}`;
+      const rawId = operation.operationId ?? fallbackOperationId(method, apiPath);
 
       const fileName =
         namingConvention === 'kebab' ? toKebabCase(rawId) : rawId;
