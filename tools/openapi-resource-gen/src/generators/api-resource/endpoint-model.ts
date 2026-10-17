@@ -137,4 +137,10 @@ export interface EndpointModel {
    * 'blob' — httpResource.blob() for binary content types
    */
   responseVariant: 'json' | 'text' | 'blob';
+  /** Every parameter (path-level and operation-level merged), for the manifest. */
+  parameters: Array<{ name: string; in: 'path' | 'query' | 'header' | 'cookie'; required: boolean }>;
+  /** Whether the spec marks the request body as required. */
+  bodyRequired: boolean;
+  /** Every documented response, in spec order, with the media types it declares (none for e.g. a 204). */
+  responses: Array<{ status: string; mediaTypes: string[] }>;
 }

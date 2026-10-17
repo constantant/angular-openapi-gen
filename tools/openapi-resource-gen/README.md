@@ -121,6 +121,7 @@ Re-run the same command whenever your spec changes — the generator overwrites 
 | `includeOperations` | no | all | Comma-separated `METHOD /path` entries or operationIds: generate only these. Errors if one matches nothing |
 | `excludeOperations` | no | — | Comma-separated `METHOD /path` entries or operationIds to leave out (e.g. `GET /sitemap.xml`). Errors if one matches nothing |
 | `excludeSecuritySchemes` | no | — | Comma-separated security scheme names to drop, or `*` for all: no security token for them, and tokens never send those credentials. Use it when an interceptor adds auth |
+| `emitSchemas` | no | `false` | Write `api.schemas.json`: the JSON Schemas of every request body and documented response, for fixture checks and contract tests outside the bundle. See [JSON Schemas outside the bundle](#json-schemas-outside-the-bundle---emitschemas) |
 | `verbose` | no | `false` | Print a `+`/`~`/`-` summary of created, updated, and deleted files after generation. |
 
 ---
@@ -207,7 +208,9 @@ actions:
   index.mock.ts                     # (--includeMocks) re-exports all tag mock barrels
   index.msw.ts                      # (--includeMswHandlers) re-exports all tag MSW handler arrays
   mock-hook.ts                      # (--includeMocks / --mockHooks) lets a mocking tool re-run live httpResources
-  mocks.manifest.json               # (--includeMocks) machine-readable endpoint list + specId for the DevTools panel
+  mocks.manifest.json               # (--includeMocks) machine-readable endpoints: params, body, every documented response, security
+  mocks.endpoints.ts                # (--includeMocks) the same endpoints + type maps, no runtime imports (Playwright, Node tools)
+  api.schemas.json                  # (--emitSchemas) JSON Schemas of every request body and response, for tools outside the bundle
   webhooks/
     {webhook-name}.webhook.ts       # (OAS 3.1 webhooks) InjectionToken<HttpInterceptorFn> per webhook
   {tag}/
@@ -371,9 +374,84 @@ Re-running the generator cleans up any file it no longer produces. This includes
 - `.token.ts` / `.mock.ts` for removed endpoints
 - `.security-token.ts` for removed security schemes
 - `{tag}/index.ts` / `{tag}/index.mock.ts` barrel files when all endpoints for a tag are removed (e.g. after narrowing `--tagFilter`)
-- `mocks.manifest.json` when `--includeMocks` is dropped
+- `mocks.manifest.json` and `mocks.endpoints.ts` when `--includeMocks` is dropped
+- `api.schemas.json` when `--emitSchemas` is dropped
 
 Stale tag folders (left empty after their barrels are removed) are also deleted.
+
+### Endpoints for Node tools (`mocks.endpoints.ts`)
+
+The `/mock` barrel loads Angular at runtime, so a Playwright test or a Node script cannot import
+it. `mocks.endpoints.ts` describes the same endpoints with **no runtime imports** (its token
+imports are `import type`, erased when compiled), and the generator registers a `/endpoints` alias
+for it next to `/mock`:
+
+```typescript
+import {
+  ENDPOINTS, type EndpointKey, type EndpointResponses, type EndpointErrors, type EndpointBodies, type EndpointParams,
+} from '@myapp/petstore-data-access/endpoints';
+
+ENDPOINTS.GET_PET_BY_ID;
+// { key: 'GET_PET_BY_ID', specId: 'petstore', operationId: 'getPetById', method: 'get',
+//   path: '/pet/{petId}', tag: 'pet', responseType: 'json' }
+
+const pet: EndpointResponses['GET_PET_BY_ID'] = { id: 1, name: 'Rex', photoUrls: [] };
+const body: EndpointBodies['ADD_PET'] = pet;          // never for an endpoint without a body
+// For a spec that documents JSON error bodies (petstore does not):
+// const notFound: EndpointErrors['GET_ORDER']['404'] = { message: 'no order' };
+```
+
+| Export | What |
+|--------|------|
+| `ENDPOINTS` / `EndpointKey` | Every mockable endpoint (not navigation endpoints) as plain data, keyed like the mocks |
+| `EndpointResponses[K]` | The success body (`undefined` when there is none, e.g. a 204) |
+| `EndpointErrors[K][status]` | The documented error body per status (`'400'`, `'4XX'`, `'default'`); an undocumented status does not compile |
+| `EndpointBodies[K]` / `EndpointParams[K]` | The request body / query params (`never` when there are none) |
+| `SPEC_ID` | The `--specId` |
+
+`mocks.manifest.json` carries the same endpoints for tools that read JSON (the DevTools panel, a
+coverage report), with each endpoint's `parameters` (`name`, `in`, `required`), `requestBody`
+(`mediaType`, `required`), every documented response (`status`, `mediaTypes`), `responseType` and
+`security` (the alternatives, each a list of scheme names).
+
+### JSON Schemas outside the bundle (`--emitSchemas`)
+
+`--validateResponses` puts response schemas into the app bundle. `--emitSchemas` instead writes
+them to `api.schemas.json`, which the lib never imports, for tools: checking that test fixtures
+match the spec, or that a real backend still answers what its spec says.
+
+```json
+{
+  "specId": "petstore",
+  "components": { "schemas": { "Pet": { "type": "object", "...": "..." } } },
+  "operations": {
+    "ADD_PET": {
+      "method": "post", "path": "/pet",
+      "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pet" } } } },
+      "responses": { "200": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pet" } } } }, "405": { "content": {} } }
+    }
+  }
+}
+```
+
+- `components.schemas` sits at the same pointer as in the spec, so the spec's own `$ref`s stay
+  valid, circular ones included. A response or request body given as a `$ref` to
+  `components.responses` / `requestBodies` is followed.
+- OpenAPI 3.0's `nullable: true` is rewritten to a `type` array, as JSON Schema has no `nullable`.
+- Every documented status is listed; one without a body has empty `content`.
+
+Validate with the whole document as the root and a `$ref` to the schema you want (`/` in a media
+type is `~1` in a JSON pointer):
+
+```typescript
+import { Validator } from '@cfworker/json-schema';
+import doc from '../libs/petstore-data-access/src/api.schemas.json';
+
+const schemaOf = (key: string, status: string) =>
+  ({ ...doc, $ref: `#/operations/${key}/responses/${status}/content/application~1json/schema` });
+
+new Validator(schemaOf('GET_PET_BY_ID', '200'), '2020-12', false).validate(fixture).valid;
+```
 
 ---
 
@@ -989,6 +1067,18 @@ export type GetOrderError =
 ```
 
 With `--readonlyResponses` each branch is wrapped in `Readonly<>`.
+
+The same bodies keyed by status are exported as `XxxErrors`, so an error you mock or assert can be
+typed by its status (a status the spec does not document does not compile):
+
+```typescript
+export type GetOrderErrors = {
+  '400': paths['/orders/{id}']['get']['responses']['400']['content']['application/json'];
+  '404': paths['/orders/{id}']['get']['responses']['404']['content']['application/json'];
+};
+
+const notFound: GetOrderErrors['404'] = { message: 'no order' };
+```
 
 ### Enum label/description maps
 
