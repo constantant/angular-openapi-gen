@@ -1,6 +1,6 @@
 # Design note: a standalone CLI (no Nx required)
 
-_Status: proposal, 2026-10-02. Nothing here is built. It answers open question #1 of the
+_Status: **shipped** (`npx openapi-resource-gen`, see the [generator README](../../tools/openapi-resource-gen/README.md#without-nx-openapi-resource-gen-cli)); this note is the original proposal, kept for the reasoning. It answers open question #1 of the
 [quick-wins roadmap](../roadmap/quick-wins.md)._
 
 ## Problem

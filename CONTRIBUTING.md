@@ -114,6 +114,30 @@ Please use a conventional-commit-style **PR title** — it becomes the squash-me
 
 Direct pushes to `master` are blocked; all changes go through a PR.
 
+## Releasing (maintainers)
+
+Releases are manual GitHub Actions runs; never run `nx release` locally.
+
+```bash
+gh workflow run release.yml -f projects=openapi-resource-gen -f dryRun=true   # check the version first
+gh workflow run release.yml -f projects=openapi-resource-gen                  # then for real
+gh workflow run release-extension.yml                                         # Chrome extension
+```
+
+`release.yml` runs `nx release` (version from the conventional commits since the last tag, so
+`feat!` is major, `feat` minor, `fix` patch), pushes the version commit and tag, creates a GitHub
+Release and publishes to npm with provenance through
+[trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC, no npm token).
+
+- `projects` limits the release to some packages. A forced `specifier` bumps every package unless
+  `projects` is set, including ones with no changes.
+- `dryRun` stops before pushing or publishing; `skipVersioning` re-runs only build and publish.
+- The workflow checks out with `GH_PAT` (an admin PAT) because `GITHUB_TOKEN` cannot push the
+  version commit past the required status checks.
+- `release-extension.yml` bumps `manifest.json`, zips the extension, creates a GitHub Release and
+  uploads to the Chrome Web Store (secrets: `GH_PAT`, `CHROME_EXTENSION_ID`, `CHROME_PUBLISHER_ID`,
+  `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`).
+
 ## License
 
 By contributing you agree that your contributions are licensed under the

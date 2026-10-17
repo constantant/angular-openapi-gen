@@ -6,28 +6,45 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Angular 20+](https://img.shields.io/badge/Angular-20%2B-dd0031?logo=angular&logoColor=white)](#compatibility)
 
-> **Requires Angular 20+ and Nx 20+** — verified in CI, see [Compatibility](#compatibility).
-> The generated code uses [`httpResource()`](https://angular.dev/guide/http/http-resource).
+**Tree-shakeable, signal-native Angular API clients from OpenAPI: one `InjectionToken` per endpoint.**
+Mock any of them, in unit tests, Playwright or the browser, even on a production build.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/constantant/angular-openapi-gen/tree/master/examples/stackblitz)
 
-**Try it in the browser:** a NestJS API with an auto-generated OpenAPI spec and an Angular app that consumes
-the generated tokens, [on StackBlitz](https://stackblitz.com/github/constantant/angular-openapi-gen/tree/master/examples/stackblitz). Source: [`examples/stackblitz`](examples/stackblitz).
+```bash
+npm install -D @constantant/openapi-resource-gen
+npx nx g @constantant/openapi-resource-gen:api-resource \
+  --specPath=https://petstore3.swagger.io/api/v3/openapi.yaml \
+  --outputDir=libs/petstore-data-access/src --baseUrlToken=PETSTORE_BASE_URL
+```
 
-An Angular 22 · Nx monorepo that demonstrates **tree-shakeable, signal-native API clients** generated from OpenAPI 3.x specs.
+```typescript
+private findPets = inject(FIND_PETS_BY_STATUS);
+readonly status = signal<'available' | 'sold'>('available');
 
-The core idea: one `InjectionToken` per API endpoint, each in its own `.ts` file.
-Because esbuild tree-shakes at file boundaries, any token you never `inject()` costs zero bytes in your bundle.
+// An httpResource: refetches when status() changes, typed from the spec.
+readonly pets = this.findPets(() => ({ status: this.status() }));
+```
 
-**Why this one?**
+## Why this one
 
-- **Resources, not services.** Each endpoint is an `InjectionToken` whose function returns a signal-native
-  `httpResource` (or, per endpoint, an `Observable` via `HttpClient`). There is no service class to
-  inject whole, so unused endpoints tree-shake away.
-- **Types come from [`openapi-typescript`](https://openapi-ts.dev)**, not from generated model classes.
-- **Testing is part of the package:** in-browser mocks that patch `fetch` / `XMLHttpRequest` (no
-  service worker, works on a production build), a `/testing` entry point, optional MSW handlers and a
-  Chrome DevTools panel to catch, answer and replay requests.
+- **Pay only for what you call.** Each endpoint is its own file and its own token. There is no
+  service class to inject whole, so an endpoint you never `inject()` costs 0 bytes (8 endpoints cost
+  about 0.2 kB more than 1; [benchmark](docs/benchmarks/bundle-size.md)).
+- **Signals first, `HttpClient` when you want it.** Tokens return an `httpResource` by default, or a
+  cold `Observable` per endpoint (`--clientType`, `--httpClientTags`).
+- **Types from the spec, not model classes.** [`openapi-typescript`](https://openapi-ts.dev) output
+  is the single source of truth; the generated code adds no runtime types.
+- **Runtime safety you can switch on.** Validate responses against the spec
+  (`--validateResponses`), keep server-only fields out of request bodies (`--readWriteMarkers`),
+  revive dates (`--dateType`).
+- **Testing is built in.** `@constantant/openapi-resource-mocks` patches `fetch` and
+  `XMLHttpRequest` (no service worker), so your real tokens, interceptors and validation keep
+  running. Unit tests, Playwright and a Chrome DevTools panel all drive the same mocks.
+- **Works with specs you do not own.** Overlays, operation filters, redirect (OAuth) endpoints as URL
+  builders, server variables and Swagger 2.0 input are generator options, not hand edits.
+- **CI-friendly.** `--check` fails the build when the generated code is out of date.
+  Every file is marked `GENERATED`.
 
 ### How it compares
 
@@ -38,66 +55,45 @@ An honest summary. All of these are good tools; pick by what you need.
 | Output shape | One token + function per endpoint | Service classes + model classes | Functions or services, per config | SDK functions / classes, plugins |
 | `httpResource` | Yes (default) | Declined upstream | Yes (`httpClient`, `httpResource` or both) | Yes |
 | `HttpClient` / `Observable` | Yes, per endpoint | Yes | Yes | Yes |
-| Runs as | Nx generator | Standalone CLI | Standalone CLI | Standalone CLI |
+| Runs as | Nx generator, or standalone CLI | Standalone CLI | Standalone CLI | Standalone CLI |
 | Mock data / Zod / validators | In-browser mocks, MSW handlers, response validation (opt-in) | No | MSW + Faker, Zod (including request bodies) | Faker, MSW, validator plugins |
 | Debug UI | Chrome DevTools panel | No | No | No |
 
-Where the others are the better fit: if you are **not on Nx**, use a standalone CLI (Orval or Hey API)
-for now; if you need **Zod schemas for request bodies** or **generated fake data**, Orval and Hey API
-have them and we do not; if you want a **non-Angular** client, this is not the tool.
+Where the others are the better fit: if you need **Zod schemas for request bodies** or **generated
+fake data**, Orval and Hey API have them and we do not; if you want a **non-Angular** client, this is
+not the tool. The default `httpResource` flavour carries Angular's own `httpResource` runtime
+(about +7 kB gzip); `--clientType=httpClient` is the small option.
 (Comparison read in October 2026; tools change, so check their docs.)
 
-Bundle size: the one-file-per-endpoint design tree-shakes cleanly (8 endpoints cost about 0.2 kB more than 1), but the default `httpResource` flavour carries Angular's own `httpResource` runtime (about +7 kB gzip). The [benchmark](docs/benchmarks/bundle-size.md) has the numbers and a script to reproduce them.
-
-Coming from another tool? See the migration guides:
-[from ng-openapi-gen](docs/06-migrate-from-ng-openapi-gen.md) · [from Orval](docs/07-migrate-from-orval.md).
+Coming from another tool? [From ng-openapi-gen](docs/06-migrate-from-ng-openapi-gen.md) ·
+[From Orval](docs/07-migrate-from-orval.md).
 
 ---
 
-## What's in this repo
+## The packages
 
-| Path | Type | Description |
-|------|------|-------------|
-| `tools/openapi-resource-gen/` | Nx generator · npm package | Reads an OpenAPI spec, emits one token file per endpoint |
-| `tools/openapi-resource-mocks/` | npm package | In-browser mocks for generated endpoints (patched `fetch` / `XMLHttpRequest`) — unit tests, Playwright E2E, Chrome Extension |
-| `tools/openapi-resource-devtools/` | Chrome Extension shell | Manifest, content script, service worker, devtools page |
-| `apps/devtools-panel/` | Angular 22 app | Panel UI bundled inside the Chrome Extension |
-| `libs/github-data-access/` | Generated data-access lib | GitHub REST API (~38 endpoints used) |
-| `libs/petstore-data-access/` | Generated data-access lib | OAI Petstore v3 (12 endpoints) |
-| `libs/weather-data-access/` | Generated data-access lib | Open-Meteo forecast API |
-| `libs/youtube-data-access/` | Generated data-access lib | YouTube Data API v3 (76 endpoints) |
-| `apps/api-explorer/` | Angular 22 app | Demo app that consumes all data-access libs |
+| Package | What it is | Docs |
+|---|---|---|
+| [`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen) | Generator (Nx plugin and `npx openapi-resource-gen` CLI): spec in, one token per endpoint out | [README](tools/openapi-resource-gen/README.md) |
+| [`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks) | Mocks for generated endpoints: unit tests, Playwright, the browser | [README](tools/openapi-resource-mocks/README.md) |
+| OpenAPI Resource Mocks DevTools | Chrome DevTools panel: catch, answer and replay requests | [README](tools/openapi-resource-devtools/README.md) |
+
+The repo is an Angular 22 + Nx monorepo. `apps/api-explorer` is a demo app that consumes four
+generated libs (GitHub, Petstore, Open-Meteo, YouTube with 76 endpoints) and ships only the
+endpoints it injects.
 
 ---
 
-## The generator — `@constantant/openapi-resource-gen`
+## Quick start
 
-Published on npm: **[`@constantant/openapi-resource-gen`](https://www.npmjs.com/package/@constantant/openapi-resource-gen)**
+**1. Generate** a data-access lib from a local file or an `https://` URL (command above). Re-run it
+whenever the spec changes; it rewrites changed files and deletes the ones whose endpoint is gone.
+Without Nx: `npx openapi-resource-gen specs/petstore.yaml --outputDir src/api`.
 
-### Quick start
-
-**Step 1 — install the generator** (once per workspace):
-
-```bash
-npm install -D @constantant/openapi-resource-gen
-```
-
-**Step 2 — generate a data-access lib** from any OpenAPI 3.x spec (local file or URL):
-
-```bash
-npx nx g @constantant/openapi-resource-gen:api-resource \
-  --specPath=https://petstore3.swagger.io/api/v3/openapi.yaml \
-  --outputDir=libs/petstore-data-access/src \
-  --baseUrlToken=PETSTORE_BASE_URL
-```
-
-**Step 3 — wire up providers and inject in your component:**
+**2. Provide** the base URL and the endpoints you use:
 
 ```typescript
 // app.config.ts
-import { provideHttpClient } from '@angular/common/http';
-import { PETSTORE_BASE_URL, provideFindPetsByStatus } from './libs/petstore-data-access/src';
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(),
@@ -107,280 +103,100 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-```typescript
-// pets-page.component.ts
-@Component({ ... })
-export class PetsPageComponent {
-  private findPetsByStatus = inject(FIND_PETS_BY_STATUS);
-  readonly status = signal<'available' | 'pending' | 'sold'>('available');
-  readonly pets = this.findPetsByStatus(() => ({ status: this.status() }));
-}
-```
-
-Re-run the generator command whenever your spec changes — it overwrites generated files and removes any that no longer exist in the spec.
-
-### Generator options
-
-| Option | Required | Default | Description |
-|--------|----------|---------|-------------|
-| `specPath` | yes | — | Path or https:// URL to the OpenAPI 3.x YAML or JSON spec file |
-| `outputDir` | yes | — | Output directory for generated files (relative to workspace root) |
-| `baseUrlToken` | no | `API_BASE_URL` | Name of the InjectionToken holding the API base URL |
-| `tagFilter` | no | — | Comma-separated list of OpenAPI tags to include (empty = all tags) |
-| `namingConvention` | no | `kebab` | File naming convention: kebab-case filenames with SCREAMING_SNAKE token names |
-| `providedIn` | no | `none` | none: token has no factory; a provide{Name}() helper is exported for explicit scoped provision. root: token self-registers at root (tree-shakeable singleton, no multi-context support) |
-| `includeMocks` | no | `false` | Generate a .mock.ts file per endpoint (and index.mock.ts barrels) using @constantant/openapi-resource-mocks. Requires the package to be installed. |
-| `mockHooks` | no | = `includeMocks` | Pass every httpResource a token creates to a shared mock-hook.ts, so a mocking tool (also on a production build) can re-run live resources when a mock is edited. |
-| `specId` | no | — | Identifier for this API spec, embedded in MockResourceMeta and mocks.manifest.json. Defaults to baseUrlToken lowercased with _BASE_URL stripped (e.g. PETSTORE_BASE_URL → petstore). |
-| `verbose` | no | `false` | Print a summary of created, updated, and deleted files after generation. |
-| `dateType` | no | `string` | Convert format:date-time / format:date response fields to Date or Temporal objects. Emits a typed XxxRevived alias and reviveXxxDates() helper per affected endpoint. |
-| `readWriteMarkers` | no | `false` | Honor readOnly / writeOnly in the spec: request body types (XxxBody) drop readOnly properties such as server-generated ids, and response types (XxxResponse, XxxError) drop writeOnly ones such as passwords. Uses openapi-typescript's readWriteMarkers, which adds the Readable<T> / Writable<T> helpers to schema.d.ts. |
-| `readonlyResponses` | no | `false` | Wrap all XxxResponse and XxxError type aliases in Readonly<> to prevent accidental mutation of response data. |
-| `includeMswHandlers` | no | `false` | Generate a .msw.ts file per endpoint (and index.msw.ts barrels) with MSW 2.x http.* handlers. Requires msw to be installed. |
-| `clientType` | no | `httpResource` | HTTP primitive wrapped by generated tokens. httpClient: the token yields a function returning a cold Observable<T> via HttpClient (params/body are plain values, no thunks or signals). |
-| `reportProgress` | no | `false` | Emit reportProgress: true on httpResource tokens that upload a binary/multipart body or download a blob, so httpResource().progress() reports transfer progress. Has no effect on httpClient endpoints. |
-| `callOptions` | no | `false` | Accept a trailing per-call options argument on every token function: HttpContext, headers, withCredentials and the other request fields Angular supports, plus (for httpResource tokens) defaultValue, equal, injector and debugName. A defaultValue narrows the returned resource's value to non-undefined. Emits a shared request-options.ts. |
-| `convertSwagger2` | no | `true` | Convert Swagger 2.0 specs to OpenAPI 3.0 in memory (using @scalar/openapi-upgrader) before generating. Set to false to reject Swagger 2.0 specs instead. |
-| `httpClientTags` | no | — | Comma-separated OpenAPI tags whose endpoints use HttpClient, overriding clientType. Errors if a tag matches no endpoint. |
-| `httpClientOperations` | no | — | Comma-separated operationIds that use HttpClient, overriding clientType. Errors if an operationId matches no endpoint. |
-| `validateResponses` | no | `false` | Validate JSON responses at runtime against the spec's response schema via httpResource's parse hook, throwing on mismatch. Requires @cfworker/json-schema to be installed. Endpoints whose response schema has a circular $ref are skipped. |
-
-See [`tools/openapi-resource-gen/README.md`](tools/openapi-resource-gen/README.md) for full documentation, or the [step-by-step tutorials](docs/README.md).
-
----
-
-## Generated token pattern
-
-Every endpoint becomes a typed `InjectionToken` whose factory returns an `httpResource`.
-For GET endpoints with query params, the reactive lambda uses a block-body form so it can
-return `undefined` to suppress the request when a thunk-based params arg returns `undefined`:
+**3. Inject and use.** Pass a thunk to react to signals; return `undefined` from it to hold the
+request until you are ready:
 
 ```typescript
-// libs/petstore-data-access/src/pet/find-pets-by-status.token.ts
-import { InjectionToken, inject, FactoryProvider } from '@angular/core';
-import { httpResource } from '@angular/common/http';
-import type { paths } from '../schema.d';
-import { PETSTORE_BASE_URL } from '../api-base-url.token';
-
-export type FindPetsByStatusParams =
-  paths['/pet/findByStatus']['get']['parameters']['query'];
-export type FindPetsByStatusResponse =
-  paths['/pet/findByStatus']['get']['responses']['200']['content']['application/json'];
-
-export const FIND_PETS_BY_STATUS = new InjectionToken<
-  (params?: FindPetsByStatusParams | (() => FindPetsByStatusParams | undefined))
-    => ReturnType<typeof httpResource<FindPetsByStatusResponse>>
->('FIND_PETS_BY_STATUS');
-
-export function provideFindPetsByStatus(): FactoryProvider {
-  return {
-    provide: FIND_PETS_BY_STATUS,
-    useFactory: () => {
-      const base = inject(PETSTORE_BASE_URL);
-      return (params?) =>
-        httpResource<FindPetsByStatusResponse>(() => {
-          const _params = typeof params === 'function' ? params() : params;
-          if (typeof params === 'function' && _params === undefined) return undefined;
-          return {
-            url: `${base}/pet/findByStatus`,
-            params: _params as unknown as Record<string, string | number | boolean | readonly (string | number | boolean)[]>,
-          };
-        });
-    },
-  };
-}
-```
-
-Key properties of every generated file:
-- **Zero runtime overhead** — all types come from `schema.d.ts` generated by `openapi-typescript`
-- **Tree-shakeable** — a token not injected anywhere is never imported, so esbuild drops the entire file
-- **Signal-native** — `httpResource` re-fires the request automatically when any signal inside the reactive lambda changes
-- **Request suppression** — returning `undefined` from the lambda keeps the resource idle (no request)
-- **Scoped base URL** — each lib has its own `InjectionToken<string>` so different parts of an app can point at different environments
-- **Header params** — `in: header` parameters become named string args on the factory function and are merged into the `headers` object alongside any auth scheme headers
-- **Cookie params** — `in: cookie` parameters become named string args (after header params) and are combined into a single `Cookie` header value; optional cookies are conditionally included
-- **Binary body** — non-json/form/multipart request bodies (e.g. `application/octet-stream`, `image/*`) emit `Blob | ArrayBuffer` as the body type
-- **Response type unions** — when an endpoint returns multiple 2xx JSON response codes (e.g. 200 and 201), the generated `Response` type alias is a union of all of them
-- **`@deprecated` JSDoc** — operations marked `deprecated: true` in the spec emit `/** @deprecated */` above the token constant, surfacing the warning at every `inject()` call site
-- **Security tokens** — signal-based schemes (`bearer`, `basic`, `apiKey`) emit `InjectionToken<Signal<string | null>>`; `digest` schemes emit `InjectionToken<HttpInterceptorFn>` + a named, host-scoped interceptor that delegates only to requests matching the lib's base URL, preventing cross-API conflicts
-
----
-
-## Using generated tokens
-
-### 1. Register providers in `app.config.ts`
-
-```typescript
-import { provideHttpClient } from '@angular/common/http';
-import { PETSTORE_BASE_URL, provideFindPetsByStatus } from '@angular-openapi-gen/petstore-data-access';
-
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideHttpClient(),
-    { provide: PETSTORE_BASE_URL, useValue: 'https://petstore3.swagger.io/api/v3' },
-    provideFindPetsByStatus(),
-  ],
-};
-```
-
-### 2. Inject and call in a component
-
-```typescript
-@Component({ ... })
-export class PetsPageComponent {
-  private findPetsByStatus = inject(FIND_PETS_BY_STATUS);
-
-  readonly status = signal<'available' | 'pending' | 'sold'>('available');
-
-  // Thunk → httpResource re-fetches whenever status() changes
-  readonly pets = this.findPetsByStatus(() => ({ status: this.status() }));
-}
+readonly results = this.search(() =>
+  this.apiKey() && this.query() ? { q: this.query(), key: this.apiKey()! } : undefined,
+);
 ```
 
 ```html
 @if (pets.isLoading()) { <mat-progress-bar mode="indeterminate" /> }
-@for (pet of pets.value() ?? []; track pet.id) {
-  <p>{{ pet.name }}</p>
-}
+@for (pet of pets.value() ?? []; track pet.id) { <p>{{ pet.name }}</p> }
 ```
 
-### Conditional requests (thunk returning undefined)
+Path, header and cookie params become typed arguments, mutations take a body (or a signal of one),
+and auth schemes become `InjectionToken<Signal<string | null>>`s that tokens read for you. The
+[tutorials](docs/README.md) walk through each of these; [Generated token anatomy](tools/openapi-resource-gen/README.md#generated-token-anatomy)
+shows the code behind them.
 
-Pass a thunk that returns `undefined` to suppress the request until conditions are met:
+### Most-used options
+
+| Option | What it does |
+|---|---|
+| `--includeMocks` | A `*.mock.ts` per endpoint for `@constantant/openapi-resource-mocks` |
+| `--validateResponses` | Check JSON responses against the spec at runtime |
+| `--clientType=httpClient` | `Observable`-returning tokens (per endpoint: `--httpClientTags`, `--httpClientOperations`) |
+| `--callOptions` | A trailing per-call `options` argument (`HttpContext`, headers, `defaultValue`, ...) |
+| `--overlay`, `--includeOperations`, `--excludeOperations` | Fix or trim a spec you do not own |
+| `--check` | CI gate: exit non-zero when the generated output is out of date |
+
+All 29 options, with defaults, are in the [generator README](tools/openapi-resource-gen/README.md#options).
+
+---
+
+## Mocks
+
+`@constantant/openapi-resource-mocks` answers the requests of the endpoints you mock, inside the
+page. Your app keeps its real tokens, `HttpClient`, interceptors and response validation, and every
+other request reaches the real API.
 
 ```typescript
-// No request fires until both apiKey and query are set
-readonly results = this.youtubeSearch(() =>
-  this.apiKey() && this.query()
-    ? { q: this.query(), key: this.apiKey()! }
-    : undefined
-);
+// Unit test (Vitest or Jasmine)
+const pets = mockEndpoint(FIND_PETS_BY_STATUS_MOCK, { value: [] });
+TestBed.configureTestingModule({ providers: [provideHttpClient(), pets] });
+// ...
+pets.expectCalledWith({ status: 'available' });
 ```
 
----
-
-## Common commands
-
-```bash
-# Serve the demo app
-npx nx serve api-explorer
-
-# Production build
-npx nx build api-explorer
-npx nx build api-explorer --stats-json   # include esbuild bundle stats
-
-# Run tests
-npx nx test openapi-resource-gen         # generator unit tests
-npx nx e2e api-explorer-e2e             # Playwright E2E tests
-
-# Lint everything
-npx nx run-many -t lint
-
-# Type-check everything
-npx nx run-many -t typecheck
-
-# Generate from a local file
-npx nx g @constantant/openapi-resource-gen:api-resource \
-  --specPath=specs/myapi.yaml \
-  --outputDir=libs/myapi-data-access/src \
-  --baseUrlToken=MYAPI_BASE_URL
-
-# Generate from a URL (no curl step needed)
-npx nx g @constantant/openapi-resource-gen:api-resource \
-  --specPath=https://petstore3.swagger.io/api/v3/openapi.yaml \
-  --outputDir=libs/petstore-data-access/src \
-  --baseUrlToken=PETSTORE_BASE_URL
-
-# Or declare a generate target in project.json and run:
-npx nx run petstore-data-access:generate
+```typescript
+// Playwright, against a production build: no mock code in the app
+const api = await installOpenApiMocks(page, { baseUrl, endpoints: ENDPOINTS, strict: true });
+await api.endpoint('GET_PET_BY_ID').failWith(404, { message: 'no pet' });
+await page.goto('/pets/7');
 ```
 
----
+- Behaviors: `{ value }`, `{ error, status }`, `{ loading: true }`, `{ sequence: [...] }`, each with
+  `delay`, `headers` and simulated upload/download `progress`.
+- **Live edits:** changing a mock re-runs the resources already on screen.
+- Entry points: `/testing` (unit tests), `/playwright` (E2E on any build), `/runtime` (no Angular).
+- Optional [MSW 2.x handlers](tools/openapi-resource-gen/README.md#msw-handlers---includemswhandlers)
+  with `--includeMswHandlers`.
 
-## Mocks — `@constantant/openapi-resource-mocks`
-
-Published on npm: **[`@constantant/openapi-resource-mocks`](https://www.npmjs.com/package/@constantant/openapi-resource-mocks)**
-
-A companion package that mocks endpoints at the transport layer: it patches `fetch` and `XMLHttpRequest` in the page and answers the requests of the endpoints you mock. The app keeps its real tokens, `HttpClient`, interceptors and response validation, and every other request still reaches the real API. Key features:
-
-- `provide{Operation}Mock(behavior?)` (generated with `--includeMocks`) / `provideMockEndpoint(descriptor, behavior?)` — registers a filter for one endpoint; add it on top of your real app config
-- Behaviors: `{ value }`, `{ error, status }`, `{ loading: true }`, with `delay`, `headers` and simulated upload / download `progress`
-- `window.__openApiMocks__` / `openApiMock(key)` — `resolve()`, `fail()`, `setLoading()`, `reset()`, `getHistory()` … for Playwright; an edit also refreshes data already on screen
-- DOM event bridge (`openapi-mock-event` / `openapi-mock-control`) — lets the Chrome Extension DevTools panel observe and control mocks in real time
-- **`/testing` sub-entry** — `mockEndpoint(descriptor, behavior?)` returns providers that are also a handle (`.calls`, `.expectCalledWith()`, `.resolve()`, `.fail()`); supports `{ sequence: [...] }` for multi-step responses
-- **`/runtime` sub-entry** — the same runtime without Angular, for tools that install it from outside the app; this is how the DevTools extension mocks a production build
-
-See [`tools/openapi-resource-mocks/README.md`](tools/openapi-resource-mocks/README.md) for full documentation.
+Full API: [mocks README](tools/openapi-resource-mocks/README.md).
+Tutorials: [unit tests](docs/03-unit-tests.md) · [Playwright E2E](docs/04-e2e-tests.md).
 
 ---
 
-## Chrome DevTools Extension — OpenAPI Resource Mocks DevTools
+## Chrome DevTools extension
 
-Current version: **0.7.0** | Status: pending Chrome Web Store review
+A DevTools panel for the mocks above. It lists every mocked endpoint with live state and lets you
+resolve, fail, hold (catch mode) or reset it without touching code. With **Intercept** switched on
+for a site it works on an unmodified **production build**: the extension installs the mock runtime
+itself, and you can create mocks for any operation of an imported spec.
 
-A Chrome DevTools panel for the mocks above. It lists every mocked endpoint, shows live state, and lets you resolve, fail, catch, or reset mocks without touching code — on a mock build that registers its own endpoints, or on an unmodified **production build**, where the extension installs the mock runtime itself.
+- **Respond tab:** JSON editor, schema-aware example generation, validation, AI-assisted fixtures
+- **History tab:** every request with its filled URL, path params, query and body
+- **Specs tab:** import an OpenAPI file or URL; the panel suggests the base URL from observed traffic
+- **Scenarios:** save and share a whole mock state as JSON
 
-Key panel features:
-- **Mock table** — live status, catch mode toggle, resolve/fail/reset actions per token
-- **Respond tab** — JSON editor with schema-aware ⚡ Example generation and ✓ Validate; delay control; catch mode release
-- **History tab** — reverse-chronological event log; for `request`/`caught` events shows the filled URL (`GET /pet/42`), path-param rows labeled by name, and Query / Body sections for remaining args; binary payloads (`[FormData]`, `[Blob]`, etc.) shown as inline badges
-- **Specs tab** — import `mocks.manifest.json` or a full OpenAPI spec (JSON or YAML, file or URL) to enable schema-aware features
-- **Scenarios** toolbar button — save named snapshots of the full mock table state, load / delete them, or export / import as JSON for cross-machine sharing
-- **＋ New mock** button — create a panel-managed mock for any operation of an imported spec; with **◉ Intercept** switched on for the site it answers the app's requests, also after a reload and with DevTools closed
+> **Chrome Web Store:** pending review. Until then, build it and use **Load unpacked**:
+> `npm ci`, `npx nx run openapi-resource-devtools:build`, then `chrome://extensions` →
+> Developer mode → Load unpacked → `dist/tools/openapi-resource-devtools/`.
 
-### Install
-
-> **Chrome Web Store:** pending review — use **Load unpacked** for now.
-
-1. Clone the repo and install dependencies: `npm ci`
-2. Build the extension: `npx nx run openapi-resource-devtools:build`
-3. Open `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select `dist/tools/openapi-resource-devtools/`
-
-See [`tools/openapi-resource-devtools/README.md`](tools/openapi-resource-devtools/README.md) for full documentation.
-
----
-
-## Release workflow
-
-The generator is released via the **Release** GitHub Actions workflow (`.github/workflows/release.yml`), triggered manually from the Actions tab.
-
-What the workflow does:
-1. Runs `nx release --skip-publish` — determines the version bump from conventional commits (`fix:` → patch, `feat:` → minor), updates `package.json`, writes `CHANGELOG.md`, creates a git commit and tag
-2. Pushes the version commit and tag to `master`
-3. Creates a GitHub Release with changelog notes extracted from `CHANGELOG.md`
-4. Builds the package with `nx build openapi-resource-gen --skip-nx-cache`
-5. Publishes `@constantant/openapi-resource-gen` and `@constantant/openapi-resource-mocks` to npm with provenance, authenticating through [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC): each package has a trusted publisher configured on npmjs.com (`constantant/angular-openapi-gen`, workflow `release.yml`), so there is no npm token to rotate
-
-The workflow is idempotent — if the current version is already on npm it skips publishing gracefully.
-
-Inputs: `specifier` / `preid` force the bump, `projects` limits the release to some packages (e.g. `openapi-resource-gen`), `dryRun` stops before pushing or publishing, and `skipVersioning` re-runs only the build and publish after a failed publish. **A forced `specifier` bumps every package unless `projects` is set**, including ones with no changes.
-
-**Note on nx release commit detection**: nx release counts only commits that touch files within `tools/openapi-resource-gen/`. Workflow-only changes (e.g. editing `.github/`) do not trigger a version bump.
-
-**Note on branch protection**: `master` is protected (PRs require CI + a code-owner review, linear history). The release workflow checks out with `GH_PAT` (a repo admin PAT stored in GitHub secrets) instead of `GITHUB_TOKEN` — `GITHUB_TOKEN` cannot bypass branch protection's required status checks even with `enforce_admins: off`, so the version-bump commit and tag push would fail without a PAT.
-
-The Chrome Extension is released via a separate **Release Extension** workflow (`.github/workflows/release-extension.yml`). It bumps `manifest.json`, builds and zips the extension, creates a GitHub Release, and uploads to the Chrome Web Store. Required secrets: `GH_PAT`, `CHROME_EXTENSION_ID`, `CHROME_PUBLISHER_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`.
-
----
-
-## Contributing
-
-Contributions are welcome! Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** before
-opening a PR — in particular the rule that **generated code under `libs/*/src/` is
-never hand-edited** (fix the generator and regenerate instead).
-
-- Code of Conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-- Security policy: [SECURITY.md](SECURITY.md)
-- Questions & ideas: [GitHub Discussions](https://github.com/constantant/angular-openapi-gen/discussions)
+Guide: [Chrome DevTools Extension](docs/05-devtools.md) · reference:
+[extension README](tools/openapi-resource-devtools/README.md).
 
 ---
 
 ## Compatibility
 
-Every range below is exercised in CI ([`.github/workflows/compat.yml`](.github/workflows/compat.yml),
-run locally with `npm run compat -- angular 21` or `npm run compat -- nx 22`). Each job builds a
-throwaway workspace with that exact version and runs the code under test, including wire-level
-tests against a real `HttpClient`.
+Every range below is exercised in CI ([`compat.yml`](.github/workflows/compat.yml); run locally with
+`npm run compat -- angular 21` or `npm run compat -- nx 22`). Each job builds a throwaway workspace
+with that exact version and runs the code under test, including wire-level tests against a real
+`HttpClient`.
 
 | What | Supported | Verified against |
 |------|-----------|------------------|
@@ -388,19 +204,26 @@ tests against a real `HttpClient`.
 | `@constantant/openapi-resource-mocks` | Angular **20+** | 20.0.0, 20.x, 21.x, 22.x |
 | `@constantant/openapi-resource-gen` (the Nx generator) | Nx **20+** | 20.x, 21.x, 22.x, 23.x |
 
-Notes:
-- Angular 20 is the floor because the mock `Resource` mirrors `ResourceStatus` as string values
-  (`'idle'`, `'resolved'`, …), which Angular 19 declares as a numeric enum. The generated libs alone
-  also compile and pass the wire tests on 19.2, but that isn't a supported or CI-tested range.
-- **Upload progress** (`--reportProgress`) needs an XHR-backed `HttpClient`. On Angular 20 and 21 that
-  is the default; on **Angular 22+** the default is `fetch`, which cannot report upload progress, so
-  use `provideHttpClient(withXhr())`.
+- Angular 20 is the floor because the mock `Resource` mirrors `ResourceStatus` as string values,
+  which Angular 19 declares as a numeric enum. The generated libs alone also compile on 19.2, but
+  that range is not supported or CI-tested.
+- **Upload progress** (`--reportProgress`) needs an XHR-backed `HttpClient`: the default on Angular
+  20 and 21, `provideHttpClient(withXhr())` on 22+.
 
-## Angular 22 patterns used
+---
 
-- **`httpResource()`** — signal-native HTTP wrapper; re-fires when signals inside its reactive lambda change; returns `undefined` from the lambda to suppress the request
-- **`InjectionToken` with factory** — tree-shakeable when `providedIn: 'root'`; or use the emitted `provideX()` helper for scope control
-- **Standalone components** — no `NgModule`, no `zone.js`
-- **`@if` / `@for` / `@switch`** — Angular 17+ control flow syntax throughout
-- **`OnPush`** — default change detection; do not set it explicitly
-- **Signals** — `signal()` + `computed()` for all local state; no RxJS in components
+## Tutorials
+
+Step by step, in order: [setup](docs/01-setup.md) · [consuming tokens](docs/02-consuming.md) ·
+[unit tests](docs/03-unit-tests.md) · [E2E tests](docs/04-e2e-tests.md) ·
+[DevTools](docs/05-devtools.md) · [migrate from ng-openapi-gen](docs/06-migrate-from-ng-openapi-gen.md) ·
+[migrate from Orval](docs/07-migrate-from-orval.md).
+
+## Contributing
+
+Contributions are welcome. Read **[CONTRIBUTING.md](CONTRIBUTING.md)** first, in particular: generated
+code under `libs/*/src/` is never hand-edited (fix the generator and regenerate). Release steps and
+branch protection are documented there too.
+
+[Code of Conduct](CODE_OF_CONDUCT.md) · [Security policy](SECURITY.md) ·
+[GitHub Discussions](https://github.com/constantant/angular-openapi-gen/discussions) · [MIT license](LICENSE)
