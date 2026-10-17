@@ -1,3 +1,13 @@
+## 2.1.0 (2026-10-17)
+
+### 🚀 Features
+
+- **openapi-resource-mocks:** Playwright helper for production builds, strict mode, request headers and served statuses ([#115](https://github.com/constantant/angular-openapi-gen/pull/115))
+
+### ❤️ Thank You
+
+- Konstantin
+
 # 2.0.0 (2026-10-16)
 
 ### 🚀 Features

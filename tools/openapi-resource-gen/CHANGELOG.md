@@ -1,3 +1,20 @@
+## 2.3.0 (2026-10-17)
+
+### 🚀 Features
+
+- **openapi-resource-gen:** endpoint descriptions for Node tools, per-status error types and JSON Schemas outside the bundle ([#114](https://github.com/constantant/angular-openapi-gen/pull/114))
+- **openapi-resource-gen:** overlays, operation filters, path-prefix naming and dropped security schemes ([#113](https://github.com/constantant/angular-openapi-gen/pull/113))
+- **openapi-resource-gen:** --check, void for no-content responses, GENERATED header, declared CLI dependencies ([#112](https://github.com/constantant/angular-openapi-gen/pull/112))
+- **openapi-resource-gen:** URL-builder tokens for redirect (navigation) endpoints ([#111](https://github.com/constantant/angular-openapi-gen/pull/111))
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** encode path params, treat security as alternatives, send JSON string bodies as JSON ([#110](https://github.com/constantant/angular-openapi-gen/pull/110))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 2.2.0 (2026-10-16)
 
 ### 🚀 Features
