@@ -44,7 +44,8 @@ export function patchFetch(target: { fetch: typeof fetch }, runtime: MockRuntime
     };
 
     const headers = readRequestHeaders(isRequest ? input.headers : undefined, init?.headers);
-    const interception = runtime.intercept({ method, url, body: readRequestBody(init?.body), headers });
+    const raw = typeof init?.body === 'string' ? init.body : undefined;
+    const interception = runtime.intercept({ method, url, body: readRequestBody(init?.body), headers, raw });
     if (!interception) return real();
 
     return new Promise<Response>((resolve, reject) => {

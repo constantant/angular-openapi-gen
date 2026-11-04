@@ -151,10 +151,17 @@ export function normalizeSchemaForValidation(schema: unknown): unknown {
     if (key === 'nullable') continue;
     result[key] = normalizeSchemaForValidation(value);
   }
-  if (record.nullable === true && record.type !== undefined) {
-    result['type'] = Array.isArray(record.type)
-      ? [...new Set([...(record.type as string[]), 'null'])]
-      : [record.type, 'null'];
+  if (record.nullable !== true) return result;
+  if (record.type === undefined) {
+    // `nullable` next to `allOf` / `oneOf` / `$ref` (how OAS 3.0 makes a reference nullable): null, or the schema
+    return { anyOf: [result, { type: 'null' }] };
+  }
+  result['type'] = Array.isArray(record.type)
+    ? [...new Set([...(record.type as string[]), 'null'])]
+    : [record.type, 'null'];
+  // an enum lists every allowed value, so a nullable one has to list null too
+  if (Array.isArray(result['enum']) && !(result['enum'] as unknown[]).includes(null)) {
+    result['enum'] = [...(result['enum'] as unknown[]), null];
   }
   return result;
 }

@@ -6,9 +6,6 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "lint": {
-      "executor": "@nx/eslint:lint"
-    },
     "generate": {
       "executor": "@constantant/openapi-resource-gen:generate",
       "dependsOn": [

@@ -34,12 +34,23 @@ export interface MockRequestMatch {
  * endpoint had no behavior). Serializable, so a tool outside the page (Playwright, DevTools) can send it.
  */
 export interface MockCases {
-  cases: Array<{ when: MockRequestMatch; then: MockBehavior }>;
-  otherwise?: MockBehavior;
+  cases: Array<{ when: MockRequestMatch; then: MockAnswer }>;
+  otherwise?: MockAnswer;
 }
 
-/** A behavior, or cases that pick one per request. */
-export type MockBehaviorOrCases = MockBehavior | MockCases;
+/**
+ * Answers in turn: each request takes the next entry, and the last one repeats (a 401 and then the data, a slow
+ * first page and a quick second). The count starts again whenever the endpoint is given a new behavior.
+ */
+export interface MockSequence {
+  sequence: MockBehavior[];
+}
+
+/** One answer, or answers in turn. */
+export type MockAnswer = MockBehavior | MockSequence;
+
+/** A behavior, answers in turn, or cases that pick one per request. */
+export type MockBehaviorOrCases = MockAnswer | MockCases;
 
 /** What a request matched: its path parameters and query, read from the wire. */
 interface RequestParts {
@@ -59,11 +70,23 @@ function matches(when: MockRequestMatch, parts: RequestParts): boolean {
   return Object.entries(when.query ?? {}).every(([name, value]) => sameValue(value, parts.query[name]));
 }
 
-/** The behavior that answers a request: the behavior itself, or the matching case of cases. */
-export function pickBehavior(behavior: MockBehaviorOrCases | undefined, parts: RequestParts | undefined): MockBehavior | undefined {
-  if (!behavior || !('cases' in behavior)) return behavior;
-  const hit = parts ? behavior.cases.find((c) => matches(c.when, parts)) : undefined;
-  return hit ? hit.then : behavior.otherwise;
+/**
+ * The behavior that answers a request: the behavior itself, the matching case of cases, and of a sequence the entry
+ * `next` gives (it counts the requests that sequence has answered).
+ */
+export function pickBehavior(
+  behavior: MockBehaviorOrCases | undefined,
+  parts: RequestParts | undefined,
+  next: (sequence: MockSequence) => number = () => 0,
+): MockBehavior | undefined {
+  let answer: MockAnswer | undefined = behavior as MockAnswer | undefined;
+  if (behavior && 'cases' in behavior) {
+    const hit = parts ? behavior.cases.find((c) => matches(c.when, parts)) : undefined;
+    answer = hit ? hit.then : behavior.otherwise;
+  }
+  if (!answer || !('sequence' in answer)) return answer;
+  if (answer.sequence.length === 0) return undefined;
+  return answer.sequence[Math.min(next(answer), answer.sequence.length - 1)];
 }
 
 export interface MockResponse {
@@ -86,6 +109,8 @@ export interface InterceptedRequest {
   body?: unknown;
   /** Headers the app set, lower-cased names. */
   headers?: Record<string, string>;
+  /** The body as sent, when it was a string. */
+  raw?: string;
 }
 
 /** A request strict mode refused: it matched no endpoint, or one without a behavior. */
@@ -204,6 +229,8 @@ interface Entry {
   state: { status: string; value: unknown; error: unknown; progress: MockProgress | undefined; requestCount: number };
   /** Requests expected from resources reloaded by a mock edit: they are answered, never caught. */
   pushed: { count: number; until: number };
+  /** How many requests each sequence of the endpoint has answered (a new behavior is a new object, a new count). */
+  steps: WeakMap<MockSequence, number>;
   /** The controls of the endpoint, also published as `window.__openApiMocks__[key]`. */
   api?: WindowMockEntry;
 }
@@ -348,6 +375,7 @@ export class MockRuntime {
       listeners: new Set(),
       state: { status: 'idle', value: undefined, error: undefined, progress: undefined, requestCount: 0 },
       pushed: { count: 0, until: 0 },
+      steps: new WeakMap(),
     };
     entry.matcher = compileEndpointRule(rule);
     entry.order = ++this.order;
@@ -442,7 +470,7 @@ export class MockRuntime {
       return;
     }
     this.setOverride(entry, behavior);
-    if ('cases' in behavior) return; // each request reports what it got with its respond event
+    if ('cases' in behavior || 'sequence' in behavior) return; // each request reports what it got with its respond event
     if ('loading' in behavior) this.emit(entry, { type: 'loading', ts: Date.now() });
     else if ('error' in behavior) this.emit(entry, { type: 'error', error: behavior.error, ts: Date.now() });
     else this.emit(entry, { type: 'resolve', value: behavior.value, ts: Date.now() });
@@ -627,7 +655,12 @@ export class MockRuntime {
     const args: unknown[] = [...best.pathParams];
     if (BODY_METHODS.has(method) && request.body !== undefined) args.push(request.body);
     if (Object.keys(best.query).length > 0) args.push(best.query);
-    const info = { method, url: request.url, headers: request.headers ?? {} };
+    const info = {
+      method,
+      url: request.url,
+      headers: request.headers ?? {},
+      ...(request.raw !== undefined ? { raw: request.raw } : {}),
+    };
 
     entry.state.requestCount++;
     this.emit(entry, { type: 'request', args, ...info, ts: Date.now() });
@@ -643,7 +676,7 @@ export class MockRuntime {
     const parts: RequestParts = { pathParams: best.pathParams, query: best.query };
     const behavior: MockBehavior | undefined = caught
       ? { loading: true }
-      : pickBehavior(entry.override ?? this.initialOf(entry), parts);
+      : pickBehavior(entry.override ?? this.initialOf(entry), parts, this.stepper(entry));
     if (!behavior) return this.refuse(request, 'no-behavior', entry);
 
     let settle!: (result: MockResult) => void;
@@ -690,8 +723,17 @@ export class MockRuntime {
     return typeof entry.initial === 'function' ? entry.initial() : entry.initial;
   }
 
+  /** Counts, per sequence, the requests it answered: each call is one request. */
+  private stepper(entry: Entry): (sequence: MockSequence) => number {
+    return (sequence) => {
+      const step = entry.steps.get(sequence) ?? 0;
+      entry.steps.set(sequence, step + 1);
+      return step;
+    };
+  }
+
   private apply(entry: Entry, pending: Pending, given: MockBehaviorOrCases | undefined): void {
-    const behavior = pickBehavior(given, pending.parts);
+    const behavior = pickBehavior(given, pending.parts, this.stepper(entry));
     if (pending.timer !== undefined) clearTimeout(pending.timer);
     pending.timer = undefined;
     if (behavior?.progress?.length) {
@@ -753,7 +795,7 @@ export class MockRuntime {
     if (behavior !== undefined || entry.initial !== undefined) this.reloadLive(entry);
     // Nothing is waiting: the state shows what the next request will get (unknown for a function).
     const effective = behavior ?? (typeof entry.initial === 'function' ? undefined : entry.initial);
-    if (effective && 'cases' in effective) {
+    if (effective && ('cases' in effective || 'sequence' in effective)) {
       // depends on the request: nothing to show before one comes
     } else if (effective && 'loading' in effective) {
       entry.state.status = 'loading';

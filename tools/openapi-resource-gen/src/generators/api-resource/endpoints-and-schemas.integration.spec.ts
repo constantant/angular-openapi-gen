@@ -30,6 +30,9 @@ const SPEC = JSON.stringify({
         properties: {
           id: { type: 'string' },
           note: { type: 'string', nullable: true },
+          // how OAS 3.0 makes a reference nullable, and a nullable enum
+          parent: { allOf: [{ $ref: '#/components/schemas/Category' }], nullable: true },
+          state: { type: 'string', enum: ['new', 'old'], nullable: true },
           category: { $ref: '#/components/schemas/Category' },
         },
       },
@@ -154,6 +157,12 @@ describe('mocks.endpoints.ts, the manifest and api.schemas.json', () => {
     // nullable: true became a type array, so null passes and a number does not.
     expect(validate(ok, { id: '1', note: 3, category: { name: 'a' } })).toBe(false);
     expect(validate(ok, { id: '1' })).toBe(false);
+    // nullable without a type (allOf + nullable) and a nullable enum accept null, and still check other values
+    const item = { id: '1', category: { name: 'a' } };
+    expect(validate(ok, { ...item, parent: null, state: null })).toBe(true);
+    expect(validate(ok, { ...item, parent: { name: 'p' }, state: 'old' })).toBe(true);
+    expect(validate(ok, { ...item, parent: { name: 3 } })).toBe(false);
+    expect(validate(ok, { ...item, state: 'gone' })).toBe(false);
     // A response given as a $ref to components.responses is followed.
     expect(validate('#/operations/GET_ITEM/responses/404/content/application~1json/schema', { title: 'gone' })).toBe(true);
     expect(validate('#/operations/SAVE_ITEM/responses/400/content/application~1json/schema', [{ code: 'X' }])).toBe(true);

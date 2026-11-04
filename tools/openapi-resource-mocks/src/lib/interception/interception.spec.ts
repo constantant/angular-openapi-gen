@@ -422,6 +422,23 @@ describe('mock interception', () => {
       ]);
     });
 
+    it('keeps a text body as sent, so a JSON string is told from plain text', async () => {
+      runtime.register('LANG', { method: 'put', baseUrl: BASE, path: '/language' }, { behavior: { value: undefined } });
+      await fetch(`${BASE}/language`, { method: 'PUT', body: '"en"', headers: { 'content-type': 'application/json' } });
+      await new Promise<void>((resolve) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', `${BASE}/language`);
+        xhr.addEventListener('load', () => resolve());
+        xhr.send('en');
+      });
+      const requests = entry('LANG').getHistory().filter((e) => e.type === 'request') as Extract<MockEvent, { type: 'request' }>[];
+      // both parse to the same args; only raw shows that the second is not JSON
+      expect(requests.map((r) => [r.args, r.raw])).toEqual([
+        [['en'], '"en"'],
+        [['en'], 'en'],
+      ]);
+    });
+
     it('emits a respond event with the status of every mocked answer, and none for a passthrough', async () => {
       runtime.register('GET', { method: 'get', baseUrl: BASE, path: '/pets/{id}' }, { behavior: { value: {} } });
       await fetch(`${BASE}/pets/1`);
@@ -528,6 +545,25 @@ describe('mock interception', () => {
       runtime.setStrict(['/api/']);
       expect((await get('/api/bonds/Z')).status).toBe(501);
       expect(runtime.unmatchedRequests().map((u) => u.reason)).toEqual(['no-behavior']);
+    });
+
+    it('answers in turn with a sequence, repeats its last entry, and counts again on a new behavior', async () => {
+      runtime.register('ME', { method: 'get', baseUrl: BASE, path: '/me' });
+      runtime.setBehavior('ME', { sequence: [{ error: 'expired', status: 401 }, { value: 'ann' }] });
+      expect((await get(`${BASE}/me`)).status).toBe(401);
+      expect(await get(`${BASE}/me`)).toEqual({ status: 200, body: 'ann' });
+      expect(await get(`${BASE}/me`)).toEqual({ status: 200, body: 'ann' });
+      runtime.setBehavior('ME', { sequence: [{ error: 'expired', status: 401 }, { value: 'bob' }] });
+      expect((await get(`${BASE}/me`)).status).toBe(401);
+      // a sequence inside a case, counted on its own
+      runtime.register('BOND', { method: 'get', baseUrl: BASE, path: '/bonds/{isin}' });
+      runtime.setBehavior('BOND', {
+        cases: [{ when: { path: ['A'] }, then: { sequence: [{ value: 1 }, { value: 2 }] } }],
+        otherwise: { value: 0 },
+      });
+      expect((await get(`${BASE}/bonds/A`)).body).toBe(1);
+      expect((await get(`${BASE}/bonds/B`)).body).toBe(0);
+      expect((await get(`${BASE}/bonds/A`)).body).toBe(2);
     });
 
     it('answers a held request by its own case when cases arrive while it waits', async () => {

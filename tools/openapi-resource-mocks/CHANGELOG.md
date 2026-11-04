@@ -1,3 +1,13 @@
+## 2.3.0 (2026-10-17)
+
+### 🚀 Features
+
+- **openapi-resource-mocks:** answers in turn (sequence), and the raw text body of a request ([#120](https://github.com/constantant/angular-openapi-gen/pull/120))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 2.2.0 (2026-10-17)
 
 ### 🚀 Features

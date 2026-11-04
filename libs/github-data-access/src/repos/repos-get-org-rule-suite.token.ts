@@ -70,7 +70,7 @@ const _responseSchema: Schema = {
     },
     evaluation_result: {
       type: ['string', 'null'],
-      enum: ['pass', 'fail', 'bypass'],
+      enum: ['pass', 'fail', 'bypass', null],
       description:
         'The result of the rule evaluations for rules with the `active` and `evaluate` enforcement statuses, demonstrating whether rules would pass or fail if all rules in the rule suite were `active`. Null if no rules with `evaluate` enforcement status were run.',
     },

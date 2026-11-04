@@ -1,3 +1,17 @@
+## 2.3.2 (2026-10-17)
+
+### 🩹 Fixes
+
+- **openapi-resource-gen:** a nullable schema without a type, and a nullable enum, accept null when validated ([#119](https://github.com/constantant/angular-openapi-gen/pull/119))
+
+### 📖 Documentation
+
+- refresh READMEs for the current feature set and move release steps to CONTRIBUTING ([#118](https://github.com/constantant/angular-openapi-gen/pull/118))
+
+### ❤️ Thank You
+
+- Konstantin
+
 ## 2.3.1 (2026-10-17)
 
 ### 🩹 Fixes

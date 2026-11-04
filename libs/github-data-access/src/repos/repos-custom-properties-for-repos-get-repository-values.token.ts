@@ -31,18 +31,25 @@ const _responseSchema: Schema = {
         description: 'The name of the property',
       },
       value: {
-        oneOf: [
+        anyOf: [
           {
-            type: 'string',
+            oneOf: [
+              {
+                type: 'string',
+              },
+              {
+                type: 'array',
+                items: {
+                  type: 'string',
+                },
+              },
+            ],
+            description: 'The value assigned to the property',
           },
           {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
+            type: 'null',
           },
         ],
-        description: 'The value assigned to the property',
       },
     },
     required: ['property_name', 'value'],

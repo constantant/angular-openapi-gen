@@ -1,6 +1,6 @@
 {
   "name": "@constantant/openapi-resource-mocks",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Mocks and test helpers for @constantant/openapi-resource-gen tokens: unit tests, Playwright E2E and a Chrome DevTools panel",
   "license": "MIT",
   "repository": {
