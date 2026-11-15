@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^13.1.0",
-    "@nx/devkit": ">=24.0.5",
-    "@scalar/openapi-upgrader": "^0.4.7",
+    "@nx/devkit": ">=24.0.6",
+    "@scalar/openapi-upgrader": "^0.4.9",
     "js-yaml": "^5.5.0",
     "nx": ">=24.0.5",
     "openapi-types": "^12.1.3",
