@@ -42,7 +42,7 @@
   "dependencies": {
     "@apidevtools/swagger-parser": "^13.1.0",
     "@nx/devkit": ">=24.0.6",
-    "@scalar/openapi-upgrader": "^0.4.9",
+    "@scalar/openapi-upgrader": "^0.5.1",
     "js-yaml": "^5.5.0",
     "nx": ">=24.0.6",
     "openapi-types": "^12.1.3",
